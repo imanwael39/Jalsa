@@ -1,6 +1,0 @@
-@Jalsa.API_HostAddress = http://localhost:5014
-
-GET {{Jalsa.API_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
