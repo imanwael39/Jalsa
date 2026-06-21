@@ -1,5 +1,7 @@
 using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Jalsa.Application.Interfaces.Repositores;
+using Jalsa.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +11,7 @@ builder.Services.AddDbContext<Galsa_DBDbContext>(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+builder.Services.AddScoped<IUnitOfWork ,UnitOfWork>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

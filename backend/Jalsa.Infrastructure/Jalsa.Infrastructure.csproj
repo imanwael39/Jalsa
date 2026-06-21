@@ -16,7 +16,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Jalsa.Application\Jalsa.Application.csproj" />
     <ProjectReference Include="..\Jalsa.Domain\Jalsa.Domain.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Jalsa.Application\Jalsa.Application.csproj" />
+    <ProjectReference Include="..\Jalsa.Domain\Jalsa.Domain.csproj" />
+</ItemGroup>
 
 </Project>
