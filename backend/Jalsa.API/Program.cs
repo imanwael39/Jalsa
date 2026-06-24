@@ -5,6 +5,7 @@ using System.Text;
 using Jalsa.API.Configurations;
 using Jalsa.API.Exceptions;
 using Jalsa.API.Services.Interfaces;
+using Jalsa.API.Services.Implementations;
 using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Jalsa.Application.Interfaces.Repositores;
@@ -37,6 +38,10 @@ builder.Services.AddAuthentication(options =>
 });
 builder.Services.AddAuthorization();
 
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("Email")
+);
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddDbContext<Galsa_DBDbContext>(options =>
