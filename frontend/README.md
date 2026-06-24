@@ -2,25 +2,38 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.13.
 
-## Development server
+## Prerequisites
 
-To start a local development server, run:
+- Node.js 18+
+- npm 9+
+- Git
+
+## Setup
+
+```bash
+# Install dependencies
+npm install
+
+# The prepare script will automatically configure Git hooks
+# If hooks are not working, run manually:
+git config core.hooksPath frontend/.husky
+```
+
+## Development server
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Navigate to `http://localhost:4200/`. The application will automatically reload when you modify source files.
 
 ## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
 
 ```bash
 ng generate component component-name
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+For a complete list of available schematics, run:
 
 ```bash
 ng generate --help
@@ -28,32 +41,71 @@ ng generate --help
 
 ## Building
 
-To build the project run:
-
 ```bash
+# Development build
 ng build
+
+# Production build
+ng build --configuration production
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## Running tests
 
 ```bash
+# Run unit tests
 ng test
+
+# CI mode (single run, no watch)
+npm run test:ci
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
+## Linting and Formatting
 
 ```bash
-ng e2e
+# Lint TypeScript and HTML files
+npm run lint
+
+# Auto-fix lint errors
+npm run lint:fix
+
+# Format code with Prettier
+npm run format
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## Git Hooks
+
+This project uses [Husky](https://typicode.github.io/husky/) with [lint-staged](https://github.com/okonet/lint-staged) and [commitlint](https://commitlint.js.org/):
+
+- **pre-commit**: Runs lint-staged (ESLint + Prettier) on staged files
+- **commit-msg**: Validates commit messages against Conventional Commits format
+
+### Commit Message Format
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`, `build`
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── core/          # Singleton services, guards, interceptors, models
+│   ├── shared/        # Reusable UI components, directives, pipes
+│   └── features/      # Lazy-loaded feature modules
+├── assets/            # Static assets (images, mock data)
+├── environments/      # Environment configuration
+└── styles/            # Global styles and design system
+```
 
 ## Additional Resources
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- [Angular CLI Overview](https://angular.dev/tools/cli)
+- [Project Architecture Docs](../../docs/architecture/)
+- [Design System Docs](../../docs/design-system/)
