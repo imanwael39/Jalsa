@@ -107,6 +107,12 @@ public class ExerciseService : IExerciseService
 
     public async Task<ExerciseLogViewDto> LogCompletionAsync(ExerciseLogCreateDto dto)
     {
+        var exercise = await _exerciseRepository.GetByIdAsync(dto.ExerciseId)
+            ?? throw new KeyNotFoundException($"Exercise with ID {dto.ExerciseId} not found.");
+
+        if (exercise.PatientId != dto.PatientId)
+            throw new UnauthorizedAccessException("Exercise does not belong to this patient.");
+
         var log = new ExerciseLog
         {
             Id = Guid.NewGuid(),
