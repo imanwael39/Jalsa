@@ -121,6 +121,51 @@ public class AuthService : IAuthService
         return response;
     }
 
+    public async Task<string> ForgotPasswordAsync(ForgotPasswordDto dto)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+        if (user == null)
+            return string.Empty;
+
+        var rawToken = GenerateRawToken();
+        var tokenHash = ComputeSha256(rawToken);
+
+        _context.PasswordResetTokens.Add(new PasswordResetToken
+        {
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            TokenHash = tokenHash,
+            ExpiresAt = DateTime.UtcNow.AddHours(1),
+            CreatedAt = DateTime.UtcNow
+        });
+        await _context.SaveChangesAsync();
+
+        return rawToken;
+    }
+
+    public async Task ResetPasswordAsync(ResetPasswordDto dto)
+    {
+        var tokenHash = ComputeSha256(dto.Token);
+        var resetToken = await _context.PasswordResetTokens
+            .Include(pr => pr.User)
+            .FirstOrDefaultAsync(pr => pr.TokenHash == tokenHash);
+
+        if (resetToken == null)
+            throw new ApiException(400, "Invalid reset token!");
+
+        if (resetToken.UsedAt != null)
+            throw new ApiException(400, "Reset token has already been used!");
+
+        if (resetToken.ExpiresAt < DateTime.UtcNow)
+            throw new ApiException(400, "Reset token has expired!");
+
+        resetToken.User.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        resetToken.UsedAt = DateTime.UtcNow;
+        resetToken.User.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+    }
+
     public async Task RevokeTokenAsync(RevokeTokenRequestDto dto)
     {
         var tokenHash = ComputeSha256(dto.RefreshToken);
