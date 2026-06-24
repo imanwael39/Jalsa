@@ -18,11 +18,13 @@ public class AuthService : IAuthService
 {
     private readonly Galsa_DBDbContext _context;
     private readonly JwtSettings _jwtSettings;
+    private readonly IEmailService _emailService;
 
-    public AuthService(Galsa_DBDbContext context, IOptions<JwtSettings> jwt)
+    public AuthService(Galsa_DBDbContext context, IOptions<JwtSettings> jwt, IEmailService emailService)
     {
         _context = context;
         _jwtSettings = jwt.Value;
+        _emailService = emailService;
     }
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
@@ -53,9 +55,24 @@ public class AuthService : IAuthService
             });
         }
 
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
-        return await BuildAuthResponse(user);
+      _context.Users.Add(user);
+await _context.SaveChangesAsync();
+
+if (roleName == "Therapist")
+{
+    var therapist = new Jalsa.Domain.Models.Clinic.Therapist
+    {
+        Id = Guid.NewGuid(),
+        UserId = user.Id,
+        FullName = dto.Email.Split('@')[0],
+        LicenseNumber = $"LIC-{Guid.NewGuid().ToString()[..8].ToUpper()}",
+        CreatedAt = DateTime.UtcNow
+    };
+    _context.Therapists.Add(therapist);
+    await _context.SaveChangesAsync();
+}
+
+return await BuildAuthResponse(user);
     }
 
     public async Task<AuthResponseDto> LoginAsync(LoginDto dto)
@@ -119,6 +136,62 @@ public class AuthService : IAuthService
         response.RefreshToken = rawToken;
         response.RefreshTokenExpiresAt = newRefreshToken.ExpiresAt;
         return response;
+    }
+
+    public async Task ForgotPasswordAsync(ForgotPasswordDto dto)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+        if (user == null || !user.IsActive)
+            return;
+
+        var existingTokens = await _context.PasswordResetTokens
+            .Where(t => t.UserId == user.Id && t.UsedAt == null && t.ExpiresAt > DateTime.UtcNow)
+            .ToListAsync();
+
+        foreach (var t in existingTokens)
+            t.UsedAt = DateTime.UtcNow;
+
+        var otp = RandomNumberGenerator.GetInt32(100000, 999999).ToString();
+        var otpHash = ComputeSha256(otp);
+
+        _context.PasswordResetTokens.Add(new PasswordResetToken
+        {
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            TokenHash = otpHash,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(5),
+            CreatedAt = DateTime.UtcNow
+        });
+        await _context.SaveChangesAsync();
+
+        await _emailService.SendOtpAsync(user.Email, otp);
+    }
+
+    public async Task ResetPasswordAsync(ResetPasswordDto dto)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+        if (user == null)
+            throw new ApiException(400, "Invalid reset request!");
+
+        var otpHash = ComputeSha256(dto.Otp);
+        var resetToken = await _context.PasswordResetTokens
+            .Include(pr => pr.User)
+            .FirstOrDefaultAsync(pr => pr.UserId == user.Id && pr.TokenHash == otpHash);
+
+        if (resetToken == null)
+            throw new ApiException(400, "Invalid OTP!");
+
+        if (resetToken.UsedAt != null)
+            throw new ApiException(400, "OTP has already been used!");
+
+        if (resetToken.ExpiresAt < DateTime.UtcNow)
+            throw new ApiException(400, "OTP has expired!");
+
+        resetToken.User.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        resetToken.UsedAt = DateTime.UtcNow;
+        resetToken.User.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
     }
 
     public async Task RevokeTokenAsync(RevokeTokenRequestDto dto)

@@ -5,6 +5,7 @@ using System.Text;
 using Jalsa.API.Configurations;
 using Jalsa.API.Exceptions;
 using Jalsa.API.Services.Interfaces;
+using Jalsa.API.Services.Implementations;
 using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Jalsa.Application.Interfaces.Repositores;
@@ -19,6 +20,7 @@ using Jalsa.Infrastructure.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Jalsa.Application.Validators.Exercise;
+using Jalsa.API.DTOs.Patient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,7 +49,12 @@ builder.Services.AddAuthentication(options =>
 });
 builder.Services.AddAuthorization();
 
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("Email")
+);
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPatientService ,PatientService>();
 
 builder.Services.AddDbContext<Galsa_DBDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
