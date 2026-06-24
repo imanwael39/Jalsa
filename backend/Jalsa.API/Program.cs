@@ -9,6 +9,8 @@ using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Jalsa.Application.Interfaces.Repositores;
 using Jalsa.Infrastructure.Repositories;
+using Jalsa.API.DTOs.Patient;
+using Jalsa.API.Services.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +40,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPatientService ,PatientService>();
 
 builder.Services.AddDbContext<Galsa_DBDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

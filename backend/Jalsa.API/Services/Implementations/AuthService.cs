@@ -53,9 +53,24 @@ public class AuthService : IAuthService
             });
         }
 
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
-        return await BuildAuthResponse(user);
+      _context.Users.Add(user);
+await _context.SaveChangesAsync();
+
+if (roleName == "Therapist")
+{
+    var therapist = new Jalsa.Domain.Models.Clinic.Therapist
+    {
+        Id = Guid.NewGuid(),
+        UserId = user.Id,
+        FullName = dto.Email.Split('@')[0],
+        LicenseNumber = $"LIC-{Guid.NewGuid().ToString()[..8].ToUpper()}",
+        CreatedAt = DateTime.UtcNow
+    };
+    _context.Therapists.Add(therapist);
+    await _context.SaveChangesAsync();
+}
+
+return await BuildAuthResponse(user);
     }
 
     public async Task<AuthResponseDto> LoginAsync(LoginDto dto)
