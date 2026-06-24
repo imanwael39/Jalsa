@@ -16,6 +16,9 @@ using Jalsa.Application.Jobs;
 using Jalsa.Application.Services;
 using Jalsa.Infrastructure.Repositories;
 using Jalsa.Infrastructure.Services;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Jalsa.Application.Validators.Exercise;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,6 +61,9 @@ builder.Services.AddScoped<IExerciseLogRepository, ExerciseLogRepository>();
 builder.Services.AddScoped<IExerciseService, ExerciseService>();
 builder.Services.AddScoped<INotificationService, EmailNotificationService>();
 builder.Services.AddScoped<ExerciseReminderJob>();
+
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<ExerciseCreateDtoValidator>();
 
 builder.Services.AddHangfire(config => config
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
