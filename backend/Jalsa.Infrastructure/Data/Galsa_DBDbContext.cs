@@ -35,7 +35,6 @@ public class Galsa_DBDbContext : DbContext
     public DbSet<Session> Sessions => Set<Session>();
     public DbSet<SessionNote> SessionNotes => Set<SessionNote>();
     public DbSet<SessionEmbedding> SessionEmbeddings => Set<SessionEmbedding>();
-    public DbSet<VoiceMemo> VoiceMemos => Set<VoiceMemo>();
     public DbSet<UploadedFile> UploadedFiles => Set<UploadedFile>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
@@ -227,15 +226,6 @@ public class Galsa_DBDbContext : DbContext
             e.Property(se => se.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
             e.HasIndex(se => new { se.SessionId, se.ChunkIndex }).IsUnique();
             e.HasOne(se => se.Session).WithMany(s => s.SessionEmbeddings).HasForeignKey(se => se.SessionId).OnDelete(DeleteBehavior.NoAction);
-        });
-
-        modelBuilder.Entity<VoiceMemo>(e =>
-        {
-            e.ToTable("VoiceMemos");
-            e.HasKey(vm => vm.Id);
-            e.Property(vm => vm.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
-            e.Property(vm => vm.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
-            e.HasOne(vm => vm.Session).WithMany(s => s.VoiceMemos).HasForeignKey(vm => vm.SessionId).OnDelete(DeleteBehavior.NoAction);
         });
 
         // ── Files ────────────────────────────────────────────────

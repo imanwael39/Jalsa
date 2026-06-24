@@ -6,6 +6,4 @@ public interface IAuthService
     Task<AuthResponseDto> LoginAsync(LoginDto dto);
     Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenRequestDto dto);
     Task RevokeTokenAsync(RevokeTokenRequestDto dto);
-    Task ForgotPasswordAsync(ForgotPasswordDto dto);
-    Task ResetPasswordAsync(ResetPasswordDto dto);
 }

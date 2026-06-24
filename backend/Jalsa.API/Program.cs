@@ -1,31 +1,21 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 using Jalsa.API.Configurations;
 using Jalsa.API.Exceptions;
 using Jalsa.API.Services.Interfaces;
-using Jalsa.API.Services.Implementations;
-using Jalsa.API.Services.Interfaces.AI;
-using Jalsa.API.Services.Implementations.AI;
 using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Jalsa.Application.Interfaces.Repositores;
-using Hangfire;
-using Hangfire.SqlServer;
-using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Application.Interfaces.Services;
-using Jalsa.Application.Jobs;
+using Jalsa.Application.Mappings;
 using Jalsa.Application.Services;
 using Jalsa.Infrastructure.Repositories;
-using Jalsa.Infrastructure.Services;
+using Jalsa.Domain.Models.Identity;
+using Jalsa.Domain.Models.Session;
 using FluentValidation;
-using FluentValidation.AspNetCore;
-using Jalsa.Application.Validators.Exercise;
-using Jalsa.API.DTOs.Patient;
-
-DotNetEnv.Env.Load();
+using Jalsa.Application.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,92 +44,75 @@ builder.Services.AddAuthentication(options =>
 });
 builder.Services.AddAuthorization();
 
-builder.Services.Configure<EmailSettings>(
-    builder.Configuration.GetSection("Email")
-);
-builder.Services.Configure<OpenAiSettings>(
-    builder.Configuration.GetSection("OpenAI")
-);
-builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddScoped<IEmbeddingService, EmbeddingService>();
-builder.Services.AddScoped<IVectorStore, VectorStore>();
-builder.Services.AddScoped<IConversationMemoryService, ConversationMemoryService>();
-builder.Services.AddScoped<IChatAiService, ChatAiService>();
-builder.Services.AddScoped<ICrisisDetectionService, CrisisDetectionService>();
-builder.Services.AddScoped<ISummarizationService, SummarizationService>();
-builder.Services.AddScoped<IReportGenerationService, ReportGenerationService>();
-builder.Services.AddScoped<IOcrService, OcrService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IPatientService ,PatientService>();
 
 builder.Services.AddDbContext<Galsa_DBDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddSignalR();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<ISessionRepository, SessionRepository>();
+builder.Services.AddScoped<ISessionService, SessionService>();
+builder.Services.AddScoped<IGenericRepository<SessionNote>>(sp =>
+{
+    var unitOfWork = sp.GetRequiredService<IUnitOfWork>();
+    return unitOfWork.Repository<SessionNote>();
+});
+
+builder.Services.AddAutoMapper(typeof(SessionMappingProfile).Assembly);
+
+builder.Services.AddValidatorsFromAssemblyContaining<SessionCreateDtoValidator>();
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AngularPolicy", policy =>
-    {
-        policy.WithOrigins("http://localhost:4200")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
-    });
-});
-builder.Services.AddScoped<IUnitOfWork ,UnitOfWork>();
-builder.Services.AddScoped<IExerciseRepository, ExerciseRepository>();
-builder.Services.AddScoped<IExerciseLogRepository, ExerciseLogRepository>();
-builder.Services.AddScoped<IPatientRepository, PatientRepository>();
-builder.Services.AddScoped<ISessionRepository, SessionRepository>();
-builder.Services.AddScoped<IAssessmentRepository, AssessmentRepository>();
-builder.Services.AddScoped<IExerciseService, ExerciseService>();
-builder.Services.AddScoped<IProgressService, ProgressService>();
-builder.Services.AddScoped<INotificationService, EmailNotificationService>();
-builder.Services.AddScoped<ExerciseReminderJob>();
-
-builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddValidatorsFromAssemblyContaining<ExerciseCreateDtoValidator>();
-
-builder.Services.AddHangfire(config => config
-    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-    .UseSimpleAssemblyNameTypeSerializer()
-    .UseRecommendedSerializerSettings()
-    .UseSqlServerStorage(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        new SqlServerStorageOptions
-        {
-            CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-            SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-            QueuePollInterval = TimeSpan.Zero,
-            UseRecommendedIsolationLevel = true
-        }));
-
-builder.Services.AddHangfireServer();
-
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<Galsa_DBDbContext>();
-    db.Database.Migrate();
-
-    var roleNames = new[] { "Therapist", "Patient", "Admin" };
-    foreach (var roleName in roleNames)
+    var context = scope.ServiceProvider.GetRequiredService<Galsa_DBDbContext>();
+    var roles = new[] { "Therapist", "Patient", "Admin" };
+    foreach (var roleName in roles)
     {
-        if (!db.Roles.Any(r => r.Name == roleName))
+        if (!context.Roles.Any(r => r.Name == roleName))
         {
-            db.Roles.Add(new Jalsa.Domain.Models.Identity.Role
-            {
-                Id = Guid.NewGuid(),
-                Name = roleName
-            });
+            context.Roles.Add(new Role { Id = Guid.NewGuid(), Name = roleName });
         }
     }
-    db.SaveChanges();
+    await context.SaveChangesAsync();
+
+    if (!context.Patients.Any())
+    {
+        var therapistUser = context.Users.FirstOrDefault(u => u.Email == "dr@test.com");
+        if (therapistUser != null)
+        {
+            var therapist = context.Therapists.FirstOrDefault(t => t.UserId == therapistUser.Id);
+            if (therapist == null)
+            {
+                therapist = new Jalsa.Domain.Models.Clinic.Therapist
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = therapistUser.Id,
+                    FullName = "Dr. Test",
+                    LicenseNumber = "LIC-001",
+                    CreatedAt = DateTime.UtcNow
+                };
+                context.Therapists.Add(therapist);
+                await context.SaveChangesAsync();
+            }
+
+            var patient = new Jalsa.Domain.Models.Patient.Patient
+            {
+                Id = Guid.NewGuid(),
+                TherapistId = therapist.Id,
+                FullName = "Ahmed Patient",
+                Status = "Active",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            context.Patients.Add(patient);
+            await context.SaveChangesAsync();
+        }
+    }
 }
 
 app.UseExceptionHandler(exceptionApp =>
@@ -147,40 +120,11 @@ app.UseExceptionHandler(exceptionApp =>
     exceptionApp.Run(async context =>
     {
         var exception = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
-
-        context.Response.ContentType = "application/json";
-
         if (exception is ApiException apiEx)
         {
             context.Response.StatusCode = apiEx.StatusCode;
-            await context.Response.WriteAsJsonAsync(new
-            {
-                success = false,
-                message = apiEx.Message
-            });
-        }
-        else if (exception is Microsoft.EntityFrameworkCore.DbUpdateException dbEx
-                 && dbEx.InnerException is Microsoft.Data.SqlClient.SqlException sqlEx
-                 && (sqlEx.Number == 2601 || sqlEx.Number == 2627))
-        {
-            context.Response.StatusCode = StatusCodes.Status409Conflict;
-            await context.Response.WriteAsJsonAsync(new
-            {
-                success = false,
-                message = "A duplicate entry violates a unique constraint."
-            });
-        }
-        else
-        {
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-
-            object response;
-            if (app.Environment.IsDevelopment())
-                response = new { success = false, message = exception?.Message ?? "An unexpected error occurred.", detail = exception?.InnerException?.Message };
-            else
-                response = new { success = false, message = "An unexpected error occurred." };
-
-            await context.Response.WriteAsJsonAsync(response);
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsJsonAsync(new { error = apiEx.Message });
         }
     });
 });
@@ -191,17 +135,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseRouting();
-app.UseCors("AngularPolicy");
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
-app.UseHangfireDashboard("/hangfire");
-
-RecurringJob.AddOrUpdate<ExerciseReminderJob>(
-    "exercise-reminder",
-    job => job.SendRemindersAsync(),
-    Cron.Daily(9));
 
 app.Run();

@@ -1,0 +1,517 @@
+{
+  "info": {
+    "name": "Jalsa Backend - Session Management",
+    "description": "Complete API testing collection for Phase 4 - Session Management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "patientId",
+      "value": ""
+    },
+    {
+      "key": "sessionId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Auth - Register",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/auth/register",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"therapist@jalsa.com\",\n  \"password\": \"Therapist123!\",\n  \"role\": \"Therapist\"\n}"
+        }
+      }
+    },
+    {
+      "name": "2. Auth - Login",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/auth/login",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"therapist@jalsa.com\",\n  \"password\": \"Therapist123!\"\n}"
+        },
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "var jsonData = pm.response.json();",
+                "if(jsonData.token){",
+                "    pm.collectionVariables.set('token', jsonData.token);",
+                "    console.log('Token saved: ' + jsonData.token.substring(0,30) + '...');",
+                "}"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "3. Auth - Refresh Token",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/auth/refresh",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "4. Auth - Revoke Token",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/auth/revoke",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "5. Sessions - Create Session",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/Sessions",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"sessionDate\": \"2026-06-24\",\n  \"durationMinutes\": 50,\n  \"sessionType\": \"Individual\",\n  \"status\": \"Draft\",\n  \"sessionNote\": {\n    \"observations\": \"Patient presented with mild anxiety symptoms. Appeared cooperative and engaged throughout the session.\",\n    \"interventions\": \"Introduced CBT techniques for anxiety management. Discussed cognitive restructuring and breathing exercises.\",\n    \"patientResponse\": \"Patient was receptive to the techniques and demonstrated understanding. Expressed willingness to practice.\",\n    \"homeworkAssigned\": \"Practice deep breathing exercises twice daily. Complete thought record worksheet.\",\n    \"nextGoals\": \"Continue anxiety management. Introduce exposure techniques in next session.\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "var jsonData = pm.response.json();",
+                "if(jsonData.id){",
+                "    pm.collectionVariables.set('sessionId', jsonData.id);",
+                "    console.log('Session ID saved: ' + jsonData.id);",
+                "}"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "6. Sessions - Create (Validation Error - Empty PatientId)",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/Sessions",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"patientId\": \"00000000-0000-0000-0000-000000000000\",\n  \"sessionDate\": \"2026-06-24\",\n  \"status\": \"Draft\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "7. Sessions - Create (Validation Error - Future Date)",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/Sessions",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"sessionDate\": \"2099-12-31\",\n  \"status\": \"Draft\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "8. Sessions - Create (Validation Error - Invalid Status)",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/Sessions",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"sessionDate\": \"2026-06-24\",\n  \"status\": \"InvalidStatus\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "9. Sessions - Get All (Paged)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/Sessions?page=1&pageSize=10",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "Sessions"],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "pageSize",
+              "value": "10"
+            }
+          ]
+        },
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "10. Sessions - Search by Patient",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/Sessions?patientId={{patientId}}&page=1&pageSize=10",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "Sessions"],
+          "query": [
+            {
+              "key": "patientId",
+              "value": "{{patientId}}"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "pageSize",
+              "value": "10"
+            }
+          ]
+        },
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "11. Sessions - Search by Date Range",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/Sessions?dateFrom=2026-06-01&dateTo=2026-06-30&page=1&pageSize=10",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "Sessions"],
+          "query": [
+            {
+              "key": "dateFrom",
+              "value": "2026-06-01"
+            },
+            {
+              "key": "dateTo",
+              "value": "2026-06-30"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "pageSize",
+              "value": "10"
+            }
+          ]
+        },
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "12. Sessions - Search by Status",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/Sessions?status=Draft&page=1&pageSize=10",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "Sessions"],
+          "query": [
+            {
+              "key": "status",
+              "value": "Draft"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "pageSize",
+              "value": "10"
+            }
+          ]
+        },
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "13. Sessions - Get by ID",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/Sessions/{{sessionId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "14. Sessions - Get by Patient ID",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/Sessions/patient/{{patientId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "15. Sessions - Get Non-existent Session (404)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/Sessions/00000000-0000-0000-0000-000000000000",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "16. Sessions - Update Session",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/Sessions/{{sessionId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sessionDate\": \"2026-06-25\",\n  \"durationMinutes\": 60,\n  \"sessionType\": \"Individual\",\n  \"status\": \"Final\",\n  \"sessionNote\": {\n    \"observations\": \"Updated observations after follow-up session. Patient shows improvement.\",\n    \"interventions\": \"Continued CBT techniques. Introduced exposure hierarchy.\",\n    \"patientResponse\": \"Patient reports reduced anxiety levels. Engaged well with exposure exercises.\",\n    \"homeworkAssigned\": \"Continue breathing exercises. Start exposure hierarchy at level 2.\",\n    \"nextGoals\": \"Progress through exposure hierarchy. Address any remaining avoidance behaviors.\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "17. Sessions - Update (Partial)",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/Sessions/{{sessionId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sessionDate\": \"2026-06-25\",\n  \"durationMinutes\": 45,\n  \"status\": \"InProgress\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "18. Sessions - Update Non-existent (404)",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/Sessions/00000000-0000-0000-0000-000000000000",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sessionDate\": \"2026-06-25\",\n  \"status\": \"Final\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "19. Sessions - Delete Session",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/Sessions/{{sessionId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "20. Sessions - Delete Non-existent (404)",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/Sessions/00000000-0000-0000-0000-000000000000",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "21. Sessions - Unauthorized (No Token)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/Sessions",
+        "header": []
+      }
+    },
+    {
+      "name": "22. Sessions - Unauthorized (Invalid Token)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/Sessions",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer invalid-token-here"
+          }
+        ]
+      }
+    }
+  ]
+}
