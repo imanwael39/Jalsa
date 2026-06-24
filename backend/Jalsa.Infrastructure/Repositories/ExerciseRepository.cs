@@ -1,12 +1,13 @@
 using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Domain.Models.Exercise;
+using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Jalsa.Infrastructure.Repositories;
 
 public class ExerciseRepository : GenericRepository<Exercise>, IExerciseRepository
 {
-    public ExerciseRepository(DbContext context) : base(context) { }
+    public ExerciseRepository(Galsa_DBDbContext context) : base(context) { }
 
     public async Task<IEnumerable<Exercise>> GetByPatientIdAsync(Guid patientId)
         => await _dbSet.Where(e => e.PatientId == patientId).ToListAsync();
