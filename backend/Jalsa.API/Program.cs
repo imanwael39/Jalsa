@@ -8,10 +8,14 @@ using Jalsa.API.Services.Interfaces;
 using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Jalsa.Application.Interfaces.Repositores;
+using Hangfire;
+using Hangfire.SqlServer;
 using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Application.Interfaces.Services;
+using Jalsa.Application.Jobs;
 using Jalsa.Application.Services;
 using Jalsa.Infrastructure.Repositories;
+using Jalsa.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,6 +56,25 @@ builder.Services.AddScoped<IUnitOfWork ,UnitOfWork>();
 builder.Services.AddScoped<IExerciseRepository, ExerciseRepository>();
 builder.Services.AddScoped<IExerciseLogRepository, ExerciseLogRepository>();
 builder.Services.AddScoped<IExerciseService, ExerciseService>();
+builder.Services.AddScoped<INotificationService, EmailNotificationService>();
+builder.Services.AddScoped<ExerciseReminderJob>();
+
+builder.Services.AddHangfire(config => config
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        new SqlServerStorageOptions
+        {
+            CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+            SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+            QueuePollInterval = TimeSpan.Zero,
+            UseRecommendedIsolationLevel = true
+        }));
+
+builder.Services.AddHangfireServer();
+
 var app = builder.Build();
 
 app.UseExceptionHandler(exceptionApp =>
@@ -78,5 +101,12 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+app.UseHangfireDashboard("/hangfire");
+
+RecurringJob.AddOrUpdate<ExerciseReminderJob>(
+    "exercise-reminder",
+    job => job.SendRemindersAsync(),
+    Cron.Daily(9));
 
 app.Run();
