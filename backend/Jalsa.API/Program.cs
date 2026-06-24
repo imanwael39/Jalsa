@@ -9,6 +9,8 @@ using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Jalsa.Application.Interfaces.Repositores;
 using Jalsa.Application.Interfaces.Repositories;
+using Jalsa.Application.Interfaces.Services;
+using Jalsa.Application.Services;
 using Jalsa.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -49,6 +51,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IUnitOfWork ,UnitOfWork>();
 builder.Services.AddScoped<IExerciseRepository, ExerciseRepository>();
 builder.Services.AddScoped<IExerciseLogRepository, ExerciseLogRepository>();
+builder.Services.AddScoped<IExerciseService, ExerciseService>();
 var app = builder.Build();
 
 app.UseExceptionHandler(exceptionApp =>
