@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jalsa – Testing & QA Phase Implementation Playbook</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+            padding: 30px 20px;
+            line-height: 1.7;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+            padding: 40px 45px;
+        }
+        h1 {
+            font-size: 2.4rem;
+            color: #0f172a;
+            border-bottom: 4px solid #3b82f6;
+            padding-bottom: 18px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        h1 small { font-size:1rem; font-weight:400; color:#64748b; margin-left:auto; }
+        .phase-banner {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 20px 28px;
+            margin-bottom: 32px;
+            border-left: 8px solid #3b82f6;
+        }
+        .phase-banner h2 { margin:0 0 8px 0; font-size:1.6rem; color:#0f172a; background:none; padding:0; border-left:none; }
+        .phase-banner p { margin:0; color:#475569; }
+        .phase-banner .meta { display:flex; flex-wrap:wrap; gap:20px 40px; margin-top:10px; font-size:0.95rem; }
+        .phase-banner .meta span { font-weight:500; color:#0f172a; }
+
+        .task-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            overflow: hidden;
+        }
+        .task-header {
+            background: #f8fafc;
+            padding: 16px 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.15s;
+            user-select: none;
+        }
+        .task-header:hover { background: #f1f5f9; }
+        .task-header .task-id { font-weight:700; color:#3b82f6; margin-right:12px; font-size:1.05rem; }
+        .task-header .task-name { font-weight:600; font-size:1.05rem; }
+        .task-header .task-badges { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+        .task-header .task-badges .tag { font-size:0.7rem; padding:2px 12px; border-radius:30px; font-weight:600; }
+        .task-header .chevron { transition:transform 0.25s; font-size:1.3rem; color:#94a3b8; margin-left:12px; }
+        .task-header.open .chevron { transform:rotate(180deg); }
+
+        .task-body { padding:0 24px 24px; display:none; overflow:hidden; }
+        .task-body.open { display:block; }
+
+        .task-body h3 { font-size:1.15rem; margin-top:22px; margin-bottom:8px; color:#0f172a; border-bottom:2px solid #e2e8f0; padding-bottom:4px; }
+        .task-body h4 { font-size:1rem; margin-top:16px; margin-bottom:6px; color:#334155; }
+        .task-body p { margin-bottom:8px; }
+        .task-body ul, .task-body ol { padding-left:24px; margin-bottom:10px; }
+        .task-body li { margin-bottom:3px; }
+
+        .checklist { list-style:none; padding-left:0; }
+        .checklist li { padding:3px 0 3px 30px; background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') left center no-repeat; background-size:18px; }
+
+        .pitfall-box { background:#fef2f2; border-left:4px solid #ef4444; padding:10px 16px; border-radius:8px; margin:8px 0; }
+        .tip-box { background:#f0fdf4; border-left:4px solid #22c55e; padding:10px 16px; border-radius:8px; margin:8px 0; }
+        .arch-box { background:#f0f9ff; border-left:4px solid #3b82f6; padding:10px 16px; border-radius:8px; margin:8px 0; }
+
+        .tag { display:inline-block; background:#e2e8f0; padding:1px 12px; border-radius:30px; font-size:0.7rem; font-weight:600; color:#1e293b; margin-right:4px; }
+        .tag-blue { background:#dbeafe; color:#1d4ed8; }
+        .tag-green { background:#dcfce7; color:#15803d; }
+        .tag-amber { background:#fef3c7; color:#b45309; }
+        .tag-red { background:#fee2e2; color:#b91c1c; }
+        .tag-purple { background:#ede9fe; color:#6d28d9; }
+
+        .flow-diagram {
+            background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:14px 18px; margin:8px 0 12px;
+            font-family:'Courier New', monospace; font-size:0.9rem; overflow-x:auto; white-space:nowrap;
+        }
+        .flow-diagram .arrow { color:#94a3b8; margin:0 6px; }
+        .flow-diagram .step { color:#0f172a; font-weight:500; }
+
+        .table-wrap { overflow-x:auto; margin:10px 0 16px; border-radius:10px; border:1px solid #e2e8f0; }
+        table { width:100%; border-collapse:collapse; font-size:0.9rem; background:#fff; }
+        th { background:#f1f5f9; font-weight:600; text-align:left; padding:8px 14px; border-bottom:2px solid #e2e8f0; color:#0f172a; }
+        td { padding:8px 14px; border-bottom:1px solid #f1f5f9; vertical-align:top; }
+        tr:last-child td { border-bottom:none; }
+
+        .hr { border:none; border-top:2px dashed #e2e8f0; margin:32px 0; }
+
+        @media (max-width:768px) {
+            .container { padding:20px 16px; }
+            h1 { font-size:1.8rem; flex-wrap:wrap; }
+            .task-header { flex-wrap:wrap; gap:8px; }
+            .task-header .task-badges { margin-left:0; }
+            .task-body { padding:0 16px 16px; }
+            .phase-banner { padding:16px; }
+            .phase-banner .meta { flex-direction:column; gap:6px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <h1>
+        🧪 Jalsa – Testing & QA Phase Implementation Playbook
+        <small>Phase 12 · 8 Tasks · Quality Assurance</small>
+    </h1>
+
+    <div class="phase-banner">
+        <h2>🧪 Testing & QA – Phase 12</h2>
+        <p><strong>Purpose:</strong> Establish a comprehensive testing strategy to validate the entire Jalsa system – backend, frontend, AI services, and integration points. Ensure reliability, security, and performance before deployment.</p>
+        <div class="meta">
+            <span>📋 Tasks: 8</span>
+            <span>⏱️ Total Effort: ~75 hours</span>
+            <span>👤 Owners: M5 (DevOps/QA Lead), M1 (Backend), M3 (Frontend)</span>
+            <span>🔗 Dependencies: All backend, frontend, and AI phases (0–11) must be complete</span>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK TST-001                                                          -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">TST-001</span><span class="task-name">Unit Test Setup</span></span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">3h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> TST-001</li>
+                <li><strong>Task Name:</strong> Unit Test Setup</li>
+                <li><strong>Owner:</strong> M5 (DevOps/QA Lead)</li>
+                <li><strong>Dependencies:</strong> Phase 0 (Solution structure), all backend code</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 3 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Set up the testing framework across the solution: configure xUnit (or NUnit), Moq, FluentAssertions, and ensure all test projects are created and reference the correct production projects.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Establish a foundation for automated testing to catch bugs early and ensure code quality.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Create test projects for each layer (Domain, Application, Infrastructure, API) and install required NuGet packages. Configure test runners and code coverage tools.</p>
+
+            <h3>Prerequisites</h3>
+            <h4>Backend</h4>
+            <ul>
+                <li><strong>.NET testing frameworks:</strong> xUnit, Moq, FluentAssertions.</li>
+                <li><strong>Test runners:</strong> dotnet test, Visual Studio Test Explorer.</li>
+            </ul>
+            <h4>Frontend</h4>
+            <ul>
+                <li>None – but later will need Jasmine/Karma.</li>
+            </ul>
+            <h4>Database</h4>
+            <ul>
+                <li>In‑memory database for integration tests (EF Core InMemory).</li>
+            </ul>
+            <h4>AI</h4>
+            <ul>
+                <li>Mocking OpenAI clients for unit tests.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Solution structure from Phase 0.</li>
+                <li>List of existing projects.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Test projects: <code>Jalsa.Domain.Tests</code>, <code>Jalsa.Application.Tests</code>, <code>Jalsa.Infrastructure.Tests</code>, <code>Jalsa.API.Tests</code>.</li>
+                <li>All test projects reference appropriate production projects.</li>
+                <li>NuGet packages: xUnit, Moq, FluentAssertions, Microsoft.EntityFrameworkCore.InMemory.</li>
+                <li>Sample test class to verify setup.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create test projects</strong> – for each production project, create a corresponding test project (e.g., <code>dotnet new xunit -n Jalsa.Domain.Tests</code>).
+                </li>
+                <li>
+                    <strong>Add project references</strong> – each test project references the production project it tests (e.g., Jalsa.Domain.Tests references Jalsa.Domain).
+                </li>
+                <li>
+                    <strong>Install NuGet packages</strong> – add Moq, FluentAssertions, and InMemory EF Core to appropriate test projects.
+                </li>
+                <li>
+                    <strong>Create a base test class</strong> (optional) with common setup.
+                </li>
+                <li>
+                    <strong>Add a sample test</strong> – e.g., a simple entity test to ensure configuration works.
+                </li>
+                <li>
+                    <strong>Run <code>dotnet test</code></strong> to verify all test projects build and pass.
+                </li>
+                <li>
+                    <strong>Commit</strong> test projects to source control.
+                </li>
+            </ol>
+
+            <h3>Detailed Database Workflow</h3>
+            <p>No database changes – configuration for in‑memory will be in integration tests.</p>
+
+            <h3>Data Flow Diagram</h3>
+            <div class="flow-diagram">
+                <span class="step">dotnet test</span> <span class="arrow">→</span>
+                <span class="step">Test Runner</span> <span class="arrow">→</span>
+                <span class="step">Test Projects</span> <span class="arrow">→</span>
+                <span class="step">Production Code</span> <span class="arrow">→</span>
+                <span class="step">Results</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Four test projects.</li>
+                <li>Sample passing test.</li>
+                <li>Documentation on how to write and run tests.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ All test projects build.</li>
+                <li>☐ <code>dotnet test</code> runs successfully.</li>
+                <li>☐ Sample test passes.</li>
+                <li>☐ References are correct.</li>
+            </ul>
+
+            <h3>Testing Strategy</h3>
+            <p>This task is about setting up infrastructure; no functional tests yet.</p>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Not referencing the correct projects – ensure each test project has a project reference to the correct production project.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Test projects created, build, and pass a sample test.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <p><strong>Must Know:</strong> xUnit basics, Moq, FluentAssertions.</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK TST-002                                                          -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">TST-002</span><span class="task-name">Backend Unit Tests</span></span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-red">High</span>
+                <span class="tag">16h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> TST-002</li>
+                <li><strong>Task Name:</strong> Backend Unit Tests</li>
+                <li><strong>Owner:</strong> M1 (Backend Lead) + M2 (Backend)</li>
+                <li><strong>Dependencies:</strong> TST-001, all backend tasks (DB-*, BE-*)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                <li><strong>Estimated Effort:</strong> 16 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Write unit tests for all backend services, controllers, repositories, and validators. Aim for high code coverage (>=80%).</p>
+
+            <h3>Business Purpose</h3>
+            <p>Ensure that core business logic (authentication, patient management, sessions, exercises, reports, AI services) behaves correctly in isolation.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Test each unit of code independently, using mocks for dependencies (repositories, external APIs). Validate error handling, edge cases, and business rules.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Test setup from TST-001.</li>
+                <li>Moq for mocking dependencies.</li>
+                <li>FluentAssertions for readable assertions.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>All backend source code: entities, DTOs, services, controllers, repositories, validators.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Unit test classes for each service, controller, and validator.</li>
+                <li>Test coverage report showing >=80% coverage.</li>
+                <li>All tests passing.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Prioritise critical modules</strong> – Auth, Patient, Session, Exercise, Reports, AI (with mocks).
+                </li>
+                <li>
+                    <strong>For each service</strong>:
+                    <ul>
+                        <li>Create a test class (e.g., <code>AuthServiceTests</code>).</li>
+                        <li>Mock all injected dependencies (repositories, unit of work, hasher, token generator).</li>
+                        <li>Write tests for each public method: success, failure (e.g., user not found, duplicate email, invalid credentials).</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>For each controller</strong>:
+                    <ul>
+                        <li>Mock the service layer.</li>
+                        <li>Test each endpoint: correct status codes, DTO mapping, error responses.</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>For validators</strong>: test validation rules with valid and invalid data.</li>
+                <li>
+                    <strong>For repositories</strong> (optional): test custom query methods with in‑memory database.</li>
+                <li>
+                    <strong>Run tests</strong> and ensure all pass. Use code coverage tools (Coverlet) to measure coverage.</li>
+                <li>
+                    <strong>Fix any failing tests</strong> and improve coverage as needed.</li>
+            </ol>
+
+            <h3>Data Flow Diagram</h3>
+            <div class="flow-diagram">
+                <span class="step">Test Class</span> <span class="arrow">→</span>
+                <span class="step">Mocks</span> <span class="arrow">→</span>
+                <span class="step">Service Under Test</span> <span class="arrow">→</span>
+                <span class="step">Assertions</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Unit test classes for all backend modules.</li>
+                <li>Coverage report (HTML or XML).</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ All test classes exist.</li>
+                <li>☐ Each public method has at least one success and one failure test.</li>
+                <li>☐ Coverage >=80%.</li>
+                <li>☐ All tests pass.</li>
+            </ul>
+
+            <h3>Testing Strategy</h3>
+            <p><em>Unit Tests:</em> Complete as described.</p>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Over‑mocking – only mock external dependencies; use real implementations for simple value objects.
+            </div>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Not testing edge cases – e.g., null inputs, empty collections, invalid enums.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>All backend unit tests pass with >=80% coverage.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <p><strong>Must Know:</strong> Moq, FluentAssertions, xUnit theory/inline data.</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK TST-003                                                          -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">TST-003</span><span class="task-name">Integration Tests – API</span></span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-red">High</span>
+                <span class="tag">12h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> TST-003</li>
+                <li><strong>Task Name:</strong> Integration Tests – API</li>
+                <li><strong>Owner:</strong> M5 (DevOps/QA) with M1</li>
+                <li><strong>Dependencies:</strong> TST-001, all backend APIs</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                <li><strong>Estimated Effort:</strong> 12 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Write integration tests for the entire API layer using <code>TestServer</code> (ASP.NET Core) and an in‑memory database to test end‑to‑end scenarios including database interactions, authentication, and validation.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Ensure that the API endpoints work correctly when integrated with the database and external dependencies (mocked). Validate the full request/response cycle.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Test the complete stack: controller → service → repository → database (in‑memory) → response. Validate HTTP status codes, error messages, and DTO mappings.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>EF Core InMemory provider.</li>
+                <li>TestServer from <code>Microsoft.AspNetCore.TestHost</code>.</li>
+                <li>Startup class configured for testing.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>All API controllers.</li>
+                <li>Application DB context.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Integration test classes for key API flows: auth, patient CRUD, sessions, exercises, reports, chat, crisis alerts.</li>
+                <li>Tests pass.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Set up a test fixture</strong> – create a custom <code>WebApplicationFactory</code> that uses InMemory database and replaces external services with mocks or test doubles.
+                </li>
+                <li>
+                    <strong>Write test methods</strong> for each critical endpoint:
+                    <ul>
+                        <li>POST /api/auth/login – valid and invalid credentials.</li>
+                        <li>GET /api/patients – with authentication.</li>
+                        <li>POST /api/patients – create patient.</li>
+                        <li>PUT /api/patients/{id} – update.</li>
+                        <li>DELETE /api/patients/{id} – archive.</li>
+                        <li>Session endpoints, exercise endpoints, report generation, chat send, etc.</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Use <code>HttpClient</code></strong> from the test server to send requests and assert responses.
+                </li>
+                <li>
+                    <strong>Seed test data</strong> in the in‑memory database for consistent tests.</li>
+                <li>
+                    <strong>Run tests</strong> and ensure they pass.</li>
+            </ol>
+
+            <h3>Data Flow Diagram</h3>
+            <div class="flow-diagram">
+                <span class="step">Test</span> <span class="arrow">→</span>
+                <span class="step">HttpClient</span> <span class="arrow">→</span>
+                <span class="step">TestServer</span> <span class="arrow">→</span>
+                <span class="step">Middleware</span> <span class="arrow">→</span>
+                <span class="step">Controller</span> <span class="arrow">→</span>
+                <span class="step">Service/Repository</span> <span class="arrow">→</span>
+                <span class="step">InMemory DB</span> <span class="arrow">→</span>
+                <span class="step">Response</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Integration test classes for all major API flows.</li>
+                <li>Test data seeds.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ All critical endpoints have integration tests.</li>
+                <li>☐ Tests pass in CI pipeline.</li>
+                <li>☐ Tests cover success and failure cases.</li>
+                <li>☐ Database state is reset between tests.</li>
+            </ul>
+
+            <h3>Testing Strategy</h3>
+            <p><em>Integration Tests:</em> Use TestServer and InMemory DB.</p>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> InMemory provider may not support all SQL features – use SQLite InMemory for better compatibility if needed.
+            </div>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Not resetting database between tests – ensure each test is isolated.</li>
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Integration tests pass and provide coverage for key flows.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <p><strong>Must Know:</strong> ASP.NET Core TestServer, EF Core InMemory, xUnit fixtures.</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK TST-004                                                          -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">TST-004</span><span class="task-name">Frontend Unit Tests</span></span>
+            <span class="task-badges">
+                <span class="tag tag-green">P2</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">12h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> TST-004</li>
+                <li><strong>Task Name:</strong> Frontend Unit Tests</li>
+                <li><strong>Owner:</strong> M3 (Frontend Lead) + M4 (Frontend)</li>
+                <li><strong>Dependencies:</strong> All frontend code (FE-*)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 12 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Write unit tests for Angular components, services, guards, and pipes using Jasmine and Karma.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Ensure the frontend logic (routing, state management, form validation, service calls) works correctly and is maintainable.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Test Angular components in isolation, mock dependencies, and verify UI state changes.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Jasmine, Karma configured (Angular default).</li>
+                <li>Angular TestBed for component testing.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>All Angular components, services, guards, pipes.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Unit test files (<code>.spec.ts</code>) for each component/service/guard.</li>
+                <li>Tests pass.</li>
+                <li>Coverage report.</li>
+            </ul>
+
+            <h3>Detailed Frontend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>For each component</strong>:
+                    <ul>
+                        <li>Create a test suite using <code>TestBed</code>.</li>
+                        <li>Mock services (using <code>jasmine.createSpyObj</code>).</li>
+                        <li>Test component creation, DOM rendering, event handling, and output emissions.</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>For services</strong>: test HTTP calls with <code>HttpClientTestingModule</code>.</li>
+                <li>
+                    <strong>For guards</strong>: test canActivate logic with mock AuthService.</li>
+                <li>
+                    <strong>For pipes</strong>: test transformation logic.</li>
+                <li>
+                    <strong>Run <code>ng test</code></strong> and ensure all tests pass.</li>
+                <li>
+                    <strong>Check coverage</strong> with <code>ng test --code-coverage</code> and aim for >=70%.</li>
+            </ol>
+
+            <h3>Data Flow Diagram</h3>
+            <div class="flow-diagram">
+                <span class="step">Test</span> <span class="arrow">→</span>
+                <span class="step">TestBed</span> <span class="arrow">→</span>
+                <span class="step">Component</span> <span class="arrow">→</span>
+                <span class="step">Mocks</span> <span class="arrow">→</span>
+                <span class="step">Assertions</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Unit test files for frontend.</li>
+                <li>Passing tests.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ All components have basic test coverage.</li>
+                <li>☐ Services have tests for HTTP methods.</li>
+                <li>☐ Guards tested.</li>
+                <li>☐ Tests pass.</li>
+            </ul>
+
+            <h3>Testing Strategy</h3>
+            <p><em>Unit Tests:</em> Angular Jasmine/Karma.</p>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Not mocking HTTP requests – use <code>HttpClientTestingController</code>.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Frontend unit tests pass.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <p><strong>Must Know:</strong> Angular TestBed, Jasmine spies, HttpClientTestingModule.</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK TST-005                                                          -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">TST-005</span><span class="task-name">E2E Tests (Cypress)</span></span>
+            <span class="task-badges">
+                <span class="tag tag-green">P2</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">16h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> TST-005</li>
+                <li><strong>Task Name:</strong> E2E Tests (Cypress)</li>
+                <li><strong>Owner:</strong> M5 (DevOps/QA) with M3</li>
+                <li><strong>Dependencies:</strong> All frontend and backend (deployed in test environment)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 16 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Write end‑to‑end tests using Cypress to cover critical user journeys – login, patient management, session recording, exercise tracking, report generation, chat, and crisis alerts.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Ensure that the system works as a whole from the user's perspective, verifying UI interactions, API calls, and database updates.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Test the full stack in a production‑like environment with a real database (or test database). Validate that frontend and backend integrate correctly.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Cypress installed.</li>
+                <li>A test environment with the application running (e.g., localhost with Docker Compose).</li>
+                <li>Seed data for consistent tests.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Frontend application, backend API.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Cypress test files (<code>.cy.ts</code>) for key flows.</li>
+                <li>Tests pass in CI.</li>
+            </ul>
+
+            <h3>Detailed Frontend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Set up Cypress</strong> – <code>ng add @cypress/schematic</code> or manual install.
+                </li>
+                <li>
+                    <strong>Create test specs</strong>:
+                    <ul>
+                        <li>Login (therapist and patient).</li>
+                        <li>Patient CRUD (create, edit, archive).</li>
+                        <li>Create session note with voice memo (if possible).</li>
+                        <li>Exercise assignment and patient status update.</li>
+                        <li>Generate and approve referral report.</li>
+                        <li>Chat – start session, send message, AI response.</li>
+                        <li>Crisis alert – manual trigger.</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Use custom commands</strong> for login and seeding.
+                </li>
+                <li>
+                    <strong>Run Cypress</strong> in headless mode for CI.</li>
+                <li>
+                    <strong>Ensure tests are deterministic</strong> – clean database state.</li>
+            </ol>
+
+            <h3>Data Flow Diagram</h3>
+            <div class="flow-diagram">
+                <span class="step">Cypress</span> <span class="arrow">→</span>
+                <span class="step">Browser</span> <span class="arrow">→</span>
+                <span class="step">Frontend</span> <span class="arrow">→</span>
+                <span class="step">API</span> <span class="arrow">→</span>
+                <span class="step">Backend</span> <span class="arrow">→</span>
+                <span class="step">Database</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Cypress test files.</li>
+                <li>Test reports.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ All critical flows have E2E tests.</li>
+                <li>☐ Tests pass in CI.</li>
+                <li>☐ Tests cover login, patient, session, exercise, report, chat.</li>
+            </ul>
+
+            <h3>Testing Strategy</h3>
+            <p><em>E2E Tests:</em> Cypress.</p>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Flaky tests due to timing – use <code>cy.intercept</code> to wait for API calls.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>E2E tests pass.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <p><strong>Must Know:</strong> Cypress API, custom commands, fixtures.</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK TST-006                                                          -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">TST-006</span><span class="task-name">Performance / Load Testing</span></span>
+            <span class="task-badges">
+                <span class="tag tag-green">P2</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">8h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> TST-006</li>
+                <li><strong>Task Name:</strong> Performance / Load Testing</li>
+                <li><strong>Owner:</strong> M5 (DevOps/QA)</li>
+                <li><strong>Dependencies:</strong> All backend APIs, database</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 8 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Perform load testing on critical API endpoints (e.g., patient search, session retrieval, report generation) using tools like k6 or JMeter to ensure they can handle expected concurrency.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Validate that the system meets performance requirements (response time, throughput) under load, ensuring a smooth user experience.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Identify bottlenecks in the API, database, or AI services. Establish baseline performance metrics.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Load testing tool (k6 recommended).</li>
+                <li>A staging environment with representative data size.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>API endpoints to test: GET /api/patients (search), GET /api/sessions, POST /api/reports/generate, POST /api/chat/send.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Load test scripts.</li>
+                <li>Performance reports (response times, error rates, throughput).</li>
+                <li>Identified bottlenecks and recommendations.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Install k6</strong> or JMeter.
+                </li>
+                <li>
+                    <strong>Write test scripts</strong> for each critical endpoint:
+                    <ul>
+                        <li>Simulate concurrent users (e.g., 50, 100, 200).</li>
+                        <li>Include authentication (obtain token).</li>
+                        <li>Measure response time (p95, p99).</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Run tests</strong> against staging environment.</li>
+                <li>
+                    <strong>Analyze results</strong> – if response times exceed acceptable thresholds (e.g., <500ms for non‑AI, <3s for AI), investigate and optimize.</li>
+                <li>
+                    <strong>Document findings</strong> and propose improvements (indexes, caching, query optimizations).</li>
+            </ol>
+
+            <h3>Data Flow Diagram</h3>
+            <div class="flow-diagram">
+                <span class="step">k6</span> <span class="arrow">→</span>
+                <span class="step">API</span> <span class="arrow">→</span>
+                <span class="step">Database</span> <span class="arrow">→</span>
+                <span class="step">Response</span> <span class="arrow">→</span>
+                <span class="step">Metrics</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Load test scripts.</li>
+                <li>Performance report.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ Tests execute successfully.</li>
+                <li>☐ Response times are within acceptable limits.</li>
+                <li>☐ Bottlenecks identified.</li>
+            </ul>
+
+            <h3>Testing Strategy</h3>
+            <p><em>Load Tests:</em> k6.</p>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Running tests on a local environment with limited resources – use a representative environment.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Performance report delivered.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <p><strong>Must Know:</strong> k6 scripting, load test concepts.</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK TST-007                                                          -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">TST-007</span><span class="task-name">Security Testing</span></span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">6h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> TST-007</li>
+                <li><strong>Task Name:</strong> Security Testing</li>
+                <li><strong>Owner:</strong> M5 (DevOps/QA) with M1</li>
+                <li><strong>Dependencies:</strong> All backend APIs</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 6 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Perform security testing using OWASP ZAP to scan for common vulnerabilities (SQL injection, XSS, CSRF, insecure headers, JWT vulnerabilities).</p>
+
+            <h3>Business Purpose</h3>
+            <p>Ensure the application is secure and protects patient data (PHI) in compliance with healthcare regulations.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Identify security misconfigurations, weak authentication, and data exposure risks.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>OWASP ZAP (or similar tool).</li>
+                <li>Application running in a test environment.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Base URL of the API.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Security scan report.</li>
+                <li>List of vulnerabilities and remediation steps.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Set up ZAP</strong> – run as a daemon or use the desktop UI.
+                </li>
+                <li>
+                    <strong>Perform automated scan</strong> – spider the API endpoints (with authentication token).</li>
+                <li>
+                    <strong>Analyze results</strong> – review alerts (High, Medium, Low).</li>
+                <li>
+                    <strong>Fix critical issues</strong> – e.g., missing security headers, weak encryption, exposed error details.</li>
+                <li>
+                    <strong>Re‑scan</strong> to verify fixes.</li>
+                <li>
+                    <strong>Document</strong> remaining accepted risks.</li>
+            </ol>
+
+            <h3>Data Flow Diagram</h3>
+            <div class="flow-diagram">
+                <span class="step">ZAP</span> <span class="arrow">→</span>
+                <span class="step">API</span> <span class="arrow">→</span>
+                <span class="step">Vulnerability Report</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Security scan report.</li>
+                <li>Remediation actions taken.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ Scan completed without critical alerts.</li>
+                <li>☐ All high/medium issues addressed.</li>
+                <li>☐ JWT token handling is secure (HTTP Only, secure flag).</li>
+            </ul>
+
+            <h3>Testing Strategy</h3>
+            <p><em>Security Tests:</em> OWASP ZAP.</p>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Not including authentication token in ZAP – ensure session is properly configured.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Security scan passes with no critical vulnerabilities.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <p><strong>Must Know:</strong> OWASP Top 10, ZAP usage.</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK TST-008                                                          -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">TST-008</span><span class="task-name">User Acceptance Testing</span></span>
+            <span class="task-badges">
+                <span class="tag tag-blue">P0</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">8h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> TST-008</li>
+                <li><strong>Task Name:</strong> User Acceptance Testing</li>
+                <li><strong>Owner:</strong> M5 (DevOps/QA) – facilitated by Product Owner</li>
+                <li><strong>Dependencies:</strong> All previous phases complete, system deployed to UAT environment</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 8 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Conduct User Acceptance Testing (UAT) with stakeholders (therapists, patients) to validate that the system meets business requirements and is ready for production.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Ensure the software is fit for purpose and gains stakeholder approval before going live.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Provide a formal sign‑off process, demonstrating that all features work as expected in a production‑like environment.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>UAT environment deployed.</li>
+                <li>Test data seeded.</li>
+                <li>UAT test cases prepared (based on acceptance criteria).</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>UAT test cases.</li>
+                <li>Stakeholders (therapists, patients).</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>UAT sign‑off document.</li>
+                <li>List of any issues found and resolved.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Prepare UAT environment</strong> – deploy latest build, run migrations, seed data.
+                </li>
+                <li>
+                    <strong>Prepare UAT test scripts</strong> – cover all user journeys (therapist and patient).</li>
+                <li>
+                    <strong>Run UAT sessions</strong> – stakeholders follow test scripts and document issues.</li>
+                <li>
+                    <strong>Fix any critical issues</strong> found.</li>
+                <li>
+                    <strong>Obtain sign‑off</strong> from stakeholders.</li>
+            </ol>
+
+            <h3>Data Flow Diagram</h3>
+            <div class="flow-diagram">
+                <span class="step">Stakeholder</span> <span class="arrow">→</span>
+                <span class="step">UAT System</span> <span class="arrow">→</span>
+                <span class="step">Feedback</span> <span class="arrow">→</span>
+                <span class="step">Fixes</span> <span class="arrow">→</span>
+                <span class="step">Sign‑off</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>UAT test execution report.</li>
+                <li>Sign‑off document.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ All UAT test cases executed.</li>
+                <li>☐ All blockers resolved.</li>
+                <li>☐ Sign‑off obtained.</li>
+            </ul>
+
+            <h3>Testing Strategy</h3>
+            <p><em>Acceptance Tests:</em> Manual testing by stakeholders.</p>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Not having clear test cases – ensure they are detailed and traceable to requirements.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>UAT signed off.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <p><strong>Must Know:</strong> UAT process, test case management.</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- FINAL SECTIONS                                                        -->
+    <!-- ===================================================================== -->
+    <hr class="hr" />
+
+    <h2 style="background: #f0fdf4; border-left-color: #22c55e;">✅ Phase Completion Criteria</h2>
+    <ul class="checklist">
+        <li>All 8 tasks (TST-001..008) are completed and committed.</li>
+        <li>Unit test setup is done and all unit tests (backend + frontend) pass.</li>
+        <li>Integration tests for API pass.</li>
+        <li>E2E tests pass.</li>
+        <li>Performance/load tests completed and results meet acceptable thresholds.</li>
+        <li>Security scan passes with no critical vulnerabilities.</li>
+        <li>UAT signed off.</li>
+        <li>All identified bugs are fixed and regression tested.</li>
+        <li>Test reports generated and shared with stakeholders.</li>
+    </ul>
+
+    <h2 style="background: #f0f9ff; border-left-color: #3b82f6;">📋 Code Review Checklist</h2>
+    <ul class="checklist">
+        <li>Test coverage meets targets.</li>
+        <li>Tests are deterministic and isolated.</li>
+        <li>Mocking is used appropriately.</li>
+        <li>Integration tests use in‑memory database.</li>
+        <li>E2E tests cover critical user journeys.</li>
+        <li>Security headers are configured.</li>
+    </ul>
+
+    <h2 style="background: #fefce8; border-left-color: #f59e0b;">🚀 Pull Request Checklist</h2>
+    <ul class="checklist">
+        <li>Branch up‑to‑date with <code>develop</code>.</li>
+        <li>CI pipeline passes (includes all tests).</li>
+        <li>Code review approved.</li>
+        <li>All test suites pass.</li>
+        <li>Manual testing performed for new features.</li>
+    </ul>
+
+    <h2 style="background: #fef2f2; border-left-color: #ef4444;">🧪 Deployment Readiness Checklist</h2>
+    <ul class="checklist">
+        <li>All tests pass in CI.</li>
+        <li>Security scan passed.</li>
+        <li>Performance tests passed.</li>
+        <li>UAT signed off.</li>
+        <li>All critical bugs fixed.</li>
+        <li>Deployment documentation updated.</li>
+    </ul>
+
+    <hr class="hr" />
+    <div style="text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 20px 0 0;">
+        Jalsa – Testing & QA Implementation Playbook &bull; v1.0 &bull; For development team
+    </div>
+</div>
+
+<script>
+    function toggleTask(header) {
+        const body = header.nextElementSibling;
+        const isOpen = body.classList.contains('open');
+        body.classList.toggle('open');
+        header.classList.toggle('open');
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        const firstHeader = document.querySelector('.task-header');
+        if (firstHeader) firstHeader.click();
+    });
+</script>
+</body>
+</html>

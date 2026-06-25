@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jalsa – Patient Management Phase Implementation Playbook</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+            padding: 30px 20px;
+            line-height: 1.7;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            padding: 40px 45px;
+        }
+        h1 {
+            font-size: 2.4rem;
+            color: #0f172a;
+            border-bottom: 4px solid #3b82f6;
+            padding-bottom: 18px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        h1 small {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #64748b;
+            margin-left: auto;
+        }
+        .phase-banner {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 20px 28px;
+            margin-bottom: 32px;
+            border-left: 8px solid #3b82f6;
+        }
+        .phase-banner h2 {
+            margin: 0 0 8px 0;
+            font-size: 1.6rem;
+            color: #0f172a;
+            background: none;
+            padding: 0;
+            border-left: none;
+        }
+        .phase-banner p {
+            margin: 0;
+            color: #475569;
+        }
+        .phase-banner .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px 40px;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+        .phase-banner .meta span { font-weight: 500; color: #0f172a; }
+
+        .task-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            overflow: hidden;
+        }
+        .task-header {
+            background: #f8fafc;
+            padding: 16px 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.15s;
+            user-select: none;
+        }
+        .task-header:hover {
+            background: #f1f5f9;
+        }
+        .task-header .task-id {
+            font-weight: 700;
+            color: #3b82f6;
+            margin-right: 12px;
+            font-size: 1.05rem;
+        }
+        .task-header .task-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .task-header .task-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .task-header .task-badges .tag {
+            font-size: 0.7rem;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+        .task-header .chevron {
+            transition: transform 0.25s;
+            font-size: 1.3rem;
+            color: #94a3b8;
+            margin-left: 12px;
+        }
+        .task-header.open .chevron {
+            transform: rotate(180deg);
+        }
+
+        .task-body {
+            padding: 0 24px 24px;
+            display: none;
+            overflow: hidden;
+        }
+        .task-body.open {
+            display: block;
+        }
+
+        .task-body h3 {
+            font-size: 1.15rem;
+            margin-top: 22px;
+            margin-bottom: 8px;
+            color: #0f172a;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 4px;
+        }
+        .task-body h4 {
+            font-size: 1rem;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            color: #334155;
+        }
+        .task-body p {
+            margin-bottom: 8px;
+        }
+        .task-body ul, .task-body ol {
+            padding-left: 24px;
+            margin-bottom: 10px;
+        }
+        .task-body li {
+            margin-bottom: 3px;
+        }
+        .task-body .field-label {
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+        .checklist li {
+            padding: 3px 0 3px 30px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') left center no-repeat;
+            background-size: 18px;
+        }
+
+        .pitfall-box {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .tip-box {
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .arch-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #e2e8f0;
+            padding: 1px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-right: 4px;
+        }
+        .tag-blue { background: #dbeafe; color: #1d4ed8; }
+        .tag-green { background: #dcfce7; color: #15803d; }
+        .tag-amber { background: #fef3c7; color: #b45309; }
+        .tag-red { background: #fee2e2; color: #b91c1c; }
+        .tag-purple { background: #ede9fe; color: #6d28d9; }
+        .tag-slate { background: #e2e8f0; color: #475569; }
+
+        .flow-diagram {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin: 8px 0 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .flow-diagram .arrow { color: #94a3b8; margin: 0 6px; }
+        .flow-diagram .step { color: #0f172a; font-weight: 500; }
+
+        .table-wrap {
+            overflow-x: auto;
+            margin: 10px 0 16px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            background: #fff;
+        }
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+            text-align: left;
+            padding: 8px 14px;
+            border-bottom: 2px solid #e2e8f0;
+            color: #0f172a;
+        }
+        td {
+            padding: 8px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+        tr:last-child td { border-bottom: none; }
+
+        .hr { border: none; border-top: 2px dashed #e2e8f0; margin: 32px 0; }
+
+        @media (max-width: 768px) {
+            .container { padding: 20px 16px; }
+            h1 { font-size: 1.8rem; flex-wrap: wrap; }
+            .task-header { flex-wrap: wrap; gap: 8px; }
+            .task-header .task-badges { margin-left: 0; }
+            .task-body { padding: 0 16px 16px; }
+            .phase-banner { padding: 16px; }
+            .phase-banner .meta { flex-direction: column; gap: 6px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <h1>
+        👤 Jalsa – Patient Management Phase Implementation Playbook
+        <small>Phase 3 · 10 Tasks · Core Domain</small>
+    </h1>
+
+    <!-- ====== PHASE BANNER ====== -->
+    <div class="phase-banner">
+        <h2>👤 Phase 3 – Patient Management</h2>
+        <p><strong>Purpose:</strong> Build the patient management backend – CRUD, search, archive, digital intake forms, OCR integration for image‑based intake, and psychological assessment recording. This phase establishes the central data management for patients.</p>
+        <div class="meta">
+            <span>📋 Tasks: 10</span>
+            <span>⏱️ Total Effort: ~48 hours</span>
+            <span>👤 Owners: M2 (Backend) + M5 (AI/OCR)</span>
+            <span>🔗 Dependencies: Phase 2 (Authentication) must be complete</span>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK BE-PAT-001                                                       -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">BE-PAT-001</span>
+                <span class="task-name">Patient DTOs</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-blue">P0</span>
+                <span class="tag tag-green">Low</span>
+                <span class="tag">3h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> BE-PAT-001</li>
+                <li><strong>Task Name:</strong> Patient DTOs</li>
+                <li><strong>Owner:</strong> M2 (Backend)</li>
+                <li><strong>Dependencies:</strong> Phase 1 – Patient entity exists</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-green">Low</span></li>
+                <li><strong>Estimated Effort:</strong> 3 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Create DTOs for patient management: <code>PatientCreateDto</code>, <code>PatientUpdateDto</code>, <code>PatientViewDto</code>, <code>PatientSearchDto</code>.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Define the structure of data exchanged between frontend and backend for patient CRUD operations.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Ensure type‑safe communication and data validation. Separate domain entities from API contracts.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li><strong>DTO pattern:</strong> Understand role of DTOs in Clean Architecture.</li>
+                <li><strong>Data annotations:</strong> For validation.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>PatientProfile entity from Phase 1.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>PatientCreateDto</code> – fields: FirstName, LastName, Email, DateOfBirth, Gender, EmergencyContact, Notes.</li>
+                <li><code>PatientUpdateDto</code> – similar to Create but with Id.</li>
+                <li><code>PatientViewDto</code> – includes Id, full name, age, etc.</li>
+                <li><code>PatientSearchDto</code> – search criteria (name, email, date range).</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>Create <code>PatientCreateDto</code> with required properties and validation attributes (e.g., <code>[Required]</code>, <code>[EmailAddress]</code>).</li>
+                <li>Create <code>PatientUpdateDto</code> – include an Id field.</li>
+                <li>Create <code>PatientViewDto</code> – include computed fields like Age.</li>
+                <li>Create <code>PatientSearchDto</code> – with optional filters.</li>
+                <li>Place all in <code>Jalsa.Application/DTOs/Patient/</code>.</li>
+            </ol>
+
+            <h3>API Design</h3>
+            <p>These DTOs will be used in the Patient Controller (BE-PAT-004).</p>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Four DTO classes with validation.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>All required fields have <code>[Required]</code>.</li>
+                <li>Email is validated with <code>[EmailAddress]</code>.</li>
+                <li>Dates are <code>DateTime</code> (or <code>DateOnly</code>).</li>
+            </ul>
+
+            <h3>Testing Strategy</h3>
+            <p><em>Unit Tests:</em> Test validation attributes using <code>Validator.TryValidateObject</code>.</p>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>DTOs created and validated.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <ul>
+                <li>DataAnnotations in .NET.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK BE-PAT-002                                                       -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">BE-PAT-002</span>
+                <span class="task-name">Patient Repository</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-blue">P0</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">5h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> BE-PAT-002</li>
+                <li><strong>Task Name:</strong> Patient Repository</li>
+                <li><strong>Owner:</strong> M2 (Backend)</li>
+                <li><strong>Dependencies:</strong> DB-011 (Generic Repository), DB-002 (Patient entity)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 5 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Implement the patient repository with custom methods for search, paging, archive, and including related data.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Provide data access for patient CRUD, search, and archive operations with efficient querying.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Extend the generic repository with patient‑specific queries.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li><strong>Generic Repository:</strong> <code>IGenericRepository&lt;PatientProfile&gt;</code>.</li>
+                <li><strong>EF Core:</strong> <code>Include</code>, <code>Where</code>, <code>OrderBy</code>, <code>Skip</code>/<code>Take</code>.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>DbContext, Patient entity.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>IPatientRepository</code> interface.</li>
+                <li><code>PatientRepository</code> implementation.</li>
+                <li>DI registration.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create <code>IPatientRepository</code></strong> extending <code>IGenericRepository&lt;PatientProfile&gt;</code>.
+                </li>
+                <li>
+                    <strong>Add custom methods:</strong>
+                    <ul>
+                        <li><code>GetPagedAsync(int page, int pageSize, string searchTerm, bool includeArchived = false)</code></li>
+                        <li><code>SearchAsync(string searchTerm)</code></li>
+                        <li><code>ArchiveAsync(Guid patientId)</code></li>
+                        <li><code>GetWithDetailsAsync(Guid patientId)</code> – include IntakeForms, Assessments, Sessions.</li>
+                        <li><code>GetByUserIdAsync(Guid userId)</code> – to get patient profile from user.</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Implement <code>PatientRepository</code></strong>:
+                    <ul>
+                        <li>Inject <code>DbContext</code>.</li>
+                        <li>Implement methods using <code>DbSet</code>.</li>
+                        <li>Use <code>Include</code> for navigation properties.</li>
+                        <li>Use <code>Where</code> to filter by <code>IsDeleted</code> (soft‑delete).</li>
+                        <li>Use <code>OrderBy</code> and <code>Skip</code>/<code>Take</code> for paging.</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Register</strong> in DI: <code>services.AddScoped&lt;IPatientRepository, PatientRepository&gt;();</code>
+                </li>
+            </ol>
+
+            <h3>Data Flow</h3>
+            <div class="flow-diagram">
+                <span class="step">Service</span> <span class="arrow">→</span>
+                <span class="step">IPatientRepository</span> <span class="arrow">→</span>
+                <span class="step">DbContext</span> <span class="arrow">→</span>
+                <span class="step">Database</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li><code>IPatientRepository</code> interface.</li>
+                <li><code>PatientRepository</code> implementation.</li>
+                <li>Unit tests for repository.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>GetPagedAsync returns correct page with sorting.</li>
+                <li>Search returns matching patients.</li>
+                <li>Archive sets IsDeleted = true.</li>
+                <li>GetWithDetailsAsync includes all related data.</li>
+            </ul>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Forgetting to add <code>Include</code> for navigation properties – leads to N+1 queries. Use eager loading.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Repository implemented and tested.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK BE-PAT-003                                                       -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">BE-PAT-003</span>
+                <span class="task-name">Patient Service</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-blue">P0</span>
+                <span class="tag tag-amber">Medium-High</span>
+                <span class="tag">6h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> BE-PAT-003</li>
+                <li><strong>Task Name:</strong> Patient Service</li>
+                <li><strong>Owner:</strong> M2 (Backend)</li>
+                <li><strong>Dependencies:</strong> BE-PAT-001 (DTOs), BE-PAT-002 (Repository), AutoMapper</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium-High</span></li>
+                <li><strong>Estimated Effort:</strong> 6 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Implement the patient service layer with CRUD operations, search, archive, and mapping between DTOs and entities.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Encapsulate business logic for patient management – create, read, update, delete (archive), search.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Coordinate repository operations, handle validation, and map DTOs using AutoMapper.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li><strong>AutoMapper:</strong> For mapping between DTO and entity.</li>
+                <li><strong>FluentValidation</strong> (or manual validation).</li>
+                <li><strong>UnitOfWork</strong> for transaction management.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>IPatientRepository, IMapper, IUnitOfWork.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>IPatientService</code> interface.</li>
+                <li><code>PatientService</code> implementation.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create <code>IPatientService</code></strong> with methods:
+                    <ul>
+                        <li><code>Task&lt;PatientViewDto&gt; GetByIdAsync(Guid id)</code></li>
+                        <li><code>Task&lt;PagedResult&lt;PatientViewDto&gt;&gt; GetPagedAsync(int page, int pageSize, string searchTerm)</code></li>
+                        <li><code>Task&lt;PatientViewDto&gt; CreateAsync(PatientCreateDto dto)</code></li>
+                        <li><code>Task&lt;PatientViewDto&gt; UpdateAsync(PatientUpdateDto dto)</code></li>
+                        <li><code>Task ArchiveAsync(Guid id)</code></li>
+                        <li><code>Task RestoreAsync(Guid id)</code></li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Implement <code>PatientService</code></strong>:
+                    <ul>
+                        <li>Inject <code>IPatientRepository</code>, <code>IMapper</code>, <code>IUnitOfWork</code>.</li>
+                        <li>Create method: map DTO to entity, set audit fields (CreatedAt), add, save.</li>
+                        <li>Update: get entity, map changes, set UpdatedAt, save.</li>
+                        <li>Archive: set IsDeleted = true, save.</li>
+                        <li>Get methods: use repository, map to ViewDto.</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Configure AutoMapper profiles</strong> – map <code>PatientCreateDto</code> → <code>PatientProfile</code>, <code>PatientProfile</code> → <code>PatientViewDto</code>.
+                </li>
+                <li>
+                    <strong>Register</strong> in DI: <code>services.AddScoped&lt;IPatientService, PatientService&gt;();</code>
+                </li>
+            </ol>
+
+            <h3>Data Flow</h3>
+            <div class="flow-diagram">
+                <span class="step">Controller</span> <span class="arrow">→</span>
+                <span class="step">IPatientService</span> <span class="arrow">→</span>
+                <span class="step">Repository</span> <span class="arrow">→</span>
+                <span class="step">Database</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li><code>IPatientService</code> interface.</li>
+                <li><code>PatientService</code> implementation.</li>
+                <li>AutoMapper profiles.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>Create succeeds and returns ViewDto.</li>
+                <li>Update modifies entity correctly.</li>
+                <li>Archive sets IsDeleted.</li>
+                <li>Search returns filtered results.</li>
+                <li>Validation errors are thrown appropriately.</li>
+            </ul>
+
+            <h3>Testing Strategy</h3>
+            <p><em>Unit Tests:</em> Mock repository and test each service method.</p>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Service implemented and unit tested.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK BE-PAT-004                                                       -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">BE-PAT-004</span>
+                <span class="task-name">Patient Controller</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-blue">P0</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">4h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> BE-PAT-004</li>
+                <li><strong>Task Name:</strong> Patient Controller</li>
+                <li><strong>Owner:</strong> M2 (Backend)</li>
+                <li><strong>Dependencies:</strong> BE-PAT-003 (PatientService)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 4 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Create the API endpoints for patient management: CRUD, search, archive, restore.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Expose patient management functionality to the frontend.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Map HTTP requests to service methods, handle validation, and return appropriate responses.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>ASP.NET Core controllers.</li>
+                <li>Authorization (role‑based).</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>IPatientService.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>PatientController</code> with endpoints.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create <code>PatientController</code></strong> with route <code>[Route("api/patients")]</code>.
+                </li>
+                <li>
+                    <strong>Inject <code>IPatientService</code></strong>.
+                </li>
+                <li>
+                    <strong>Implement endpoints:</strong>
+                    <ul>
+                        <li><code>GET /{id}</code> – get patient by ID.</li>
+                        <li><code>GET</code> – search with pagination (query params: page, pageSize, searchTerm).</li>
+                        <li><code>POST</code> – create patient.</li>
+                        <li><code>PUT /{id}</code> – update patient.</li>
+                        <li><code>DELETE /{id}</code> – archive (soft delete).</li>
+                        <li><code>POST /{id}/restore</code> – restore archived.</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Apply authorization</strong> – <code>[Authorize(Roles = "Therapist")]</code>.
+                </li>
+                <li>
+                    <strong>Handle exceptions</strong> – use global middleware.
+                </li>
+            </ol>
+
+            <h3>API Design</h3>
+            <table>
+                <thead><tr><th>Route</th><th>Method</th><th>Request</th><th>Response</th><th>Auth</th></tr></thead>
+                <tbody>
+                    <tr><td>/api/patients/{id}</td><td>GET</td><td>None</td><td>PatientViewDto</td><td>Therapist</td></tr>
+                    <tr><td>/api/patients</td><td>GET</td><td>Query: page, pageSize, searchTerm</td><td>PagedResult&lt;PatientViewDto&gt;</td><td>Therapist</td></tr>
+                    <tr><td>/api/patients</td><td>POST</td><td>PatientCreateDto</td><td>PatientViewDto (201)</td><td>Therapist</td></tr>
+                    <tr><td>/api/patients/{id}</td><td>PUT</td><td>PatientUpdateDto</td><td>PatientViewDto</td><td>Therapist</td></tr>
+                    <tr><td>/api/patients/{id}</td><td>DELETE</td><td>None</td><td>204 No Content</td><td>Therapist</td></tr>
+                    <tr><td>/api/patients/{id}/restore</td><td>POST</td><td>None</td><td>200 OK</td><td>Therapist</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Data Flow</h3>
+            <div class="flow-diagram">
+                <span class="step">Client</span> <span class="arrow">→</span>
+                <span class="step">PatientController</span> <span class="arrow">→</span>
+                <span class="step">PatientService</span> <span class="arrow">→</span>
+                <span class="step">Repository</span> <span class="arrow">→</span>
+                <span class="step">Database</span> <span class="arrow">↕</span>
+                <span class="step">Response</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li><code>PatientController</code> with all endpoints.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>GET returns correct patient.</li>
+                <li>POST creates patient with 201.</li>
+                <li>PUT updates correctly.</li>
+                <li>DELETE archives (soft delete).</li>
+                <li>Search works with filters.</li>
+                <li>Authorization works – only therapists.</li>
+            </ul>
+
+            <h3>Testing Strategy</h3>
+            <p><em>Integration Tests:</em> Test all endpoints with test database.</p>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Controller implemented and tested.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK BE-PAT-005                                                       -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">BE-PAT-005</span>
+                <span class="task-name">Intake Form – Digital</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">4h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> BE-PAT-005</li>
+                <li><strong>Task Name:</strong> Intake Form – Digital</li>
+                <li><strong>Owner:</strong> M2 (Backend)</li>
+                <li><strong>Dependencies:</strong> BE-PAT-001 (DTOs), DB-002 (IntakeForm entity)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 4 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Implement endpoints for creating and updating digital intake forms (structured data, not image‑based).</p>
+
+            <h3>Business Purpose</h3>
+            <p>Allow therapists to enter intake information directly into the system via a form.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Create DTOs and service methods for intake form CRUD, storing form data as JSON in the <code>IntakeForm</code> entity.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Understanding of JSON serialization (System.Text.Json).</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Patient ID, form fields.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>IntakeFormDto</code> (Create/Update/View).</li>
+                <li>Service methods for intake form.</li>
+                <li>Controller endpoints.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create <code>IntakeFormCreateDto</code></strong> – includes PatientId, FormData (dictionary or structured class).</li>
+                <li>
+                    <strong>Create <code>IIntakeFormService</code></strong> with methods <code>CreateAsync</code>, <code>UpdateAsync</code>, <code>GetByPatientIdAsync</code>.</li>
+                <li>
+                    <strong>Implement service</strong> – map DTO to entity, serialize FormData as JSON, save.</li>
+                <li>
+                    <strong>Add controller endpoints</strong> – POST /api/patients/{patientId}/intake, PUT /api/intake/{id}, GET /api/patients/{patientId}/intake.</li>
+                <li>
+                    <strong>Authorization</strong> – Therapist only.</li>
+            </ol>
+
+            <h3>API Design</h3>
+            <table>
+                <thead><tr><th>Route</th><th>Method</th><th>Request</th><th>Response</th></tr></thead>
+                <tbody>
+                    <tr><td>/api/patients/{patientId}/intake</td><td>POST</td><td>IntakeFormCreateDto</td><td>IntakeFormViewDto</td></tr>
+                    <tr><td>/api/intake/{id}</td><td>PUT</td><td>IntakeFormUpdateDto</td><td>IntakeFormViewDto</td></tr>
+                    <tr><td>/api/patients/{patientId}/intake</td><td>GET</td><td>None</td><td>IntakeFormViewDto</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Intake form DTOs, service, controller.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>Form data is stored as JSON.</li>
+                <li>Retrieval deserializes correctly.</li>
+            </ul>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Digital intake form endpoints work.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK BE-PAT-006                                                       -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">BE-PAT-006</span>
+                <span class="task-name">Intake Form – Image Upload</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">4h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> BE-PAT-006</li>
+                <li><strong>Task Name:</strong> Intake Form – Image Upload</li>
+                <li><strong>Owner:</strong> M5 (DevOps / AI)</li>
+                <li><strong>Dependencies:</strong> BE-PAT-005, Blob storage service</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 4 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Allow uploading an image of a paper intake form. Store the image in blob storage and save the URL in the <code>IntakeForm</code> entity.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Facilitate digitisation of paper intake forms by uploading images.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Integrate with Azure Blob / AWS S3 to store images, and update the IntakeForm entity with the image URL.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li><strong>Blob Storage SDK:</strong> Azure.Storage.Blobs or AWS S3.</li>
+                <li><strong>File handling:</strong> <code>IFormFile</code>.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Patient ID, image file.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Image URL stored in IntakeForm.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create endpoint</strong> <code>POST /api/patients/{patientId}/intake/image</code>.</li>
+                <li>
+                    <strong>Accept <code>IFormFile</code></strong> (multipart/form-data).</li>
+                <li>
+                    <strong>Validate file</strong> – type (image/jpeg, image/png), size (max 5MB).</li>
+                <li>
+                    <strong>Upload to blob</strong> – generate unique filename (e.g., <code>intake_{patientId}_{timestamp}.jpg</code>).</li>
+                <li>
+                    <strong>Get URL</strong> and update the IntakeForm entity (create if not exists).</li>
+                <li>
+                    <strong>Return</strong> the URL in response.</li>
+            </ol>
+
+            <h3>API Design</h3>
+            <table>
+                <thead><tr><th>Route</th><th>Method</th><th>Request</th><th>Response</th></tr></thead>
+                <tbody>
+                    <tr><td>/api/patients/{patientId}/intake/image</td><td>POST</td><td>multipart/form-data with file</td><td>{ imageUrl }</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Image upload endpoint.</li>
+                <li>Blob storage integration.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>File type and size validation works.</li>
+                <li>Image is uploaded and URL is stored.</li>
+            </ul>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Image upload works.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK BE-PAT-007                                                       -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">BE-PAT-007</span>
+                <span class="task-name">Intake Form – OCR Integration</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-red">High</span>
+                <span class="tag">6h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> BE-PAT-007</li>
+                <li><strong>Task Name:</strong> Intake Form – OCR Integration</li>
+                <li><strong>Owner:</strong> M5 (DevOps / AI)</li>
+                <li><strong>Dependencies:</strong> BE-PAT-006 (image upload), BE-AI-001 (Vision OCR)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                <li><strong>Estimated Effort:</strong> 6 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Integrate Vision OCR (GPT‑4o with Vision or Azure Form Recognizer) to extract structured data from the uploaded intake form image. Populate the IntakeForm entity's <code>ExtractedData</code> field with the parsed information.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Automate data entry from paper intake forms, reducing manual effort and errors.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Call the Vision OCR API with the image URL, parse the response, and store the extracted data as JSON.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li><strong>Vision OCR service:</strong> OpenAI GPT‑4o with Vision or Azure Form Recognizer.</li>
+                <li><strong>Prompt engineering:</strong> To structure the output.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Image URL (or image bytes).</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>ExtractedData</code> JSON in IntakeForm.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create endpoint</strong> <code>POST /api/intake/{intakeFormId}/ocr</code> or trigger automatically after image upload.</li>
+                <li>
+                    <strong>Retrieve image URL</strong> from IntakeForm.</li>
+                <li>
+                    <strong>Call Vision OCR</strong> – using OpenAI Vision API with a prompt like "Extract the following fields from this intake form: name, date of birth, reason for visit, etc. Return as JSON."</li>
+                <li>
+                    <strong>Parse response</strong> – validate the JSON structure.</li>
+                <li>
+                    <strong>Update IntakeForm</strong> – set <code>ExtractedData</code> to the JSON string.</li>
+                <li>
+                    <strong>Return</strong> the extracted data.</li>
+            </ol>
+
+            <h3>Data Flow</h3>
+            <div class="flow-diagram">
+                <span class="step">Image URL</span> <span class="arrow">→</span>
+                <span class="step">Vision OCR API</span> <span class="arrow">→</span>
+                <span class="step">Extracted JSON</span> <span class="arrow">→</span>
+                <span class="step">IntakeForm.ExtractedData</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>OCR trigger endpoint.</li>
+                <li>Extraction logic.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>OCR returns structured data.</li>
+                <li>Data is stored correctly.</li>
+                <li>Fallback for failed OCR (manual entry).</li>
+            </ul>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Poor image quality – implement preprocessing or use a higher‑quality model.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>OCR integration works.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK BE-PAT-008                                                       -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">BE-PAT-008</span>
+                <span class="task-name">Psychological Assessments</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">4h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> BE-PAT-008</li>
+                <li><strong>Task Name:</strong> Psychological Assessments</li>
+                <li><strong>Owner:</strong> M2 (Backend)</li>
+                <li><strong>Dependencies:</strong> BE-PAT-003 (Patient Service), DB-002 (Assessment entity)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 4 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Implement endpoints to record and view psychological assessments (e.g., PHQ‑9, GAD‑7) for a patient.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Track patient scores over time to monitor progress.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Create service methods and endpoints for assessment CRUD.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>AssessmentType lookup table seeded.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Patient ID, AssessmentTypeId, Score, Date.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>AssessmentDto</code>.</li>
+                <li>Service and controller.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create <code>AssessmentCreateDto</code></strong> – PatientId, AssessmentTypeId, Score, DateAdministered.</li>
+                <li>
+                    <strong>Add methods to <code>IPatientService</code></strong> – <code>AddAssessmentAsync</code>, <code>GetAssessmentsByPatientAsync</code>.</li>
+                <li>
+                    <strong>Implement</strong> – map DTO to Assessment entity, save.</li>
+                <li>
+                    <strong>Add controller endpoints</strong> – POST /api/patients/{patientId}/assessments, GET /api/patients/{patientId}/assessments.</li>
+            </ol>
+
+            <h3>API Design</h3>
+            <table>
+                <thead><tr><th>Route</th><th>Method</th><th>Request</th><th>Response</th></tr></thead>
+                <tbody>
+                    <tr><td>/api/patients/{patientId}/assessments</td><td>POST</td><td>AssessmentCreateDto</td><td>AssessmentViewDto</td></tr>
+                    <tr><td>/api/patients/{patientId}/assessments</td><td>GET</td><td>None</td><td>List&lt;AssessmentViewDto&gt;</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Assessment DTOs, service methods, controller endpoints.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>Assessment is saved correctly.</li>
+                <li>History is retrieved.</li>
+            </ul>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Assessment endpoints work.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK BE-PAT-009                                                       -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">BE-PAT-009</span>
+                <span class="task-name">Patient Validation</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">3h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> BE-PAT-009</li>
+                <li><strong>Task Name:</strong> Patient Validation</li>
+                <li><strong>Owner:</strong> M2 (Backend)</li>
+                <li><strong>Dependencies:</strong> BE-PAT-001 (DTOs)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 3 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Implement FluentValidation validators for all patient DTOs to ensure data integrity.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Prevent invalid data from entering the system (e.g., empty names, invalid emails).</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Centralise validation logic using FluentValidation.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li><strong>FluentValidation:</strong> Understanding of rules, validators.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Patient DTOs.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>PatientCreateDtoValidator</code>, <code>PatientUpdateDtoValidator</code>.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Install FluentValidation</strong> and <code>FluentValidation.AspNetCore</code>.</li>
+                <li>
+                    <strong>Create validator classes</strong> in <code>Jalsa.Application/Validators/Patient/</code>.</li>
+                <li>
+                    <strong>Define rules</strong> – <code>RuleFor(x => x.FirstName).NotEmpty().MaximumLength(100);</code> etc.</li>
+                <li>
+                    <strong>Register validators</strong> in DI: <code>services.AddValidatorsFromAssemblyContaining&lt;PatientCreateDtoValidator&gt;();</code></li>
+                <li>
+                    <strong>Integrate</strong> – use <code>ValidationFilter</code> or manual validation in service.</li>
+            </ol>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Validator classes.</li>
+                <li>DI registration.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>All DTOs have validators.</li>
+                <li>Rules cover required fields, lengths, formats.</li>
+                <li>Validation errors are returned as 400.</li>
+            </ul>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Validators implemented and integrated.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK BE-PAT-010                                                       -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">BE-PAT-010</span>
+                <span class="task-name">Patient Unit Tests</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-green">P2</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">6h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> BE-PAT-010</li>
+                <li><strong>Task Name:</strong> Patient Unit Tests</li>
+                <li><strong>Owner:</strong> M2 (Backend)</li>
+                <li><strong>Dependencies:</strong> BE-PAT-003, BE-PAT-004, BE-PAT-008</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 6 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Write unit tests for PatientService, PatientController, and Assessment related services.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Ensure patient management logic works correctly and prevent regressions.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Test all service methods, controller actions, and validation.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>xUnit, Moq, FluentAssertions.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Mock dependencies (IPatientRepository, IMapper, IUnitOfWork).</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Test classes covering PatientService, PatientController, AssessmentService (if separate).</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create <code>PatientServiceTests</code></strong> – mock repository, mapper, UoW.</li>
+                <li>
+                    <strong>Test CreateAsync</strong> – success, duplicate email, etc.</li>
+                <li>
+                    <strong>Test UpdateAsync</strong> – success, patient not found.</li>
+                <li>
+                    <strong>Test ArchiveAsync</strong> – verify IsDeleted set.</li>
+                <li>
+                    <strong>Test GetPagedAsync</strong> – verify pagination.</li>
+                <li>
+                    <strong>Create <code>PatientControllerTests</code></strong> – mock service, test each endpoint returns correct status.</li>
+                <li>
+                    <strong>Test Assessment methods</strong> – add, get.</li>
+            </ol>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Test classes with passing tests.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>All test methods pass.</li>
+                <li>Code coverage is above 80%.</li>
+            </ul>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Unit tests pass.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- PHASE COMPLETION CRITERIA                                             -->
+    <!-- ===================================================================== -->
+    <hr class="hr" />
+
+    <h2 style="background: #f0fdf4; border-left-color: #22c55e;">✅ Phase Completion Criteria</h2>
+    <ul class="checklist">
+        <li>All 10 backend tasks (BE-PAT-001..010) are completed and committed.</li>
+        <li>Patient CRUD endpoints are implemented and tested.</li>
+        <li>Search, archive, and restore work.</li>
+        <li>Digital intake form endpoints work.</li>
+        <li>Image upload works.</li>
+        <li>OCR integration (stretch) works or has fallback.</li>
+        <li>Assessment recording works.</li>
+        <li>Validation is applied to all DTOs.</li>
+        <li>Unit tests for service and controller pass.</li>
+        <li>Swagger/OpenAPI documentation is updated.</li>
+        <li>Authorization (Therapist only) is enforced.</li>
+    </ul>
+
+    <h2 style="background: #f0f9ff; border-left-color: #3b82f6;">📋 Code Review Checklist</h2>
+    <ul class="checklist">
+        <li>DTOs have proper validation.</li>
+        <li>Repository queries are efficient (use AsNoTracking, Include).</li>
+        <li>Service methods handle exceptions (e.g., not found, conflict).</li>
+        <li>Authorization attributes are applied.</li>
+        <li>OCR logic is robust (error handling, fallback).</li>
+        <li>Unit tests cover both success and failure scenarios.</li>
+    </ul>
+
+    <h2 style="background: #fefce8; border-left-color: #f59e0b;">🚀 Pull Request Checklist</h2>
+    <ul class="checklist">
+        <li>Branch up‑to‑date with <code>develop</code>.</li>
+        <li>CI pipeline passes.</li>
+        <li>Code review completed with approval.</li>
+        <li>All checklist items satisfied.</li>
+        <li>Migrations (if any) are included and tested.</li>
+    </ul>
+
+    <h2 style="background: #fef2f2; border-left-color: #ef4444;">🧪 Deployment Readiness Checklist</h2>
+    <ul class="checklist">
+        <li>All Phase 3 tasks complete and merged.</li>
+        <li>Patient endpoints work in staging.</li>
+        <li>Intake form creation and retrieval work.</li>
+        <li>Image upload and OCR (if used) work.</li>
+        <li>Integration tests pass against deployed environment.</li>
+    </ul>
+
+    <hr class="hr" />
+    <div style="text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 20px 0 0;">
+        Jalsa – Patient Management Phase Implementation Playbook &bull; v1.0 &bull; For development team
+    </div>
+</div>
+
+<script>
+    function toggleTask(header) {
+        const body = header.nextElementSibling;
+        const isOpen = body.classList.contains('open');
+        body.classList.toggle('open');
+        header.classList.toggle('open');
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        const firstHeader = document.querySelector('.task-header');
+        if (firstHeader) firstHeader.click();
+    });
+</script>
+</body>
+</html>

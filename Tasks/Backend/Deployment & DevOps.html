@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jalsa – Deployment & DevOps Phase Implementation Playbook</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+            padding: 30px 20px;
+            line-height: 1.7;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+            padding: 40px 45px;
+        }
+        h1 {
+            font-size: 2.4rem;
+            color: #0f172a;
+            border-bottom: 4px solid #3b82f6;
+            padding-bottom: 18px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        h1 small { font-size:1rem; font-weight:400; color:#64748b; margin-left:auto; }
+        .phase-banner {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 20px 28px;
+            margin-bottom: 32px;
+            border-left: 8px solid #3b82f6;
+        }
+        .phase-banner h2 { margin:0 0 8px 0; font-size:1.6rem; color:#0f172a; background:none; padding:0; border-left:none; }
+        .phase-banner p { margin:0; color:#475569; }
+        .phase-banner .meta { display:flex; flex-wrap:wrap; gap:20px 40px; margin-top:10px; font-size:0.95rem; }
+        .phase-banner .meta span { font-weight:500; color:#0f172a; }
+
+        .task-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            overflow: hidden;
+        }
+        .task-header {
+            background: #f8fafc;
+            padding: 16px 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.15s;
+            user-select: none;
+        }
+        .task-header:hover { background: #f1f5f9; }
+        .task-header .task-id { font-weight:700; color:#3b82f6; margin-right:12px; font-size:1.05rem; }
+        .task-header .task-name { font-weight:600; font-size:1.05rem; }
+        .task-header .task-badges { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+        .task-header .task-badges .tag { font-size:0.7rem; padding:2px 12px; border-radius:30px; font-weight:600; }
+        .task-header .chevron { transition:transform 0.25s; font-size:1.3rem; color:#94a3b8; margin-left:12px; }
+        .task-header.open .chevron { transform:rotate(180deg); }
+
+        .task-body { padding:0 24px 24px; display:none; overflow:hidden; }
+        .task-body.open { display:block; }
+
+        .task-body h3 { font-size:1.15rem; margin-top:22px; margin-bottom:8px; color:#0f172a; border-bottom:2px solid #e2e8f0; padding-bottom:4px; }
+        .task-body h4 { font-size:1rem; margin-top:16px; margin-bottom:6px; color:#334155; }
+        .task-body p { margin-bottom:8px; }
+        .task-body ul, .task-body ol { padding-left:24px; margin-bottom:10px; }
+        .task-body li { margin-bottom:3px; }
+
+        .checklist { list-style:none; padding-left:0; }
+        .checklist li { padding:3px 0 3px 30px; background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') left center no-repeat; background-size:18px; }
+
+        .pitfall-box { background:#fef2f2; border-left:4px solid #ef4444; padding:10px 16px; border-radius:8px; margin:8px 0; }
+        .tip-box { background:#f0fdf4; border-left:4px solid #22c55e; padding:10px 16px; border-radius:8px; margin:8px 0; }
+        .arch-box { background:#f0f9ff; border-left:4px solid #3b82f6; padding:10px 16px; border-radius:8px; margin:8px 0; }
+
+        .tag { display:inline-block; background:#e2e8f0; padding:1px 12px; border-radius:30px; font-size:0.7rem; font-weight:600; color:#1e293b; margin-right:4px; }
+        .tag-blue { background:#dbeafe; color:#1d4ed8; }
+        .tag-green { background:#dcfce7; color:#15803d; }
+        .tag-amber { background:#fef3c7; color:#b45309; }
+        .tag-red { background:#fee2e2; color:#b91c1c; }
+        .tag-purple { background:#ede9fe; color:#6d28d9; }
+
+        .flow-diagram {
+            background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:14px 18px; margin:8px 0 12px;
+            font-family:'Courier New', monospace; font-size:0.9rem; overflow-x:auto; white-space:nowrap;
+        }
+        .flow-diagram .arrow { color:#94a3b8; margin:0 6px; }
+        .flow-diagram .step { color:#0f172a; font-weight:500; }
+
+        .table-wrap { overflow-x:auto; margin:10px 0 16px; border-radius:10px; border:1px solid #e2e8f0; }
+        table { width:100%; border-collapse:collapse; font-size:0.9rem; background:#fff; }
+        th { background:#f1f5f9; font-weight:600; text-align:left; padding:8px 14px; border-bottom:2px solid #e2e8f0; color:#0f172a; }
+        td { padding:8px 14px; border-bottom:1px solid #f1f5f9; vertical-align:top; }
+        tr:last-child td { border-bottom:none; }
+
+        .hr { border:none; border-top:2px dashed #e2e8f0; margin:32px 0; }
+
+        @media (max-width:768px) {
+            .container { padding:20px 16px; }
+            h1 { font-size:1.8rem; flex-wrap:wrap; }
+            .task-header { flex-wrap:wrap; gap:8px; }
+            .task-header .task-badges { margin-left:0; }
+            .task-body { padding:0 16px 16px; }
+            .phase-banner { padding:16px; }
+            .phase-banner .meta { flex-direction:column; gap:6px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <h1>
+        🚀 Jalsa – Deployment & DevOps Phase Implementation Playbook
+        <small>Phase 13 · 11 Tasks · Production Readiness</small>
+    </h1>
+
+    <div class="phase-banner">
+        <h2>🚀 Deployment & DevOps – Phase 13</h2>
+        <p><strong>Purpose:</strong> Prepare the Jalsa system for production deployment. This phase covers infrastructure as code, CI/CD pipeline automation, containerization, monitoring, logging, secrets management, disaster recovery, and operational runbooks. It ensures the system is reliable, scalable, and maintainable in production.</p>
+        <div class="meta">
+            <span>📋 Tasks: 11</span>
+            <span>⏱️ Total Effort: ~72 hours</span>
+            <span>👤 Owners: M5 (DevOps Lead), M1 (Backend), M3 (Frontend)</span>
+            <span>🔗 Dependencies: All previous phases (0–12) must be complete</span>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DEV-001                                                          -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">DEV-001</span><span class="task-name">Infrastructure as Code</span></span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-red">High</span>
+                <span class="tag">10h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DEV-001</li>
+                <li><strong>Task Name:</strong> Infrastructure as Code</li>
+                <li><strong>Owner:</strong> M5 (DevOps Lead)</li>
+                <li><strong>Dependencies:</strong> Cloud provider access (Azure/AWS/GCP), architecture decisions from earlier phases</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                <li><strong>Estimated Effort:</strong> 10 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Define all cloud infrastructure resources using Infrastructure as Code (IaC) – Terraform or Bicep – to provision the database, blob storage, cache, vector store, and networking components in a repeatable and version‑controlled manner.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Enable consistent, auditable, and automated provisioning of cloud resources, reducing human error and accelerating environment creation (dev, staging, prod).</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Ensure all infrastructure (PostgreSQL, Redis, Blob Storage, Vector Store, Load Balancer, etc.) is defined as code and can be deployed with a single command, supporting disaster recovery and scaling.</p>
+
+            <h3>Prerequisites</h3>
+            <h4>Backend</h4>
+            <ul>
+                <li><strong>Terraform / Bicep:</strong> Understanding of resource declaration, state management, modules.</li>
+                <li><strong>Cloud provider SDK:</strong> Azure/AWS CLI or equivalent.</li>
+            </ul>
+            <h4>Frontend</h4>
+            <ul>
+                <li>None – but frontend deployment will use the same infrastructure.</li>
+            </ul>
+            <h4>Database</h4>
+            <ul>
+                <li>PostgreSQL instance with pgvector extension.</li>
+                <li>Redis cache.</li>
+            </ul>
+            <h4>AI</h4>
+            <ul>
+                <li>OpenAI API access (keys stored in secrets).</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Cloud subscription/account.</li>
+                <li>Architecture decisions (database size, storage account, network configuration).</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Terraform/Bicep scripts for all resources.</li>
+                <li>Variable files for dev/staging/prod.</li>
+                <li>State management (remote backend).</li>
+                <li>Provisioned resources in at least one environment (staging).</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Set up Terraform/Bicep</strong> – install tools, configure authentication.
+                </li>
+                <li>
+                    <strong>Define resource modules</strong>:
+                    <ul>
+                        <li>Resource Group / Project.</li>
+                        <li>PostgreSQL server with pgvector extension (or use Azure Database for PostgreSQL flexible).</li>
+                        <li>Redis cache (standard tier).</li>
+                        <li>Blob storage account (for images, audio, PDFs).</li>
+                        <li>Vector store – if using pgvector, it's part of PostgreSQL; otherwise, separate service.</li>
+                        <li>Network: VNet, subnets, security groups.</li>
+                        <li>Load balancer / Application Gateway (if needed).</li>
+                        <li>Kubernetes cluster or App Service for API and Angular.</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Store state remotely</strong> – use Azure Storage or S3 for Terraform state.</li>
+                <li>
+                    <strong>Parameterise</strong> – create separate .tfvars files for dev, staging, prod.</li>
+                <li>
+                    <strong>Run <code>terraform plan</code></strong> and validate.</li>
+                <li>
+                    <strong>Apply to staging environment</strong> – verify resources are created.</li>
+                <li>
+                    <strong>Commit scripts</strong> to repository.</li>
+            </ol>
+
+            <h3>Detailed Database Workflow</h3>
+            <ul>
+                <li>Provision PostgreSQL with pgvector extension enabled (see DB-014).</li>
+                <li>Configure firewall rules to allow access from API and CI/CD.</li>
+            </ul>
+
+            <h3>Data Flow</h3>
+            <div class="flow-diagram">
+                <span class="step">terraform apply</span> <span class="arrow">→</span>
+                <span class="step">Cloud Provider API</span> <span class="arrow">→</span>
+                <span class="step">Resources</span> <span class="arrow">→</span>
+                <span class="step">State File</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>IaC scripts.</li>
+                <li>Remote state configuration.</li>
+                <li>Provisioned staging environment.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ All resources are defined in code.</li>
+                <li>☐ Terraform plan shows no unexpected changes.</li>
+                <li>☐ Staging resources are created and accessible.</li>
+                <li>☐ Secrets are not hard‑coded (use variables).</li>
+            </ul>
+
+            <h3>Testing Strategy</h3>
+            <p><em>Integration:</em> Apply to a test environment and verify connectivity.</p>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Not storing state remotely – leads to conflicts in CI. Always use remote state.
+            </div>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Hard‑coding credentials – use environment variables or Azure Key Vault.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>IaC scripts committed and staging environment provisioned.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <p><strong>Must Know:</strong> Terraform syntax, provider configuration.</p>
+            <p><strong>Nice To Know:</strong> Bicep, ARM templates.</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DEV-002                                                          -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">DEV-002</span><span class="task-name">CI/CD Pipeline (Full)</span></span>
+            <span class="task-badges">
+                <span class="tag tag-blue">P0</span>
+                <span class="tag tag-red">High</span>
+                <span class="tag">8h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DEV-002</li>
+                <li><strong>Task Name:</strong> CI/CD Pipeline (Full)</li>
+                <li><strong>Owner:</strong> M5 (DevOps Lead)</li>
+                <li><strong>Dependencies:</strong> DEV-001 (IaC), FND-004 (basic CI)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                <li><strong>Estimated Effort:</strong> 8 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Extend the basic CI pipeline to a full CI/CD pipeline that builds, tests, and deploys the backend API and frontend Angular application to dev, staging, and production environments on every push to respective branches (develop → staging, main → production).</p>
+
+            <h3>Business Purpose</h3>
+            <p>Automate the deployment process to reduce manual errors, accelerate release cycles, and ensure consistent deployments across environments.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Integrate build, test (unit, integration, E2E), containerisation, and deployment steps. Use Docker images, push to container registry, and deploy to Kubernetes or App Service.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>CI platform: GitHub Actions / Azure DevOps.</li>
+                <li>Container registry (ACR/Docker Hub).</li>
+                <li>Kubernetes cluster or App Service provisioned.</li>
+                <li>Secrets management (for API keys, connection strings).</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Source code, Dockerfiles, deployment manifests (k8s YAML).</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>CI/CD workflow YAML files.</li>
+                <li>Automatic deployments to dev/staging on PR merge.</li>
+                <li>Manual approval gate for production.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Build stage</strong> – restore, build, test (unit + integration) for API.
+                </li>
+                <li>
+                    <strong>Build and push Docker image</strong> for API.
+                </li>
+                <li>
+                    <strong>Build Angular app</strong> – <code>ng build --prod</code>, serve via Nginx (or push to static web app).</li>
+                <li>
+                    <strong>Run E2E tests</strong> (Cypress) against the built image.</li>
+                <li>
+                    <strong>Deploy to staging</strong> – update Kubernetes manifests (or App Service) with new image tags.</li>
+                <li>
+                    <strong>Production deployment</strong> – trigger on push to main with manual approval.</li>
+                <li>
+                    <strong>Notify</strong> on success/failure via Slack/Teams.</li>
+                <li>
+                    <strong>Commit</strong> pipeline YAML to repository.</li>
+            </ol>
+
+            <h3>Data Flow Diagram</h3>
+            <div class="flow-diagram">
+                <span class="step">Push</span> <span class="arrow">→</span>
+                <span class="step">Build &amp; Test</span> <span class="arrow">→</span>
+                <span class="step">Container Registry</span> <span class="arrow">→</span>
+                <span class="step">Deploy (staging/prod)</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>CI/CD workflow files.</li>
+                <li>Deployment manifests (k8s or App Service).</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ Pipeline runs successfully on PR.</li>
+                <li>☐ Deployment to staging occurs automatically.</li>
+                <li>☐ Production deployment requires approval.</li>
+                <li>☐ Secrets are injected securely.</li>
+            </ul>
+
+            <h3>Testing Strategy</h3>
+            <p><em>Integration:</em> Test the pipeline by pushing a change and verifying deployment.</p>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Not using deployment slots – can cause downtime. Use blue‑green or rolling updates.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Pipeline fully operational.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <p><strong>Must Know:</strong> GitHub Actions or Azure DevOps YAML, Docker, k8s manifests.</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DEV-003                                                          -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">DEV-003</span><span class="task-name">Database Migration Pipeline</span></span>
+            <span class="task-badges">
+                <span class="tag tag-blue">P0</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">4h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DEV-003</li>
+                <li><strong>Task Name:</strong> Database Migration Pipeline</li>
+                <li><strong>Owner:</strong> M5 (DevOps) with M1</li>
+                <li><strong>Dependencies:</strong> DEV-002 (CI/CD), DB-010 (Migrations)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 4 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Automatically run EF Core database migrations as part of the deployment pipeline to ensure the database schema is always up‑to‑date with the application version.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Prevent schema mismatch errors and enable zero‑downtime migrations (if using safe strategies).</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Integrate <code>dotnet ef database update</code> into the CI/CD pipeline, executed after the API is deployed (or before). Use idempotent migrations.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>EF Core tools installed in pipeline.</li>
+                <li>Connection string to the target database (from secrets).</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Migration files.</li>
+                <li>Target environment (staging/prod).</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Migrations applied.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Add a pipeline step</strong> after deployment (or before) to run <code>dotnet ef database update --project src/Jalsa.Infrastructure --startup-project src/Jalsa.API</code>.
+                </li>
+                <li>
+                    <strong>Use environment‑specific connection strings</strong> from secrets.</li>
+                <li>
+                    <strong>Ensure idempotency</strong> – EF Core migrations are already idempotent.</li>
+                <li>
+                    <strong>Rollback strategy</strong> – if migration fails, halt deployment and alert.</li>
+                <li>
+                    <strong>Test</strong> by deploying to staging and verifying migrations apply.</li>
+            </ol>
+
+            <h3>Data Flow Diagram</h3>
+            <div class="flow-diagram">
+                <span class="step">Deploy API</span> <span class="arrow">→</span>
+                <span class="step">Run Migration</span> <span class="arrow">→</span>
+                <span class="step">Database Updated</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Pipeline YAML updated with migration step.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ Migrations run successfully in staging.</li>
+                <li>☐ No errors.</li>
+                <li>☐ Schema matches expected.</li>
+            </ul>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Running migrations during deployment can cause downtime if they are not backward‑compatible. Use safe migration patterns (e.g., adding columns with defaults).
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Migration step integrated and working.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <p><strong>Must Know:</strong> EF Core migrations, pipeline scripting.</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DEV-004                                                          -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">DEV-004</span><span class="task-name">API Deployment (Container)</span></span>
+            <span class="task-badges">
+                <span class="tag tag-blue">P0</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">6h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DEV-004</li>
+                <li><strong>Task Name:</strong> API Deployment (Container)</li>
+                <li><strong>Owner:</strong> M5 (DevOps)</li>
+                <li><strong>Dependencies:</strong> DEV-002 (CI/CD), Dockerfile for API</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 6 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Containerise the ASP.NET Core API and deploy it to the target environment (Kubernetes or App Service) via the CI/CD pipeline.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Ensure the API runs consistently across environments, is scalable, and can be updated with zero downtime.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Build a Docker image for the API, push to container registry, and use orchestration (Kubernetes) or App Service to deploy and manage the container.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Dockerfile (from Phase 0).</li>
+                <li>Container registry (ACR or Docker Hub).</li>
+                <li>Deployment target (k8s cluster or App Service).</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>API source code, Dockerfile.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>API running in staging/production.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Build Docker image</strong> with appropriate tags (e.g., <code>jalsa-api:latest</code>, commit hash).</li>
+                <li>
+                    <strong>Push to registry</strong>.</li>
+                <li>
+                    <strong>Deploy</strong> – if using Kubernetes, apply deployment YAML with new image tag; if App Service, update container settings.</li>
+                <li>
+                    <strong>Health check</strong> – ensure the container is healthy (use /health endpoint).</li>
+                <li>
+                    <strong>Rollback</strong> – if failed, revert to previous version.</li>
+            </ol>
+
+            <h3>Data Flow Diagram</h3>
+            <div class="flow-diagram">
+                <span class="step">Build Image</span> <span class="arrow">→</span>
+                <span class="step">Push</span> <span class="arrow">→</span>
+                <span class="step">Deploy</span> <span class="arrow">→</span>
+                <span class="step">Healthy</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Deployment configuration (k8s manifests or App Service config).</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ API pod is running.</li>
+                <li>☐ Health check passes.</li>
+                <li>☐ API responds to requests.</li>
+            </ul>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Not exposing correct ports – ensure Dockerfile exposes the correct port (e.g., 8080).</li>
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>API container running in staging.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <p><strong>Must Know:</strong> Docker, Kubernetes/App Service deployment.</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DEV-005                                                          -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">DEV-005</span><span class="task-name">Frontend Deployment</span></span>
+            <span class="task-badges">
+                <span class="tag tag-blue">P0</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">5h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DEV-005</li>
+                <li><strong>Task Name:</strong> Frontend Deployment</li>
+                <li><strong>Owner:</strong> M3 (Frontend) with M5</li>
+                <li><strong>Dependencies:</strong> DEV-002 (CI/CD), Angular build</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 5 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Build the Angular application and deploy it to a static web hosting service (Azure Static Web Apps, AWS S3, or Nginx container) as part of the CI/CD pipeline.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Deliver the frontend to users with high availability and low latency.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Automate the build and deployment of the Angular app, ensuring environment‑specific configuration (API base URL) is injected.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Angular project.</li>
+                <li>Static hosting service.</li>
+                <li>Environment files (environment.prod.ts).</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Source code.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Deployed frontend application.</li>
+            </ul>
+
+            <h3>Detailed Frontend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Build for production</strong> – <code>ng build --configuration=production</code>.</li>
+                <li>
+                    <strong>Copy build output</strong> – if using Azure Static Web Apps, the pipeline can publish directly; if using S3, sync the <code>dist</code> folder.</li>
+                <li>
+                    <strong>Alternatively, containerise</strong> – build an Nginx image serving the Angular app and deploy as a container (like the API).</li>
+                <li>
+                    <strong>Configure environment variables</strong> – use placeholders replaced at runtime.</li>
+                <li>
+                    <strong>Test</strong> – verify the deployed site works.</li>
+            </ol>
+
+            <h3>Data Flow Diagram</h3>
+            <div class="flow-diagram">
+                <span class="step">Build</span> <span class="arrow">→</span>
+                <span class="step">Static Host</span> <span class="arrow">→</span>
+                <span class="step">Live</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Deployment configuration for frontend.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ Frontend is accessible via URL.</li>
+                <li>☐ API calls go to correct backend.</li>
+                <li>☐ Routing works.</li>
+            </ul>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Hard‑coded API URLs – use environment variables.</li>
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Frontend deployed in staging.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <p><strong>Must Know:</strong> Angular build, static hosting.</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DEV-006                                                          -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">DEV-006</span><span class="task-name">Monitoring &amp; Alerting</span></span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">8h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DEV-006</li>
+                <li><strong>Task Name:</strong> Monitoring &amp; Alerting</li>
+                <li><strong>Owner:</strong> M5 (DevOps)</li>
+                <li><strong>Dependencies:</strong> DEV-004, DEV-005 (deployed services)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 8 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Set up monitoring and alerting for the production system using Application Insights (Azure) or Prometheus + Grafana. Monitor API health, performance, errors, and infrastructure metrics.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Detect issues early, ensure high availability, and provide visibility into system performance.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Collect metrics (request rates, response times, error rates, CPU/memory) and set up alerts for thresholds (e.g., 500 errors > 5% for 5 minutes).</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Application Insights or Prometheus/Grafana stack.</li>
+                <li>Logging infrastructure (Serilog sinks).</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Deployed services.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Monitoring dashboards.</li>
+                <li>Alert rules.</li>
+                <li>Notification channels (email, Slack).</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Integrate Application Insights</strong> – add Application Insights SDK to API, configure instrumentation key.</li>
+                <li>
+                    <strong>Enable request logging</strong> – Serilog to App Insights.</li>
+                <li>
+                    <strong>Set up custom metrics</strong> – e.g., AI service call duration, database query time.</li>
+                <li>
+                    <strong>Create dashboards</strong> – for key metrics.</li>
+                <li>
+                    <strong>Define alerts</strong> – e.g., availability < 99.9%, error rate spike, high latency.</li>
+                <li>
+                    <strong>Set up action groups</strong> – email, SMS, Slack.</li>
+                <li>
+                    <strong>Test</strong> – trigger a test alert.</li>
+            </ol>
+
+            <h3>Data Flow Diagram</h3>
+            <div class="flow-diagram">
+                <span class="step">API</span> <span class="arrow">→</span>
+                <span class="step">Telemetry</span> <span class="arrow">→</span>
+                <span class="step">App Insights</span> <span class="arrow">→</span>
+                <span class="step">Alerts</span> <span class="arrow">→</span>
+                <span class="step">Team</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Dashboards.</li>
+                <li>Alert rules.</li>
+                <li>Documentation.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ Metrics are being collected.</li>
+                <li>☐ Alerts trigger correctly.</li>
+                <li>☐ Dashboards display key information.</li>
+            </ul>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Not setting up alerts – monitoring is useless without alerts. Define meaningful thresholds.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Monitoring and alerting operational.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <p><strong>Must Know:</strong> Application Insights, Prometheus, Grafana.</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DEV-007                                                          -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">DEV-007</span><span class="task-name">Logging Infrastructure</span></span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">6h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DEV-007</li>
+                <li><strong>Task Name:</strong> Logging Infrastructure</li>
+                <li><strong>Owner:</strong> M5 (DevOps) with M1</li>
+                <li><strong>Dependencies:</strong> FND-007 (Serilog setup), DEV-004 (API deployed)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 6 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Set up centralized logging infrastructure to collect, store, and query logs from all services (API, background jobs, AI services) using Elasticsearch, Logstash, Kibana (ELK) or Azure Log Analytics.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Enable debugging and auditing of production issues by providing a single pane of glass for logs.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Configure Serilog sinks to forward structured logs to the logging backend. Set up retention policies and dashboards.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>ELK stack or Azure Log Analytics workspace.</li>
+                <li>Serilog configured.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Application logs.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Centralized logging endpoint.</li>
+                <li>Log dashboards.</li>
+                <li>Retention policy.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Choose logging sink</strong> – e.g., Seq for development, Elasticsearch for production, or Application Insights (already integrated).</li>
+                <li>
+                    <strong>Configure Serilog</strong> in API to send logs to the chosen sink.</li>
+                <li>
+                    <strong>Set up Elasticsearch</strong> – provision cluster, configure indices.</li>
+                <li>
+                    <strong>Set up Kibana</strong> – create log dashboards.</li>
+                <li>
+                    <strong>Configure retention</strong> – e.g., 30 days.</li>
+                <li>
+                    <strong>Test</strong> – generate logs and verify they appear.</li>
+            </ol>
+
+            <h3>Data Flow Diagram</h3>
+            <div class="flow-diagram">
+                <span class="step">API</span> <span class="arrow">→</span>
+                <span class="step">Serilog</span> <span class="arrow">→</span>
+                <span class="step">Elasticsearch</span> <span class="arrow">→</span>
+                <span class="step">Kibana</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Logging configuration.</li>
+                <li>Kibana dashboards.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ Logs appear in the system.</li>
+                <li>☐ Search works.</li>
+                <li>☐ Retention policy applied.</li>
+            </ul>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Logging sensitive data – ensure PII is masked or excluded.</li>
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Logging infrastructure operational.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <p><strong>Must Know:</strong> ELK stack, Serilog sinks.</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DEV-008                                                          -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">DEV-008</span><span class="task-name">Secrets Management</span></span>
+            <span class="task-badges">
+                <span class="tag tag-blue">P0</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">4h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DEV-008</li>
+                <li><strong>Task Name:</strong> Secrets Management</li>
+                <li><strong>Owner:</strong> M5 (DevOps) with M1</li>
+                <li><strong>Dependencies:</strong> DEV-002 (CI/CD), cloud infrastructure</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 4 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Store and manage all secrets (JWT secret, OpenAI API keys, database connection strings, SendGrid keys) securely using Azure Key Vault or AWS Secrets Manager, and inject them into the application at runtime.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Prevent secrets from being exposed in source code or configuration files, ensuring compliance and security.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Centralize secret management, enable rotation, and provide access control.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Key Vault or Secrets Manager provisioned (via IaC).</li>
+                <li>Application code supports reading from environment variables or Azure App Configuration.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>List of secrets (keys).</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Secrets stored in Key Vault.</li>
+                <li>Application configuration to read secrets.</li>
+                <li>Pipeline integration to inject secrets.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create Key Vault</strong> (via IaC).</li>
+                <li>
+                    <strong>Add secrets</strong> – JwtSecret, OpenAiApiKey, SendGridApiKey, DatabaseConnectionString, etc.</li>
+                <li>
+                    <strong>Configure API</strong> to use <code>IConfiguration</code> with Key Vault provider (Azure.Extensions.AspNetCore.Configuration.Secrets).</li>
+                <li>
+                    <strong>In CI/CD</strong>, set environment variables to point to Key Vault or use managed identity.</li>
+                <li>
+                    <strong>Test</strong> – run application locally with Key Vault access.</li>
+            </ol>
+
+            <h3>Data Flow Diagram</h3>
+            <div class="flow-diagram">
+                <span class="step">Application</span> <span class="arrow">→</span>
+                <span class="step">Key Vault</span> <span class="arrow">→</span>
+                <span class="step">Secrets</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Key Vault configured.</li>
+                <li>Application integration.</li>
+                <li>Pipeline integration.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ Secrets are not in source code.</li>
+                <li>☐ Application loads secrets successfully.</li>
+                <li>☐ Access is restricted.</li>
+            </ul>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Not granting pipeline managed identity access to Key Vault – leads to deployment failure.</li>
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Secrets management implemented.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <p><strong>Must Know:</strong> Azure Key Vault, Managed Identity.</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DEV-009                                                          -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">DEV-009</span><span class="task-name">Production Environment Setup</span></span>
+            <span class="task-badges">
+                <span class="tag tag-blue">P0</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">6h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DEV-009</li>
+                <li><strong>Task Name:</strong> Production Environment Setup</li>
+                <li><strong>Owner:</strong> M5 (DevOps) with M1, M3</li>
+                <li><strong>Dependencies:</strong> DEV-001 (IaC), DEV-004, DEV-005, DEV-008</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 6 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Prepare the production environment: configure DNS, SSL certificates, load balancer, WAF (Web Application Firewall), and ensure all security best practices are applied.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Make the application available to end users with a secure, branded domain, and protect against common attacks.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Set up production‑grade networking, HTTPS, and security policies.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Domain name.</li>
+                <li>SSL certificate (e.g., from Let's Encrypt or cloud provider).</li>
+                <li>Load balancer/Application Gateway.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>DNS records, certificate.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Production URL (e.g., app.jalsa.com).</li>
+                <li>SSL termination.</li>
+                <li>WAF rules configured.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Provision DNS zone</strong> – point domain to load balancer IP.</li>
+                <li>
+                    <strong>Obtain SSL certificate</strong> – use cloud provider's certificate service or Let's Encrypt.</li>
+                <li>
+                    <strong>Configure load balancer</strong> – set up HTTPS listener, forward to backend pool (API and frontend).</li>
+                <li>
+                    <strong>Enable WAF</strong> – enable OWASP rules.</li>
+                <li>
+                    <strong>Set up health probes</strong> – for load balancer.</li>
+                <li>
+                    <strong>Test</strong> – browse to the domain and verify HTTPS.</li>
+            </ol>
+
+            <h3>Data Flow Diagram</h3>
+            <div class="flow-diagram">
+                <span class="step">User</span> <span class="arrow">→</span>
+                <span class="step">DNS</span> <span class="arrow">→</span>
+                <span class="step">Load Balancer</span> <span class="arrow">→</span>
+                <span class="step">WAF</span> <span class="arrow">→</span>
+                <span class="step">Application</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Production environment live.</li>
+                <li>SSL certificate.</li>
+                <li>WAF rules.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ Domain resolves correctly.</li>
+                <li>☐ HTTPS works.</li>
+                <li>☐ WAF blocks malicious requests.</li>
+                <li>☐ Health probes pass.</li>
+            </ul>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> DNS propagation delay – allow time for changes to take effect.</li>
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Production environment configured and accessible.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <p><strong>Must Know:</strong> DNS, SSL, load balancing, WAF.</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DEV-010                                                          -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">DEV-010</span><span class="task-name">Disaster Recovery &amp; Backup</span></span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">5h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DEV-010</li>
+                <li><strong>Task Name:</strong> Disaster Recovery &amp; Backup</li>
+                <li><strong>Owner:</strong> M5 (DevOps)</li>
+                <li><strong>Dependencies:</strong> DEV-001 (IaC), DEV-009 (Production)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 5 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Implement backup and disaster recovery strategies for the database, blob storage, and configuration, ensuring data can be restored in case of failure.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Protect patient data and ensure business continuity in case of data loss or service outage.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Configure automated database backups (point‑in‑time restore), geo‑redundant storage, and backup of configuration (IaC state). Define RPO and RTO.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Database backup settings (Azure PostgreSQL automated backups).</li>
+                <li>Blob storage replication.</li>
+                <li>Backup of Terraform state.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Backup policies.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Backup schedules.</li>
+                <li>Restore procedures.</li>
+                <li>Test restoration plan.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Configure database backup</strong> – enable automated backups, set retention (e.g., 7 days).</li>
+                <li>
+                    <strong>Configure blob storage</strong> – enable versioning and soft delete, set replication (geo‑redundant).</li>
+                <li>
+                    <strong>Backup Terraform state</strong> – store state in a separate storage account.</li>
+                <li>
+                    <strong>Document restore process</strong> – step‑by‑step for database, blobs, and application.</li>
+                <li>
+                    <strong>Test restoration</strong> – restore database to a staging environment to verify.</li>
+            </ol>
+
+            <h3>Data Flow Diagram</h3>
+            <div class="flow-diagram">
+                <span class="step">Database</span> <span class="arrow">→</span>
+                <span class="step">Backup</span> <span class="arrow">→</span>
+                <span class="step">Storage</span> <span class="arrow">→</span>
+                <span class="step">Restore</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Backup configuration.</li>
+                <li>Restore documentation.</li>
+                <li>Successful restore test.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ Backups are running.</li>
+                <li>☐ Restore procedure tested.</li>
+                <li>☐ RPO defined and achievable.</li>
+            </ul>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Not testing restores – backups are useless if not verified. Schedule regular restore drills.</li>
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Backup and DR plan implemented and tested.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <p><strong>Must Know:</strong> Database backup, storage replication, RPO/RTO.</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DEV-011                                                          -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">DEV-011</span><span class="task-name">Runbooks &amp; Onboarding</span></span>
+            <span class="task-badges">
+                <span class="tag tag-green">P2</span>
+                <span class="tag tag-green">Low</span>
+                <span class="tag">6h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DEV-011</li>
+                <li><strong>Task Name:</strong> Runbooks &amp; Onboarding</li>
+                <li><strong>Owner:</strong> M5 (DevOps) with M1</li>
+                <li><strong>Dependencies:</strong> DEV-009 (Production), DEV-010 (DR)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-green">Low</span></li>
+                <li><strong>Estimated Effort:</strong> 6 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Create operational runbooks for common tasks (deployments, rollbacks, scaling, troubleshooting) and update team onboarding documentation with production access and procedures.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Enable the team to operate the system efficiently and reduce time to resolve incidents.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Document all operational procedures, including access control, monitoring, alert response, and emergency contacts.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Production environment.</li>
+                <li>Monitoring and logging set up.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Existing documentation.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Runbooks (deployment, rollback, scaling, backup/restore, incident response).</li>
+                <li>Onboarding guide for new team members.</li>
+                <li>Access list.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Document deployment process</strong> – step‑by‑step.</li>
+                <li>
+                    <strong>Document rollback procedure</strong> – how to revert to previous version.</li>
+                <li>
+                    <strong>Document scaling</strong> – how to increase resources (manually or auto‑scale).</li>
+                <li>
+                    <strong>Document backup/restore</strong> – detailed restore steps.</li>
+                <li>
+                    <strong>Document incident response</strong> – who to contact, escalation paths.</li>
+                <li>
+                    <strong>Update onboarding guide</strong> – include environment access, tools, and common commands.</li>
+                <li>
+                    <strong>Review with team</strong> – ensure all members have read access.</li>
+            </ol>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Runbooks in markdown.</li>
+                <li>Onboarding guide.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ Runbooks cover all critical operations.</li>
+                <li>☐ Onboarding guide is complete.</li>
+                <li>☐ Team members can access them.</li>
+            </ul>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Runbooks and onboarding guide created.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <p><strong>Must Know:</strong> Technical writing, operational procedures.</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- FINAL SECTIONS                                                        -->
+    <!-- ===================================================================== -->
+    <hr class="hr" />
+
+    <h2 style="background: #f0fdf4; border-left-color: #22c55e;">✅ Phase Completion Criteria</h2>
+    <ul class="checklist">
+        <li>All 11 tasks (DEV-001..011) are completed and committed.</li>
+        <li>Infrastructure is defined as code and deployed in all environments.</li>
+        <li>CI/CD pipeline fully automates build, test, and deployment.</li>
+        <li>Database migrations are automated.</li>
+        <li>API and frontend are containerised and deployed.</li>
+        <li>Monitoring, alerting, and logging are operational.</li>
+        <li>Secrets are managed securely.</li>
+        <li>Production environment is configured with HTTPS, DNS, WAF.</li>
+        <li>Backup and disaster recovery are tested.</li>
+        <li>Runbooks and onboarding documentation are complete.</li>
+        <li>All environments (dev, staging, prod) are functional.</li>
+    </ul>
+
+    <h2 style="background: #f0f9ff; border-left-color: #3b82f6;">📋 Code Review Checklist</h2>
+    <ul class="checklist">
+        <li>IaC scripts are modular and parameterised.</li>
+        <li>CI/CD pipeline includes all necessary stages.</li>
+        <li>Secrets are not hard‑coded.</li>
+        <li>Monitoring dashboards are defined.</li>
+        <li>Backup policies are documented.</li>
+        <li>Runbooks cover rollback and incident response.</li>
+    </ul>
+
+    <h2 style="background: #fefce8; border-left-color: #f59e0b;">🚀 Pull Request Checklist</h2>
+    <ul class="checklist">
+        <li>Branch up‑to‑date with <code>develop</code>.</li>
+        <li>CI pipeline passes.</li>
+        <li>Code review approved.</li>
+        <li>All checklist items satisfied.</li>
+        <li>Manual validation done in staging.</li>
+    </ul>
+
+    <h2 style="background: #fef2f2; border-left-color: #ef4444;">🧪 Deployment Readiness Checklist</h2>
+    <ul class="checklist">
+        <li>All Phase 13 tasks complete and merged.</li>
+        <li>Production environment is provisioned and accessible.</li>
+        <li>CI/CD deploys to production successfully.</li>
+        <li>Monitoring shows healthy services.</li>
+        <li>Backup and restore tested.</li>
+        <li>Runbooks are reviewed and ready.</li>
+    </ul>
+
+    <hr class="hr" />
+    <div style="text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 20px 0 0;">
+        Jalsa – Deployment & DevOps Implementation Playbook &bull; v1.0 &bull; For development team
+    </div>
+</div>
+
+<script>
+    function toggleTask(header) {
+        const body = header.nextElementSibling;
+        const isOpen = body.classList.contains('open');
+        body.classList.toggle('open');
+        header.classList.toggle('open');
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        const firstHeader = document.querySelector('.task-header');
+        if (firstHeader) firstHeader.click();
+    });
+</script>
+</body>
+</html>

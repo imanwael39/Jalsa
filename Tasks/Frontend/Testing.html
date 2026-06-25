@@ -1,0 +1,1954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jalsa – Phase 16: Testing – Expanded Implementation Handbook</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+            padding: 30px 20px;
+            line-height: 1.7;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            padding: 40px 45px;
+        }
+        h1 {
+            font-size: 2.4rem;
+            color: #0f172a;
+            border-bottom: 4px solid #3b82f6;
+            padding-bottom: 18px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        h1 small {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #64748b;
+            margin-left: auto;
+        }
+        .phase-banner {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 20px 28px;
+            margin-bottom: 32px;
+            border-left: 8px solid #3b82f6;
+        }
+        .phase-banner h2 {
+            margin: 0 0 8px 0;
+            font-size: 1.6rem;
+            color: #0f172a;
+            background: none;
+            padding: 0;
+            border-left: none;
+        }
+        .phase-banner p {
+            margin: 0;
+            color: #475569;
+        }
+        .phase-banner .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px 40px;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+        .phase-banner .meta span {
+            font-weight: 500;
+            color: #0f172a;
+        }
+
+        .task-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+        .task-header {
+            background: #f8fafc;
+            padding: 16px 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.15s;
+            user-select: none;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .task-header:hover {
+            background: #f1f5f9;
+        }
+        .task-header .task-id {
+            font-weight: 700;
+            color: #3b82f6;
+            margin-right: 12px;
+            font-size: 1.05rem;
+        }
+        .task-header .task-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .task-header .task-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .task-header .task-badges .tag {
+            font-size: 0.7rem;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+        .task-header .chevron {
+            transition: transform 0.25s;
+            font-size: 1.3rem;
+            color: #94a3b8;
+            margin-left: 12px;
+        }
+        .task-header.open .chevron {
+            transform: rotate(180deg);
+        }
+
+        .task-body {
+            padding: 0 24px 24px;
+            display: none;
+            overflow: hidden;
+        }
+        .task-body.open {
+            display: block;
+        }
+
+        .task-body h3 {
+            font-size: 1.15rem;
+            margin-top: 22px;
+            margin-bottom: 8px;
+            color: #0f172a;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 4px;
+        }
+        .task-body h4 {
+            font-size: 1rem;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            color: #334155;
+        }
+        .task-body p {
+            margin-bottom: 8px;
+        }
+        .task-body ul,
+        .task-body ol {
+            padding-left: 24px;
+            margin-bottom: 10px;
+        }
+        .task-body li {
+            margin-bottom: 3px;
+        }
+        .task-body .field-label {
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+        .checklist li {
+            padding: 3px 0 3px 30px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') left center no-repeat;
+            background-size: 18px;
+        }
+
+        .pitfall-box {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .tip-box {
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .arch-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #e2e8f0;
+            padding: 1px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-right: 4px;
+        }
+        .tag-blue {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .tag-green {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .tag-amber {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .tag-red {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .tag-purple {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+        .tag-slate {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        .tag-indigo {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .flow-diagram {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin: 8px 0 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .flow-diagram .arrow {
+            color: #94a3b8;
+            margin: 0 6px;
+        }
+        .flow-diagram .step {
+            color: #0f172a;
+            font-weight: 500;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            margin: 10px 0 16px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            background: #fff;
+        }
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+            text-align: left;
+            padding: 8px 14px;
+            border-bottom: 2px solid #e2e8f0;
+            color: #0f172a;
+        }
+        td {
+            padding: 8px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .hr {
+            border: none;
+            border-top: 2px dashed #e2e8f0;
+            margin: 32px 0;
+        }
+
+        .code-block {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin: 6px 0 12px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .code-block .comment {
+            color: #94a3b8;
+        }
+        .code-block .keyword {
+            color: #f472b6;
+        }
+        .code-block .string {
+            color: #34d399;
+        }
+        .code-block .func {
+            color: #60a5fa;
+        }
+
+        .subtask {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 12px 18px;
+            margin: 10px 0;
+            border-left: 4px solid #3b82f6;
+        }
+        .subtask strong {
+            color: #0f172a;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 16px;
+            }
+            h1 {
+                font-size: 1.8rem;
+                flex-wrap: wrap;
+            }
+            .task-header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .task-body {
+                padding: 0 16px 16px;
+            }
+            .phase-banner {
+                padding: 16px;
+            }
+            .phase-banner .meta {
+                flex-direction: column;
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <h1>
+            🧪 Jalsa – Phase 16: Testing
+            <small>Expanded Implementation Handbook · 7 Tasks · 45+ Subtasks</small>
+        </h1>
+
+        <!-- ====== PHASE BANNER ====== -->
+        <div class="phase-banner">
+            <h2>🧪 Phase 16 – Testing</h2>
+            <p><strong>Purpose:</strong> Build a comprehensive testing strategy for the Jalsa frontend application. This phase covers unit testing (components, services, pipes, directives), integration testing (API integration, routing), end‑to‑end testing (critical user flows), test automation, and coverage reporting. The goal is to achieve ≥ 80% code coverage and ensure the application is stable, reliable, and regression‑free.</p>
+            <div class="meta">
+                <span>📋 Tasks: 7</span>
+                <span>⏱️ Total Effort: ~24 hours</span>
+                <span>👤 Owners: M3 (Frontend Lead), M4 (Frontend Developer)</span>
+                <span>🔗 Dependencies: All previous feature phases (7–15)</span>
+                <span>🎯 Deliverable: Complete test suite with ≥ 80% coverage, including unit, integration, and E2E tests</span>
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 1: TEST SETUP AND CONFIGURATION                                 -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-TEST-001</span><span class="task-name">Test Setup and Configuration</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">3h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-TEST-001</li>
+                    <li><strong>Task Name:</strong> Test Setup and Configuration</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> None (foundational)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 3 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Configure the testing environment for Angular 17 with Jasmine/Karma (default) or Jest, set up test utilities, mock helpers, and establish testing patterns. Also set up end‑to‑end testing with Playwright or Cypress.</p>
+
+                <h3>Business Purpose</h3>
+                <p>A well‑configured test environment ensures that tests are reliable, fast, and easy to write. It reduces flakiness and speeds up the development cycle.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Set up test runners, configure code coverage, create test utility helpers (mock services, test data factories), and establish the project structure for test files.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Angular CLI 17 with default Jasmine/Karma setup.</li>
+                    <li>Understanding of testing concepts (unit, integration, E2E).</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-SETUP-001:</strong> Angular project exists.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Angular project.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Updated <code>karma.conf.js</code> (if using Karma).</li>
+                    <li><code>src/test.ts</code> or <code>setup-jest.ts</code> (if using Jest).</li>
+                    <li><code>src/test-utils/</code> folder with helper functions.</li>
+                    <li>E2E configuration (<code>playwright.config.ts</code> or <code>cypress.config.ts</code>).</li>
+                    <li>Updated <code>package.json</code> scripts.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Configure Karma (Default)</h4>
+                <p><strong>What to do:</strong> Update <code>karma.conf.js</code> to enable code coverage and set thresholds.</p>
+                <p><strong>Why it is required:</strong> Coverage reporting helps track test effectiveness.</p>
+
+                <div class="code-block">
+                    <span class="comment">// karma.conf.js</span>
+                    module.exports = function (config) {
+                        config.set({
+                            coverageIstanbulReporter: {
+                                dir: require('path').join(__dirname, './coverage'),
+                                reports: ['html', 'lcovonly', 'text-summary'],
+                                fixWebpackSourcePaths: true,
+                                'report-config': {
+                                    html: { subdir: 'html' },
+                                },
+                                thresholds: {
+                                    global: {
+                                        statements: 80,
+                                        branches: 80,
+                                        functions: 80,
+                                        lines: 80,
+                                    },
+                                },
+                            },
+                            browsers: ['ChromeHeadless'], // Use headless for CI
+                            singleRun: false,
+                            autoWatch: true,
+                        });
+                    };
+                </div>
+
+                <h4>Step 2: Create Test Utilities</h4>
+                <p><strong>What to do:</strong> Create a <code>src/test-utils/</code> folder with helper functions for mocking, data factories, and TestBed utilities.</p>
+
+                <div class="code-block">
+                    <span class="comment">// src/test-utils/test-helpers.ts</span>
+                    <span class="keyword">import</span> { ComponentFixture, TestBed } <span class="keyword">from</span> <span class="string">'@angular/core/testing'</span>;
+                    <span class="keyword">import</span> { provideHttpClientTesting } <span class="keyword">from</span> <span class="string">'@angular/common/http/testing'</span>;
+
+                    export function createTestComponent&lt;T&gt;(component: new (...args: any[]) => T): ComponentFixture&lt;T&gt; {
+                        TestBed.configureTestingModule({
+                            imports: [component],
+                            providers: [provideHttpClientTesting()],
+                        });
+                        return TestBed.createComponent(component);
+                    }
+
+                    <span class="comment">// Data factory</span>
+                    export function createMockPatient(overrides?: Partial&lt;Patient&gt;): Patient {
+                        return {
+                            id: '1',
+                            firstName: 'John',
+                            lastName: 'Doe',
+                            email: 'john@example.com',
+                            dateOfBirth: '1990-01-01',
+                            gender: 'Male' as const,
+                            emergencyContact: null,
+                            notes: null,
+                            isArchived: false,
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                            ...overrides,
+                        };
+                    }
+                </div>
+
+                <div class="code-block">
+                    <span class="comment">// src/test-utils/mock-services.ts</span>
+                    <span class="keyword">import</span> { of } <span class="keyword">from</span> <span class="string">'rxjs'</span>;
+                    <span class="keyword">import</span> { Patient } <span class="keyword">from</span> <span class="string">'../app/core/models/patient.model'</span>;
+
+                    export function createMockPatientService() {
+                        return {
+                            getPatients: jasmine.createSpy().and.returnValue(of({ items: [], totalCount: 0 })),
+                            getPatient: jasmine.createSpy().and.returnValue(of(null)),
+                            createPatient: jasmine.createSpy().and.returnValue(of({})),
+                            updatePatient: jasmine.createSpy().and.returnValue(of({})),
+                            archivePatient: jasmine.createSpy().and.returnValue(of({})),
+                            restorePatient: jasmine.createSpy().and.returnValue(of({})),
+                        };
+                    }
+                </div>
+
+                <h4>Step 3: Update package.json Scripts</h4>
+                <div class="code-block">
+                    <span class="comment">// package.json</span>
+                    "scripts": {
+                        "test": "ng test",
+                        "test:ci": "ng test --watch=false --browsers=ChromeHeadless --code-coverage",
+                        "test:watch": "ng test --watch=true",
+                        "test:coverage": "ng test --code-coverage --watch=false",
+                        "e2e": "playwright test",
+                        "e2e:ci": "playwright test --headed=false",
+                    }
+                </div>
+
+                <h4>Step 4: Set Up E2E Testing (Playwright)</h4>
+                <p>Install Playwright and configure.</p>
+                <div class="code-block">
+                    npm install --save-dev @playwright/test
+                    npx playwright install
+                </div>
+
+                <div class="code-block">
+                    <span class="comment">// playwright.config.ts</span>
+                    <span class="keyword">import</span> { defineConfig, devices } <span class="keyword">from</span> <span class="string">'@playwright/test'</span>;
+
+                    export default defineConfig({
+                        testDir: './e2e',
+                        timeout: 30000,
+                        fullyParallel: true,
+                        forbidOnly: !!process.env.CI,
+                        retries: process.env.CI ? 2 : 0,
+                        workers: process.env.CI ? 1 : undefined,
+                        reporter: 'html',
+                        use: {
+                            baseURL: 'http://localhost:4200',
+                            trace: 'on-first-retry',
+                        },
+                        projects: [
+                            { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+                            { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+                            { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+                        ],
+                        webServer: {
+                            command: 'ng serve',
+                            url: 'http://localhost:4200',
+                            reuseExistingServer: !process.env.CI,
+                        },
+                    });
+                </div>
+
+                <h4>Step 5: Create E2E Test Directory</h4>
+                <div class="code-block">
+                    mkdir -p e2e
+                    mkdir -p e2e/pages
+                    mkdir -p e2e/specs
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>src/test-utils/test-helpers.ts</code></li>
+                    <li><code>src/test-utils/mock-services.ts</code></li>
+                    <li><code>src/test-utils/mock-data.ts</code></li>
+                    <li><code>playwright.config.ts</code></li>
+                    <li><code>e2e/pages/</code></li>
+                    <li><code>e2e/specs/</code></li>
+                    <li><code>karma.conf.js</code> (updated)</li>
+                    <li><code>package.json</code> (updated)</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    npm install --save-dev @playwright/test
+                    npx playwright install
+                    mkdir -p src/test-utils e2e/pages e2e/specs
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Test runners (Karma, Jest)</li>
+                    <li>Code coverage</li>
+                    <li>E2E testing frameworks</li>
+                    <li>Page Object Model</li>
+                </ul>
+
+                <h3>Tools/Libraries Required</h3>
+                <ul>
+                    <li>Jasmine/Karma or Jest</li>
+                    <li>Playwright or Cypress</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Run <code>npm run test:ci</code> and verify tests run in headless mode.</li>
+                    <li>Run <code>npm run e2e</code> and verify Playwright works.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Test configuration and utilities ready.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not setting coverage thresholds, leading to low coverage.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Test environment is configured and runs successfully.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use test utilities for consistent mocking.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 2: UNIT TESTS – COMPONENTS                                     -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-TEST-002</span><span class="task-name">Unit Tests – Components</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">5h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-TEST-002</li>
+                    <li><strong>Task Name:</strong> Unit Tests – Components</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-TEST-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 5 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Write comprehensive unit tests for all Angular components, covering rendering, event handling, input/output binding, form validation, and interaction with services. Use TestBed and ComponentFixture.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Ensure that components render correctly, handle user interactions properly, and maintain state correctly. This prevents UI regressions.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Test component logic in isolation by mocking dependencies. Verify that the component's template renders correctly based on component state and that events trigger the expected behavior.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular TestBed.</li>
+                    <li>Knowledge of ComponentFixture, DebugElement, By.css.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-TEST-001:</strong> Test utilities.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>All feature components.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Unit test files for each component (<code>*.component.spec.ts</code>).</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Test Shared Components</h4>
+                <p><strong>What to do:</strong> Write tests for ButtonComponent, InputComponent, TableComponent, etc.</p>
+                <p><strong>Why it is required:</strong> Shared components are reused across the app; they must be reliable.</p>
+
+                <div class="code-block">
+                    <span class="comment">// button.component.spec.ts</span>
+                    <span class="keyword">import</span> { ComponentFixture, TestBed } <span class="keyword">from</span> <span class="string">'@angular/core/testing'</span>;
+                    <span class="keyword">import</span> { ButtonComponent } <span class="keyword">from</span> <span class="string">'./button.component'</span>;
+
+                    describe('ButtonComponent', () => {
+                        let component: ButtonComponent;
+                        let fixture: ComponentFixture&lt;ButtonComponent&gt;;
+
+                        beforeEach(async () => {
+                            await TestBed.configureTestingModule({
+                                imports: [ButtonComponent],
+                            }).compileComponents();
+
+                            fixture = TestBed.createComponent(ButtonComponent);
+                            component = fixture.componentInstance;
+                        });
+
+                        it('should create', () => {
+                            expect(component).toBeTruthy();
+                        });
+
+                        it('should display loading spinner when loading is true', () => {
+                            component.loading = true;
+                            fixture.detectChanges();
+                            const spinner = fixture.nativeElement.querySelector('.spinner-border');
+                            expect(spinner).toBeTruthy();
+                        });
+
+                        it('should emit click event when button is clicked', () => {
+                            spyOn(component.click, 'emit');
+                            const button = fixture.nativeElement.querySelector('button');
+                            button.click();
+                            expect(component.click.emit).toHaveBeenCalled();
+                        });
+
+                        it('should be disabled when loading is true', () => {
+                            component.loading = true;
+                            fixture.detectChanges();
+                            const button = fixture.nativeElement.querySelector('button');
+                            expect(button.disabled).toBeTrue();
+                        });
+                    });
+                </div>
+
+                <h4>Step 2: Test Feature Components</h4>
+                <p><strong>What to do:</strong> Write tests for PatientListComponent, SessionFormComponent, etc. Mock their dependencies.</p>
+
+                <div class="code-block">
+                    <span class="comment">// patient-list.component.spec.ts</span>
+                    <span class="keyword">import</span> { ComponentFixture, TestBed } <span class="keyword">from</span> <span class="string">'@angular/core/testing'</span>;
+                    <span class="keyword">import</span> { PatientListComponent } <span class="keyword">from</span> <span class="string">'./patient-list.component'</span>;
+                    <span class="keyword">import</span> { PatientService } <span class="keyword">from</span> <span class="string">'../../core/services/patient.service'</span>;
+                    <span class="keyword">import</span> { PatientStateService } <span class="keyword">from</span> <span class="string">'../../core/state/patient-state.service'</span>;
+                    <span class="keyword">import</span> { Router } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+                    <span class="keyword">import</span> { of } <span class="keyword">from</span> <span class="string">'rxjs'</span>;
+
+                    describe('PatientListComponent', () => {
+                        let component: PatientListComponent;
+                        let fixture: ComponentFixture&lt;PatientListComponent&gt;;
+                        let mockPatientService: jasmine.SpyObj&lt;PatientService&gt;;
+                        let mockPatientState: jasmine.SpyObj&lt;PatientStateService&gt;;
+                        let mockRouter: jasmine.SpyObj&lt;Router&gt;;
+
+                        const mockPatients = [
+                            { id: '1', firstName: 'John', lastName: 'Doe', email: 'john@example.com', isArchived: false },
+                            { id: '2', firstName: 'Jane', lastName: 'Smith', email: 'jane@example.com', isArchived: false },
+                        ];
+
+                        beforeEach(async () => {
+                            mockPatientService = jasmine.createSpyObj('PatientService', ['getPatients', 'archivePatient', 'restorePatient']);
+                            mockPatientState = jasmine.createSpyObj('PatientStateService', ['setPatients', 'setLoading', 'setError']);
+                            mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+
+                            mockPatientService.getPatients.and.returnValue(of({ items: mockPatients, totalCount: 2 }));
+
+                            await TestBed.configureTestingModule({
+                                imports: [PatientListComponent],
+                                providers: [
+                                    { provide: PatientService, useValue: mockPatientService },
+                                    { provide: PatientStateService, useValue: mockPatientState },
+                                    { provide: Router, useValue: mockRouter },
+                                ],
+                            }).compileComponents();
+
+                            fixture = TestBed.createComponent(PatientListComponent);
+                            component = fixture.componentInstance;
+                        });
+
+                        it('should create', () => {
+                            expect(component).toBeTruthy();
+                        });
+
+                        it('should load patients on init', () => {
+                            component.ngOnInit();
+                            expect(mockPatientService.getPatients).toHaveBeenCalled();
+                            expect(mockPatientState.setPatients).toHaveBeenCalledWith(mockPatients);
+                        });
+
+                        it('should archive a patient', () => {
+                            const patientId = '1';
+                            mockPatientService.archivePatient.and.returnValue(of({}));
+                            component.archivePatient(patientId);
+                            expect(mockPatientService.archivePatient).toHaveBeenCalledWith(patientId);
+                        });
+                    });
+                </div>
+
+                <h4>Step 3: Test Form Components</h4>
+                <p>Test PatientFormComponent, SessionFormComponent with validation logic.</p>
+
+                <div class="code-block">
+                    <span class="comment">// patient-form.component.spec.ts</span>
+                    it('should validate required fields', () => {
+                        const firstNameControl = component.form.get('firstName');
+                        firstNameControl?.setValue('');
+                        expect(firstNameControl?.invalid).toBeTrue();
+                        firstNameControl?.setValue('John');
+                        expect(firstNameControl?.valid).toBeTrue();
+                    });
+
+                    it('should call createPatient on valid submit', () => {
+                        component.form.patchValue({
+                            firstName: 'John',
+                            lastName: 'Doe',
+                            email: 'john@example.com',
+                            dateOfBirth: '1990-01-01',
+                            gender: 'Male',
+                        });
+                        component.onSubmit();
+                        expect(mockPatientService.createPatient).toHaveBeenCalled();
+                    });
+                </div>
+
+                <h4>Step 4: Test Components with Signals</h4>
+                <p>Test that components correctly bind to state signals.</p>
+
+                <div class="code-block">
+                    it('should display patients from state', () => {
+                        // Set state with patients
+                        const state = TestBed.inject(PatientStateService);
+                        state.setPatients(mockPatients);
+                        fixture.detectChanges();
+                        const rows = fixture.nativeElement.querySelectorAll('table tbody tr');
+                        expect(rows.length).toBe(2);
+                    });
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li>All <code>*.component.spec.ts</code> files for every component.</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <p>Tests are generated with components. Ensure they are updated.</p>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Angular TestBed</li>
+                    <li>ComponentFixture</li>
+                    <li>DebugElement and By.css</li>
+                    <li>Spy objects and mock services</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Write tests for all components.</li>
+                    <li>Run <code>ng test</code> and ensure all tests pass.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>All component tests written and passing.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not mocking dependencies, causing test failures.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>All component tests pass with good coverage.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use TestBed for component testing; mock all external dependencies.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 3: UNIT TESTS – SERVICES AND STATE SERVICES                   -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-TEST-003</span><span class="task-name">Unit Tests – Services and State Services</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-TEST-003</li>
+                    <li><strong>Task Name:</strong> Unit Tests – Services and State Services</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-TEST-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Write comprehensive unit tests for all services (feature services, state services, HTTP client, interceptors) to ensure they handle API calls, state management, and error scenarios correctly.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Services contain business logic and data management. Testing them ensures the core functionality works correctly.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use <code>HttpClientTestingModule</code> to mock HTTP requests. Test state services with signals and verify state updates. Test interceptors with mock requests.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of <code>HttpClientTestingModule</code>.</li>
+                    <li>Knowledge of testing services with Signals.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-TEST-001:</strong> Test setup.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>All services (<code>core/services/</code> and <code>core/state/</code>).</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Test files for each service (<code>*.service.spec.ts</code>).</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Test Feature Services (PatientService, SessionService, etc.)</h4>
+
+                <div class="code-block">
+                    <span class="comment">// patient.service.spec.ts</span>
+                    <span class="keyword">import</span> { TestBed } <span class="keyword">from</span> <span class="string">'@angular/core/testing'</span>;
+                    <span class="keyword">import</span> { provideHttpClientTesting, HttpTestingController } <span class="keyword">from</span> <span class="string">'@angular/common/http/testing'</span>;
+                    <span class="keyword">import</span> { PatientService } <span class="keyword">from</span> <span class="string">'./patient.service'</span>;
+
+                    describe('PatientService', () => {
+                        let service: PatientService;
+                        let httpMock: HttpTestingController;
+
+                        beforeEach(() => {
+                            TestBed.configureTestingModule({
+                                providers: [PatientService, provideHttpClientTesting()],
+                            });
+                            service = TestBed.inject(PatientService);
+                            httpMock = TestBed.inject(HttpTestingController);
+                        });
+
+                        afterEach(() => {
+                            httpMock.verify();
+                        });
+
+                        it('should fetch patients', () => {
+                            const mockResponse = { items: [], totalCount: 0 };
+                            service.getPatients({ page: 1, size: 10 }).subscribe(response => {
+                                expect(response).toEqual(mockResponse);
+                            });
+
+                            const req = httpMock.expectOne('http://localhost:5000/api/patients?page=1&size=10');
+                            expect(req.request.method).toBe('GET');
+                            req.flush(mockResponse);
+                        });
+
+                        it('should handle 404 error', () => {
+                            service.getPatient('999').subscribe({
+                                error: (error) => {
+                                    expect(error.status).toBe(404);
+                                },
+                            });
+
+                            const req = httpMock.expectOne('http://localhost:5000/api/patients/999');
+                            req.flush('Patient not found', { status: 404, statusText: 'Not Found' });
+                        });
+                    });
+                </div>
+
+                <h4>Step 2: Test State Services (PatientStateService, etc.)</h4>
+
+                <div class="code-block">
+                    <span class="comment">// patient-state.service.spec.ts</span>
+                    <span class="keyword">import</span> { TestBed } <span class="keyword">from</span> <span class="string">'@angular/core/testing'</span>;
+                    <span class="keyword">import</span> { PatientStateService } <span class="keyword">from</span> <span class="string">'./patient-state.service'</span>;
+
+                    describe('PatientStateService', () => {
+                        let service: PatientStateService;
+
+                        beforeEach(() => {
+                            TestBed.configureTestingModule({
+                                providers: [PatientStateService],
+                            });
+                            service = TestBed.inject(PatientStateService);
+                        });
+
+                        it('should initialize with null data', () => {
+                            expect(service.data()).toBeNull();
+                            expect(service.loading()).toBeFalse();
+                            expect(service.error()).toBeNull();
+                        });
+
+                        it('should set data', () => {
+                            const patients = [{ id: '1', firstName: 'John', lastName: 'Doe', email: 'john@example.com' }];
+                            service.setPatients(patients);
+                            expect(service.data()).toEqual(patients);
+                        });
+
+                        it('should add a patient', () => {
+                            const patient = { id: '2', firstName: 'Jane', lastName: 'Doe', email: 'jane@example.com' };
+                            service.addPatient(patient);
+                            expect(service.data()).toContain(patient);
+                        });
+
+                        it('should update a patient', () => {
+                            const patient = { id: '1', firstName: 'John', lastName: 'Smith', email: 'john@example.com' };
+                            service.setPatients([{ id: '1', firstName: 'John', lastName: 'Doe', email: 'john@example.com' }]);
+                            service.updatePatient(patient);
+                            expect(service.data()![0].lastName).toBe('Smith');
+                        });
+
+                        it('should remove a patient', () => {
+                            service.setPatients([{ id: '1', firstName: 'John', lastName: 'Doe', email: 'john@example.com' }]);
+                            service.removePatient('1');
+                            expect(service.data()).toEqual([]);
+                        });
+                    });
+                </div>
+
+                <h4>Step 3: Test Interceptors</h4>
+
+                <div class="code-block">
+                    <span class="comment">// auth.interceptor.spec.ts</span>
+                    <span class="keyword">import</span> { TestBed } <span class="keyword">from</span> <span class="string">'@angular/core/testing'</span>;
+                    <span class="keyword">import</span> { provideHttpClient, withInterceptors } <span class="keyword">from</span> <span class="string">'@angular/common/http'</span>;
+                    <span class="keyword">import</span> { HttpTestingController, provideHttpClientTesting } <span class="keyword">from</span> <span class="string">'@angular/common/http/testing'</span>;
+                    <span class="keyword">import</span> { authInterceptor } <span class="keyword">from</span> <span class="string">'./auth.interceptor'</span>;
+
+                    describe('AuthInterceptor', () => {
+                        let httpMock: HttpTestingController;
+
+                        beforeEach(() => {
+                            TestBed.configureTestingModule({
+                                providers: [
+                                    provideHttpClient(withInterceptors([authInterceptor])),
+                                    provideHttpClientTesting(),
+                                ],
+                            });
+                            httpMock = TestBed.inject(HttpTestingController);
+                        });
+
+                        it('should add Authorization header when token exists', () => {
+                            // Mock AuthService token
+                            const authService = TestBed.inject(AuthService);
+                            spyOn(authService, 'getToken').and.returnValue('mock-token');
+
+                            TestBed.inject(HttpClient).get('/test').subscribe();
+                            const req = httpMock.expectOne('/test');
+                            expect(req.request.headers.get('Authorization')).toBe('Bearer mock-token');
+                            req.flush({});
+                        });
+                    });
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li>All <code>*.service.spec.ts</code> files.</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <p>Services are generated with test files. Update them.</p>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>HttpClientTestingModule</li>
+                    <li>Signal testing</li>
+                    <li>Interceptor testing</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Write tests for all services.</li>
+                    <li>Run tests and verify all pass.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>All service tests written and passing.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not verifying HTTP requests (<code>httpMock.verify()</code>).
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>All service tests pass with good coverage.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use HttpClientTestingModule for service tests.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 4: UNIT TESTS – PIPES AND DIRECTIVES                          -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-TEST-004</span><span class="task-name">Unit Tests – Pipes and Directives</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">2h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-TEST-004</li>
+                    <li><strong>Task Name:</strong> Unit Tests – Pipes and Directives</li>
+                    <li><strong>Owner:</strong> M4 (Frontend Developer)</li>
+                    <li><strong>Dependencies:</strong> FE-TEST-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 2 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Write unit tests for all custom pipes and directives (TruncatePipe, DateAgoPipe, RoleDirective, ClickOutsideDirective).</p>
+
+                <h3>Business Purpose</h3>
+                <p>Pipes and directives are used across the application; they must work correctly and consistently.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Test pipes by calling their transform method. Test directives by creating a host component and verifying behavior.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of pipe testing.</li>
+                    <li>Knowledge of directive testing with host components.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-TEST-001:</strong> Test setup.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>All pipes and directives.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Test files for each pipe and directive.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Test Pipes</h4>
+
+                <div class="code-block">
+                    <span class="comment">// truncate.pipe.spec.ts</span>
+                    <span class="keyword">import</span> { TruncatePipe } <span class="keyword">from</span> <span class="string">'./truncate.pipe'</span>;
+
+                    describe('TruncatePipe', () => {
+                        let pipe: TruncatePipe;
+
+                        beforeEach(() => {
+                            pipe = new TruncatePipe();
+                        });
+
+                        it('should return empty string for null input', () => {
+                            expect(pipe.transform(null as any)).toBe('');
+                        });
+
+                        it('should return original string if shorter than limit', () => {
+                            const text = 'Hello world';
+                            expect(pipe.transform(text, 20)).toBe(text);
+                        });
+
+                        it('should truncate string longer than limit', () => {
+                            const text = 'Hello world, this is a long string';
+                            expect(pipe.transform(text, 10)).toBe('Hello worl…');
+                        });
+
+                        it('should use custom trail when provided', () => {
+                            const text = 'Hello world';
+                            expect(pipe.transform(text, 5, '...')).toBe('Hello...');
+                        });
+                    });
+                </div>
+
+                <h4>Step 2: Test Directives</h4>
+
+                <div class="code-block">
+                    <span class="comment">// role.directive.spec.ts</span>
+                    <span class="keyword">import</span> { Component } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { ComponentFixture, TestBed } <span class="keyword">from</span> <span class="string">'@angular/core/testing'</span>;
+                    <span class="keyword">import</span> { RoleDirective } <span class="keyword">from</span> <span class="string">'./role.directive'</span>;
+                    <span class="keyword">import</span> { AuthService } <span class="keyword">from</span> <span class="string">'../../core/services/auth.service'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        template: `&lt;div *appRole="['Admin']"&gt;Admin Content&lt;/div&gt;`,
+                        standalone: true,
+                        imports: [RoleDirective],
+                    })
+                    class TestComponent {}
+
+                    describe('RoleDirective', () => {
+                        let fixture: ComponentFixture&lt;TestComponent&gt;;
+                        let mockAuthService: jasmine.SpyObj&lt;AuthService&gt;;
+
+                        beforeEach(() => {
+                            mockAuthService = jasmine.createSpyObj('AuthService', ['hasAnyRole']);
+                            TestBed.configureTestingModule({
+                                imports: [TestComponent],
+                                providers: [
+                                    { provide: AuthService, useValue: mockAuthService },
+                                ],
+                            });
+                            fixture = TestBed.createComponent(TestComponent);
+                        });
+
+                        it('should show content when user has role', () => {
+                            mockAuthService.hasAnyRole.and.returnValue(true);
+                            fixture.detectChanges();
+                            const el = fixture.nativeElement.querySelector('div');
+                            expect(el.textContent).toContain('Admin Content');
+                        });
+
+                        it('should hide content when user lacks role', () => {
+                            mockAuthService.hasAnyRole.and.returnValue(false);
+                            fixture.detectChanges();
+                            const el = fixture.nativeElement.querySelector('div');
+                            expect(el).toBeNull();
+                        });
+                    });
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>truncate.pipe.spec.ts</code></li>
+                    <li><code>date-ago.pipe.spec.ts</code></li>
+                    <li><code>role.directive.spec.ts</code></li>
+                    <li><code>click-outside.directive.spec.ts</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <p>Pipes and directives are generated with test files. Update them.</p>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Pipe testing (pure functions)</li>
+                    <li>Directive testing with host components</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Write tests for all pipes and directives.</li>
+                    <li>Run tests and verify all pass.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>All pipe and directive tests passing.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not using <code>fixture.detectChanges()</code> for directive tests.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>All pipe and directive tests pass.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Test pipes as pure functions; test directives with host components.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 5: INTEGRATION TESTS                                            -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-TEST-005</span><span class="task-name">Integration Tests</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-TEST-005</li>
+                    <li><strong>Task Name:</strong> Integration Tests</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-TEST-001, FE-TEST-002, FE-TEST-003</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Write integration tests that verify the interaction between multiple components, services, and the API layer. Test complete user flows like authentication, patient CRUD, and session creation.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Ensure that different parts of the application work together correctly and that user flows are functional.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use <code>HttpClientTestingModule</code> to mock API responses and test the interaction between components and services.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of integration testing concepts.</li>
+                    <li>Ability to set up component trees in tests.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-TEST-001:</strong> Test setup.</li>
+                    <li><strong>FE-TEST-002:</strong> Component tests.</li>
+                    <li><strong>FE-TEST-003:</strong> Service tests.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Components and services.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Integration test files (<code>*.integration.spec.ts</code> or within component specs).</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Test Authentication Flow</h4>
+                <p>Test login, token storage, and redirect.</p>
+
+                <div class="code-block">
+                    <span class="comment">// login.integration.spec.ts</span>
+                    it('should login successfully and redirect to dashboard', () => {
+                        const loginComponent = fixture.componentInstance;
+                        loginComponent.loginForm.patchValue({
+                            email: 'therapist@jalsa.com',
+                            password: 'password123',
+                        });
+
+                        // Mock AuthService.login
+                        const authService = TestBed.inject(AuthService);
+                        authService.login.and.returnValue(of({ token: 'mock-token' }));
+
+                        loginComponent.onSubmit();
+
+                        expect(authService.login).toHaveBeenCalled();
+                        expect(authService.login).toHaveBeenCalledWith({
+                            email: 'therapist@jalsa.com',
+                            password: 'password123',
+                        });
+
+                        // Verify token storage and redirect
+                        const router = TestBed.inject(Router);
+                        expect(router.navigate).toHaveBeenCalledWith(['/dashboard']);
+                    });
+                </div>
+
+                <h4>Step 2: Test Patient CRUD Flow</h4>
+                <p>Test creating a patient and seeing it in the list.</p>
+
+                <div class="code-block">
+                    it('should create a patient and update the list', () => {
+                        // Create patient form
+                        const formComponent = TestBed.createComponent(PatientFormComponent);
+                        formComponent.componentInstance.form.patchValue({
+                            firstName: 'Test',
+                            lastName: 'User',
+                            email: 'test@example.com',
+                            dateOfBirth: '1990-01-01',
+                            gender: 'Male',
+                        });
+                        formComponent.componentInstance.onSubmit();
+
+                        // Verify service call
+                        const patientService = TestBed.inject(PatientService);
+                        expect(patientService.createPatient).toHaveBeenCalled();
+
+                        // Navigate to list and verify
+                        const listComponent = TestBed.createComponent(PatientListComponent);
+                        listComponent.componentInstance.ngOnInit();
+                        expect(patientService.getPatients).toHaveBeenCalled();
+                    });
+                </div>
+
+                <h4>Step 3: Test Session Creation with Voice</h4>
+                <p>Test session form with rich text and voice upload.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>auth/login.integration.spec.ts</code></li>
+                    <li><code>patients/patient-flow.integration.spec.ts</code></li>
+                    <li><code>sessions/session-flow.integration.spec.ts</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <p>No new commands.</p>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Integration testing</li>
+                    <li>Component tree testing</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Write integration tests for key user flows.</li>
+                    <li>Run tests and verify they pass.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Integration tests for critical flows.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not mocking API responses correctly.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Integration tests pass for key flows.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Integration tests verify component and service interaction.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 6: END‑TO‑END TESTS                                            -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-TEST-006</span><span class="task-name">End‑to‑End Tests</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-TEST-006</li>
+                    <li><strong>Task Name:</strong> End‑to‑End Tests</li>
+                    <li><strong>Owner:</strong> M4 (Frontend Developer)</li>
+                    <li><strong>Dependencies:</strong> FE-TEST-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Write end‑to‑end tests for critical user journeys using Playwright (or Cypress). Tests should cover login, patient management, session creation, and dashboard visibility.</p>
+
+                <h3>Business Purpose</h3>
+                <p>E2E tests validate that the application works from the user's perspective, catching issues that unit and integration tests miss.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use Playwright's API to simulate user interactions, navigate through the application, and assert on page content. Use Page Object Model for maintainable tests.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Playwright installed and configured.</li>
+                    <li>Application running (or webServer config).</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-TEST-001:</strong> E2E setup.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Application features.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>E2E test specs in <code>e2e/specs/</code>.</li>
+                    <li>Page objects in <code>e2e/pages/</code>.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Create Page Objects</h4>
+
+                <div class="code-block">
+                    <span class="comment">// e2e/pages/login.page.ts</span>
+                    <span class="keyword">import</span> { Page, Locator } <span class="keyword">from</span> <span class="string">'@playwright/test'</span>;
+
+                    export class LoginPage {
+                        readonly page: Page;
+                        readonly emailInput: Locator;
+                        readonly passwordInput: Locator;
+                        readonly submitButton: Locator;
+                        readonly errorMessage: Locator;
+
+                        constructor(page: Page) {
+                            this.page = page;
+                            this.emailInput = page.locator('input[type="email"]');
+                            this.passwordInput = page.locator('input[type="password"]');
+                            this.submitButton = page.locator('button[type="submit"]');
+                            this.errorMessage = page.locator('.alert-danger');
+                        }
+
+                        async goto() {
+                            await this.page.goto('/auth/login');
+                        }
+
+                        async login(email: string, password: string) {
+                            await this.emailInput.fill(email);
+                            await this.passwordInput.fill(password);
+                            await this.submitButton.click();
+                        }
+
+                        async getErrorMessage() {
+                            return this.errorMessage.textContent();
+                        }
+                    }
+                </div>
+
+                <div class="code-block">
+                    <span class="comment">// e2e/pages/patients.page.ts</span>
+                    <span class="keyword">import</span> { Page, Locator } <span class="keyword">from</span> <span class="string">'@playwright/test'</span>;
+
+                    export class PatientsPage {
+                        readonly page: Page;
+                        readonly addButton: Locator;
+                        readonly searchInput: Locator;
+                        readonly patientRows: Locator;
+
+                        constructor(page: Page) {
+                            this.page = page;
+                            this.addButton = page.locator('text=Add Patient');
+                            this.searchInput = page.locator('input[placeholder*="search"]');
+                            this.patientRows = page.locator('table tbody tr');
+                        }
+
+                        async goto() {
+                            await this.page.goto('/patients');
+                        }
+
+                        async addPatient() {
+                            await this.addButton.click();
+                        }
+
+                        async search(query: string) {
+                            await this.searchInput.fill(query);
+                            await this.page.keyboard.press('Enter');
+                        }
+
+                        async getPatientCount() {
+                            return this.patientRows.count();
+                        }
+                    }
+                </div>
+
+                <h4>Step 2: Write E2E Test Specs</h4>
+
+                <div class="code-block">
+                    <span class="comment">// e2e/specs/auth.spec.ts</span>
+                    <span class="keyword">import</span> { test, expect } <span class="keyword">from</span> <span class="string">'@playwright/test'</span>;
+                    <span class="keyword">import</span> { LoginPage } <span class="keyword">from</span> <span class="string">'../pages/login.page'</span>;
+
+                    test.describe('Authentication', () => {
+                        test('should login successfully', async ({ page }) => {
+                            const loginPage = new LoginPage(page);
+                            await loginPage.goto();
+                            await loginPage.login('therapist@jalsa.com', 'password123');
+
+                            // Should redirect to dashboard
+                            await expect(page).toHaveURL('/dashboard');
+                            await expect(page.locator('h2:has-text("Dashboard")')).toBeVisible();
+                        });
+
+                        test('should show error on invalid credentials', async ({ page }) => {
+                            const loginPage = new LoginPage(page);
+                            await loginPage.goto();
+                            await loginPage.login('wrong@example.com', 'wrongpassword');
+
+                            const errorMessage = await loginPage.getErrorMessage();
+                            expect(errorMessage).toContain('Invalid');
+                        });
+                    });
+                </div>
+
+                <div class="code-block">
+                    <span class="comment">// e2e/specs/patients.spec.ts</span>
+                    <span class="keyword">import</span> { test, expect } <span class="keyword">from</span> <span class="string">'@playwright/test'</span>;
+                    <span class="keyword">import</span> { LoginPage } <span class="keyword">from</span> <span class="string">'../pages/login.page'</span>;
+                    <span class="keyword">import</span> { PatientsPage } <span class="keyword">from</span> <span class="string">'../pages/patients.page'</span>;
+
+                    test.describe('Patient Management', () => {
+                        test.beforeEach(async ({ page }) => {
+                            const loginPage = new LoginPage(page);
+                            await loginPage.goto();
+                            await loginPage.login('therapist@jalsa.com', 'password123');
+                            await page.waitForURL('/dashboard');
+                        });
+
+                        test('should display patient list', async ({ page }) => {
+                            const patientsPage = new PatientsPage(page);
+                            await patientsPage.goto();
+                            const count = await patientsPage.getPatientCount();
+                            expect(count).toBeGreaterThan(0);
+                        });
+
+                        test('should create a new patient', async ({ page }) => {
+                            const patientsPage = new PatientsPage(page);
+                            await patientsPage.goto();
+                            await patientsPage.addPatient();
+
+                            // Fill form
+                            await page.fill('input[formControlName="firstName"]', 'E2E');
+                            await page.fill('input[formControlName="lastName"]', 'Test');
+                            await page.fill('input[formControlName="email"]', 'e2e@example.com');
+                            await page.fill('input[formControlName="dateOfBirth"]', '1990-01-01');
+                            await page.selectOption('select[formControlName="gender"]', 'Male');
+                            await page.click('button[type="submit"]');
+
+                            await expect(page).toHaveURL(/\/patients\/\d+/);
+                        });
+                    });
+                </div>
+
+                <h4>Step 3: Run E2E Tests</h4>
+                <div class="code-block">
+                    npx playwright test
+                    npx playwright test --headed  # To see the browser
+                    npx playwright show-report   # View the report
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>e2e/pages/login.page.ts</code></li>
+                    <li><code>e2e/pages/patients.page.ts</code></li>
+                    <li><code>e2e/pages/dashboard.page.ts</code></li>
+                    <li><code>e2e/specs/auth.spec.ts</code></li>
+                    <li><code>e2e/specs/patients.spec.ts</code></li>
+                    <li><code>e2e/specs/dashboard.spec.ts</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    npx playwright test
+                    npx playwright test --ui
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Page Object Model</li>
+                    <li>Playwright selectors</li>
+                    <li>Test assertions</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Write E2E tests for critical flows.</li>
+                    <li>Run tests and verify they pass.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>E2E tests for all critical flows.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Flaky tests due to timing issues – use <code>waitFor</code> or <code>expect</code> with auto‑retry.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>E2E tests pass consistently.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> E2E tests simulate real user interactions.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 7: COVERAGE REPORTING AND FINAL VALIDATION                    -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-TEST-007</span><span class="task-name">Coverage Reporting and Final Validation</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">2h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-TEST-007</li>
+                    <li><strong>Task Name:</strong> Coverage Reporting and Final Validation</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> All previous test tasks</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 2 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Generate code coverage reports, review coverage metrics, ensure the 80% threshold is met, and prepare final test documentation. Identify gaps and add missing tests.</p>
+
+                <h3>Business Purpose</h3>
+                <p>High test coverage gives confidence that the application is stable and ready for production.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Run <code>ng test --code-coverage</code> and analyze the coverage report. Add missing tests for uncovered lines. Update CI pipeline to enforce coverage thresholds.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>All tests written.</li>
+                    <li>Karma/Jest configured for coverage.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li>All previous test tasks.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>All test files.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Coverage report (<code>/coverage/</code>).</li>
+                    <li>Updated tests to fill gaps.</li>
+                    <li>CI configuration for coverage checks.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Run Coverage Tests</h4>
+                <div class="code-block">
+                    npm run test:coverage
+                </div>
+
+                <h4>Step 2: Analyze Coverage Report</h4>
+                <p>Open <code>/coverage/index.html</code> in a browser and review coverage by file. Look for files with low coverage.</p>
+
+                <h4>Step 3: Add Missing Tests</h4>
+                <p>Identify uncovered lines and write additional tests to cover them. Focus on critical components and services.</p>
+
+                <h4>Step 4: Verify Thresholds</h4>
+                <p>Check that overall coverage meets the 80% threshold. If not, add more tests.</p>
+
+                <h4>Step 5: Update CI Configuration</h4>
+                <p>Ensure CI pipeline fails if coverage is below threshold.</p>
+
+                <div class="code-block">
+                    <span class="comment">// .github/workflows/ci.yml or similar</span>
+                    - name: Run tests with coverage
+                      run: npm run test:ci -- --code-coverage
+                    - name: Upload coverage report
+                      uses: actions/upload-artifact@v3
+                      with:
+                        name: coverage-report
+                        path: coverage/
+                </div>
+
+                <h4>Step 6: Document Test Strategy</h4>
+                <p>Create a <code>/docs/testing/README.md</code> with the testing strategy, how to run tests, and coverage goals.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>/docs/testing/README.md</code></li>
+                    <li>Updated tests for coverage gaps.</li>
+                    <li>CI configuration updates.</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    npm run test:coverage
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Code coverage</li>
+                    <li>Istanbul coverage reporting</li>
+                    <li>CI/CD integration</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Run coverage report.</li>
+                    <li>Review and address gaps.</li>
+                    <li>Ensure all thresholds met.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Coverage report with ≥ 80%.</li>
+                    <li>Updated CI pipeline.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Focusing only on line coverage; also consider branch coverage.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Coverage ≥ 80%, CI pipeline enforces thresholds.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Maintain coverage by writing tests for all new code.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- PHASE COMPLETION CRITERIA                                             -->
+        <!-- ===================================================================== -->
+        <hr class="hr" />
+
+        <h2 style="background: #f0fdf4; border-left-color: #22c55e; padding:12px 20px; border-left:6px solid #22c55e; border-radius:8px;">✅ Phase Completion Criteria</h2>
+        <ul class="checklist">
+            <li>All 7 testing tasks are complete.</li>
+            <li>Test environment is configured and running.</li>
+            <li>Unit tests for all components pass.</li>
+            <li>Unit tests for all services pass.</li>
+            <li>Unit tests for all pipes and directives pass.</li>
+            <li>Integration tests for critical flows pass.</li>
+            <li>E2E tests for critical flows pass.</li>
+            <li>Code coverage ≥ 80%.</li>
+            <li>CI pipeline enforces coverage thresholds.</li>
+            <li>Test documentation is complete.</li>
+            <li>All changes are committed.</li>
+        </ul>
+
+        <h2 style="background: #f0f9ff; border-left-color: #3b82f6; padding:12px 20px; border-left:6px solid #3b82f6; border-radius:8px; margin-top:24px;">📋 Code Review Checklist</h2>
+        <ul class="checklist">
+            <li>Test files are in the correct location (next to source files or in <code>e2e/</code>).</li>
+            <li>Tests use proper mocking and stubbing.</li>
+            <li>Component tests cover rendering and interactions.</li>
+            <li>Service tests cover API calls and error handling.</li>
+            <li>E2E tests are reliable and not flaky.</li>
+            <li>Coverage thresholds are met.</li>
+        </ul>
+
+        <h2 style="background: #fefce8; border-left-color: #f59e0b; padding:12px 20px; border-left:6px solid #f59e0b; border-radius:8px; margin-top:24px;">🚀 Pull Request Checklist</h2>
+        <ul class="checklist">
+            <li>Branch up‑to‑date with main.</li>
+            <li>All tests pass.</li>
+            <li>Coverage ≥ 80%.</li>
+            <li>Code review completed.</li>
+            <li>Documentation updated.</li>
+        </ul>
+
+        <h2 style="background: #fef2f2; border-left-color: #ef4444; padding:12px 20px; border-left:6px solid #ef4444; border-radius:8px; margin-top:24px;">🧪 Deployment Readiness Checklist</h2>
+        <ul class="checklist">
+            <li>All tests pass in CI.</li>
+            <li>Coverage thresholds are met.</li>
+            <li>E2E tests pass on staging.</li>
+        </ul>
+
+        <hr class="hr" />
+        <div style="text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 20px 0 0;">
+            Jalsa – Phase 16: Testing – Expanded Implementation Handbook &bull; v1.0 &bull; For development team
+        </div>
+    </div>
+
+    <script>
+        function toggleTask(header) {
+            const body = header.nextElementSibling;
+            const isOpen = body.classList.contains('open');
+            body.classList.toggle('open');
+            header.classList.toggle('open');
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstHeader = document.querySelector('.task-header');
+            if (firstHeader) firstHeader.click();
+        });
+    </script>
+</body>
+</html>

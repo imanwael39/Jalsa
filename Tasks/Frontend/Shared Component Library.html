@@ -1,0 +1,2394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jalsa – Phase 4: Shared Component Library – Expanded Implementation Handbook</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+            padding: 30px 20px;
+            line-height: 1.7;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            padding: 40px 45px;
+        }
+        h1 {
+            font-size: 2.4rem;
+            color: #0f172a;
+            border-bottom: 4px solid #3b82f6;
+            padding-bottom: 18px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        h1 small {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #64748b;
+            margin-left: auto;
+        }
+        .phase-banner {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 20px 28px;
+            margin-bottom: 32px;
+            border-left: 8px solid #3b82f6;
+        }
+        .phase-banner h2 {
+            margin: 0 0 8px 0;
+            font-size: 1.6rem;
+            color: #0f172a;
+            background: none;
+            padding: 0;
+            border-left: none;
+        }
+        .phase-banner p {
+            margin: 0;
+            color: #475569;
+        }
+        .phase-banner .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px 40px;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+        .phase-banner .meta span {
+            font-weight: 500;
+            color: #0f172a;
+        }
+
+        .task-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+        .task-header {
+            background: #f8fafc;
+            padding: 16px 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.15s;
+            user-select: none;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .task-header:hover {
+            background: #f1f5f9;
+        }
+        .task-header .task-id {
+            font-weight: 700;
+            color: #3b82f6;
+            margin-right: 12px;
+            font-size: 1.05rem;
+        }
+        .task-header .task-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .task-header .task-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .task-header .task-badges .tag {
+            font-size: 0.7rem;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+        .task-header .chevron {
+            transition: transform 0.25s;
+            font-size: 1.3rem;
+            color: #94a3b8;
+            margin-left: 12px;
+        }
+        .task-header.open .chevron {
+            transform: rotate(180deg);
+        }
+
+        .task-body {
+            padding: 0 24px 24px;
+            display: none;
+            overflow: hidden;
+        }
+        .task-body.open {
+            display: block;
+        }
+
+        .task-body h3 {
+            font-size: 1.15rem;
+            margin-top: 22px;
+            margin-bottom: 8px;
+            color: #0f172a;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 4px;
+        }
+        .task-body h4 {
+            font-size: 1rem;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            color: #334155;
+        }
+        .task-body p {
+            margin-bottom: 8px;
+        }
+        .task-body ul,
+        .task-body ol {
+            padding-left: 24px;
+            margin-bottom: 10px;
+        }
+        .task-body li {
+            margin-bottom: 3px;
+        }
+        .task-body .field-label {
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+        .checklist li {
+            padding: 3px 0 3px 30px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') left center no-repeat;
+            background-size: 18px;
+        }
+
+        .pitfall-box {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .tip-box {
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .arch-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #e2e8f0;
+            padding: 1px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-right: 4px;
+        }
+        .tag-blue {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .tag-green {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .tag-amber {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .tag-red {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .tag-purple {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+        .tag-slate {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        .tag-indigo {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .flow-diagram {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin: 8px 0 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .flow-diagram .arrow {
+            color: #94a3b8;
+            margin: 0 6px;
+        }
+        .flow-diagram .step {
+            color: #0f172a;
+            font-weight: 500;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            margin: 10px 0 16px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            background: #fff;
+        }
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+            text-align: left;
+            padding: 8px 14px;
+            border-bottom: 2px solid #e2e8f0;
+            color: #0f172a;
+        }
+        td {
+            padding: 8px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .hr {
+            border: none;
+            border-top: 2px dashed #e2e8f0;
+            margin: 32px 0;
+        }
+
+        .code-block {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin: 6px 0 12px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .code-block .comment {
+            color: #94a3b8;
+        }
+        .code-block .keyword {
+            color: #f472b6;
+        }
+        .code-block .string {
+            color: #34d399;
+        }
+        .code-block .func {
+            color: #60a5fa;
+        }
+
+        .subtask {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 12px 18px;
+            margin: 10px 0;
+            border-left: 4px solid #3b82f6;
+        }
+        .subtask strong {
+            color: #0f172a;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 16px;
+            }
+            h1 {
+                font-size: 1.8rem;
+                flex-wrap: wrap;
+            }
+            .task-header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .task-body {
+                padding: 0 16px 16px;
+            }
+            .phase-banner {
+                padding: 16px;
+            }
+            .phase-banner .meta {
+                flex-direction: column;
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <h1>
+            🧰 Jalsa – Phase 4: Shared Component Library
+            <small>Expanded Implementation Handbook · 13 Tasks · 65+ Subtasks</small>
+        </h1>
+
+        <!-- ====== PHASE BANNER ====== -->
+        <div class="phase-banner">
+            <h2>🧰 Phase 4 – Shared Component Library</h2>
+            <p><strong>Purpose:</strong> Build a reusable library of UI components, directives, and pipes that will be used across all features of the Jalsa platform. These shared elements ensure visual consistency, reduce code duplication, and accelerate feature development. Every component is built as a Standalone Angular component, follows the design system, and is fully tested.</p>
+            <div class="meta">
+                <span>📋 Tasks: 13</span>
+                <span>⏱️ Total Effort: ~30 hours</span>
+                <span>👤 Owners: M3 (Frontend Lead), M4 (Frontend Developer)</span>
+                <span>🔗 Dependencies: Phase 3 (RTL & Design System) must be complete</span>
+                <span>🎯 Deliverable: Complete shared library with all components, directives, pipes, and documentation</span>
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 1: SHARED LIBRARY SETUP                                         -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-SHARED-001</span><span class="task-name">Shared Library Setup</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">2h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-SHARED-001</li>
+                    <li><strong>Task Name:</strong> Shared Library Setup</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-SETUP-004 (folder structure), FE-RTL-001 (design system variables)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 2 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create the folder structure for the shared library, set up barrel exports, and establish the pattern for building Standalone components. Provide a consistent way to import shared components across the application.</p>
+
+                <h3>Business Purpose</h3>
+                <p>A well‑organised shared library makes it easy to find and reuse components, reducing development time and ensuring consistency.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Define the shared library as a set of Standalone components, directives, and pipes that are exported via a single barrel file (<code>shared/index.ts</code>) so they can be imported easily.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular Standalone components.</li>
+                    <li>Knowledge of barrel exports and TypeScript path aliases (optional).</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-SETUP-004:</strong> The <code>shared/</code> folder exists.</li>
+                    <li><strong>FE-RTL-001:</strong> Design system variables are available for styling.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Design system from Phase 3.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>shared/components/</code> folder.</li>
+                    <li><code>shared/directives/</code> folder.</li>
+                    <li><code>shared/pipes/</code> folder.</li>
+                    <li><code>shared/index.ts</code> barrel file.</li>
+                    <li>Optional path alias in <code>tsconfig.json</code> for easier imports.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Create Subfolders</h4>
+                <p><strong>What to do:</strong> Inside <code>src/app/shared/</code>, create <code>components/</code>, <code>directives/</code>, <code>pipes/</code>.</p>
+
+                <div class="code-block">
+                    cd src/app/shared
+                    mkdir components directives pipes
+                </div>
+
+                <h4>Step 2: Create Barrel Export</h4>
+                <p><strong>What to do:</strong> Create <code>shared/index.ts</code> to export all shared artifacts.</p>
+
+                <div class="code-block">
+                    <span class="comment">// shared/index.ts</span>
+                    export * from './components';
+                    export * from './directives';
+                    export * from './pipes';
+                </div>
+
+                <p>But we'll create individual barrel files later. For now, just create the file and export empty stubs.</p>
+
+                <h4>Step 3: Configure Path Alias (Optional)</h4>
+                <p>Add a path alias in <code>tsconfig.json</code> for easier imports.</p>
+
+                <div class="code-block">
+                    <span class="comment">// tsconfig.json</span>
+                    {
+                        "compilerOptions": {
+                            "paths": {
+                                "@shared/*": ["src/app/shared/*"]
+                            }
+                        }
+                    }
+                </div>
+
+                <p>Then restart the dev server.</p>
+
+                <h4>Step 4: Create Placeholder <code>.gitkeep</code> Files</h4>
+                <p>Add <code>.gitkeep</code> in each folder to track them.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>shared/components/.gitkeep</code></li>
+                    <li><code>shared/directives/.gitkeep</code></li>
+                    <li><code>shared/pipes/.gitkeep</code></li>
+                    <li><code>shared/index.ts</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    cd src/app/shared
+                    mkdir components directives pipes
+                    touch index.ts
+                    touch components/.gitkeep directives/.gitkeep pipes/.gitkeep
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Barrel exports</li>
+                    <li>Path aliases</li>
+                </ul>
+
+                <h3>Tools/Libraries Required</h3>
+                <ul>
+                    <li>None</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Import something from <code>@shared</code> in a component to verify the alias works.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Shared library structure ready.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Forgetting to update <code>tsconfig.json</code> paths correctly.
+                    <br /><strong>Fix:</strong> Ensure the path is relative to <code>baseUrl</code>.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Folders and barrel file created.</li>
+                    <li>Path alias working.</li>
+                </ul>
+
+                <h3>Frontend Architecture Notes</h3>
+                <ul>
+                    <li>All shared components will be Standalone.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use <code>@shared</code> alias for imports.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 2: BUTTON COMPONENT                                              -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-SHARED-002</span><span class="task-name">Button Component</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">3h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-SHARED-002</li>
+                    <li><strong>Task Name:</strong> Button Component</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-SHARED-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 3 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create a reusable Button component that supports multiple variants (primary, secondary, success, danger, etc.), sizes, loading states, and disabled states. The component should be fully RTL‑aware and follow the design system.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Buttons are the most common interactive element; a consistent button component ensures brand consistency and accessibility.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Build a Standalone component with inputs for variant, size, loading, disabled, and type. Use Bootstrap classes with custom SCSS overrides for theming.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular components and inputs.</li>
+                    <li>Knowledge of Bootstrap button classes.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-SHARED-001:</strong> Shared library setup.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Design system colours and spacing.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>shared/components/button/button.component.ts</code></li>
+                    <li><code>shared/components/button/button.component.html</code></li>
+                    <li><code>shared/components/button/button.component.scss</code></li>
+                    <li><code>shared/components/button/index.ts</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Generate Component</h4>
+                <div class="code-block">
+                    ng g c shared/components/button --standalone --skip-tests
+                </div>
+
+                <h4>Step 2: Define Inputs</h4>
+                <p>Add inputs for variant, size, loading, disabled, type, and aria-label.</p>
+
+                <div class="code-block">
+                    <span class="comment">// button.component.ts</span>
+                    <span class="keyword">import</span> { Component, Input, HostBinding } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+
+                    <span class="keyword">type</span> ButtonVariant = 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'light' | 'dark' | 'link';
+                    <span class="keyword">type</span> ButtonSize = 'sm' | 'md' | 'lg';
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-button',
+                        standalone: true,
+                        templateUrl: './button.component.html',
+                        styleUrls: ['./button.component.scss'],
+                    })
+                    export <span class="keyword">class</span> ButtonComponent {
+                        @Input() variant: ButtonVariant = 'primary';
+                        @Input() size: ButtonSize = 'md';
+                        @Input() loading = false;
+                        @Input() disabled = false;
+                        @Input() type: 'button' | 'submit' | 'reset' = 'button';
+                        @Input() ariaLabel?: string;
+                        @Input() icon?: string; <span class="comment">// optional icon class</span>
+
+                        @HostBinding('class')
+                        get classes(): string {
+                            const base = 'btn';
+                            const variantClass = `btn-${this.variant}`;
+                            const sizeClass = this.size !== 'md' ? `btn-${this.size}` : '';
+                            const loadingClass = this.loading ? 'btn-loading' : '';
+                            return [base, variantClass, sizeClass, loadingClass].filter(Boolean).join(' ');
+                        }
+
+                        @HostBinding('disabled')
+                        get isDisabled(): boolean {
+                            return this.disabled || this.loading;
+                        }
+                    }
+                </div>
+
+                <h4>Step 3: Create Template</h4>
+                <div class="code-block">
+                    <span class="comment">// button.component.html</span>
+                    <span class="keyword">&lt;ng-container&gt;</span>
+                        <span class="keyword">&lt;span</span> *<span class="keyword">if</span>="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"<span class="keyword">&gt;&lt;/span&gt;</span>
+                        <span class="keyword">&lt;span</span> *<span class="keyword">if</span>="icon &amp;&amp; !loading" class="bi {{ icon }}"<span class="keyword">&gt;&lt;/span&gt;</span>
+                        <span class="keyword">&lt;ng-content&gt;&lt;/ng-content&gt;</span>
+                    <span class="keyword">&lt;/ng-container&gt;</span>
+                </div>
+
+                <p>Note: We use Bootstrap's spinner.</p>
+
+                <h4>Step 4: Add Styles</h4>
+                <div class="code-block">
+                    <span class="comment">// button.component.scss</span>
+                    <span class="keyword">:host</span> {
+                        display: inline-block;
+                    }
+                    .btn-loading {
+                        opacity: 0.65;
+                        pointer-events: none;
+                    }
+                    .btn-loading .spinner-border {
+                        margin-right: 0.5rem;
+                    }
+                    <span class="comment">// RTL adjustments</span>
+                    [dir="rtl"] .btn-loading .spinner-border {
+                        margin-left: 0.5rem;
+                        margin-right: 0;
+                    }
+                </div>
+
+                <h4>Step 5: Export in Barrel</h4>
+                <p>Create <code>shared/components/button/index.ts</code>.</p>
+
+                <div class="code-block">
+                    export * from './button.component';
+                </div>
+
+                <h4>Step 6: Update Shared Barrel</h4>
+                <p>Update <code>shared/components/index.ts</code> to export button.</p>
+
+                <div class="code-block">
+                    export * from './button';
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li>button.component.ts</li>
+                    <li>button.component.html</li>
+                    <li>button.component.scss</li>
+                    <li>button/index.ts</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g c shared/components/button --standalone --skip-tests
+                    <span class="comment"># Then manually edit files</span>
+                </div>
+
+                <h3>Code Flow</h3>
+                <div class="flow-diagram">
+                    <span class="step">Parent Component</span> <span class="arrow">→</span>
+                    <span class="step">&lt;app-button variant="primary" [loading]="true"&gt;Save&lt;/app-button&gt;</span> <span class="arrow">→</span>
+                    <span class="step">ButtonComponent</span> <span class="arrow">→</span>
+                    <span class="step">Rendered button with classes and content</span>
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Angular components and inputs</li>
+                    <li>HostBinding</li>
+                    <li>Content projection</li>
+                    <li>Bootstrap classes</li>
+                </ul>
+
+                <h3>Tools/Libraries Required</h3>
+                <ul>
+                    <li>Bootstrap CSS</li>
+                </ul>
+
+                <h3>Angular Concepts Required</h3>
+                <ul>
+                    <li>Standalone components</li>
+                    <li>@Input and @HostBinding</li>
+                    <li>ng-content</li>
+                </ul>
+
+                <h3>UI/UX Requirements</h3>
+                <ul>
+                    <li>Button states: default, hover, focus, active, disabled, loading.</li>
+                    <li>RTL support: spacing and icon placement.</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Unit test: verify classes are applied correctly based on inputs.</li>
+                    <li>Test loading state: button is disabled and shows spinner.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Button component ready.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not disabling the button when loading.
+                    <br /><strong>Fix:</strong> Use HostBinding for disabled.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>When both loading and disabled are true, loading takes precedence.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Button component works and is exported.</li>
+                </ul>
+
+                <h3>Frontend Architecture Notes</h3>
+                <ul>
+                    <li>Button uses Bootstrap classes; custom styles only for loading and RTL.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use <code>&lt;app-button&gt;</code> instead of native <code>&lt;button&gt;</code>.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 3: INPUT COMPONENTS                                              -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-SHARED-003</span><span class="task-name">Input Components (Text, Textarea, Select, etc.)</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">5h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-SHARED-003</li>
+                    <li><strong>Task Name:</strong> Input Components (Text, Textarea, Select, etc.)</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-SHARED-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 5 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create reusable form input components (Input, Textarea, Select, Checkbox, Radio) that support Bootstrap styling, validation states, and integrate with Angular Reactive Forms via ControlValueAccessor.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Forms are central to the application (patient intake, session notes, etc.). Consistent, accessible inputs improve user experience and reduce development time.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Implement ControlValueAccessor for each input type so they work with <code>formControl</code> and <code>ngModel</code>. Include error messages, labels, and hints.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular Reactive Forms and ControlValueAccessor.</li>
+                    <li>Knowledge of Bootstrap form classes.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-SHARED-001:</strong> Shared library setup.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Design system spacing and typography.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>shared/components/input/input.component.ts</code></li>
+                    <li><code>shared/components/input/input.component.html</code></li>
+                    <li><code>shared/components/textarea/textarea.component.ts</code></li>
+                    <li><code>shared/components/select/select.component.ts</code></li>
+                    <li><code>shared/components/checkbox/checkbox.component.ts</code></li>
+                    <li>Corresponding templates and styles.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Generate Base Input Component</h4>
+                <p>We'll create a generic input component that can be used for text, email, password, etc.</p>
+
+                <div class="code-block">
+                    ng g c shared/components/input --standalone --skip-tests
+                </div>
+
+                <p>Implement ControlValueAccessor:</p>
+
+                <div class="code-block">
+                    <span class="comment">// input.component.ts</span>
+                    <span class="keyword">import</span> { Component, Input, forwardRef, HostBinding } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { ControlValueAccessor, NG_VALUE_ACCESSOR } <span class="keyword">from</span> <span class="string">'@angular/forms'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-input',
+                        standalone: true,
+                        templateUrl: './input.component.html',
+                        styleUrls: ['./input.component.scss'],
+                        providers: [
+                            {
+                                provide: NG_VALUE_ACCESSOR,
+                                useExisting: forwardRef(() => InputComponent),
+                                multi: true,
+                            },
+                        ],
+                    })
+                    export <span class="keyword">class</span> InputComponent implements ControlValueAccessor {
+                        @Input() label = '';
+                        @Input() type = 'text';
+                        @Input() placeholder = '';
+                        @Input() helpText = '';
+                        @Input() error = '';
+                        @Input() required = false;
+                        @Input() disabled = false;
+
+                        value: string = '';
+                        onChange: (value: any) => void = () => {};
+                        onTouched: () => void = () => {};
+
+                        writeValue(value: any): void {
+                            this.value = value || '';
+                        }
+
+                        registerOnChange(fn: any): void {
+                            this.onChange = fn;
+                        }
+
+                        registerOnTouched(fn: any): void {
+                            this.onTouched = fn;
+                        }
+
+                        setDisabledState(isDisabled: boolean): void {
+                            this.disabled = isDisabled;
+                        }
+
+                        onInput(event: Event) {
+                            const input = event.target as HTMLInputElement;
+                            this.value = input.value;
+                            this.onChange(this.value);
+                            this.onTouched();
+                        }
+
+                        @HostBinding('class.has-error')
+                        get hasError(): boolean {
+                            return !!this.error;
+                        }
+                    }
+                </div>
+
+                <p>Template:</p>
+                <div class="code-block">
+                    &lt;div class="form-group"&gt;
+                        &lt;label *<span class="keyword">if</span>="label" [class.required]="required"&gt;{{ label }}&lt;/label&gt;
+                        &lt;input
+                            [type]="type"
+                            class="form-control"
+                            [class.is-invalid]="error"
+                            [placeholder]="placeholder"
+                            [disabled]="disabled"
+                            [value]="value"
+                            (input)="onInput($event)"
+                        /&gt;
+                        &lt;small *<span class="keyword">if</span>="helpText" class="form-text text-muted"&gt;{{ helpText }}&lt;/small&gt;
+                        &lt;div *<span class="keyword">if</span>="error" class="invalid-feedback"&gt;{{ error }}&lt;/div&gt;
+                    &lt;/div&gt;
+                </div>
+
+                <p>Similarly, create TextareaComponent, SelectComponent, CheckboxComponent, RadioComponent following the same pattern.</p>
+
+                <h4>Step 2: Create Other Input Types</h4>
+                <p>For each, generate component and implement ControlValueAccessor appropriately. For checkbox and radio, the value is boolean or selected option.</p>
+
+                <h4>Step 3: Export in Barrel</h4>
+                <p>Create <code>shared/components/input/index.ts</code>, etc., and update <code>shared/components/index.ts</code>.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li>input/input.component.ts, .html, .scss</li>
+                    <li>textarea/textarea.component.ts, .html, .scss</li>
+                    <li>select/select.component.ts, .html, .scss</li>
+                    <li>checkbox/checkbox.component.ts, .html, .scss</li>
+                    <li>radio/radio.component.ts, .html, .scss</li>
+                    <li>Each with index.ts</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g c shared/components/input --standalone --skip-tests
+                    ng g c shared/components/textarea --standalone --skip-tests
+                    ng g c shared/components/select --standalone --skip-tests
+                    ng g c shared/components/checkbox --standalone --skip-tests
+                    ng g c shared/components/radio --standalone --skip-tests
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>ControlValueAccessor</li>
+                    <li>Reactive Forms integration</li>
+                    <li>Bootstrap form classes</li>
+                </ul>
+
+                <h3>Tools/Libraries Required</h3>
+                <ul>
+                    <li>Angular Forms</li>
+                </ul>
+
+                <h3>Angular Concepts Required</h3>
+                <ul>
+                    <li>NG_VALUE_ACCESSOR</li>
+                    <li>forwardRef</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Unit test each component: writeValue, registerOnChange, etc.</li>
+                    <li>Test integration with Reactive Forms.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>All input components ready.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not calling <code>onTouched()</code> and <code>onChange()</code> correctly.
+                    <br /><strong>Fix:</strong> Call them in appropriate event handlers.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>When disabled, the input should not update.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>All input components work with forms.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use these components in all forms for consistency.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 4: MODAL COMPONENT                                               -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-SHARED-004</span><span class="task-name">Modal Component</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-SHARED-004</li>
+                    <li><strong>Task Name:</strong> Modal Component</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-SHARED-001, Bootstrap JS (for toggling)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create a reusable modal component that can be opened and closed programmatically, with customizable header, body, and footer. Support for various sizes, backdrop options, and accessibility.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Modals are used for confirmations, forms, and additional information. A standard modal ensures consistency.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use Bootstrap's modal JavaScript (or a pure Angular implementation) with Angular's component interaction (Input/Output) to control visibility and events.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Bootstrap modals.</li>
+                    <li>Angular component communication (@Input, @Output).</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-SHARED-001:</strong> Setup.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Bootstrap modal markup.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>shared/components/modal/modal.component.ts</code></li>
+                    <li>HTML and SCSS.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Generate Component</h4>
+                <div class="code-block">
+                    ng g c shared/components/modal --standalone --skip-tests
+                </div>
+
+                <h4>Step 2: Implement Modal with Inputs/Outputs</h4>
+                <p>We'll use Bootstrap's modal classes and handle visibility with a boolean Input.</p>
+
+                <div class="code-block">
+                    <span class="comment">// modal.component.ts</span>
+                    <span class="keyword">import</span> { Component, Input, Output, EventEmitter, HostListener } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-modal',
+                        standalone: true,
+                        templateUrl: './modal.component.html',
+                        styleUrls: ['./modal.component.scss'],
+                    })
+                    export <span class="keyword">class</span> ModalComponent {
+                        @Input() title = '';
+                        @Input() size: 'sm' | 'lg' | 'xl' = 'lg';
+                        @Input() closeOnBackdropClick = true;
+                        @Input() showModal = false;
+                        @Output() showModalChange = new EventEmitter&lt;boolean&gt;();
+                        @Output() closed = new EventEmitter&lt;void&gt;();
+
+                        close() {
+                            this.showModal = false;
+                            this.showModalChange.emit(false);
+                            this.closed.emit();
+                        }
+
+                        onBackdropClick() {
+                            <span class="keyword">if</span> (this.closeOnBackdropClick) {
+                                this.close();
+                            }
+                        }
+
+                        @HostListener('document:keydown.escape')
+                        onEscape() {
+                            this.close();
+                        }
+                    }
+                </div>
+
+                <p>Template:</p>
+                <div class="code-block">
+                    &lt;div class="modal" [class.show]="showModal" [class.d-block]="showModal" style="display: none;" (click)="onBackdropClick()"&gt;
+                        &lt;div class="modal-dialog" [class.modal-sm]="size==='sm'" [class.modal-lg]="size==='lg'" [class.modal-xl]="size==='xl'" (click)="$event.stopPropagation()"&gt;
+                            &lt;div class="modal-content"&gt;
+                                &lt;div class="modal-header"&gt;
+                                    &lt;h5 class="modal-title"&gt;{{ title }}&lt;/h5&gt;
+                                    &lt;button type="button" class="btn-close" (click)="close()"&gt;&lt;/button&gt;
+                                &lt;/div&gt;
+                                &lt;div class="modal-body"&gt;
+                                    &lt;ng-content select=".modal-body-content"&gt;&lt;/ng-content&gt;
+                                &lt;/div&gt;
+                                &lt;div class="modal-footer"&gt;
+                                    &lt;ng-content select=".modal-footer-content"&gt;&lt;/ng-content&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                    &lt;div class="modal-backdrop fade show" *<span class="keyword">if</span>="showModal"&gt;&lt;/div&gt;
+                </div>
+
+                <p>We use <code>ng-content</code> with selectors for body and footer to allow custom content.</p>
+
+                <h4>Step 3: Add Styles</h4>
+                <p>Customize modal backdrop and animation if needed.</p>
+
+                <h4>Step 4: Export</h4>
+                <p>Create <code>modal/index.ts</code> and update shared barrel.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li>modal.component.ts, .html, .scss</li>
+                    <li>modal/index.ts</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g c shared/components/modal --standalone --skip-tests
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Bootstrap modal structure</li>
+                    <li>ng-content with selectors</li>
+                    <li>HostListener for Escape key</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test opening/closing via <code>showModal</code> input.</li>
+                    <li>Test Escape key closes.</li>
+                    <li>Test backdrop click closes if enabled.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Modal component ready.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not stopping event propagation on modal content, causing backdrop click to close even when clicking inside.
+                    <br /><strong>Fix:</strong> Use <code>$event.stopPropagation()</code> on modal-dialog.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Modal works with all features.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use <code>&lt;app-modal&gt;</code> with <code>[(showModal)]</code>.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 5: TABLE COMPONENT                                               -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-SHARED-005</span><span class="task-name">Data Table Component</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">5h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-SHARED-005</li>
+                    <li><strong>Task Name:</strong> Data Table Component</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-SHARED-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 5 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create a reusable data table component that displays a list of objects with configurable columns, supports sorting, pagination (via separate component), and row actions.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Tables are used extensively for patient lists, session lists, exercise lists, etc. A consistent table component accelerates development and ensures uniformity.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use Angular's structural directives and content projection to define columns. Accept an array of data and column definitions. Emit events for sorting and row actions.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular templates and ngFor.</li>
+                    <li>Knowledge of content projection with <code>ng-template</code>.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-SHARED-001:</strong> Setup.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Data array, column definitions, sortable columns.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>shared/components/table/table.component.ts</code></li>
+                    <li>HTML, SCSS.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Generate Component</h4>
+                <div class="code-block">
+                    ng g c shared/components/table --standalone --skip-tests
+                </div>
+
+                <h4>Step 2: Define Column and Table Logic</h4>
+                <p>Use <code>ng-template</code> for cell rendering to allow custom content.</p>
+
+                <div class="code-block">
+                    <span class="comment">// table.component.ts</span>
+                    <span class="keyword">import</span> { Component, Input, Output, EventEmitter, ContentChildren, QueryList, TemplateRef } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+
+                    export interface TableColumn {
+                        key: string;
+                        label: string;
+                        sortable?: boolean;
+                    }
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-table',
+                        standalone: true,
+                        templateUrl: './table.component.html',
+                        styleUrls: ['./table.component.scss'],
+                    })
+                    export <span class="keyword">class</span> TableComponent {
+                        @Input() data: any[] = [];
+                        @Input() columns: TableColumn[] = [];
+                        @Input() loading = false;
+                        @Input() emptyMessage = 'No data available';
+                        @Output() sort = new EventEmitter&lt;{ key: string; direction: 'asc' | 'desc' }&gt;();
+
+                        sortColumn(key: string) {
+                            <span class="keyword">if</span> (!this.columns.find(c => c.key === key && c.sortable)) return;
+                            const currentDirection = this.currentSortKey === key ? (this.currentSortDirection === 'asc' ? 'desc' : 'asc') : 'asc';
+                            this.currentSortKey = key;
+                            this.currentSortDirection = currentDirection;
+                            this.sort.emit({ key, direction: currentDirection });
+                        }
+
+                        private currentSortKey: string = '';
+                        private currentSortDirection: 'asc' | 'desc' = 'asc';
+                    }
+                </div>
+
+                <p>Template: iterate over columns and data, render rows using structural directives for custom cell templates.</p>
+
+                <h4>Step 3: Use Content Projection for Custom Cells</h4>
+                <p>We can create a <code>ColumnCellDirective</code> to identify custom cell templates.</p>
+
+                <h4>Step 4: Export</h4>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li>table.component.ts, .html, .scss</li>
+                    <li>column-cell.directive.ts (optional)</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g c shared/components/table --standalone --skip-tests
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Content projection with ng-content or ng-template</li>
+                    <li>Output events</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test data rendering.</li>
+                    <li>Test sorting emits correct event.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Table component ready.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not handling missing data gracefully.
+                    <br /><strong>Fix:</strong> Show empty state message.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Table works with custom columns and sorting.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use table component for all data lists.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 6: PAGINATION COMPONENT                                          -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-SHARED-006</span><span class="task-name">Pagination Component</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">3h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-SHARED-006</li>
+                    <li><strong>Task Name:</strong> Pagination Component</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-SHARED-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 3 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create a standalone pagination component that displays page numbers, previous/next buttons, and supports total items, page size, and page change events.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Used with tables and lists to navigate large datasets.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Calculate total pages based on total items and page size. Emit page change event with new page number.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Basic math for pagination.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-SHARED-001:</strong> Setup.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Total items, page size, current page.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>shared/components/pagination/pagination.component.ts</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Generate Component</h4>
+                <div class="code-block">
+                    ng g c shared/components/pagination --standalone --skip-tests
+                </div>
+
+                <h4>Step 2: Implement Logic</h4>
+                <div class="code-block">
+                    <span class="comment">// pagination.component.ts</span>
+                    <span class="keyword">import</span> { Component, Input, Output, EventEmitter } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-pagination',
+                        standalone: true,
+                        templateUrl: './pagination.component.html',
+                        styleUrls: ['./pagination.component.scss'],
+                    })
+                    export <span class="keyword">class</span> PaginationComponent {
+                        @Input() totalItems = 0;
+                        @Input() pageSize = 10;
+                        @Input() currentPage = 1;
+                        @Input() maxVisible = 5;
+                        @Output() pageChange = new EventEmitter&lt;number&gt;();
+
+                        get totalPages(): number {
+                            return Math.ceil(this.totalItems / this.pageSize);
+                        }
+
+                        get pages(): number[] {
+                            const total = this.totalPages;
+                            const current = this.currentPage;
+                            const max = this.maxVisible;
+                            let start = Math.max(1, current - Math.floor(max / 2));
+                            let end = Math.min(total, start + max - 1);
+                            if (end - start + 1 < max) {
+                                start = Math.max(1, end - max + 1);
+                            }
+                            return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+                        }
+
+                        goToPage(page: number) {
+                            if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
+                                this.pageChange.emit(page);
+                            }
+                        }
+                    }
+                </div>
+
+                <p>Template: bootstrap pagination.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li>pagination.component.ts, .html, .scss</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g c shared/components/pagination --standalone --skip-tests
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Computed properties</li>
+                    <li>EventEmitter</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test total pages calculation.</li>
+                    <li>Test page array generation.</li>
+                    <li>Test page change event.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Pagination component ready.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not handling edge cases (0 items, 1 page).
+                    <br /><strong>Fix:</strong> Check totalPages > 1 before showing pagination.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Pagination works and emits events.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use with table component.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 7: SPINNER/LOADING COMPONENT                                     -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-SHARED-007</span><span class="task-name">Spinner/Loading Component</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">2h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-SHARED-007</li>
+                    <li><strong>Task Name:</strong> Spinner/Loading Component</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-SHARED-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 2 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create a spinner/loading indicator component that can be used as an overlay or inline, with different sizes and colours.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Provide visual feedback for async operations.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use Bootstrap spinner classes with custom theming.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Bootstrap spinner.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-SHARED-001:</strong> Setup.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Size, colour, overlay flag.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>shared/components/spinner/spinner.component.ts</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Generate Component</h4>
+                <div class="code-block">
+                    ng g c shared/components/spinner --standalone --skip-tests
+                </div>
+
+                <h4>Step 2: Implement</h4>
+                <div class="code-block">
+                    <span class="comment">// spinner.component.ts</span>
+                    <span class="keyword">import</span> { Component, Input, HostBinding } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-spinner',
+                        standalone: true,
+                        templateUrl: './spinner.component.html',
+                        styleUrls: ['./spinner.component.scss'],
+                    })
+                    export <span class="keyword">class</span> SpinnerComponent {
+                        @Input() size: 'sm' | 'md' | 'lg' = 'md';
+                        @Input() colour = 'primary';
+                        @Input() overlay = false;
+
+                        @HostBinding('class.overlay')
+                        get isOverlay(): boolean {
+                            return this.overlay;
+                        }
+                    }
+                </div>
+
+                <p>Template:</p>
+                <div class="code-block">
+                    &lt;div class="spinner-border text-{{ colour }}" role="status" [class.spinner-border-sm]="size==='sm'" [class.spinner-border-lg]="size==='lg'"&gt;
+                        &lt;span class="visually-hidden"&gt;Loading...&lt;/span&gt;
+                    &lt;/div&gt;
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li>spinner.component.ts, .html, .scss</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g c shared/components/spinner --standalone --skip-tests
+                </div>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test different sizes and colours.</li>
+                    <li>Test overlay mode (background).</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Spinner component ready.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Spinner works.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use for loading states.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 8: TOAST/NOTIFICATION COMPONENT                                  -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-SHARED-008</span><span class="task-name">Toast/Notification Component</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">2h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-SHARED-008</li>
+                    <li><strong>Task Name:</strong> Toast/Notification Component</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-SHARED-001, Bootstrap</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 2 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create a toast notification component that displays messages with different types (success, error, warning, info) and auto‑dismisses after a timeout.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Provide user feedback for actions like saving, errors, etc.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use Bootstrap's toast component with Angular animations for smooth appearance.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Bootstrap toast.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-SHARED-001:</strong> Setup.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Message, type, duration.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>shared/components/toast/toast.component.ts</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Generate Component</h4>
+                <div class="code-block">
+                    ng g c shared/components/toast --standalone --skip-tests
+                </div>
+
+                <h4>Step 2: Implement</h4>
+                <p>Use Bootstrap toast classes and Angular's <code>setTimeout</code> for auto‑dismiss.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li>toast.component.ts, .html, .scss</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g c shared/components/toast --standalone --skip-tests
+                </div>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test display with different types.</li>
+                    <li>Test auto‑dismiss.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Toast component ready.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Toast works.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use NotificationService to trigger toasts.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 9: EMPTY STATE COMPONENT                                          -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-SHARED-009</span><span class="task-name">Empty State Component</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">2h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-SHARED-009</li>
+                    <li><strong>Task Name:</strong> Empty State Component</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-SHARED-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 2 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">Medium</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create a component to display when there is no data, with optional icon, message, and action button.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Improve user experience by providing clear feedback when lists are empty.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Reusable component with inputs for title, message, image, and action.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Basic Angular component.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-SHARED-001:</strong> Setup.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Title, message, image/icon, action label, action event.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>shared/components/empty-state/empty-state.component.ts</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Generate Component</h4>
+                <div class="code-block">
+                    ng g c shared/components/empty-state --standalone --skip-tests
+                </div>
+
+                <h4>Step 2: Implement</h4>
+                <p>Simple template with icon, title, description, and a button if action provided.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li>empty-state.component.ts, .html, .scss</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g c shared/components/empty-state --standalone --skip-tests
+                </div>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test rendering with different inputs.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Empty state component ready.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Empty state works.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use when data list is empty.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 10: ROLE DIRECTIVE                                               -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-SHARED-010</span><span class="task-name">Role Directive</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">2h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-SHARED-010</li>
+                    <li><strong>Task Name:</strong> Role Directive</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-SHARED-001, AuthService (from Phase 5 – will be available later)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 2 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create a structural directive that conditionally renders content based on the user's role.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Control visibility of UI elements (buttons, menus, sections) based on user permissions.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use <code>*appRole</code> directive with a list of allowed roles. If the user has any of the roles, the content is rendered; otherwise, it is removed from the DOM.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular structural directives.</li>
+                    <li>AuthService with <code>hasRole()</code> method.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-SHARED-001:</strong> Setup.</li>
+                    <li><strong>AuthService:</strong> Will be created in Phase 5, but we can prepare the directive now.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Roles array.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>shared/directives/role.directive.ts</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Generate Directive</h4>
+                <div class="code-block">
+                    ng g d shared/directives/role --standalone --skip-tests
+                </div>
+
+                <h4>Step 2: Implement</h4>
+                <div class="code-block">
+                    <span class="comment">// role.directive.ts</span>
+                    <span class="keyword">import</span> { Directive, Input, TemplateRef, ViewContainerRef, inject } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { AuthService } <span class="keyword">from</span> <span class="string">'../../core/services/auth.service'</span>;
+
+                    <span class="keyword">@Directive</span>({
+                        selector: '[appRole]',
+                        standalone: true,
+                    })
+                    export <span class="keyword">class</span> RoleDirective {
+                        private templateRef = inject(TemplateRef);
+                        private viewContainer = inject(ViewContainerRef);
+                        private authService = inject(AuthService);
+
+                        @Input() set appRole(roles: string[]) {
+                            <span class="keyword">if</span> (this.authService.hasAnyRole(roles)) {
+                                this.viewContainer.createEmbeddedView(this.templateRef);
+                            } <span class="keyword">else</span> {
+                                this.viewContainer.clear();
+                            }
+                        }
+                    }
+                </div>
+
+                <p>Note: <code>hasAnyRole</code> should be added to AuthService.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li>role.directive.ts</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g d shared/directives/role --standalone --skip-tests
+                </div>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test with different roles.</li>
+                    <li>Verify element is removed or shown.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Role directive ready.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not using <code>hasAnyRole</code> correctly.
+                    <br /><strong>Fix:</strong> Ensure AuthService method exists.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Role directive works.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use <code>*appRole="['Therapist']"</code> to conditionally show content.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 11: CLICK OUTSIDE DIRECTIVE                                      -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-SHARED-011</span><span class="task-name">Click Outside Directive</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">2h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-SHARED-011</li>
+                    <li><strong>Task Name:</strong> Click Outside Directive</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-SHARED-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 2 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">Medium</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create a directive that emits an event when a click occurs outside the element it is attached to. Useful for closing dropdowns, modals, and menus.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Improve UX by closing dropdowns when clicking away.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Listen for <code>document:click</code> and check if the target is inside the element.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of DOM events and ElementRef.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-SHARED-001:</strong> Setup.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Optional exclude elements.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>shared/directives/click-outside.directive.ts</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Generate Directive</h4>
+                <div class="code-block">
+                    ng g d shared/directives/click-outside --standalone --skip-tests
+                </div>
+
+                <h4>Step 2: Implement</h4>
+                <div class="code-block">
+                    <span class="comment">// click-outside.directive.ts</span>
+                    <span class="keyword">import</span> { Directive, ElementRef, Output, EventEmitter, HostListener } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+
+                    <span class="keyword">@Directive</span>({
+                        selector: '[appClickOutside]',
+                        standalone: true,
+                    })
+                    export <span class="keyword">class</span> ClickOutsideDirective {
+                        @Output() appClickOutside = new EventEmitter&lt;void&gt;();
+
+                        constructor(private elementRef: ElementRef) {}
+
+                        @HostListener('document:click', ['$event'])
+                        onClick(event: MouseEvent) {
+                            const target = event.target as HTMLElement;
+                            if (!this.elementRef.nativeElement.contains(target)) {
+                                this.appClickOutside.emit();
+                            }
+                        }
+                    }
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li>click-outside.directive.ts</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g d shared/directives/click-outside --standalone --skip-tests
+                </div>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test directive on a dropdown menu.</li>
+                    <li>Click inside and outside to verify events.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Click outside directive ready.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Directive works.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use <code>(appClickOutside)="close()"</code> on dropdowns.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 12: TRUNCATE PIPE                                                -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-SHARED-012</span><span class="task-name">Truncate Pipe</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Low</span>
+                    <span class="tag">1h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-SHARED-012</li>
+                    <li><strong>Task Name:</strong> Truncate Pipe</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-SHARED-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Low</span></li>
+                    <li><strong>Estimated Effort:</strong> 1 hour</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">Low</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create a pipe that truncates a string to a specified length and appends an ellipsis.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Useful for displaying long text in tables and cards.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Pure pipe that returns substring and adds '...' if truncated.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular pipes.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-SHARED-001:</strong> Setup.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>String, length.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>shared/pipes/truncate.pipe.ts</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Generate Pipe</h4>
+                <div class="code-block">
+                    ng g p shared/pipes/truncate --standalone --skip-tests
+                </div>
+
+                <h4>Step 2: Implement</h4>
+                <div class="code-block">
+                    <span class="comment">// truncate.pipe.ts</span>
+                    <span class="keyword">import</span> { Pipe, PipeTransform } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+
+                    <span class="keyword">@Pipe</span>({
+                        name: 'truncate',
+                        standalone: true,
+                    })
+                    export <span class="keyword">class</span> TruncatePipe implements PipeTransform {
+                        transform(value: string, limit: number = 100, trail: string = '…'): string {
+                            if (!value) return '';
+                            if (value.length <= limit) return value;
+                            return value.substring(0, limit) + trail;
+                        }
+                    }
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li>truncate.pipe.ts</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g p shared/pipes/truncate --standalone --skip-tests
+                </div>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test pipe with different lengths.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Truncate pipe ready.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Pipe works.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use <code>{{ text | truncate:50 }}</code>.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 13: DATE AGO PIPE                                                -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-SHARED-013</span><span class="task-name">Date Ago Pipe</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Low</span>
+                    <span class="tag">1h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-SHARED-013</li>
+                    <li><strong>Task Name:</strong> Date Ago Pipe</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-SHARED-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Low</span></li>
+                    <li><strong>Estimated Effort:</strong> 1 hour</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">Low</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create a pipe that converts a date into a relative time string (e.g., "2 hours ago").</p>
+
+                <h3>Business Purpose</h3>
+                <p>Display human‑readable timestamps for sessions, messages, etc.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use JavaScript <code>Date</code> to calculate difference and return a string.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Date manipulation.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-SHARED-001:</strong> Setup.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Date string or Date object.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>shared/pipes/date-ago.pipe.ts</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Generate Pipe</h4>
+                <div class="code-block">
+                    ng g p shared/pipes/date-ago --standalone --skip-tests
+                </div>
+
+                <h4>Step 2: Implement</h4>
+                <div class="code-block">
+                    <span class="comment">// date-ago.pipe.ts</span>
+                    <span class="keyword">import</span> { Pipe, PipeTransform } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+
+                    <span class="keyword">@Pipe</span>({
+                        name: 'dateAgo',
+                        standalone: true,
+                    })
+                    export <span class="keyword">class</span> DateAgoPipe implements PipeTransform {
+                        transform(value: string | Date): string {
+                            if (!value) return '';
+                            const date = typeof value === 'string' ? new Date(value) : value;
+                            const now = new Date();
+                            const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+                            if (diff < 60) return 'just now';
+                            if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+                            if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+                            if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
+                            if (diff < 2592000) return Math.floor(diff / 604800) + 'w ago';
+                            if (diff < 31536000) return Math.floor(diff / 2592000) + 'mo ago';
+                            return Math.floor(diff / 31536000) + 'y ago';
+                        }
+                    }
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li>date-ago.pipe.ts</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g p shared/pipes/date-ago --standalone --skip-tests
+                </div>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test with different dates.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Date ago pipe ready.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Pipe works.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use <code>{{ timestamp | dateAgo }}</code>.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- PHASE COMPLETION CRITERIA                                             -->
+        <!-- ===================================================================== -->
+        <hr class="hr" />
+
+        <h2 style="background: #f0fdf4; border-left-color: #22c55e; padding:12px 20px; border-left:6px solid #22c55e; border-radius:8px;">✅ Phase Completion Criteria</h2>
+        <ul class="checklist">
+            <li>All 13 shared tasks are complete (FE-SHARED-001 to FE-SHARED-013).</li>
+            <li>All components are Standalone and exported via barrel files.</li>
+            <li>Button component supports all variants, sizes, loading, and disabled.</li>
+            <li>Input components (text, textarea, select, checkbox, radio) implement ControlValueAccessor and work with Reactive Forms.</li>
+            <li>Modal component is fully functional with inputs/outputs, Escape key, and backdrop handling.</li>
+            <li>Data Table component displays data with sorting and custom cell templates.</li>
+            <li>Pagination component calculates pages and emits events.</li>
+            <li>Spinner, Toast, Empty State components are ready.</li>
+            <li>Role and Click Outside directives work.</li>
+            <li>Truncate and Date Ago pipes are implemented.</li>
+            <li>All components follow the design system and are RTL‑aware.</li>
+            <li>Unit tests pass for each component.</li>
+            <li>All changes are committed to the repository.</li>
+        </ul>
+
+        <h2 style="background: #f0f9ff; border-left-color: #3b82f6; padding:12px 20px; border-left:6px solid #3b82f6; border-radius:8px; margin-top:24px;">📋 Code Review Checklist</h2>
+        <ul class="checklist">
+            <li>Components are properly named and follow naming conventions.</li>
+            <li>All components use <code>ChangeDetectionStrategy.OnPush</code> (add if not).</li>
+            <li>ControlValueAccessor implementations are correct.</li>
+            <li>Directives handle edge cases (e.g., multiple roles).</li>
+            <li>Pipes are pure and efficient.</li>
+            <li>RTL support is verified (e.g., margin for spinner in button).</li>
+            <li>Accessibility: labels, aria attributes, keyboard navigation.</li>
+        </ul>
+
+        <h2 style="background: #fefce8; border-left-color: #f59e0b; padding:12px 20px; border-left:6px solid #f59e0b; border-radius:8px; margin-top:24px;">🚀 Pull Request Checklist</h2>
+        <ul class="checklist">
+            <li>Branch is up‑to‑date with main.</li>
+            <li>All tests pass.</li>
+            <li>Code review completed.</li>
+            <li>Documentation updated (if applicable).</li>
+        </ul>
+
+        <h2 style="background: #fef2f2; border-left-color: #ef4444; padding:12px 20px; border-left:6px solid #ef4444; border-radius:8px; margin-top:24px;">🧪 Deployment Readiness Checklist</h2>
+        <ul class="checklist">
+            <li>Not applicable for this phase (shared library).</li>
+        </ul>
+
+        <hr class="hr" />
+        <div style="text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 20px 0 0;">
+            Jalsa – Phase 4: Shared Component Library – Expanded Implementation Handbook &bull; v1.0 &bull; For development team
+        </div>
+    </div>
+
+    <script>
+        function toggleTask(header) {
+            const body = header.nextElementSibling;
+            const isOpen = body.classList.contains('open');
+            body.classList.toggle('open');
+            header.classList.toggle('open');
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstHeader = document.querySelector('.task-header');
+            if (firstHeader) firstHeader.click();
+        });
+    </script>
+</body>
+</html>
