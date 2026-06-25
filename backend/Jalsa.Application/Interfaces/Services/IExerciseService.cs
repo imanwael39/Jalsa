@@ -4,13 +4,8 @@ namespace Jalsa.Application.Interfaces.Services;
 
 public interface IExerciseService
 {
-    Task<ExerciseViewDto> CreateAsync(ExerciseCreateDto dto);
-    Task<ExerciseViewDto> UpdateAsync(ExerciseUpdateDto dto);
-    Task DeleteAsync(Guid id);
-    Task<ExerciseViewDto> GetByIdAsync(Guid id);
-    Task<IEnumerable<ExerciseViewDto>> GetAllAsync();
-    Task<IEnumerable<ExerciseViewDto>> GetByPatientIdAsync(Guid patientId);
-    Task ExtendDueDateAsync(Guid id, DateOnly newDueDate);
-    Task<ExerciseLogViewDto> LogCompletionAsync(ExerciseLogCreateDto dto);
-    Task<IEnumerable<ExerciseLogViewDto>> GetLogsByPatientIdAsync(Guid patientId);
+    Task<IEnumerable<PatientExerciseViewDto>> GetPatientExercisesAsync(Guid patientId, string? status = null, CancellationToken cancellationToken = default);
+    Task<PatientExerciseViewDto?> GetExerciseByIdAsync(Guid exerciseId, CancellationToken cancellationToken = default);
+    Task<ExerciseLogViewDto?> UpdateExerciseStatusAsync(Guid exerciseId, Guid patientId, ExerciseStatusUpdateDto dto, CancellationToken cancellationToken = default);
+    Task<bool> IsExerciseOwnedByPatientAsync(Guid exerciseId, Guid patientId, CancellationToken cancellationToken = default);
 }

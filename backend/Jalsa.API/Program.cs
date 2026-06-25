@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Jalsa.Application.Interfaces.Repositores;
 using Jalsa.Application.Interfaces.Services;
 using Jalsa.Application.Mappings;
+using Jalsa.API.Services.Implementations;
 using Jalsa.Application.Services;
 using Jalsa.Infrastructure.Repositories;
 using Jalsa.Domain.Models.Identity;
@@ -52,6 +53,9 @@ builder.Services.AddDbContext<Galsa_DBDbContext>(options =>
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ISessionRepository, SessionRepository>();
 builder.Services.AddScoped<ISessionService, SessionService>();
+builder.Services.AddScoped<IExerciseService, ExerciseService>();
+builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<ICrisisService, CrisisService>();
 builder.Services.AddScoped<IGenericRepository<SessionNote>>(sp =>
 {
     var unitOfWork = sp.GetRequiredService<IUnitOfWork>();
@@ -59,6 +63,8 @@ builder.Services.AddScoped<IGenericRepository<SessionNote>>(sp =>
 });
 
 builder.Services.AddAutoMapper(typeof(SessionMappingProfile).Assembly);
+builder.Services.AddAutoMapper(typeof(ExerciseMappingProfile).Assembly);
+builder.Services.AddAutoMapper(typeof(ChatMappingProfile).Assembly);
 
 builder.Services.AddValidatorsFromAssemblyContaining<SessionCreateDtoValidator>();
 
