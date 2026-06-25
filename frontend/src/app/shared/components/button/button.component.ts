@@ -17,7 +17,7 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
     selector: 'app-button',
     standalone: true,
     templateUrl: './button.component.html',
-    styleUrl: './button.component.css',
+    styleUrls: ['./button.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ButtonComponent {
@@ -31,8 +31,7 @@ export class ButtonComponent {
 
     @Output() clicked = new EventEmitter<MouseEvent>();
 
-    @HostBinding('class')
-    get hostClasses(): string {
+    get buttonClasses(): string {
         const classes = ['btn', `btn-${this.variant}`];
 
         if (this.size !== 'md') {
@@ -44,21 +43,6 @@ export class ButtonComponent {
         }
 
         return classes.join(' ');
-    }
-
-    @HostBinding('disabled')
-    get isDisabled(): boolean {
-        return this.disabled || this.loading;
-    }
-
-    @HostBinding('attr.aria-busy')
-    get ariaBusy(): boolean {
-        return this.loading;
-    }
-
-    @HostBinding('attr.aria-disabled')
-    get ariaDisabled(): boolean {
-        return this.disabled || this.loading;
     }
 
     onClick(event: MouseEvent): void {

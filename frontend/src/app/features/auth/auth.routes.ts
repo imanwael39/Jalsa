@@ -23,14 +23,14 @@ export const AUTH_ROUTES: Routes = [
                 loadComponent: () => import('./pages/reset-password/reset-password.component').then(m => m.ResetPasswordComponent),
             },
             {
-                path: 'profile',
-                loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent),
-            },
-            {
                 path: '',
                 redirectTo: 'login',
                 pathMatch: 'full',
             },
         ],
+    },
+    {
+        path: 'profile',
+        loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent),
     },
 ];

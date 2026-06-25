@@ -5,7 +5,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
     selector: 'app-input',
     standalone: true,
     templateUrl: './input.component.html',
-    styleUrl: './input.component.css',
+    styleUrls: ['./input.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [
         {
