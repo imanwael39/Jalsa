@@ -65,7 +65,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IUnitOfWork ,UnitOfWork>();
 builder.Services.AddScoped<IExerciseRepository, ExerciseRepository>();
 builder.Services.AddScoped<IExerciseLogRepository, ExerciseLogRepository>();
+builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+builder.Services.AddScoped<ISessionRepository, SessionRepository>();
+builder.Services.AddScoped<IAssessmentRepository, AssessmentRepository>();
 builder.Services.AddScoped<IExerciseService, ExerciseService>();
+builder.Services.AddScoped<IProgressService, ProgressService>();
 builder.Services.AddScoped<INotificationService, EmailNotificationService>();
 builder.Services.AddScoped<ExerciseReminderJob>();
 
