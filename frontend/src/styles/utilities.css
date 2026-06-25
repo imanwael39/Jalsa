@@ -287,7 +287,28 @@
 }
 
 /* ================================================================
-   12. Responsive Utilities
+   12. Skip Link (Accessibility)
+   ================================================================ */
+.skip-link {
+    position: absolute;
+    top: -100%;
+    left: 0;
+    z-index: var(--z-index-loader);
+    padding: 0.5rem 1rem;
+    background: var(--primary);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.skip-link:focus {
+    top: 0;
+    outline: 2px solid var(--secondary);
+    outline-offset: 2px;
+}
+
+/* ================================================================
+   13. Responsive Utilities
    ================================================================ */
 @media (max-width: 576px) {
     .d-sm-none { display: none; }

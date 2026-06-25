@@ -1,36 +1,13 @@
-<div dir="rtl">
-    <h1>مرحباً بكم في جلسة</h1>
-    <h2>عنوان تجريبي</h2>
-    <h3>نص تجريبي للعناوين</h3>
-    <p class="text-muted">هذا نص تجريبي باللون الرمادي</p>
-    <p class="text-success">نص باللون الأخضر</p>
-    <p class="text-danger">نص باللون الأحمر</p>
-    <p class="text-warning">نص باللون الأصفر</p>
-    <p class="fs-7">نص بحجم صغير</p>
-    <p class="text-uppercase">نص بأحرف كبيرة</p>
-    <p class="text-truncate" style="max-width: 200px;">هذا نص طويل يجب أن يتم اقتصاصه مع علامة حذف في النهاية لاختبار خاصية القص</p>
-    <button class="btn btn-primary">زر تجريبي</button>
-</div>
+<header role="banner">
+    <nav aria-label="الرئيسية | Main navigation">
+        <h1 class="visually-hidden">جلسة - منصة الرعاية الصحية النفسية</h1>
+    </nav>
+</header>
 
-<div dir="ltr" class="mt-4">
-    <h1>English Test</h1>
-    <h2>Typography System</h2>
-    <p class="text-muted">This is muted text</p>
-    <p class="text-success">Success color text</p>
-    <p class="fw-bold">Bold text</p>
-    <p class="text-decoration-underline">Underlined text</p>
-    <p class="fs-1">Font size 1</p>
-</div>
+<main id="main-content" role="main">
+    <router-outlet />
+</main>
 
-<div class="d-flex gap-3 mt-4 p-4 border border-radius shadow-sm bg-light">
-    <div class="p-3 bg-primary text-white border-radius">Item 1</div>
-    <div class="p-3 bg-secondary text-white border-radius">Item 2</div>
-    <div class="p-3 bg-success text-white border-radius">Item 3</div>
-</div>
-
-<div class="mt-4 p-3 bg-dark text-white border-radius shadow">
-    <span class="ms-3">RTL-aware start margin</span>
-    <span class="me-3">RTL-aware end margin</span>
-</div>
-
-<router-outlet />
+<footer role="contentinfo" class="visually-hidden">
+    <p>جلسة - جميع الحقوق محفوظة &copy; 2026</p>
+</footer>
