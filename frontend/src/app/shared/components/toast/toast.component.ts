@@ -4,8 +4,9 @@ export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
 @Component({
     selector: 'app-toast',
+    standalone: true,
     templateUrl: './toast.component.html',
-    styleUrl: './toast.component.css',
+    styleUrls: ['./toast.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToastComponent implements OnDestroy {

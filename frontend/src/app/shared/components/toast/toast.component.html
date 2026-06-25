@@ -1,30 +1,24 @@
-@if (isShowing) {
-    <div
-        class="toast show"
-        [class]="typeClass"
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
-        (mouseenter)="onMouseEnter()"
-        (mouseleave)="onMouseLeave()"
-    >
-        <div class="toast-header">
-            <i class="bi me-2" [class]="typeIcon" [class.text-success]="type === 'success'" [class.text-danger]="type === 'error'" [class.text-warning]="type === 'warning'" [class.text-info]="type === 'info'" aria-hidden="true"></i>
-            @if (title) {
-                <strong class="me-auto">{{ title }}</strong>
-            }
-            <small class="text-muted">just now</small>
-            @if (dismissible) {
-                <button
-                    type="button"
-                    class="btn-close"
-                    aria-label="Close"
-                    (click)="close()"
-                ></button>
-            }
+<div class="type-{{ type }}">
+    <div class="toast-wrapper" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header-custom">
+            <div class="toast-icon toast-icon-{{ type }}">
+                @switch (type) {
+                    @case ('success') { &#10003; }
+                    @case ('error') { &#10007; }
+                    @case ('warning') { ! }
+                    @case ('info') { i }
+                }
+            </div>
+            <span class="toast-title">
+                @switch (type) {
+                    @case ('success') { نجاح }
+                    @case ('error') { خطأ }
+                    @case ('warning') { تنبيه }
+                    @case ('info') { معلومة }
+                }
+            </span>
+            <button type="button" class="toast-close" aria-label="إغلاق" (click)="close()">&times;</button>
         </div>
-        <div class="toast-body">
-            {{ message }}
-        </div>
+        <div class="toast-body">{{ message }}</div>
     </div>
-}
+</div>

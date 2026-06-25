@@ -1,0 +1,101 @@
+<h2 class="page-title">إنشاء حساب</h2>
+
+@if (success()) {
+    <div class="alert alert-success">
+        تم إنشاء الحساب بنجاح! جاري التحويل إلى صفحة تسجيل الدخول...
+    </div>
+}
+
+@if (!success()) {
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" novalidate>
+        <div class="row">
+            <div class="col">
+                <app-input
+                    label="الاسم الأول"
+                    type="text"
+                    placeholder="أدخل الاسم الأول"
+                    formControlName="firstName"
+                    [error]="getFirstNameError()"
+                    [required]="true"
+                    autocomplete="given-name"
+                ></app-input>
+            </div>
+            <div class="col">
+                <app-input
+                    label="اسم العائلة"
+                    type="text"
+                    placeholder="أدخل اسم العائلة"
+                    formControlName="lastName"
+                    [error]="getLastNameError()"
+                    [required]="true"
+                    autocomplete="family-name"
+                ></app-input>
+            </div>
+        </div>
+
+        <app-input
+            label="البريد الإلكتروني"
+            type="email"
+            placeholder="أدخل بريدك الإلكتروني"
+            formControlName="email"
+            [error]="getEmailError()"
+            [required]="true"
+            autocomplete="email"
+        ></app-input>
+
+        <app-input
+            label="كلمة المرور"
+            type="password"
+            placeholder="أنشئ كلمة مرور"
+            formControlName="password"
+            [error]="getPasswordError()"
+            [required]="true"
+            autocomplete="new-password"
+        ></app-input>
+
+        <app-input
+            label="تأكيد كلمة المرور"
+            type="password"
+            placeholder="أعد إدخال كلمة المرور"
+            formControlName="confirmPassword"
+            [error]="getConfirmPasswordError() || getPasswordMismatchError()"
+            [required]="true"
+            autocomplete="new-password"
+        ></app-input>
+
+        <div class="field">
+            <label class="label">
+                نوع الحساب
+                <span class="required-mark">*</span>
+            </label>
+            <select class="select" formControlName="role">
+                <option value="Therapist">أخصائي نفسي</option>
+                <option value="Patient">مريض</option>
+            </select>
+        </div>
+
+        @if (registerError()) {
+            <div class="alert alert-error" role="alert">
+                {{ registerError() }}
+            </div>
+        }
+
+        <app-button
+            type="submit"
+            variant="primary"
+            [loading]="loading()"
+            class="submit-btn"
+        >
+            @if (loading()) {
+                جاري إنشاء الحساب...
+            } @else {
+                إنشاء الحساب
+            }
+        </app-button>
+
+        <p class="switch-text">
+            لديك حساب بالفعل؟
+            <a routerLink="/auth/login" class="switch-link">تسجيل الدخول</a>
+        </p>
+    </form>
+}

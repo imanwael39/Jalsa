@@ -1,10 +1,13 @@
 export const API = {
     auth: {
-        login: '/auth/login',
-        register: '/auth/register',
-        refresh: '/auth/refresh',
-        logout: '/auth/logout',
-        profile: '/auth/profile',
+        login: '/api/auth/login',
+        register: '/api/auth/register',
+        refresh: '/api/auth/refresh',
+        revoke: '/api/auth/revoke',
+        logout: '/api/auth/logout',
+        profile: '/api/auth/profile',
+        forgotPassword: '/api/auth/forgot-password',
+        resetPassword: '/api/auth/reset-password',
     },
     patients: {
         base: '/patients',

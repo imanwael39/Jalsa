@@ -1,22 +1,13 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 
-export type ButtonVariant =
-    | 'primary'
-    | 'secondary'
-    | 'success'
-    | 'danger'
-    | 'warning'
-    | 'info'
-    | 'light'
-    | 'dark'
-    | 'link';
-
+export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 @Component({
     selector: 'app-button',
+    standalone: true,
     templateUrl: './button.component.html',
-    styleUrl: './button.component.css',
+    styleUrls: ['./button.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ButtonComponent {
@@ -26,42 +17,19 @@ export class ButtonComponent {
     @Input() disabled = false;
     @Input() type: 'button' | 'submit' | 'reset' = 'button';
     @Input() ariaLabel?: string;
-    @Input() icon?: string;
 
     @Output() clicked = new EventEmitter<MouseEvent>();
 
-    @HostBinding('class')
-    get hostClasses(): string {
-        const classes = ['btn', `btn-${this.variant}`];
-
-        if (this.size !== 'md') {
-            classes.push(`btn-${this.size}`);
-        }
-
-        if (this.loading) {
-            classes.push('btn-loading');
-        }
-
-        return classes.join(' ');
+    get buttonClasses(): string {
+        return `btn btn-${this.variant} btn-${this.size}` + (this.loading ? ' is-loading' : '');
     }
 
-    @HostBinding('disabled')
     get isDisabled(): boolean {
         return this.disabled || this.loading;
     }
 
-    @HostBinding('attr.aria-busy')
-    get ariaBusy(): boolean {
-        return this.loading;
-    }
-
-    @HostBinding('attr.aria-disabled')
-    get ariaDisabled(): boolean {
-        return this.disabled || this.loading;
-    }
-
     onClick(event: MouseEvent): void {
-        if (!this.disabled && !this.loading) {
+        if (!this.isDisabled) {
             this.clicked.emit(event);
         }
     }

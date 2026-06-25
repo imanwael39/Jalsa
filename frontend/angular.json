@@ -18,6 +18,7 @@
                     "options": {
                         "browser": "src/main.ts",
                         "tsConfig": "tsconfig.app.json",
+                        "polyfills": ["zone.js"],
                         "assets": [
                             {
                                 "glob": "**/*",
@@ -37,7 +38,7 @@
                             "budgets": [
                                 {
                                     "type": "initial",
-                                    "maximumWarning": "600kB",
+                                    "maximumWarning": "700kB",
                                     "maximumError": "1MB"
                                 },
                                 {

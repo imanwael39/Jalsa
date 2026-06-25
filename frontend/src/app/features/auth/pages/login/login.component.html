@@ -1,0 +1,51 @@
+<h2 class="page-title">مرحباً بعودتك</h2>
+
+<form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+    <app-input
+        label="البريد الإلكتروني"
+        type="email"
+        placeholder="أدخل بريدك الإلكتروني"
+        formControlName="email"
+        [error]="getEmailError()"
+        [required]="true"
+        autocomplete="email"
+    ></app-input>
+
+    <app-input
+        label="كلمة المرور"
+        type="password"
+        placeholder="أدخل كلمة المرور"
+        formControlName="password"
+        [error]="getPasswordError()"
+        [required]="true"
+        autocomplete="current-password"
+    ></app-input>
+
+    <div class="forgot-row">
+        <a routerLink="/auth/forgot-password" class="forgot-link">نسيت كلمة المرور؟</a>
+    </div>
+
+    @if (loginError()) {
+        <div class="alert alert-error" role="alert">
+            {{ loginError() }}
+        </div>
+    }
+
+    <app-button
+        type="submit"
+        variant="primary"
+        [loading]="loading()"
+        class="submit-btn"
+    >
+        @if (loading()) {
+            جاري تسجيل الدخول...
+        } @else {
+            تسجيل الدخول
+        }
+    </app-button>
+
+    <p class="switch-text">
+        ليس لديك حساب؟
+        <a routerLink="/auth/register" class="switch-link">إنشاء حساب</a>
+    </p>
+</form>

@@ -1,5 +1,16 @@
 export type { User, Therapist } from './user.model';
-export type { LoginRequest, AuthResponse, RegisterRequest, RefreshTokenRequest, RevokeTokenRequest, ForgotPasswordRequest, ResetPasswordRequest } from './auth.model';
+export type {
+    LoginRequest,
+    AuthResponse,
+    LoginResponse,
+    RegisterRequest,
+    RefreshTokenRequest,
+    RevokeTokenRequest,
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
+    ChangePasswordRequest,
+    UpdateProfileRequest,
+} from './auth.model';
 export type { Patient, CreatePatientRequest, UpdatePatientRequest, PatientFilter, IntakeForm, Assessment } from './patient.model';
 export type { Session, SessionNote, VoiceMemo, CreateSessionRequest, UpdateSessionRequest } from './session.model';
 export type { Exercise, ExerciseLog, CreateExerciseRequest, UpdateExerciseRequest, LogExerciseRequest, ExtendDueDateRequest } from './exercise.model';
