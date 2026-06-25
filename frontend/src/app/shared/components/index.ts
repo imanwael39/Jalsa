@@ -7,3 +7,4 @@ export * from './radio';
 export * from './modal';
 export * from './table';
 export * from './pagination';
+export * from './spinner';
