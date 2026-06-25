@@ -5,3 +5,4 @@ export * from './select';
 export * from './checkbox';
 export * from './radio';
 export * from './modal';
+export * from './table';
