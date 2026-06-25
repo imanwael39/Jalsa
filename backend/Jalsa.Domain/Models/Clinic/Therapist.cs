@@ -18,4 +18,5 @@ public class Therapist
     public ICollection<Report.ReferralReport> ReferralReports { get; set; } = new List<Report.ReferralReport>();
     public ICollection<Report.ReportVersion> ReportVersions { get; set; } = new List<Report.ReportVersion>();
     public ICollection<Ai.AiReportGenerationLog> AiReportGenerationLogs { get; set; } = new List<Ai.AiReportGenerationLog>();
+    public ICollection<Crisis.CrisisAlert> CrisisAlerts { get; set; } = new List<Crisis.CrisisAlert>();
 }

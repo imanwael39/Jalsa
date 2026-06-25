@@ -155,7 +155,7 @@ public class ExerciseService : IExerciseService
         PatientId = log.PatientId,
         CompletionStatus = log.CompletionStatus,
         ReflectionNote = log.ReflectionNote,
-        LoggedAt = log.LoggedAt,
+        LoggedAt = log.LoggedAt ?? log.CreatedAt,
         CreatedAt = log.CreatedAt
     };
 }

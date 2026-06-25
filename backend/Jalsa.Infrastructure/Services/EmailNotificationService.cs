@@ -9,4 +9,10 @@ public class EmailNotificationService : INotificationService
         Console.WriteLine($"Reminder: Patient {patientId} - Exercise '{exerciseDescription}' due {dueDate}");
         return Task.CompletedTask;
     }
+
+    public Task SendCrisisAlertAsync(Guid patientId, string severity, string messageSnippet)
+    {
+        Console.WriteLine($"CRISIS ALERT: Patient {patientId} - Severity: {severity} - Message: {messageSnippet}");
+        return Task.CompletedTask;
+    }
 }

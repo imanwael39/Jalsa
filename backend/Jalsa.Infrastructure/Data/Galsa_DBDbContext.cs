@@ -384,6 +384,7 @@ public class Galsa_DBDbContext : DbContext
             e.Property(ca => ca.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
             e.Property(ca => ca.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
             e.HasOne(ca => ca.Patient).WithMany(p => p.CrisisAlerts).HasForeignKey(ca => ca.PatientId).OnDelete(DeleteBehavior.NoAction);
+            e.HasOne(ca => ca.Therapist).WithMany(t => t.CrisisAlerts).HasForeignKey(ca => ca.TherapistId).OnDelete(DeleteBehavior.SetNull);
             e.HasOne(ca => ca.ChatMessage).WithOne(cm => cm.TriggeredCrisisAlert).HasForeignKey<CrisisAlert>(ca => ca.ChatMessageId).OnDelete(DeleteBehavior.SetNull);
         });
 

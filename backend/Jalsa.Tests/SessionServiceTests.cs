@@ -1,6 +1,7 @@
 using AutoMapper;
 using FluentAssertions;
 using Jalsa.Application.DTOs.Session;
+using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Application.Interfaces.Repositores;
 using Jalsa.Application.Interfaces.Services;
 using Jalsa.Application.Mappings;

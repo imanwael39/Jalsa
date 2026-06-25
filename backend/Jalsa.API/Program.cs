@@ -22,7 +22,7 @@ using Jalsa.Infrastructure.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Jalsa.Application.Validators.Exercise;
-using Jalsa.Application.Validators.Session;
+using Jalsa.Application.Validators;
 using Jalsa.Application.Mappings;
 using Jalsa.API.DTOs.Patient;
 
@@ -68,6 +68,7 @@ builder.Services.AddScoped<ICrisisDetectionService, CrisisDetectionService>();
 builder.Services.AddScoped<ISummarizationService, SummarizationService>();
 builder.Services.AddScoped<IReportGenerationService, ReportGenerationService>();
 builder.Services.AddScoped<IOcrService, OcrService>();
+builder.Services.AddScoped<IChatMonitoringService, ChatMonitoringService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPatientService ,PatientService>();
 builder.Services.AddScoped<IChatService, ChatService>();
@@ -82,6 +83,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IUnitOfWork ,UnitOfWork>();
+builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<Galsa_DBDbContext>());
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IExerciseRepository, ExerciseRepository>();
 builder.Services.AddScoped<IExerciseLogRepository, ExerciseLogRepository>();
 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
@@ -95,26 +98,43 @@ builder.Services.AddScoped<ExerciseReminderJob>();
 builder.Services.AddAutoMapper(typeof(SessionMappingProfile).Assembly);
 builder.Services.AddAutoMapper(typeof(ExerciseMappingProfile).Assembly);
 builder.Services.AddAutoMapper(typeof(ChatMappingProfile).Assembly);
+builder.Services.AddAutoMapper(typeof(CrisisMappingProfile).Assembly);
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<ExerciseCreateDtoValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<SessionCreateDtoValidator>();
 
-builder.Services.AddHangfire(config => config
-    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-    .UseSimpleAssemblyNameTypeSerializer()
-    .UseRecommendedSerializerSettings()
-    .UseSqlServerStorage(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        new SqlServerStorageOptions
-        {
-            CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-            SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-            QueuePollInterval = TimeSpan.Zero,
-            UseRecommendedIsolationLevel = true
-        }));
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var sqlAvailable = false;
+try
+{
+    using var testConn = new Microsoft.Data.SqlClient.SqlConnection(connectionString);
+    testConn.Open();
+    sqlAvailable = true;
+}
+catch
+{
+    // SQL Server not available — skip Hangfire (background jobs disabled)
+}
 
-builder.Services.AddHangfireServer();
+if (sqlAvailable)
+{
+    builder.Services.AddHangfire(config => config
+        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UseSqlServerStorage(
+            connectionString,
+            new SqlServerStorageOptions
+            {
+                CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                QueuePollInterval = TimeSpan.Zero,
+                UseRecommendedIsolationLevel = true
+            }));
+
+    builder.Services.AddHangfireServer();
+}
 
 var app = builder.Build();
 
@@ -143,11 +163,14 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-app.UseHangfireDashboard("/hangfire");
+if (sqlAvailable)
+{
+    app.UseHangfireDashboard("/hangfire");
 
-RecurringJob.AddOrUpdate<ExerciseReminderJob>(
-    "exercise-reminder",
-    job => job.SendRemindersAsync(),
-    Cron.Daily(9));
+    RecurringJob.AddOrUpdate<ExerciseReminderJob>(
+        "exercise-reminder",
+        job => job.SendRemindersAsync(),
+        Cron.Daily(9));
+}
 
 app.Run();
