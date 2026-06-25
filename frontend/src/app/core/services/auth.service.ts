@@ -11,4 +11,13 @@ export class AuthService {
     hasRole(_role: string): boolean {
         return false;
     }
+
+    getToken(): string | null {
+        return localStorage.getItem('jwt_token');
+    }
+
+    logout(): void {
+        localStorage.removeItem('jwt_token');
+        this.authenticatedSignal.set(false);
+    }
 }
