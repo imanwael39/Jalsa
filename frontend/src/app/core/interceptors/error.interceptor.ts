@@ -12,26 +12,26 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
     return next(req).pipe(
         catchError((error) => {
-            console.error('HTTP Error:', error);
-
             const serverMessage = error.error?.message || error.error?.error;
 
             if (error.status === 401) {
                 authService.logout();
                 router.navigate(['/auth/login']);
-                notification.error('Your session has expired. Please log in again.');
+                notification.error('البريد الإلكتروني أو كلمة المرور غير صحيحة');
             } else if (error.status === 403) {
-                notification.error('You do not have permission to perform this action.');
+                notification.error('ليس لديك صلاحية للقيام بهذه العملية');
+            } else if (error.status === 404) {
+                notification.error('المورد المطلوب غير موجود');
             } else if (error.status === 409) {
-                notification.error(serverMessage || 'This resource already exists.');
+                notification.error(serverMessage || 'يوجد حساب مسجل بالفعل بهذا البريد الإلكتروني');
             } else if (error.status >= 400 && error.status < 500) {
-                notification.error(serverMessage || 'Invalid request. Please check your input.');
+                notification.error(serverMessage || 'البيانات المدخلة غير صحيحة');
             } else if (error.status >= 500) {
-                notification.error('A server error occurred. Please try again later.');
+                notification.error('حدث خطأ غير متوقع، يرجى المحاولة مرة أخرى');
             } else if (error.status === 0) {
-                notification.error('Network error. Please check your connection.');
+                notification.error('تعذر الاتصال بالخادم، يرجى التحقق من اتصالك بالإنترنت');
             } else {
-                notification.error('An unexpected error occurred. Please try again.');
+                notification.error('حدث خطأ غير متوقع، يرجى المحاولة مرة أخرى');
             }
 
             return throwError(() => error);

@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output, forwardRef } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, forwardRef } from '@angular/core';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
     selector: 'app-input',
     standalone: true,
+    imports: [ReactiveFormsModule],
     templateUrl: './input.component.html',
     styleUrls: ['./input.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -27,28 +28,12 @@ export class InputComponent implements ControlValueAccessor {
     @Input() id = '';
     @Input() name = '';
     @Input() autocomplete = '';
-    @Input() maxlength?: number;
-    @Input() minlength?: number;
-    @Input() pattern = '';
-    @Input() min?: number;
-    @Input() max?: number;
-    @Input() step?: number;
 
     @Output() blur = new EventEmitter<FocusEvent>();
 
     value = '';
     private onChange: (value: string) => void = () => {};
     private onTouched: () => void = () => {};
-
-    @HostBinding('class.form-group')
-    get hostClass(): boolean {
-        return true;
-    }
-
-    @HostBinding('class.has-error')
-    get hasError(): boolean {
-        return !!this.error;
-    }
 
     writeValue(value: string): void {
         this.value = value ?? '';
@@ -80,16 +65,5 @@ export class InputComponent implements ControlValueAccessor {
 
     get inputId(): string {
         return this.id || `input-${this.name || Math.random().toString(36).substring(2, 9)}`;
-    }
-
-    get ariaDescribedBy(): string {
-        const ids: string[] = [];
-        if (this.helpText) {
-            ids.push(`${this.inputId}-help`);
-        }
-        if (this.error) {
-            ids.push(`${this.inputId}-error`);
-        }
-        return ids.join(' ');
     }
 }

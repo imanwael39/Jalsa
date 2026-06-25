@@ -28,66 +28,44 @@ export class ResetPasswordComponent {
     resetForm = this.fb.group({
         email: ['', [Validators.required, Validators.email]],
         otp: ['', [Validators.required, Validators.minLength(6)]],
-        password: ['', [Validators.required, Validators.minLength(6)]],
+        password: ['', [Validators.required, Validators.minLength(8)]],
         confirmPassword: ['', [Validators.required]],
     }, { validators: passwordMatchValidator });
 
     getEmailError(): string {
-        const control = this.resetForm.get('email');
-        if (!control || !control.errors || !control.touched) {
-            return '';
-        }
-        if (control.errors['required']) {
-            return 'Email is required';
-        }
-        if (control.errors['email']) {
-            return 'Please enter a valid email address';
-        }
+        const c = this.resetForm.get('email');
+        if (!c?.errors || !c.touched) return '';
+        if (c.errors['required']) return 'البريد الإلكتروني مطلوب';
+        if (c.errors['email']) return 'يرجى إدخال بريد إلكتروني صحيح';
         return '';
     }
 
     getOtpError(): string {
-        const control = this.resetForm.get('otp');
-        if (!control || !control.errors || !control.touched) {
-            return '';
-        }
-        if (control.errors['required']) {
-            return 'OTP is required';
-        }
-        if (control.errors['minlength']) {
-            return 'OTP must be at least 6 characters';
-        }
+        const c = this.resetForm.get('otp');
+        if (!c?.errors || !c.touched) return '';
+        if (c.errors['required']) return 'رمز التحقق مطلوب';
+        if (c.errors['minlength']) return 'يجب أن يحتوي الرمز على 6 أحرف على الأقل';
         return '';
     }
 
     getPasswordError(): string {
-        const control = this.resetForm.get('password');
-        if (!control || !control.errors || !control.touched) {
-            return '';
-        }
-        if (control.errors['required']) {
-            return 'Password is required';
-        }
-        if (control.errors['minlength']) {
-            return 'Password must be at least 6 characters';
-        }
+        const c = this.resetForm.get('password');
+        if (!c?.errors || !c.touched) return '';
+        if (c.errors['required']) return 'كلمة المرور مطلوبة';
+        if (c.errors['minlength']) return 'يجب ألا تقل كلمة المرور عن 8 أحرف';
         return '';
     }
 
     getConfirmPasswordError(): string {
-        const control = this.resetForm.get('confirmPassword');
-        if (!control || !control.errors || !control.touched) {
-            return '';
-        }
-        if (control.errors['required']) {
-            return 'Please confirm your password';
-        }
+        const c = this.resetForm.get('confirmPassword');
+        if (!c?.errors || !c.touched) return '';
+        if (c.errors['required']) return 'تأكيد كلمة المرور مطلوب';
         return '';
     }
 
     getPasswordMismatchError(): string {
         if (this.resetForm.errors?.['passwordMismatch'] && this.resetForm.get('confirmPassword')?.touched) {
-            return 'Passwords do not match';
+            return 'كلمتا المرور غير متطابقتين';
         }
         return '';
     }
@@ -116,7 +94,7 @@ export class ResetPasswordComponent {
             error: (err) => {
                 this.loading.set(false);
                 this.error.set(
-                    err.error?.message || err.error?.error || 'Failed to reset password. Please try again.',
+                    err.error?.message || err.error?.error || 'حدث خطأ، يرجى المحاولة مرة أخرى',
                 );
             },
         });

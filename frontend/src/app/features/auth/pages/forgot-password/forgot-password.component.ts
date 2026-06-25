@@ -28,16 +28,10 @@ export class ForgotPasswordComponent {
     });
 
     getEmailError(): string {
-        const control = this.forgotForm.get('email');
-        if (!control || !control.errors || !control.touched) {
-            return '';
-        }
-        if (control.errors['required']) {
-            return 'Email is required';
-        }
-        if (control.errors['email']) {
-            return 'Please enter a valid email address';
-        }
+        const c = this.forgotForm.get('email');
+        if (!c?.errors || !c.touched) return '';
+        if (c.errors['required']) return 'البريد الإلكتروني مطلوب';
+        if (c.errors['email']) return 'يرجى إدخال بريد إلكتروني صحيح';
         return '';
     }
 
@@ -62,7 +56,7 @@ export class ForgotPasswordComponent {
             error: (err) => {
                 this.loading.set(false);
                 this.error.set(
-                    err.error?.message || err.error?.error || 'Failed to send reset link. Please try again.',
+                    err.error?.message || err.error?.error || 'حدث خطأ، يرجى المحاولة مرة أخرى',
                 );
             },
         });

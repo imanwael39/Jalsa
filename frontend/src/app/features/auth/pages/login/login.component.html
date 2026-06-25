@@ -1,46 +1,51 @@
-<div class="login-form">
-    <h2 class="text-center mb-4">Welcome Back</h2>
+<h2 class="page-title">مرحباً بعودتك</h2>
 
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-        <app-input
-            label="Email Address"
-            type="email"
-            placeholder="Enter your email"
-            formControlName="email"
-            [error]="getEmailError()"
-        ></app-input>
+<form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+    <app-input
+        label="البريد الإلكتروني"
+        type="email"
+        placeholder="أدخل بريدك الإلكتروني"
+        formControlName="email"
+        [error]="getEmailError()"
+        [required]="true"
+        autocomplete="email"
+    ></app-input>
 
-        <app-input
-            label="Password"
-            type="password"
-            placeholder="Enter your password"
-            formControlName="password"
-            [error]="getPasswordError()"
-        ></app-input>
+    <app-input
+        label="كلمة المرور"
+        type="password"
+        placeholder="أدخل كلمة المرور"
+        formControlName="password"
+        [error]="getPasswordError()"
+        [required]="true"
+        autocomplete="current-password"
+    ></app-input>
 
-        <div class="d-flex justify-content-between align-items-center mt-2">
-            <a routerLink="/auth/forgot-password" class="forgot-link">Forgot Password?</a>
+    <div class="forgot-row">
+        <a routerLink="/auth/forgot-password" class="forgot-link">نسيت كلمة المرور؟</a>
+    </div>
+
+    @if (loginError()) {
+        <div class="alert alert-error" role="alert">
+            {{ loginError() }}
         </div>
+    }
 
-        <div class="mt-4">
-            <app-button
-                type="submit"
-                variant="primary"
-                [loading]="loading()"
-                [disabled]="loginForm.invalid"
-                class="w-100"
-            >Sign In</app-button>
-        </div>
-
-        <div class="mt-3 text-center">
-            <span class="text-muted">Don't have an account?</span>
-            <a routerLink="/auth/register" class="ms-2">Sign Up</a>
-        </div>
-
-        @if (loginError()) {
-            <div class="alert alert-danger mt-3" role="alert">
-                {{ loginError() }}
-            </div>
+    <app-button
+        type="submit"
+        variant="primary"
+        [loading]="loading()"
+        class="submit-btn"
+    >
+        @if (loading()) {
+            جاري تسجيل الدخول...
+        } @else {
+            تسجيل الدخول
         }
-    </form>
-</div>
+    </app-button>
+
+    <p class="switch-text">
+        ليس لديك حساب؟
+        <a routerLink="/auth/register" class="switch-link">إنشاء حساب</a>
+    </p>
+</form>

@@ -29,81 +29,53 @@ export class RegisterComponent {
         firstName: ['', [Validators.required, Validators.minLength(2)]],
         lastName: ['', [Validators.required, Validators.minLength(2)]],
         email: ['', [Validators.required, Validators.email]],
-        password: ['', [Validators.required, Validators.minLength(6)]],
+        password: ['', [Validators.required, Validators.minLength(8)]],
         confirmPassword: ['', [Validators.required]],
         role: ['Therapist', [Validators.required]],
     }, { validators: passwordMatchValidator });
 
     getFirstNameError(): string {
-        const control = this.registerForm.get('firstName');
-        if (!control || !control.errors || !control.touched) {
-            return '';
-        }
-        if (control.errors['required']) {
-            return 'First name is required';
-        }
-        if (control.errors['minlength']) {
-            return 'First name must be at least 2 characters';
-        }
+        const c = this.registerForm.get('firstName');
+        if (!c?.errors || !c.touched) return '';
+        if (c.errors['required']) return 'الاسم الأول مطلوب';
+        if (c.errors['minlength']) return 'يجب أن يحتوي الاسم على حرفين على الأقل';
         return '';
     }
 
     getLastNameError(): string {
-        const control = this.registerForm.get('lastName');
-        if (!control || !control.errors || !control.touched) {
-            return '';
-        }
-        if (control.errors['required']) {
-            return 'Last name is required';
-        }
-        if (control.errors['minlength']) {
-            return 'Last name must be at least 2 characters';
-        }
+        const c = this.registerForm.get('lastName');
+        if (!c?.errors || !c.touched) return '';
+        if (c.errors['required']) return 'اسم العائلة مطلوب';
+        if (c.errors['minlength']) return 'يجب أن يحتوي الاسم على حرفين على الأقل';
         return '';
     }
 
     getEmailError(): string {
-        const control = this.registerForm.get('email');
-        if (!control || !control.errors || !control.touched) {
-            return '';
-        }
-        if (control.errors['required']) {
-            return 'Email is required';
-        }
-        if (control.errors['email']) {
-            return 'Please enter a valid email address';
-        }
+        const c = this.registerForm.get('email');
+        if (!c?.errors || !c.touched) return '';
+        if (c.errors['required']) return 'البريد الإلكتروني مطلوب';
+        if (c.errors['email']) return 'يرجى إدخال بريد إلكتروني صحيح';
         return '';
     }
 
     getPasswordError(): string {
-        const control = this.registerForm.get('password');
-        if (!control || !control.errors || !control.touched) {
-            return '';
-        }
-        if (control.errors['required']) {
-            return 'Password is required';
-        }
-        if (control.errors['minlength']) {
-            return 'Password must be at least 6 characters';
-        }
+        const c = this.registerForm.get('password');
+        if (!c?.errors || !c.touched) return '';
+        if (c.errors['required']) return 'كلمة المرور مطلوبة';
+        if (c.errors['minlength']) return 'يجب ألا تقل كلمة المرور عن 8 أحرف';
         return '';
     }
 
     getConfirmPasswordError(): string {
-        const control = this.registerForm.get('confirmPassword');
-        if (!control || !control.errors || !control.touched) {
-            return '';
-        }
-        if (control.errors['required']) {
-            return 'Please confirm your password';
-        }
+        const c = this.registerForm.get('confirmPassword');
+        if (!c?.errors || !c.touched) return '';
+        if (c.errors['required']) return 'تأكيد كلمة المرور مطلوب';
         return '';
     }
 
     getPasswordMismatchError(): string {
         if (this.registerForm.errors?.['passwordMismatch'] && this.registerForm.get('confirmPassword')?.touched) {
-            return 'Passwords do not match';
+            return 'كلمتا المرور غير متطابقتين';
         }
         return '';
     }
@@ -132,7 +104,7 @@ export class RegisterComponent {
             error: (err) => {
                 this.loading.set(false);
                 this.registerError.set(
-                    err.error?.message || err.error?.error || 'Registration failed. Please try again.',
+                    err.error?.message || err.error?.error || 'حدث خطأ غير متوقع، يرجى المحاولة مرة أخرى',
                 );
             },
         });

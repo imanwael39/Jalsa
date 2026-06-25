@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, effect } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
 import { Observable, tap, catchError, throwError } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { HttpClientService } from '../api/http-client.service';
@@ -42,15 +42,6 @@ export class AuthService {
         private notification: NotificationService,
     ) {
         this.restoreSession();
-
-        effect(() => {
-            const user = this.userSignal();
-            if (user) {
-                console.log('User authenticated:', user.email);
-            } else {
-                console.log('User not authenticated');
-            }
-        });
     }
 
     login(credentials: LoginRequest): Observable<AuthResponse> {
@@ -58,7 +49,7 @@ export class AuthService {
         return this.http.post<AuthResponse>(API.auth.login, credentials).pipe(
             tap((response) => {
                 this.handleAuthentication(response);
-                this.notification.success('Welcome back!');
+                this.notification.success('تم تسجيل الدخول بنجاح');
             }),
             catchError((error) => {
                 this.loadingSignal.set(false);
@@ -72,7 +63,7 @@ export class AuthService {
         return this.http.post(API.auth.register, userData).pipe(
             tap(() => {
                 this.loadingSignal.set(false);
-                this.notification.success('Account created successfully! Please log in.');
+                this.notification.success('تم إنشاء الحساب بنجاح');
             }),
             catchError((error) => {
                 this.loadingSignal.set(false);
@@ -85,7 +76,7 @@ export class AuthService {
         localStorage.removeItem(this.TOKEN_KEY);
         localStorage.removeItem(this.REFRESH_TOKEN_KEY);
         this.userSignal.set(null);
-        this.notification.info('You have been logged out.');
+        this.notification.info('تم تسجيل الخروج');
     }
 
     refreshToken(): Observable<AuthResponse> {
@@ -105,7 +96,7 @@ export class AuthService {
         return this.http.put<User>(API.auth.profile, data).pipe(
             tap((user) => {
                 this.userSignal.set(user);
-                this.notification.success('Profile updated successfully!');
+                this.notification.success('تم تحديث الملف الشخصي بنجاح');
             }),
         );
     }
@@ -113,7 +104,7 @@ export class AuthService {
     changePassword(data: ChangePasswordRequest): Observable<unknown> {
         return this.http.post(API.auth.profile + '/change-password', data).pipe(
             tap(() => {
-                this.notification.success('Password changed successfully!');
+                this.notification.success('تم تغيير كلمة المرور بنجاح');
             }),
         );
     }
@@ -121,7 +112,7 @@ export class AuthService {
     forgotPassword(email: string): Observable<unknown> {
         return this.http.post(API.auth.forgotPassword, { email }).pipe(
             tap(() => {
-                this.notification.success('Password reset link sent to your email.');
+                this.notification.success('تم إرسال رمز التحقق إلى بريدك الإلكتروني');
             }),
         );
     }
@@ -129,7 +120,7 @@ export class AuthService {
     resetPassword(data: ResetPasswordRequest): Observable<unknown> {
         return this.http.post(API.auth.resetPassword, data).pipe(
             tap(() => {
-                this.notification.success('Password reset successfully! Please log in.');
+                this.notification.success('تم إعادة تعيين كلمة المرور بنجاح');
             }),
         );
     }

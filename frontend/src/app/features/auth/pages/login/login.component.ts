@@ -34,30 +34,18 @@ export class LoginComponent {
     }
 
     getEmailError(): string {
-        const emailControl = this.loginForm.get('email');
-        if (!emailControl || !emailControl.errors || !emailControl.touched) {
-            return '';
-        }
-        if (emailControl.errors['required']) {
-            return 'Email is required';
-        }
-        if (emailControl.errors['email']) {
-            return 'Please enter a valid email address';
-        }
+        const c = this.loginForm.get('email');
+        if (!c?.errors || !c.touched) return '';
+        if (c.errors['required']) return 'البريد الإلكتروني مطلوب';
+        if (c.errors['email']) return 'يرجى إدخال بريد إلكتروني صحيح';
         return '';
     }
 
     getPasswordError(): string {
-        const passwordControl = this.loginForm.get('password');
-        if (!passwordControl || !passwordControl.errors || !passwordControl.touched) {
-            return '';
-        }
-        if (passwordControl.errors['required']) {
-            return 'Password is required';
-        }
-        if (passwordControl.errors['minlength']) {
-            return 'Password must be at least 6 characters';
-        }
+        const c = this.loginForm.get('password');
+        if (!c?.errors || !c.touched) return '';
+        if (c.errors['required']) return 'كلمة المرور مطلوبة';
+        if (c.errors['minlength']) return 'يجب ألا تقل كلمة المرور عن 6 أحرف';
         return '';
     }
 
@@ -82,7 +70,7 @@ export class LoginComponent {
             error: (err) => {
                 this.loading.set(false);
                 this.loginError.set(
-                    err.error?.message || err.error?.error || 'Invalid email or password. Please try again.',
+                    err.error?.message || err.error?.error || 'البريد الإلكتروني أو كلمة المرور غير صحيحة',
                 );
             },
         });

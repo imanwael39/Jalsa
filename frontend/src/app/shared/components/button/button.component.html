@@ -1,17 +1,14 @@
 <button
     [type]="type"
     [class]="buttonClasses"
-    [disabled]="disabled || loading"
+    [disabled]="isDisabled"
     [attr.aria-busy]="loading || null"
-    [attr.aria-disabled]="disabled || null"
+    [attr.aria-disabled]="isDisabled || null"
     [attr.aria-label]="ariaLabel || null"
     (click)="onClick($event)"
 >
     @if (loading) {
-        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-    }
-    @if (icon && !loading) {
-        <span class="bi {{ icon }}" aria-hidden="true"></span>
+        <span class="spinner" aria-hidden="true"></span>
     }
     <ng-content></ng-content>
 </button>
