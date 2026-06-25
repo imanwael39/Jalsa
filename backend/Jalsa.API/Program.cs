@@ -24,6 +24,8 @@ using FluentValidation.AspNetCore;
 using Jalsa.Application.Validators.Exercise;
 using Jalsa.API.DTOs.Patient;
 
+DotNetEnv.Env.Load();
+
 var builder = WebApplication.CreateBuilder(args);
 
 //create jwt token
