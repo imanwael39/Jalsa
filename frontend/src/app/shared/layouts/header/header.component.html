@@ -1,0 +1,28 @@
+<header class="app-header">
+    <div class="header-left">
+        <button class="mobile-toggle" (click)="toggleSidebar.emit()" aria-label="فتح القائمة">
+            <i class="bi bi-list"></i>
+        </button>
+        <span class="header-title">جلسة</span>
+    </div>
+    <div class="header-right">
+        <div class="user-menu" (click)="toggleDropdown()" (keydown.enter)="toggleDropdown()" tabindex="0" role="button" [attr.aria-expanded]="isDropdownOpen" aria-haspopup="true">
+            <span class="user-name">{{ user()?.firstName }} {{ user()?.lastName }}</span>
+            <i class="bi bi-person-circle"></i>
+            <i class="bi bi-chevron-down" [class.rotated]="isDropdownOpen"></i>
+        </div>
+        @if (isDropdownOpen) {
+            <div class="dropdown-menu" role="menu">
+                <a class="dropdown-item" (click)="goToProfile()" (keydown.enter)="goToProfile()" role="menuitem" tabindex="0">
+                    <i class="bi bi-person"></i>
+                    الملف الشخصي
+                </a>
+                <hr class="dropdown-divider">
+                <a class="dropdown-item text-danger" (click)="logout()" (keydown.enter)="logout()" role="menuitem" tabindex="0">
+                    <i class="bi bi-box-arrow-right"></i>
+                    تسجيل الخروج
+                </a>
+            </div>
+        }
+    </div>
+</header>

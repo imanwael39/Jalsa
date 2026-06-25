@@ -1,0 +1,62 @@
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
+
+.app-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.app-content {
+    flex: 1;
+    padding: 1.5rem;
+    background-color: var(--background);
+}
+
+/* RTL adjustments */
+[dir="rtl"] .sidebar {
+    order: 2;
+}
+
+[dir="rtl"] .app-main {
+    order: 1;
+}
+
+/* Responsive: mobile sidebar overlay */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        top: 0;
+        inset-inline-start: 0;
+        bottom: 0;
+        z-index: var(--z-index-modal);
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        width: 260px;
+    }
+
+    .sidebar:not(.collapsed) {
+        transform: translateX(0);
+    }
+
+    [dir="rtl"] .sidebar {
+        transform: translateX(100%);
+    }
+
+    [dir="rtl"] .sidebar:not(.collapsed) {
+        transform: translateX(0);
+    }
+
+    .app-main {
+        margin-inline-start: 0;
+        width: 100%;
+    }
+
+    .app-content {
+        padding: 1rem;
+    }
+}

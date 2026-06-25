@@ -1,0 +1,19 @@
+<aside class="sidebar" [class.collapsed]="collapsed">
+    <div class="sidebar-header">
+        <div class="sidebar-brand">
+            @if (!collapsed) {
+                <span>جلسة</span>
+            } @else {
+                <span>ج</span>
+            }
+        </div>
+        <button class="toggle-btn" (click)="toggleSidebar()" [attr.aria-label]="collapsed ? 'توسيع الشريط الجانبي' : 'طي الشريط الجانبي'">
+            <i class="bi" [class.bi-chevron-left]="!collapsed" [class.bi-chevron-right]="collapsed"></i>
+        </button>
+    </div>
+    <nav class="sidebar-nav" aria-label="التنقل الرئيسي">
+        <ul class="nav flex-column">
+            <!-- Placeholder navigation items - will be implemented in FE-LAYOUT-002 -->
+        </ul>
+    </nav>
+</aside>
