@@ -105,37 +105,59 @@ using (var scope = app.Services.CreateScope())
         var existingPatient = context.Patients.FirstOrDefault(p => p.UserId == patientUser.Id);
         if (existingPatient == null)
         {
-            var therapistUser = context.Users.FirstOrDefault(u => u.Email == "dr@test.com");
-            if (therapistUser != null)
+            var therapist = context.Therapists.FirstOrDefault();
+            if (therapist == null)
             {
-                var therapist = context.Therapists.FirstOrDefault(t => t.UserId == therapistUser.Id);
-                if (therapist == null)
+                var therapistRole = context.Roles.FirstOrDefault(r => r.Name == "Therapist");
+                var therapistUser = context.Users.FirstOrDefault(u => u.UserRoles.Any(ur => ur.RoleId == therapistRole.Id));
+                if (therapistUser == null)
                 {
-                    therapist = new Jalsa.Domain.Models.Clinic.Therapist
+                    therapistUser = new Jalsa.Domain.Models.Identity.User
                     {
                         Id = Guid.NewGuid(),
-                        UserId = therapistUser.Id,
-                        FullName = "Dr. Test",
-                        LicenseNumber = "LIC-001",
-                        CreatedAt = DateTime.UtcNow
+                        Email = "dr@jalsa.com",
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("Therapist123!"),
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
                     };
-                    context.Therapists.Add(therapist);
+                    context.Users.Add(therapistUser);
+                    if (therapistRole != null)
+                    {
+                        context.UserRoles.Add(new Jalsa.Domain.Models.Identity.UserRole
+                        {
+                            UserId = therapistUser.Id,
+                            RoleId = therapistRole.Id,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                    }
                     await context.SaveChangesAsync();
                 }
 
-                var patient = new Jalsa.Domain.Models.Patient.Patient
+                therapist = new Jalsa.Domain.Models.Clinic.Therapist
                 {
                     Id = Guid.NewGuid(),
-                    TherapistId = therapist.Id,
-                    UserId = patientUser.Id,
-                    FullName = "Patient 3",
-                    Status = "Active",
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
+                    UserId = therapistUser.Id,
+                    FullName = "Dr. Test",
+                    LicenseNumber = "LIC-001",
+                    CreatedAt = DateTime.UtcNow
                 };
-                context.Patients.Add(patient);
+                context.Therapists.Add(therapist);
                 await context.SaveChangesAsync();
             }
+
+            var patient = new Jalsa.Domain.Models.Patient.Patient
+            {
+                Id = Guid.NewGuid(),
+                TherapistId = therapist.Id,
+                UserId = patientUser.Id,
+                FullName = "Patient 3",
+                Status = "Active",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            context.Patients.Add(patient);
+            await context.SaveChangesAsync();
         }
     }
 }
