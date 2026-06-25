@@ -6,6 +6,8 @@ using Jalsa.API.Configurations;
 using Jalsa.API.Exceptions;
 using Jalsa.API.Services.Interfaces;
 using Jalsa.API.Services.Implementations;
+using Jalsa.API.Services.Interfaces.AI;
+using Jalsa.API.Services.Implementations.AI;
 using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Jalsa.Application.Interfaces.Repositores;
@@ -52,13 +54,25 @@ builder.Services.AddAuthorization();
 builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("Email")
 );
+builder.Services.Configure<OpenAiSettings>(
+    builder.Configuration.GetSection("OpenAI")
+);
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IEmbeddingService, EmbeddingService>();
+builder.Services.AddScoped<IVectorStore, VectorStore>();
+builder.Services.AddScoped<IConversationMemoryService, ConversationMemoryService>();
+builder.Services.AddScoped<IChatAiService, ChatAiService>();
+builder.Services.AddScoped<ICrisisDetectionService, CrisisDetectionService>();
+builder.Services.AddScoped<ISummarizationService, SummarizationService>();
+builder.Services.AddScoped<IReportGenerationService, ReportGenerationService>();
+builder.Services.AddScoped<IOcrService, OcrService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPatientService ,PatientService>();
 
 builder.Services.AddDbContext<Galsa_DBDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddSignalR();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
