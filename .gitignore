@@ -428,6 +428,6 @@ FodyWeavers.xsd
 *.msm
 *.msp
 
-# App settings with secrets (API keys, connection strings, etc.)
-**/appsettings.json
-**/appsettings.Development.json
+# App settings - safe to commit (secrets stored in .env)
+# **/appsettings.json
+# **/appsettings.Development.json

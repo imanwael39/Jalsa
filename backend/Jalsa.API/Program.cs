@@ -26,6 +26,12 @@ using Jalsa.Application.Validators;
 using Jalsa.Application.Mappings;
 using Jalsa.API.DTOs.Patient;
 
+var envPath = Path.Combine(AppContext.BaseDirectory, ".env");
+if (!File.Exists(envPath))
+    envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+if (File.Exists(envPath))
+    DotNetEnv.Env.Load(envPath);
+
 var builder = WebApplication.CreateBuilder(args);
 
 //create jwt token
