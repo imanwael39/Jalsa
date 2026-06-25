@@ -1,1 +1,87 @@
-<p>register works!</p>
+<div class="register-form">
+    <h2 class="text-center mb-4">Create Account</h2>
+
+    @if (success()) {
+        <div class="alert alert-success" role="alert">
+            Account created successfully! Redirecting to login...
+        </div>
+    }
+
+    @if (!success()) {
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+            <div class="row">
+                <div class="col-md-6">
+                    <app-input
+                        label="First Name"
+                        type="text"
+                        placeholder="Enter first name"
+                        formControlName="firstName"
+                        [error]="getFirstNameError()"
+                    ></app-input>
+                </div>
+                <div class="col-md-6">
+                    <app-input
+                        label="Last Name"
+                        type="text"
+                        placeholder="Enter last name"
+                        formControlName="lastName"
+                        [error]="getLastNameError()"
+                    ></app-input>
+                </div>
+            </div>
+
+            <app-input
+                label="Email Address"
+                type="email"
+                placeholder="Enter your email"
+                formControlName="email"
+                [error]="getEmailError()"
+            ></app-input>
+
+            <app-input
+                label="Password"
+                type="password"
+                placeholder="Create a password"
+                formControlName="password"
+                [error]="getPasswordError()"
+            ></app-input>
+
+            <app-input
+                label="Confirm Password"
+                type="password"
+                placeholder="Confirm your password"
+                formControlName="confirmPassword"
+                [error]="getConfirmPasswordError() || getPasswordMismatchError()"
+            ></app-input>
+
+            <div class="form-group">
+                <label for="role" class="form-label">Role</label>
+                <select id="role" class="form-select" formControlName="role">
+                    <option value="Therapist">Therapist</option>
+                    <option value="Patient">Patient</option>
+                </select>
+            </div>
+
+            <div class="mt-4">
+                <app-button
+                    type="submit"
+                    variant="primary"
+                    [loading]="loading()"
+                    [disabled]="registerForm.invalid"
+                    class="w-100"
+                >Create Account</app-button>
+            </div>
+
+            <div class="mt-3 text-center">
+                <span class="text-muted">Already have an account?</span>
+                <a routerLink="/auth/login" class="ms-2">Sign In</a>
+            </div>
+
+            @if (registerError()) {
+                <div class="alert alert-danger mt-3" role="alert">
+                    {{ registerError() }}
+                </div>
+            }
+        </form>
+    }
+</div>
