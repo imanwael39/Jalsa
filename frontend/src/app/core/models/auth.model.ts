@@ -12,6 +12,10 @@ export interface AuthResponse {
     roles: string[];
 }
 
+export interface LoginResponse {
+    token: string;
+}
+
 export interface RegisterRequest {
     email: string;
     password: string;
@@ -34,4 +38,15 @@ export interface ResetPasswordRequest {
     email: string;
     otp: string;
     newPassword: string;
+}
+
+export interface ChangePasswordRequest {
+    currentPassword: string;
+    newPassword: string;
+}
+
+export interface UpdateProfileRequest {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
 }
