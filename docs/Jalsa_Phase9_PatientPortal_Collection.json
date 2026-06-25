@@ -1,0 +1,257 @@
+{
+  "info": {
+    "name": "Jalsa Backend - Phase 9 Patient Portal",
+    "description": "Complete API testing collection for Phase 9 - Patient Portal (Auth + Exercise + Chat + Crisis)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "patientToken",
+      "value": ""
+    },
+    {
+      "key": "chatSessionId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Patient - Register",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "if(jsonData.token){",
+              "    pm.collectionVariables.set('patientToken', jsonData.token);",
+              "    console.log('Patient token saved');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/auth/register",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"patient3@jalsa.com\",\n  \"password\": \"Patient123!\",\n  \"role\": \"Patient\"\n}"
+        }
+      }
+    },
+    {
+      "name": "2. Patient - Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "if(jsonData.token){",
+              "    pm.collectionVariables.set('patientToken', jsonData.token);",
+              "    console.log('Patient token saved: ' + jsonData.token.substring(0,30) + '...');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/patient/auth/login",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"patient3@jalsa.com\",\n  \"password\": \"Patient123!\"\n}"
+        }
+      }
+    },
+    {
+      "name": "3. Patient - Login (Therapist - Should 403)",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/patient/auth/login",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"therapist3@jalsa.com\",\n  \"password\": \"Therapist123!\"\n}"
+        }
+      }
+    },
+    {
+      "name": "4. Patient - Login (Wrong Password - Should 401)",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/patient/auth/login",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"patient3@jalsa.com\",\n  \"password\": \"WrongPassword!\"\n}"
+        }
+      }
+    },
+    {
+      "name": "5. Patient - Logout",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/patient/auth/logout",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+        ]
+      }
+    },
+    {
+      "name": "6. Chat - Start Session",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "if(jsonData.id){",
+              "    pm.collectionVariables.set('chatSessionId', jsonData.id);",
+              "    console.log('Chat Session ID saved: ' + jsonData.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/patient/chat/start",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+        ]
+      }
+    },
+    {
+      "name": "7. Chat - Send Message (Normal)",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/patient/chat/send",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sessionId\": \"{{chatSessionId}}\",\n  \"message\": \"Hello, I need help with my exercises\"\n}"
+        }
+      }
+    },
+    {
+      "name": "8. Chat - Send Message (Anxiety)",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/patient/chat/send",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sessionId\": \"{{chatSessionId}}\",\n  \"message\": \"I've been feeling really anxious lately\"\n}"
+        }
+      }
+    },
+    {
+      "name": "9. Chat - Send Message (Crisis)",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/patient/chat/send",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sessionId\": \"{{chatSessionId}}\",\n  \"message\": \"I want to kill myself\"\n}"
+        }
+      }
+    },
+    {
+      "name": "10. Chat - Get History",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/patient/chat/history?sessionId={{chatSessionId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "patient", "chat", "history"],
+          "query": [
+            {
+              "key": "sessionId",
+              "value": "{{chatSessionId}}"
+            }
+          ]
+        },
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+        ]
+      }
+    },
+    {
+      "name": "11. Chat - Trigger Crisis Alert",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/patient/chat/crisis",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+        ]
+      }
+    },
+    {
+      "name": "12. Exercise - Get All",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/patient/exercises",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+        ]
+      }
+    },
+    {
+      "name": "13. Exercise - Get by Status Filter",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/patient/exercises?status=Complete",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "patient", "exercises"],
+          "query": [
+            {
+              "key": "status",
+              "value": "Complete"
+            }
+          ]
+        },
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+        ]
+      }
+    },
+    {
+      "name": "14. Exercise - Unauthorized (No Token)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/patient/exercises",
+        "header": []
+      }
+    }
+  ]
+}
