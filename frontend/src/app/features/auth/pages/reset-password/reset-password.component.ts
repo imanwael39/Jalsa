@@ -116,7 +116,7 @@ export class ResetPasswordComponent {
             error: (err) => {
                 this.loading.set(false);
                 this.error.set(
-                    err.error?.message || 'Failed to reset password. Please try again.',
+                    err.error?.message || err.error?.error || 'Failed to reset password. Please try again.',
                 );
             },
         });

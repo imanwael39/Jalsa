@@ -62,7 +62,7 @@ export class ForgotPasswordComponent {
             error: (err) => {
                 this.loading.set(false);
                 this.error.set(
-                    err.error?.message || 'Failed to send reset link. Please try again.',
+                    err.error?.message || err.error?.error || 'Failed to send reset link. Please try again.',
                 );
             },
         });

@@ -82,7 +82,7 @@ export class LoginComponent {
             error: (err) => {
                 this.loading.set(false);
                 this.loginError.set(
-                    err.error?.message || 'Invalid email or password. Please try again.',
+                    err.error?.message || err.error?.error || 'Invalid email or password. Please try again.',
                 );
             },
         });

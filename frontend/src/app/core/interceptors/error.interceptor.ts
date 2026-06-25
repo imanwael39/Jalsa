@@ -14,16 +14,19 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         catchError((error) => {
             console.error('HTTP Error:', error);
 
+            const serverMessage = error.error?.message || error.error?.error;
+
             if (error.status === 401) {
                 authService.logout();
                 router.navigate(['/auth/login']);
                 notification.error('Your session has expired. Please log in again.');
             } else if (error.status === 403) {
                 notification.error('You do not have permission to perform this action.');
-            } else if (error.status === 400) {
-                const message = error.error?.message || 'Invalid request. Please check your input.';
-                notification.error(message);
-            } else if (error.status === 500) {
+            } else if (error.status === 409) {
+                notification.error(serverMessage || 'This resource already exists.');
+            } else if (error.status >= 400 && error.status < 500) {
+                notification.error(serverMessage || 'Invalid request. Please check your input.');
+            } else if (error.status >= 500) {
                 notification.error('A server error occurred. Please try again later.');
             } else if (error.status === 0) {
                 notification.error('Network error. Please check your connection.');

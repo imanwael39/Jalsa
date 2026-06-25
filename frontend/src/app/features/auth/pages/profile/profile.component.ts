@@ -168,7 +168,7 @@ export class ProfileComponent implements OnInit {
             },
             error: (err) => {
                 this.updating.set(false);
-                this.error.set(err.error?.message || 'Failed to update profile.');
+                this.error.set(err.error?.message || err.error?.error || 'Failed to update profile.');
             },
         });
     }
@@ -195,7 +195,7 @@ export class ProfileComponent implements OnInit {
             },
             error: (err) => {
                 this.changingPassword.set(false);
-                this.passwordError.set(err.error?.message || 'Failed to change password.');
+                this.passwordError.set(err.error?.message || err.error?.error || 'Failed to change password.');
             },
         });
     }

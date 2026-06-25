@@ -132,7 +132,7 @@ export class RegisterComponent {
             error: (err) => {
                 this.loading.set(false);
                 this.registerError.set(
-                    err.error?.message || 'Registration failed. Please try again.',
+                    err.error?.message || err.error?.error || 'Registration failed. Please try again.',
                 );
             },
         });
