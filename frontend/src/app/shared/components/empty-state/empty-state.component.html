@@ -1,0 +1,28 @@
+<div class="empty-state text-center py-5">
+    @if (image) {
+        <img [src]="image" [alt]="title" class="empty-state-image mb-4" />
+    } @else if (icon) {
+        <div class="empty-state-icon mb-4">
+            <i class="bi" [class]="icon" aria-hidden="true"></i>
+        </div>
+    }
+
+    <h3 class="empty-state-title mb-2">{{ title }}</h3>
+
+    @if (message) {
+        <p class="empty-state-message text-muted mb-4">{{ message }}</p>
+    }
+
+    @if (actionLabel) {
+        <button
+            type="button"
+            class="btn btn-primary"
+            [disabled]="actionDisabled"
+            (click)="onActionClick()"
+        >
+            {{ actionLabel }}
+        </button>
+    }
+
+    <ng-content></ng-content>
+</div>

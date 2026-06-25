@@ -9,3 +9,4 @@ export * from './table';
 export * from './pagination';
 export * from './spinner';
 export * from './toast';
+export * from './empty-state';

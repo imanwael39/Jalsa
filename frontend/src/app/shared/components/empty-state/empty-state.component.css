@@ -1,0 +1,74 @@
+:host {
+    display: block;
+}
+
+.empty-state {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.empty-state-icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    background-color: #f8f9fa;
+    border-radius: 50%;
+}
+
+.empty-state-icon i {
+    font-size: 2.5rem;
+    color: #6c757d;
+}
+
+.empty-state-image {
+    max-width: 200px;
+    height: auto;
+    opacity: 0.8;
+}
+
+.empty-state-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #212529;
+}
+
+.empty-state-message {
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* RTL Support */
+[dir="rtl"] .empty-state-message {
+    /* No specific RTL adjustments needed for centered text */
+}
+
+/* Responsive adjustments */
+@media (max-width: 575.98px) {
+    .empty-state {
+        padding: 1.5rem 1rem;
+    }
+
+    .empty-state-icon {
+        width: 64px;
+        height: 64px;
+    }
+
+    .empty-state-icon i {
+        font-size: 2rem;
+    }
+
+    .empty-state-title {
+        font-size: 1.125rem;
+    }
+
+    .empty-state-message {
+        font-size: 0.875rem;
+    }
+}
