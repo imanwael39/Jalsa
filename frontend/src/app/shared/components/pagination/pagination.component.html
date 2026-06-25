@@ -1,0 +1,77 @@
+@if (hasPages) {
+    <nav aria-label="Pagination" class="pagination-wrapper">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="pagination-info text-muted small">
+                @if (totalItems > 0) {
+                    <span>Showing {{ startIndex }} to {{ endIndex }} of {{ totalItems }} entries</span>
+                } @else {
+                    <span>No entries</span>
+                }
+            </div>
+
+            <ul class="pagination mb-0">
+                <li class="page-item" [class.disabled]="isFirstPage">
+                    <button
+                        type="button"
+                        class="page-link"
+                        [attr.aria-label]="'First page'"
+                        [disabled]="isFirstPage"
+                        (click)="goToFirstPage()"
+                    >
+                        <span aria-hidden="true">&laquo;</span>
+                    </button>
+                </li>
+
+                <li class="page-item" [class.disabled]="isFirstPage">
+                    <button
+                        type="button"
+                        class="page-link"
+                        [attr.aria-label]="'Previous page'"
+                        [disabled]="isFirstPage"
+                        (click)="goToPreviousPage()"
+                    >
+                        <span aria-hidden="true">&lsaquo;</span>
+                    </button>
+                </li>
+
+                @for (page of pages; track trackByPage($index, page)) {
+                    <li class="page-item" [class.active]="page === currentPage">
+                        <button
+                            type="button"
+                            class="page-link"
+                            [attr.aria-label]="'Page ' + page"
+                            [attr.aria-current]="page === currentPage ? 'page' : null"
+                            (click)="goToPage(page)"
+                        >
+                            {{ page }}
+                        </button>
+                    </li>
+                }
+
+                <li class="page-item" [class.disabled]="isLastPage">
+                    <button
+                        type="button"
+                        class="page-link"
+                        [attr.aria-label]="'Next page'"
+                        [disabled]="isLastPage"
+                        (click)="goToNextPage()"
+                    >
+                        <span aria-hidden="true">&rsaquo;</span>
+                    </button>
+                </li>
+
+                <li class="page-item" [class.disabled]="isLastPage">
+                    <button
+                        type="button"
+                        class="page-link"
+                        [attr.aria-label]="'Last page'"
+                        [disabled]="isLastPage"
+                        (click)="goToLastPage()"
+                    >
+                        <span aria-hidden="true">&raquo;</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+}

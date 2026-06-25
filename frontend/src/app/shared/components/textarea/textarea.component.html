@@ -1,0 +1,47 @@
+@if (label) {
+    <label
+        [for]="textareaId"
+        class="form-label"
+        [class.required]="required"
+    >
+        {{ label }}
+    </label>
+}
+<textarea
+    [id]="textareaId"
+    [name]="name"
+    class="form-control"
+    [class.is-invalid]="error"
+    [placeholder]="placeholder"
+    [disabled]="disabled"
+    [readonly]="readonly"
+    [required]="required"
+    [value]="value"
+    [rows]="rows"
+    [attr.cols]="cols"
+    [attr.maxlength]="maxlength"
+    [attr.minlength]="minlength"
+    [attr.wrap]="wrap"
+    [attr.aria-describedby]="ariaDescribedBy || null"
+    [attr.aria-invalid]="!!error"
+    [attr.aria-required]="required"
+    (input)="onInput($event)"
+    (blur)="onBlur($event)"
+></textarea>
+@if (helpText && !error) {
+    <small
+        [id]="textareaId + '-help'"
+        class="form-text text-muted"
+    >
+        {{ helpText }}
+    </small>
+}
+@if (error) {
+    <div
+        [id]="textareaId + '-error'"
+        class="invalid-feedback"
+        role="alert"
+    >
+        {{ error }}
+    </div>
+}

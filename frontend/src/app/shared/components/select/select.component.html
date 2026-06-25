@@ -1,0 +1,60 @@
+@if (label) {
+    <label
+        [for]="selectId"
+        class="form-label"
+        [class.required]="required"
+    >
+        {{ label }}
+    </label>
+}
+<select
+    [id]="selectId"
+    [name]="name"
+    class="form-select"
+    [class.is-invalid]="error"
+    [disabled]="disabled"
+    [required]="required"
+    [multiple]="multiple"
+    [attr.size]="size"
+    [attr.aria-describedby]="ariaDescribedBy || null"
+    [attr.aria-invalid]="!!error"
+    [attr.aria-required]="required"
+    (change)="onSelectChange($event)"
+    (blur)="onBlur($event)"
+>
+    @if (!multiple) {
+        <option
+            value=""
+            [disabled]="required"
+            [selected]="!value"
+        >
+            {{ placeholder }}
+        </option>
+    }
+    @for (option of options; track option.value) {
+        <option
+            [value]="option.value"
+            [disabled]="option.disabled"
+            [selected]="multiple ? (value | json) : value === option.value"
+        >
+            {{ option.label }}
+        </option>
+    }
+</select>
+@if (helpText && !error) {
+    <small
+        [id]="selectId + '-help'"
+        class="form-text text-muted"
+    >
+        {{ helpText }}
+    </small>
+}
+@if (error) {
+    <div
+        [id]="selectId + '-error'"
+        class="invalid-feedback"
+        role="alert"
+    >
+        {{ error }}
+    </div>
+}

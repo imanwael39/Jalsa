@@ -1,0 +1,64 @@
+<div class="table-responsive">
+    <table
+        class="table"
+        [class.table-striped]="striped"
+        [class.table-bordered]="bordered"
+        [class.table-hover]="hover"
+        [class.table-sm]="small"
+    >
+        <thead class="table-light">
+            <tr>
+                @for (column of columns; track column.key) {
+                    <th
+                        [style.width]="column.width"
+                        [style.text-align]="column.align || 'start'"
+                        [class.sortable]="column.sortable"
+                        [class.sorted]="sortKey === column.key"
+                        (click)="sortColumn(column)"
+                        role="columnheader"
+                        [attr.aria-sort]="sortKey === column.key ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
+                    >
+                        <div class="d-flex align-items-center gap-1">
+                            <span>{{ column.label }}</span>
+                            @if (column.sortable) {
+                                <i class="bi" [class]="getSortIcon(column)" aria-hidden="true"></i>
+                            }
+                        </div>
+                    </th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @if (loading) {
+                <tr>
+                    <td [attr.colspan]="columns.length" class="text-center py-4">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <span class="ms-2">Loading...</span>
+                    </td>
+                </tr>
+            } @else if (data.length === 0) {
+                <tr>
+                    <td [attr.colspan]="columns.length" class="text-center py-4 text-muted">
+                        {{ emptyMessage }}
+                    </td>
+                </tr>
+            } @else {
+                @for (row of data; track trackByRow($index, row)) {
+                    <tr (click)="onRowClick(row)" class="table-row">
+                        @for (column of columns; track column.key) {
+                            <td [style.text-align]="column.align || 'start'">
+                                <ng-container *ngTemplateOutlet="getCellTemplate($any(column))?.templateRef; context: { $implicit: getCellValue(row, column), row: row, column: column }">
+                                </ng-container>
+                                @if (!getCellTemplate($any(column))) {
+                                    {{ getCellValue(row, column) }}
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

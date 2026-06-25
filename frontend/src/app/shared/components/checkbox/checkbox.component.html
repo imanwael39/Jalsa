@@ -1,0 +1,43 @@
+<div class="form-check">
+    <input
+        [id]="checkboxId"
+        type="checkbox"
+        class="form-check-input"
+        [class.is-invalid]="error"
+        [disabled]="disabled"
+        [readonly]="readonly"
+        [checked]="checked"
+        [indeterminate]="indeterminate"
+        [attr.name]="name"
+        [attr.value]="value"
+        [attr.aria-describedby]="ariaDescribedBy || null"
+        [attr.aria-invalid]="!!error"
+        (change)="onCheckboxChange($event)"
+        (blur)="onBlur($event)"
+    />
+    @if (label) {
+        <label
+            [for]="checkboxId"
+            class="form-check-label"
+        >
+            {{ label }}
+        </label>
+    }
+</div>
+@if (helpText && !error) {
+    <small
+        [id]="checkboxId + '-help'"
+        class="form-text text-muted"
+    >
+        {{ helpText }}
+    </small>
+}
+@if (error) {
+    <div
+        [id]="checkboxId + '-error'"
+        class="invalid-feedback"
+        role="alert"
+    >
+        {{ error }}
+    </div>
+}
