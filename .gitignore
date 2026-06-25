@@ -429,5 +429,5 @@ FodyWeavers.xsd
 *.msp
 
 # App settings with secrets (API keys, connection strings, etc.)
-**/appsettings.json
-**/appsettings.Development.json
+# **/appsettings.json
+# **/appsettings.Development.json
