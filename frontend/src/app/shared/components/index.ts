@@ -8,3 +8,4 @@ export * from './modal';
 export * from './table';
 export * from './pagination';
 export * from './spinner';
+export * from './toast';
