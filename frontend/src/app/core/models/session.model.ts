@@ -1,32 +1,48 @@
 export interface Session {
     id: string;
     patientId: string;
-    therapistId: string;
-    date: string;
-    content: string;
-    status: 'Draft' | 'Completed' | 'Archived';
-    voiceMemoUrl: string | null;
-    aiSummary: string | null;
+    intakeFormId: string | null;
+    sessionNumber: number;
+    sessionDate: string;
+    durationMinutes: number | null;
+    sessionType: string | null;
+    status: string;
     createdAt: string;
     updatedAt: string;
 }
 
+export interface SessionNote {
+    id: string;
+    sessionId: string;
+    observations: string | null;
+    interventions: string | null;
+    patientResponse: string | null;
+    homeworkAssigned: string | null;
+    nextGoals: string | null;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface VoiceMemo {
+    id: string;
+    sessionId: string;
+    audioUrl: string | null;
+    transcript: string | null;
+    durationSeconds: number | null;
+    createdAt: string;
+}
+
 export interface CreateSessionRequest {
     patientId: string;
-    date: string;
-    content?: string;
+    intakeFormId?: string;
+    sessionDate: string;
+    durationMinutes?: number;
+    sessionType?: string;
 }
 
 export interface UpdateSessionRequest {
-    date?: string;
-    content?: string;
-    status?: 'Draft' | 'Completed' | 'Archived';
-}
-
-export interface VoiceMemoResponse {
-    voiceUrl: string;
-}
-
-export interface SessionSummaryResponse {
-    summary: string;
+    sessionDate?: string;
+    durationMinutes?: number;
+    sessionType?: string;
+    status?: string;
 }
