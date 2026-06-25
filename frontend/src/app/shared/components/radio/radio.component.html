@@ -1,0 +1,53 @@
+@if (label) {
+    <label
+        class="form-label"
+        [class.required]="required"
+    >
+        {{ label }}
+    </label>
+}
+@for (option of options; let i = $index; track option.value) {
+    <div
+        [class.form-check]="layout === 'stacked'"
+        [class.form-check-inline]="layout === 'inline'"
+    >
+        <input
+            [id]="getRadioId(i)"
+            type="radio"
+            class="form-check-input"
+            [class.is-invalid]="error"
+            [name]="name"
+            [value]="option.value"
+            [disabled]="disabled || option.disabled"
+            [readonly]="readonly"
+            [checked]="value === option.value"
+            [attr.aria-describedby]="ariaDescribedBy || null"
+            [attr.aria-invalid]="!!error"
+            (change)="onRadioChange($event)"
+            (blur)="onBlur($event)"
+        />
+        <label
+            [for]="getRadioId(i)"
+            class="form-check-label"
+        >
+            {{ option.label }}
+        </label>
+    </div>
+}
+@if (helpText && !error) {
+    <small
+        [id]="(id || name) + '-help'"
+        class="form-text text-muted"
+    >
+        {{ helpText }}
+    </small>
+}
+@if (error) {
+    <div
+        [id]="(id || name) + '-error'"
+        class="invalid-feedback"
+        role="alert"
+    >
+        {{ error }}
+    </div>
+}

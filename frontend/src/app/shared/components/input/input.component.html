@@ -1,0 +1,50 @@
+@if (label) {
+    <label
+        [for]="inputId"
+        class="form-label"
+        [class.required]="required"
+    >
+        {{ label }}
+    </label>
+}
+<input
+    [id]="inputId"
+    [name]="name"
+    [type]="type"
+    class="form-control"
+    [class.is-invalid]="error"
+    [placeholder]="placeholder"
+    [disabled]="disabled"
+    [readonly]="readonly"
+    [required]="required"
+    [value]="value"
+    [attr.autocomplete]="autocomplete || null"
+    [attr.maxlength]="maxlength"
+    [attr.minlength]="minlength"
+    [attr.pattern]="pattern || null"
+    [attr.min]="min"
+    [attr.max]="max"
+    [attr.step]="step"
+    [attr.aria-describedby]="ariaDescribedBy || null"
+    [attr.aria-invalid]="!!error"
+    [attr.aria-required]="required"
+    (input)="onInput($event)"
+    (blur)="onBlur($event)"
+/>
+@if (helpText && !error) {
+    <small
+        [id]="inputId + '-help'"
+        class="form-text text-muted"
+    >
+        {{ helpText }}
+    </small>
+}
+@if (error) {
+    <div
+        [id]="inputId + '-error'"
+        class="invalid-feedback"
+        role="alert"
+    >
+        {{ error }}
+    </div>
+}
