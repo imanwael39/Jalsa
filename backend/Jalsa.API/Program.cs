@@ -86,37 +86,56 @@ using (var scope = app.Services.CreateScope())
     }
     await context.SaveChangesAsync();
 
-    if (!context.Patients.Any())
+    var patientRole = context.Roles.FirstOrDefault(r => r.Name == "Patient");
+    var patientUser = context.Users.FirstOrDefault(u => u.Email == "patient3@jalsa.com");
+    if (patientUser != null && patientRole != null)
     {
-        var therapistUser = context.Users.FirstOrDefault(u => u.Email == "dr@test.com");
-        if (therapistUser != null)
+        var hasPatientRole = context.UserRoles.Any(ur => ur.UserId == patientUser.Id && ur.RoleId == patientRole.Id);
+        if (!hasPatientRole)
         {
-            var therapist = context.Therapists.FirstOrDefault(t => t.UserId == therapistUser.Id);
-            if (therapist == null)
+            context.UserRoles.Add(new UserRole
             {
-                therapist = new Jalsa.Domain.Models.Clinic.Therapist
+                UserId = patientUser.Id,
+                RoleId = patientRole.Id,
+                CreatedAt = DateTime.UtcNow
+            });
+            await context.SaveChangesAsync();
+        }
+
+        var existingPatient = context.Patients.FirstOrDefault(p => p.UserId == patientUser.Id);
+        if (existingPatient == null)
+        {
+            var therapistUser = context.Users.FirstOrDefault(u => u.Email == "dr@test.com");
+            if (therapistUser != null)
+            {
+                var therapist = context.Therapists.FirstOrDefault(t => t.UserId == therapistUser.Id);
+                if (therapist == null)
+                {
+                    therapist = new Jalsa.Domain.Models.Clinic.Therapist
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = therapistUser.Id,
+                        FullName = "Dr. Test",
+                        LicenseNumber = "LIC-001",
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    context.Therapists.Add(therapist);
+                    await context.SaveChangesAsync();
+                }
+
+                var patient = new Jalsa.Domain.Models.Patient.Patient
                 {
                     Id = Guid.NewGuid(),
-                    UserId = therapistUser.Id,
-                    FullName = "Dr. Test",
-                    LicenseNumber = "LIC-001",
-                    CreatedAt = DateTime.UtcNow
+                    TherapistId = therapist.Id,
+                    UserId = patientUser.Id,
+                    FullName = "Patient 3",
+                    Status = "Active",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
                 };
-                context.Therapists.Add(therapist);
+                context.Patients.Add(patient);
                 await context.SaveChangesAsync();
             }
-
-            var patient = new Jalsa.Domain.Models.Patient.Patient
-            {
-                Id = Guid.NewGuid(),
-                TherapistId = therapist.Id,
-                FullName = "Ahmed Patient",
-                Status = "Active",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-            context.Patients.Add(patient);
-            await context.SaveChangesAsync();
         }
     }
 }
