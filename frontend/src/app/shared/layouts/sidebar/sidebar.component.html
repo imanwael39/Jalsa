@@ -13,7 +13,20 @@
     </div>
     <nav class="sidebar-nav" aria-label="التنقل الرئيسي">
         <ul class="nav flex-column">
-            <!-- Placeholder navigation items - will be implemented in FE-LAYOUT-002 -->
+            @for (item of filteredMenu; track item.route) {
+                <li class="nav-item">
+                    <a class="nav-link"
+                       [routerLink]="item.route"
+                       routerLinkActive="active"
+                       [routerLinkActiveOptions]="{ exact: false }"
+                       [attr.aria-label]="item.label">
+                        <i class="bi {{ item.icon }}"></i>
+                        @if (!collapsed) {
+                            <span>{{ item.label }}</span>
+                        }
+                    </a>
+                </li>
+            }
         </ul>
     </nav>
 </aside>
