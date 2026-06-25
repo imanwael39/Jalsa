@@ -1,2 +1,2 @@
-export { API } from './api-endpoints';
-export { HttpClientService } from './http-client.service';
+export * from './api-endpoints';
+export * from './http-client.service';
