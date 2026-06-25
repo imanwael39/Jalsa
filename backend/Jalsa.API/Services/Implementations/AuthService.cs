@@ -13,6 +13,7 @@ using Jalsa.API.Exceptions;
 using Jalsa.API.Services.Interfaces;
 using Jalsa.Infrastructure.Data;
 using Jalsa.Domain.Models.Identity;
+using Jalsa.Domain.Models.Patient;
 
 public class AuthService : IAuthService
 {
@@ -55,6 +56,24 @@ public class AuthService : IAuthService
 
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
+
+        if (roleName == "Patient")
+        {
+            var therapist = await _context.Therapists.FirstOrDefaultAsync();
+            var patient = new Patient
+            {
+                Id = Guid.NewGuid(),
+                TherapistId = therapist?.Id ?? Guid.Empty,
+                UserId = user.Id,
+                FullName = dto.Email.Split('@')[0],
+                Status = "Active",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            _context.Patients.Add(patient);
+            await _context.SaveChangesAsync();
+        }
+
         return await BuildAuthResponse(user);
     }
 
