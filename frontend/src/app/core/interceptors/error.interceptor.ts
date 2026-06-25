@@ -12,6 +12,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
     return next(req).pipe(
         catchError((error) => {
+            console.error('HTTP Error:', error);
+
             if (error.status === 401) {
                 authService.logout();
                 router.navigate(['/auth/login']);
@@ -23,6 +25,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
                 notification.error(message);
             } else if (error.status === 500) {
                 notification.error('A server error occurred. Please try again later.');
+            } else if (error.status === 0) {
+                notification.error('Network error. Please check your connection.');
             } else {
                 notification.error('An unexpected error occurred. Please try again.');
             }

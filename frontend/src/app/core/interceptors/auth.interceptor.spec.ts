@@ -43,4 +43,13 @@ describe('authInterceptor', () => {
         expect(req.request.headers.has('Authorization')).toBe(false);
         req.flush({});
     });
+
+    it('should skip auth for refresh token endpoint', () => {
+        localStorage.setItem('jwt_token', 'test-token-123');
+        http.get('/api/auth/refresh').subscribe();
+
+        const req = httpMock.expectOne('/api/auth/refresh');
+        expect(req.request.headers.has('Authorization')).toBe(false);
+        req.flush({});
+    });
 });

@@ -91,4 +91,17 @@ describe('errorInterceptor', () => {
         const req = httpMock.expectOne('/api/data');
         req.flush('Server Error', { status: 500, statusText: 'Server Error' });
     });
+
+    it('should handle network error (status 0)', () => {
+        const errorSpy = vi.spyOn(notificationService, 'error');
+
+        http.get('/api/data').subscribe({
+            error: () => {
+                expect(errorSpy).toHaveBeenCalledWith('Network error. Please check your connection.');
+            },
+        });
+
+        const req = httpMock.expectOne('/api/data');
+        req.flush('Network error', { status: 0, statusText: 'Unknown Error' });
+    });
 });
