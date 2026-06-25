@@ -13,7 +13,7 @@
     </div>
     <nav class="sidebar-nav" aria-label="التنقل الرئيسي">
         <ul class="nav flex-column">
-            @for (item of filteredMenu; track item.route) {
+            @for (item of menuItems(); track item.route) {
                 <li class="nav-item">
                     <a class="nav-link"
                        [routerLink]="item.route"
