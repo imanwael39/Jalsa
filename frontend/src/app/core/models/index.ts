@@ -1,9 +1,9 @@
-export type { ApiResponse, PaginatedApiResponse } from './api-response.model';
-export type { User } from './user.model';
-export type { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, RefreshTokenRequest, RefreshTokenResponse, UpdateProfileRequest } from './auth.model';
-export type { Patient, CreatePatientRequest, UpdatePatientRequest, IntakeForm, IntakeFormRequest, UploadIntakeImageResponse, Assessment, AssessmentRequest } from './patient.model';
-export type { Session, CreateSessionRequest, UpdateSessionRequest, VoiceMemoResponse, SessionSummaryResponse } from './session.model';
-export type { Exercise, ExerciseAssignment, AssignExerciseRequest, UpdateExerciseStatusRequest } from './exercise.model';
-export type { Report, GenerateReportRequest, UpdateReportRequest } from './report.model';
-export type { ChatMessage, SendMessageRequest } from './chat.model';
+export type { User, Therapist } from './user.model';
+export type { LoginRequest, AuthResponse, RegisterRequest, RefreshTokenRequest, RevokeTokenRequest, ForgotPasswordRequest, ResetPasswordRequest } from './auth.model';
+export type { Patient, CreatePatientRequest, UpdatePatientRequest, PatientFilter, IntakeForm, Assessment } from './patient.model';
+export type { Session, SessionNote, VoiceMemo, CreateSessionRequest, UpdateSessionRequest } from './session.model';
+export type { Exercise, ExerciseLog, CreateExerciseRequest, UpdateExerciseRequest, LogExerciseRequest, ExtendDueDateRequest } from './exercise.model';
+export type { ReferralReport, ReportVersion } from './report.model';
+export type { ChatConversation, ChatMessage, SendMessageRequest } from './chat.model';
 export type { DashboardStats, TrendData } from './dashboard.model';
+export type { ApiResponse } from './api-response.model';

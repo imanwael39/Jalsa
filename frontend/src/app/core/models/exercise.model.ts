@@ -1,32 +1,47 @@
 export interface Exercise {
     id: string;
-    name: string;
-    description: string;
-    category: string;
-    instructions: string;
-    duration: number;
-    isActive: boolean;
+    patientId: string;
+    description: string | null;
+    frequency: string | null;
+    startDate: string | null;
+    dueDate: string | null;
+    status: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface ExerciseLog {
+    id: string;
+    exerciseId: string;
+    patientId: string;
+    completionStatus: string;
+    reflectionNote: string | null;
+    loggedAt: string | null;
     createdAt: string;
 }
 
-export interface ExerciseAssignment {
-    id: string;
+export interface CreateExerciseRequest {
     patientId: string;
-    exerciseId: string;
-    exercise: Exercise;
-    dueDate: string;
-    status: 'Pending' | 'InProgress' | 'Completed';
-    reflection: string | null;
-    completedAt: string | null;
-    assignedAt: string;
+    description: string;
+    frequency?: string;
+    startDate?: string;
+    dueDate?: string;
 }
 
-export interface AssignExerciseRequest {
-    patientId: string;
-    exerciseId: string;
-    dueDate: string;
+export interface UpdateExerciseRequest {
+    description?: string;
+    frequency?: string;
+    dueDate?: string;
+    status?: string;
 }
 
-export interface UpdateExerciseStatusRequest {
-    status: 'Pending' | 'InProgress' | 'Completed';
+export interface LogExerciseRequest {
+    exerciseId: string;
+    patientId: string;
+    completionStatus: string;
+    reflectionNote?: string;
+}
+
+export interface ExtendDueDateRequest {
+    newDueDate: string;
 }

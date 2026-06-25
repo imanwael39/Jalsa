@@ -2,15 +2,13 @@ export interface DashboardStats {
     totalPatients: number;
     activePatients: number;
     totalSessions: number;
-    sessionsThisMonth: number;
+    completedSessions: number;
+    pendingExercises: number;
     completedExercises: number;
-    pendingReviews: number;
-    upComingAppointments: number;
-    averageSessionRating: number;
+    pendingReports: number;
 }
 
 export interface TrendData {
     date: string;
     value: number;
-    metric: string;
 }

@@ -1,73 +1,72 @@
 export interface Patient {
     id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    dateOfBirth: string;
-    gender: 'Male' | 'Female' | 'Other';
-    phoneNumber: string | null;
-    emergencyContact: string | null;
-    notes: string | null;
-    isArchived: boolean;
+    therapistId: string;
+    clinicId: string | null;
+    userId: string | null;
+    fullName: string;
+    dateOfBirth: string | null;
+    gender: string | null;
+    phone: string | null;
+    email: string | null;
+    address: string | null;
+    referralSource: string | null;
+    chiefComplaint: string | null;
+    status: string;
     createdAt: string;
     updatedAt: string;
 }
 
 export interface CreatePatientRequest {
-    firstName: string;
-    lastName: string;
-    email: string;
-    dateOfBirth: string;
-    gender: 'Male' | 'Female' | 'Other';
-    phoneNumber?: string;
-    emergencyContact?: string;
-    notes?: string;
+    fullName: string;
+    dateOfBirth?: string | null;
+    gender?: string | null;
+    phone?: string | null;
+    email?: string | null;
+    address?: string | null;
+    referralSource?: string | null;
+    chiefComplaint?: string | null;
 }
 
 export interface UpdatePatientRequest {
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    dateOfBirth?: string;
-    gender?: 'Male' | 'Female' | 'Other';
-    phoneNumber?: string;
-    emergencyContact?: string;
-    notes?: string;
+    fullName?: string;
+    dateOfBirth?: string | null;
+    gender?: string | null;
+    phone?: string | null;
+    email?: string | null;
+    address?: string | null;
+    referralSource?: string | null;
+    chiefComplaint?: string | null;
+}
+
+export interface PatientFilter {
+    searchTerm?: string;
+    status?: string;
+    page: number;
+    pageSize: number;
 }
 
 export interface IntakeForm {
     id: string;
     patientId: string;
-    content: string;
-    extractedData: Record<string, unknown>;
-    status: 'Pending' | 'Completed' | 'Reviewed';
-    imageUrl: string | null;
+    presentingProblem: string | null;
+    psychiatricHistory: string | null;
+    familyHistory: string | null;
+    medications: string | null;
+    socialHistory: string | null;
+    status: string;
     createdAt: string;
-    updatedAt: string;
-}
-
-export interface IntakeFormRequest {
-    content: string;
-}
-
-export interface UploadIntakeImageResponse {
-    imageUrl: string;
-    extractedData: Record<string, unknown>;
+    submittedAt: string | null;
 }
 
 export interface Assessment {
     id: string;
     patientId: string;
-    type: string;
-    score: number;
-    notes: string | null;
-    date: string;
+    sessionId: string | null;
+    templateId: string;
+    title: string | null;
+    assessmentDate: string | null;
+    totalScore: number | null;
+    status: string;
     createdAt: string;
-}
-
-export interface AssessmentRequest {
-    type: string;
-    score: number;
-    notes?: string;
-    date: string;
+    updatedAt: string;
 }
