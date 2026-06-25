@@ -11,21 +11,21 @@ export class BaseStateService<T> {
     readonly loading = this.loadingSignal.asReadonly();
     readonly error = this.errorSignal.asReadonly();
 
-    protected setData(data: T) {
+    protected setData(data: T): void {
         this.dataSignal.set(data);
         this.errorSignal.set(null);
     }
 
-    protected setError(error: string) {
+    protected setError(error: string): void {
         this.errorSignal.set(error);
     }
 
-    protected startLoading() {
+    protected startLoading(): void {
         this.loadingSignal.set(true);
         this.errorSignal.set(null);
     }
 
-    protected stopLoading() {
+    protected stopLoading(): void {
         this.loadingSignal.set(false);
     }
 
