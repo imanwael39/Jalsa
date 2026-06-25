@@ -1,8 +1,16 @@
-<div class="app-layout" [class.sidebar-collapsed]="sidebarCollapsed()">
+<div class="app-layout" [class.sidebar-collapsed]="sidebarCollapsed()" [class.mobile-sidebar-open]="mobileSidebarOpen()">
+    <div class="sidebar-backdrop"
+         role="button"
+         tabindex="0"
+         aria-label="إغلاق القائمة"
+         (click)="closeMobileSidebar()"
+         (keydown.enter)="closeMobileSidebar()"
+         (keydown.escape)="closeMobileSidebar()">
+    </div>
     <app-sidebar [collapsed]="sidebarCollapsed()" (toggle)="toggleSidebar()"></app-sidebar>
     <div class="app-main">
-        <app-header (toggleSidebar)="toggleSidebar()"></app-header>
-        <main class="app-content" role="main">
+        <app-header (toggleSidebar)="toggleMobileSidebar()"></app-header>
+        <main class="app-content" id="main-content" role="main">
             <router-outlet></router-outlet>
         </main>
         <app-footer></app-footer>

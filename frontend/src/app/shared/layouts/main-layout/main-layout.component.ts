@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AppStateService } from '../../../core/services/app-state.service';
 import { SidebarComponent } from '../sidebar/sidebar.component';
@@ -14,11 +14,20 @@ import { FooterComponent } from '../footer/footer.component';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MainLayoutComponent {
-    private appState = inject(AppStateService);
+    private readonly appState = inject(AppStateService);
 
-    sidebarCollapsed = this.appState.sidebarCollapsed;
+    readonly sidebarCollapsed = this.appState.sidebarCollapsed;
+    readonly mobileSidebarOpen = signal(false);
 
     toggleSidebar(): void {
         this.appState.toggleSidebar();
+    }
+
+    toggleMobileSidebar(): void {
+        this.mobileSidebarOpen.update(open => !open);
+    }
+
+    closeMobileSidebar(): void {
+        this.mobileSidebarOpen.set(false);
     }
 }
