@@ -1,0 +1,7 @@
+@if (loading) {
+    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+}
+@if (icon && !loading) {
+    <span class="bi {{ icon }}" aria-hidden="true"></span>
+}
+<ng-content></ng-content>
