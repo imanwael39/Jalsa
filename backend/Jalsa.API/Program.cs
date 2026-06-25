@@ -22,6 +22,8 @@ using Jalsa.Infrastructure.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Jalsa.Application.Validators.Exercise;
+using Jalsa.Application.Validators.Session;
+using Jalsa.Application.Mappings;
 using Jalsa.API.DTOs.Patient;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -68,6 +70,9 @@ builder.Services.AddScoped<IReportGenerationService, ReportGenerationService>();
 builder.Services.AddScoped<IOcrService, OcrService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPatientService ,PatientService>();
+builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<ICrisisService, CrisisService>();
+builder.Services.AddScoped<ISessionService, SessionService>();
 
 builder.Services.AddDbContext<Galsa_DBDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -87,8 +92,13 @@ builder.Services.AddScoped<IProgressService, ProgressService>();
 builder.Services.AddScoped<INotificationService, EmailNotificationService>();
 builder.Services.AddScoped<ExerciseReminderJob>();
 
+builder.Services.AddAutoMapper(typeof(SessionMappingProfile).Assembly);
+builder.Services.AddAutoMapper(typeof(ExerciseMappingProfile).Assembly);
+builder.Services.AddAutoMapper(typeof(ChatMappingProfile).Assembly);
+
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<ExerciseCreateDtoValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<SessionCreateDtoValidator>();
 
 builder.Services.AddHangfire(config => config
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
