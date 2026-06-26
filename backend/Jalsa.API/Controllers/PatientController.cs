@@ -1,88 +1,65 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using Jalsa.API.DTOs.Patient;
-using Jalsa.API.Exceptions;
-using Jalsa.API.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using Jalsa.Application.DTOs.Exercise;
+using Jalsa.Application.Interfaces.Services;
+using Jalsa.Infrastructure.Data;
 
 namespace Jalsa.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
-[Authorize]
+[Route("api/patient")]
+[Authorize(Roles = "Patient")]
 public class PatientController : ControllerBase
 {
-    private readonly IPatientService _patientService;
+    private readonly IExerciseService _exerciseService;
+    private readonly Galsa_DBDbContext _context;
 
-    public PatientController(IPatientService patientService)
+    public PatientController(IExerciseService exerciseService, Galsa_DBDbContext context)
     {
-        _patientService = patientService;
+        _exerciseService = exerciseService;
+        _context = context;
     }
 
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id)
+    private async Task<Guid> GetPatientIdAsync()
     {
-        var currentUserId = GetCurrentUserId();
-        var result = await _patientService.GetByIdAsync(id, currentUserId);
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim is null) throw new Jalsa.API.Exceptions.ApiException(401, "User not authenticated.");
+
+        var userId = Guid.Parse(userIdClaim.Value);
+        var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserId == userId);
+        if (patient is null) throw new Jalsa.API.Exceptions.ApiException(404, "Patient profile not found.");
+
+        return patient.Id;
+    }
+
+    [HttpGet("exercises")]
+    public async Task<IActionResult> GetExercises([FromQuery] string? status)
+    {
+        var patientId = await GetPatientIdAsync();
+        var exercises = await _exerciseService.GetPatientExercisesAsync(patientId, status);
+        return Ok(exercises);
+    }
+
+    [HttpGet("exercises/{id:guid}")]
+    public async Task<IActionResult> GetExerciseById(Guid id)
+    {
+        var patientId = await GetPatientIdAsync();
+        var owned = await _exerciseService.IsExerciseOwnedByPatientAsync(id, patientId);
+        if (!owned) return Forbid();
+
+        var exercise = await _exerciseService.GetExerciseByIdAsync(id);
+        if (exercise is null) return NotFound();
+        return Ok(exercise);
+    }
+
+    [HttpPut("exercises/{id:guid}/status")]
+    public async Task<IActionResult> UpdateExerciseStatus(Guid id, [FromBody] ExerciseStatusUpdateDto dto)
+    {
+        var patientId = await GetPatientIdAsync();
+        var result = await _exerciseService.UpdateExerciseStatusAsync(id, patientId, dto);
+        if (result is null) return NotFound();
         return Ok(result);
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] PatientFilterDto? filter)
-    {
-        var currentUserId = GetCurrentUserId();
-        var result = await _patientService.GetAllAsync(currentUserId, filter);
-        return Ok(result);
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> Create(CreatePatientDTO dto)
-    {
-        var currentUserId = GetCurrentUserId();
-        var result = await _patientService.CreateAsync(dto, currentUserId);
-        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
-    }
-
-    [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, UpdatePatientDto dto)
-    {
-        var currentUserId = GetCurrentUserId();
-        var result = await _patientService.UpdateAsync(id, dto, currentUserId);
-        return Ok(result);
-    }
-
-    [HttpPatch("{id:guid}/archive")]
-    public async Task<IActionResult> Archive(Guid id)
-    {
-        var currentUserId = GetCurrentUserId();
-        await _patientService.ArchiveAsync(id, currentUserId);
-        return NoContent();
-    }
-
-    [HttpPatch("{id:guid}/restore")]
-    public async Task<IActionResult> Restore(Guid id)
-    {
-        var currentUserId = GetCurrentUserId();
-        await _patientService.RestoreAsync(id, currentUserId);
-        return NoContent();
-    }
-
-    [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
-    {
-        var currentUserId = GetCurrentUserId();
-        await _patientService.DeleteAsync(id, currentUserId);
-        return NoContent();
-    }
-
-    private Guid GetCurrentUserId()
-    {
-        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                    ?? User.FindFirstValue("sub");
-
-        if (string.IsNullOrEmpty(claim) || !Guid.TryParse(claim, out var userId))
-            throw new ApiException(401, "Invalid authentication token");
-
-        return userId;
     }
 }

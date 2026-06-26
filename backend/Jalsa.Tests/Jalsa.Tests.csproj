@@ -8,13 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
-    <PackageReference Include="FluentAssertions" Version="8.10.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.14" />
+    <PackageReference Include="FluentAssertions" Version="6.12.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
-    <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="Moq" Version="4.20.70" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,10 +23,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Jalsa.API\Jalsa.API.csproj" />
     <ProjectReference Include="..\Jalsa.Application\Jalsa.Application.csproj" />
     <ProjectReference Include="..\Jalsa.Domain\Jalsa.Domain.csproj" />
-    <ProjectReference Include="..\Jalsa.Infrastructure\Jalsa.Infrastructure.csproj" />
-    <ProjectReference Include="..\Jalsa.API\Jalsa.API.csproj" />
   </ItemGroup>
 
 </Project>

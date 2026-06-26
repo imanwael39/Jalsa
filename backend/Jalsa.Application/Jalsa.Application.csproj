@@ -9,7 +9,8 @@
     <ProjectReference Include="..\Jalsa.Domain\Jalsa.Domain.csproj" />
 </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="12.1.1" />
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
+    <PackageReference Include="FluentValidation" Version="11.10.0" />
   </ItemGroup>
 
 </Project>

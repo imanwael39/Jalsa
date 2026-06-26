@@ -17,7 +17,6 @@ public class Session
     public Patient.IntakeForm? IntakeForm { get; set; }
     public SessionNote? SessionNote { get; set; }
     public ICollection<SessionEmbedding> SessionEmbeddings { get; set; } = new List<SessionEmbedding>();
-    public ICollection<VoiceMemo> VoiceMemos { get; set; } = new List<VoiceMemo>();
     public ICollection<File.UploadedFile> UploadedFiles { get; set; } = new List<File.UploadedFile>();
     public ICollection<Assessment.Assessment> Assessments { get; set; } = new List<Assessment.Assessment>();
 }
