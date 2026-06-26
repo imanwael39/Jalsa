@@ -31,7 +31,7 @@ public class AuthService : IAuthService
     {
         var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
         if (existingUser != null)
-            throw new ApiException(409, "User with this email already exists!");
+            throw new ApiException(409, "Email already exists.");
 
         var user = new User
         {
@@ -45,34 +45,34 @@ public class AuthService : IAuthService
 
         var roleName = string.IsNullOrWhiteSpace(dto.Role) ? "Therapist" : dto.Role;
         var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
-        if (role != null)
+        if (role == null)
+            throw new ApiException(400, $"Role '{roleName}' does not exist.");
+
+        user.UserRoles.Add(new UserRole
         {
-            user.UserRoles.Add(new UserRole
+            UserId = user.Id,
+            RoleId = role.Id,
+            CreatedAt = DateTime.UtcNow
+        });
+
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        if (roleName == "Therapist")
+        {
+            var therapist = new Jalsa.Domain.Models.Clinic.Therapist
             {
+                Id = Guid.NewGuid(),
                 UserId = user.Id,
-                RoleId = role.Id,
+                FullName = dto.Email.Split('@')[0],
+                LicenseNumber = $"LIC-{Guid.NewGuid().ToString()[..8].ToUpper()}",
                 CreatedAt = DateTime.UtcNow
-            });
+            };
+            _context.Therapists.Add(therapist);
+            await _context.SaveChangesAsync();
         }
 
-      _context.Users.Add(user);
-await _context.SaveChangesAsync();
-
-if (roleName == "Therapist")
-{
-    var therapist = new Jalsa.Domain.Models.Clinic.Therapist
-    {
-        Id = Guid.NewGuid(),
-        UserId = user.Id,
-        FullName = dto.Email.Split('@')[0],
-        LicenseNumber = $"LIC-{Guid.NewGuid().ToString()[..8].ToUpper()}",
-        CreatedAt = DateTime.UtcNow
-    };
-    _context.Therapists.Add(therapist);
-    await _context.SaveChangesAsync();
-}
-
-return await BuildAuthResponse(user);
+        return await BuildAuthResponse(user);
     }
 
     public async Task<AuthResponseDto> LoginAsync(LoginDto dto)
@@ -227,6 +227,9 @@ return await BuildAuthResponse(user);
         {
             claims.Add(new Claim(ClaimTypes.Role, role));
         }
+
+        if (string.IsNullOrWhiteSpace(_jwtSettings.Key))
+            throw new ApiException(500, "JWT signing key is not configured.");
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
