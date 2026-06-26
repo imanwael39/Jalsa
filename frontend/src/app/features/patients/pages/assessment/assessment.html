@@ -1,3 +1,145 @@
 <div class="assessment">
-    <p>Assessment - Coming Soon</p>
+    <div class="form-header">
+        <div class="header-left">
+            <app-button variant="ghost" size="sm" (clicked)="goBack()" ariaLabel="Go back to patient detail">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i> Back
+            </app-button>
+            <h1 class="form-title">Psychological Assessments</h1>
+        </div>
+    </div>
+
+    @if (loading()) {
+        <div class="loading-container">
+            <app-spinner size="lg" label="Loading assessments..."></app-spinner>
+        </div>
+    }
+
+    @if (error()) {
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+            {{ error() }}
+        </div>
+    }
+
+    <div class="add-assessment-section">
+        <h2 class="section-title">
+            <i class="bi bi-plus-circle" aria-hidden="true"></i>
+            Add New Assessment
+        </h2>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="assessment-form" novalidate>
+            <div class="form-grid">
+                <div class="form-field">
+                    <label for="templateId" class="form-label">Assessment Type <span class="required">*</span></label>
+                    <select
+                        id="templateId"
+                        class="form-select"
+                        formControlName="templateId"
+                        name="templateId"
+                        [class.is-invalid]="isFieldInvalid('templateId')">
+                        <option value="">Select type</option>
+                        @for (type of assessmentTypes; track type.value) {
+                            <option [value]="type.value">{{ type.label }}</option>
+                        }
+                    </select>
+                    @if (isFieldInvalid('templateId')) {
+                        <div class="invalid-feedback">{{ getFieldError('templateId') }}</div>
+                    }
+                </div>
+                <div class="form-field">
+                    <label for="totalScore" class="form-label">Score <span class="required">*</span></label>
+                    <input
+                        type="number"
+                        id="totalScore"
+                        class="form-control"
+                        formControlName="totalScore"
+                        name="totalScore"
+                        placeholder="Enter score"
+                        min="0"
+                        [class.is-invalid]="isFieldInvalid('totalScore')">
+                    @if (isFieldInvalid('totalScore')) {
+                        <div class="invalid-feedback">{{ getFieldError('totalScore') }}</div>
+                    }
+                </div>
+                <div class="form-field">
+                    <label for="assessmentDate" class="form-label">Date <span class="required">*</span></label>
+                    <input
+                        type="date"
+                        id="assessmentDate"
+                        class="form-control"
+                        formControlName="assessmentDate"
+                        name="assessmentDate"
+                        [class.is-invalid]="isFieldInvalid('assessmentDate')">
+                    @if (isFieldInvalid('assessmentDate')) {
+                        <div class="invalid-feedback">{{ getFieldError('assessmentDate') }}</div>
+                    }
+                </div>
+            </div>
+            <div class="form-field full-width">
+                <label for="title" class="form-label">Title (Optional)</label>
+                <input
+                    type="text"
+                    id="title"
+                    class="form-control"
+                    formControlName="title"
+                    name="title"
+                    placeholder="Custom title for this assessment">
+            </div>
+            <div class="form-actions">
+                <app-button
+                    type="submit"
+                    variant="primary"
+                    [loading]="submitLoading()"
+                    ariaLabel="Add assessment">
+                    Add Assessment
+                </app-button>
+            </div>
+        </form>
+    </div>
+
+    <div class="assessment-history-section">
+        <h2 class="section-title">
+            <i class="bi bi-clock-history" aria-hidden="true"></i>
+            Assessment History
+        </h2>
+
+        @if (!loading() && assessments().length === 0) {
+            <div class="empty-state">
+                <i class="bi bi-clipboard-check" aria-hidden="true"></i>
+                <p>No assessments recorded yet.</p>
+                <p class="empty-hint">Add an assessment using the form above.</p>
+            </div>
+        }
+
+        @if (assessments().length > 0) {
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Type</th>
+                            <th scope="col">Score</th>
+                            <th scope="col">Date</th>
+                            <th scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (assessment of assessments(); track trackByAssessmentId($index, assessment)) {
+                            <tr>
+                                <td>{{ assessment.title || assessment.templateId }}</td>
+                                <td>
+                                    <span class="score-badge">{{ assessment.totalScore ?? '-' }}</span>
+                                </td>
+                                <td>{{ assessment.assessmentDate | date:'mediumDate' }}</td>
+                                <td>
+                                    <span class="status-badge" [class.status-completed]="assessment.status === 'Completed'" [class.status-draft]="assessment.status === 'Draft'">
+                                        {{ assessment.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
 </div>
