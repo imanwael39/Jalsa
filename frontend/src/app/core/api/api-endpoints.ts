@@ -26,10 +26,11 @@ export const API = {
         summary: (id: string) => `/sessions/${id}/summary`,
     },
     exercises: {
-        base: '/exercises',
-        assign: '/exercises/assign',
-        byPatient: (patientId: string) => `/exercises/patient/${patientId}`,
-        status: (id: string) => `/exercises/${id}/status`,
+        base: '/api/exercises',
+        byPatient: (patientId: string) => `/api/exercises/patient/${patientId}`,
+        myExercises: '/api/exercises/my',
+        log: '/api/exercises/log',
+        myLogs: '/api/exercises/my/logs',
     },
     reports: {
         base: '/reports',
