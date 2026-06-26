@@ -1,0 +1,77 @@
+:host {
+    display: block;
+}
+
+.bar-chart {
+    background: #fff;
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+}
+
+.chart-header {
+    margin-bottom: 0.75rem;
+}
+
+.chart-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 0;
+    color: #374151;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+}
+
+.chart-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 150px;
+}
+
+.chart-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 150px;
+    color: #9ca3af;
+    gap: 0.5rem;
+}
+
+.chart-empty i {
+    font-size: 2rem;
+}
+
+/* RTL support */
+[dir="rtl"] .bar-chart {
+    direction: rtl;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .bar-chart {
+        background: #1f2937;
+        border-color: #374151;
+    }
+
+    .chart-title {
+        color: #f3f4f6;
+    }
+
+    .chart-empty {
+        color: #6b7280;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .bar-chart {
+        transition: none;
+    }
+}

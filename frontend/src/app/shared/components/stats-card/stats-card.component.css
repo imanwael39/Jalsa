@@ -1,0 +1,134 @@
+:host {
+    display: block;
+}
+
+.stats-card {
+    border-radius: 8px;
+    border-left: 4px solid transparent;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: default;
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stats-content {
+    display: flex;
+    align-items: center;
+}
+
+.stats-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.stats-details {
+    margin-inline-start: 1rem;
+}
+
+.stats-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 2px;
+}
+
+.stats-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.stats-trend {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+}
+
+.trend-label {
+    font-size: 0.75rem;
+}
+
+/* Color variants for icon backgrounds */
+.bg-primary {
+    background-color: #185fa5;
+}
+
+.bg-success {
+    background-color: #0f6e56;
+}
+
+.bg-danger {
+    background-color: #dc3545;
+}
+
+.bg-warning {
+    background-color: #f59e0b;
+}
+
+.bg-info {
+    background-color: #0ea5e9;
+}
+
+/* Border color variants */
+.border-primary {
+    border-left-color: #185fa5;
+}
+
+.border-success {
+    border-left-color: #0f6e56;
+}
+
+.border-danger {
+    border-left-color: #dc3545;
+}
+
+.border-warning {
+    border-left-color: #f59e0b;
+}
+
+.border-info {
+    border-left-color: #0ea5e9;
+}
+
+/* Badge styles */
+.badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+.bg-success {
+    background-color: #0f6e56;
+    color: #fff;
+}
+
+.bg-danger {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+/* Card body overrides */
+.card-body h6 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 4px;
+}
+
+.card-body h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0;
+}
