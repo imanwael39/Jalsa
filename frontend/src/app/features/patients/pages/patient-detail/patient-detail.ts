@@ -9,11 +9,12 @@ import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { DatePipe } from '@angular/common';
 import { SessionList } from '../../../sessions/pages/session-list/session-list';
+import { PatientExerciseComponent } from '../../../exercises/pages/patient-exercise/patient-exercise.component';
 
 @Component({
     selector: 'app-patient-detail',
     standalone: true,
-    imports: [ButtonComponent, SpinnerComponent, ModalComponent, DatePipe, SessionList],
+    imports: [ButtonComponent, SpinnerComponent, ModalComponent, DatePipe, SessionList, PatientExerciseComponent],
     templateUrl: './patient-detail.html',
     styleUrl: './patient-detail.css',
     changeDetection: ChangeDetectionStrategy.OnPush,

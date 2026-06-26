@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, DestroyRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, DestroyRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ExerciseService } from '../../../../core/services/exercise.service';
@@ -16,7 +16,7 @@ import { TruncatePipe } from '../../../../shared/pipes/truncate.pipe';
   styleUrl: './exercise-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ExerciseListComponent implements OnInit {
+export class ExerciseListComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private exerciseService = inject(ExerciseService);
   private state = inject(ExerciseStateService);
@@ -35,6 +35,10 @@ export class ExerciseListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadExercises();
+  }
+
+  ngOnDestroy(): void {
+    this.state.reset();
   }
 
   loadExercises(): void {

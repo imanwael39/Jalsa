@@ -151,9 +151,9 @@
                 }
                 @if (activeTab() === 'exercises') {
                     <div id="tab-exercises" class="tab-pane active" role="tabpanel" aria-labelledby="tab-btn-exercises">
-                        <div class="tab-placeholder">
-                            <p class="text-muted">Exercise list will be integrated here.</p>
-                        </div>
+                        @if (patient(); as p) {
+                            <app-patient-exercise [patientIdOverride]="p.id"></app-patient-exercise>
+                        }
                     </div>
                 }
                 @if (activeTab() === 'reports') {

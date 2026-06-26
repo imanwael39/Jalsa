@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal, OnInit, DestroyRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, OnInit, OnDestroy, DestroyRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -18,7 +18,7 @@ import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.
     styleUrl: './assign-exercise.component.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AssignExerciseComponent implements OnInit {
+export class AssignExerciseComponent implements OnInit, OnDestroy {
     private fb = inject(FormBuilder);
     private exerciseService = inject(ExerciseService);
     private patientService = inject(PatientService);
@@ -40,6 +40,10 @@ export class AssignExerciseComponent implements OnInit {
 
     ngOnInit(): void {
         this.loadPatients();
+    }
+
+    ngOnDestroy(): void {
+        this.state.reset();
     }
 
     loadPatients(): void {

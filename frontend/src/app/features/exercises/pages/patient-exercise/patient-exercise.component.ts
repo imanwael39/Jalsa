@@ -1,10 +1,10 @@
-import { Component, ChangeDetectionStrategy, inject, signal, OnInit, DestroyRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, input, OnInit, OnDestroy, DestroyRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ExerciseService } from '../../../../core/services/exercise.service';
 import { ExerciseStateService } from '../../../../core/state/exercise-state.service';
 import { AuthService } from '../../../../core/services/auth.service';
-import { Exercise, ExerciseLog } from '../../../../core/models';
+import { Exercise } from '../../../../core/models';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 
@@ -16,24 +16,28 @@ import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.
     styleUrl: './patient-exercise.component.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PatientExerciseComponent implements OnInit {
+export class PatientExerciseComponent implements OnInit, OnDestroy {
     private exerciseService = inject(ExerciseService);
     private state = inject(ExerciseStateService);
     private authService = inject(AuthService);
     private destroyRef = inject(DestroyRef);
 
+    patientIdOverride = input<string | undefined>(undefined);
+
     exercises = this.state.exercises;
     loading = this.state.loading;
     error = this.state.error;
+    logsByExercise = this.state.logsByExercise;
 
-    logs = signal<ExerciseLog[]>([]);
     loggingId = signal<string | null>(null);
-    selectedStatus = signal<{ [exerciseId: string]: string }>({});
-    reflectionNotes = signal<{ [exerciseId: string]: string }>({});
+    selectedStatus = signal<Record<string, string>>({});
+    reflectionNotes = signal<Record<string, string>>({});
+
+    private patientId = '';
 
     ngOnInit(): void {
-        const user = this.authService.currentUser();
-        if (user) {
+        this.patientId = this.patientIdOverride() || this.authService.currentUser()?.id || '';
+        if (this.patientId) {
             this.loadExercises();
             this.loadLogs();
         } else {
@@ -41,10 +45,14 @@ export class PatientExerciseComponent implements OnInit {
         }
     }
 
+    ngOnDestroy(): void {
+        this.state.reset();
+    }
+
     loadExercises(): void {
         this.state.setLoading(true);
         this.state.setError(null);
-        this.exerciseService.getMyExercises()
+        this.exerciseService.getExercisesByPatient(this.patientId)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: (data) => {
@@ -63,7 +71,7 @@ export class PatientExerciseComponent implements OnInit {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: (data) => {
-                    this.logs.set(data);
+                    this.state.setLogs(data);
                 },
                 error: () => {
                     // Logs are optional, silently fail
@@ -72,9 +80,6 @@ export class PatientExerciseComponent implements OnInit {
     }
 
     logCompletion(exercise: Exercise): void {
-        const user = this.authService.currentUser();
-        if (!user) return;
-
         const status = this.selectedStatus()[exercise.id] || 'Completed';
         const reflection = this.reflectionNotes()[exercise.id] || undefined;
 
@@ -82,13 +87,13 @@ export class PatientExerciseComponent implements OnInit {
 
         this.exerciseService.logCompletion({
             exerciseId: exercise.id,
-            patientId: user.id,
+            patientId: this.patientId,
             completionStatus: status,
             reflectionNote: reflection,
         }).pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: (log) => {
-                    this.logs.update(current => [...current, log]);
+                    this.state.addLog(log);
                     this.loggingId.set(null);
                 },
                 error: (err) => {
@@ -104,10 +109,6 @@ export class PatientExerciseComponent implements OnInit {
 
     onReflectionChange(exerciseId: string, note: string): void {
         this.reflectionNotes.update(current => ({ ...current, [exerciseId]: note }));
-    }
-
-    getLogsForExercise(exerciseId: string): ExerciseLog[] {
-        return this.logs().filter(log => log.exerciseId === exerciseId);
     }
 
     formatDate(date: string | null): string {
