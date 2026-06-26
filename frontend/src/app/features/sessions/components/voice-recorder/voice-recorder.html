@@ -1,0 +1,27 @@
+<div class="voice-recorder">
+    <label class="form-label">Voice Memo</label>
+    <div class="d-flex align-items-center gap-2">
+        <input
+            type="file"
+            accept="audio/*"
+            class="form-control"
+            (change)="onFileSelected($event)"
+            [disabled]="uploading()"
+            ariaLabel="Select audio file"
+        />
+        @if (selectedFile()) {
+            <app-button
+                variant="primary"
+                size="sm"
+                (clicked)="upload()"
+                [disabled]="uploading()"
+                ariaLabel="Upload voice memo">
+                @if (uploading()) {
+                    <app-spinner size="sm"></app-spinner>
+                } @else {
+                    <i class="bi bi-upload" aria-hidden="true"></i> Upload
+                }
+            </app-button>
+        }
+    </div>
+</div>
