@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, DestroyRef, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, DestroyRef, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PatientService } from '../../../../core/services/patient.service';
@@ -17,7 +17,7 @@ import { DatePipe } from '@angular/common';
     styleUrl: './patient-detail.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PatientDetail implements OnInit {
+export class PatientDetail implements OnInit, OnDestroy {
     private route = inject(ActivatedRoute);
     private router = inject(Router);
     private patientService = inject(PatientService);
@@ -33,6 +33,10 @@ export class PatientDetail implements OnInit {
     showArchiveModal = signal(false);
     showDeleteModal = signal(false);
     actionLoading = signal(false);
+
+    ngOnDestroy(): void {
+        this.state.clearSelected();
+    }
 
     ngOnInit(): void {
         const id = this.route.snapshot.paramMap.get('id');

@@ -107,27 +107,27 @@
 
         <div class="tabs-section">
             <nav class="nav-tabs" role="tablist" aria-label="Patient details tabs">
-                <button class="nav-link" [class.active]="activeTab() === 'overview'"
+                <button id="tab-btn-overview" class="nav-link" [class.active]="activeTab() === 'overview'"
                         (click)="setTab('overview')" role="tab"
                         [attr.aria-selected]="activeTab() === 'overview'" aria-controls="tab-overview">
                     <i class="bi bi-person" aria-hidden="true"></i> Overview
                 </button>
-                <button class="nav-link" [class.active]="activeTab() === 'sessions'"
+                <button id="tab-btn-sessions" class="nav-link" [class.active]="activeTab() === 'sessions'"
                         (click)="setTab('sessions')" role="tab"
                         [attr.aria-selected]="activeTab() === 'sessions'" aria-controls="tab-sessions">
                     <i class="bi bi-calendar-event" aria-hidden="true"></i> Sessions
                 </button>
-                <button class="nav-link" [class.active]="activeTab() === 'exercises'"
+                <button id="tab-btn-exercises" class="nav-link" [class.active]="activeTab() === 'exercises'"
                         (click)="setTab('exercises')" role="tab"
                         [attr.aria-selected]="activeTab() === 'exercises'" aria-controls="tab-exercises">
                     <i class="bi bi-journal-check" aria-hidden="true"></i> Exercises
                 </button>
-                <button class="nav-link" [class.active]="activeTab() === 'reports'"
+                <button id="tab-btn-reports" class="nav-link" [class.active]="activeTab() === 'reports'"
                         (click)="setTab('reports')" role="tab"
                         [attr.aria-selected]="activeTab() === 'reports'" aria-controls="tab-reports">
                     <i class="bi bi-file-earmark-text" aria-hidden="true"></i> Reports
                 </button>
-                <button class="nav-link" [class.active]="activeTab() === 'assessments'"
+                <button id="tab-btn-assessments" class="nav-link" [class.active]="activeTab() === 'assessments'"
                         (click)="setTab('assessments')" role="tab"
                         [attr.aria-selected]="activeTab() === 'assessments'" aria-controls="tab-assessments">
                     <i class="bi bi-clipboard-check" aria-hidden="true"></i> Assessments
@@ -136,35 +136,35 @@
 
             <div class="tab-content">
                 @if (activeTab() === 'overview') {
-                    <div id="tab-overview" class="tab-pane active" role="tabpanel">
+                    <div id="tab-overview" class="tab-pane active" role="tabpanel" aria-labelledby="tab-btn-overview">
                         <div class="overview-content">
                             <p class="text-muted">Intake form summary and assessment history will be displayed here.</p>
                         </div>
                     </div>
                 }
                 @if (activeTab() === 'sessions') {
-                    <div id="tab-sessions" class="tab-pane active" role="tabpanel">
+                    <div id="tab-sessions" class="tab-pane active" role="tabpanel" aria-labelledby="tab-btn-sessions">
                         <div class="tab-placeholder">
                             <p class="text-muted">Session list will be integrated here.</p>
                         </div>
                     </div>
                 }
                 @if (activeTab() === 'exercises') {
-                    <div id="tab-exercises" class="tab-pane active" role="tabpanel">
+                    <div id="tab-exercises" class="tab-pane active" role="tabpanel" aria-labelledby="tab-btn-exercises">
                         <div class="tab-placeholder">
                             <p class="text-muted">Exercise list will be integrated here.</p>
                         </div>
                     </div>
                 }
                 @if (activeTab() === 'reports') {
-                    <div id="tab-reports" class="tab-pane active" role="tabpanel">
+                    <div id="tab-reports" class="tab-pane active" role="tabpanel" aria-labelledby="tab-btn-reports">
                         <div class="tab-placeholder">
                             <p class="text-muted">Report list will be integrated here.</p>
                         </div>
                     </div>
                 }
                 @if (activeTab() === 'assessments') {
-                    <div id="tab-assessments" class="tab-pane active" role="tabpanel">
+                    <div id="tab-assessments" class="tab-pane active" role="tabpanel" aria-labelledby="tab-btn-assessments">
                         <div class="tab-placeholder">
                             <p class="text-muted">Assessment list will be integrated here.</p>
                         </div>
