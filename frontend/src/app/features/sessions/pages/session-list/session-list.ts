@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, DestroyRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, DestroyRef, input } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SessionService } from '../../../../core/services/session.service';
@@ -25,6 +25,8 @@ export class SessionList implements OnInit {
     private notification = inject(NotificationService);
     private destroyRef = inject(DestroyRef);
 
+    patientIdInput = input<string | null>(null);
+
     patientId = '';
     sessions = this.state.sessions;
     loading = this.state.loading;
@@ -40,9 +42,15 @@ export class SessionList implements OnInit {
     ];
 
     ngOnInit(): void {
-        this.patientId = this.route.snapshot.paramMap.get('patientId') || '';
-        if (this.patientId) {
+        const inputPatientId = this.patientIdInput();
+        if (inputPatientId) {
+            this.patientId = inputPatientId;
             this.loadSessions();
+        } else {
+            this.patientId = this.route.snapshot.paramMap.get('patientId') || '';
+            if (this.patientId) {
+                this.loadSessions();
+            }
         }
     }
 
@@ -67,7 +75,10 @@ export class SessionList implements OnInit {
     }
 
     navigateToNew(): void {
-        this.router.navigate(['/sessions/new', this.patientId]);
+        const pid = this.patientIdInput() || this.patientId;
+        if (pid) {
+            this.router.navigate(['/sessions/new', pid]);
+        }
     }
 
     navigateToView(id: string): void {

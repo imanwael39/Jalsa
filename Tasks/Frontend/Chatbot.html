@@ -1,0 +1,1685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jalsa – Phase 12: Chatbot – Expanded Implementation Handbook</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+            padding: 30px 20px;
+            line-height: 1.7;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            padding: 40px 45px;
+        }
+        h1 {
+            font-size: 2.4rem;
+            color: #0f172a;
+            border-bottom: 4px solid #3b82f6;
+            padding-bottom: 18px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        h1 small {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #64748b;
+            margin-left: auto;
+        }
+        .phase-banner {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 20px 28px;
+            margin-bottom: 32px;
+            border-left: 8px solid #3b82f6;
+        }
+        .phase-banner h2 {
+            margin: 0 0 8px 0;
+            font-size: 1.6rem;
+            color: #0f172a;
+            background: none;
+            padding: 0;
+            border-left: none;
+        }
+        .phase-banner p {
+            margin: 0;
+            color: #475569;
+        }
+        .phase-banner .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px 40px;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+        .phase-banner .meta span {
+            font-weight: 500;
+            color: #0f172a;
+        }
+
+        .task-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+        .task-header {
+            background: #f8fafc;
+            padding: 16px 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.15s;
+            user-select: none;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .task-header:hover {
+            background: #f1f5f9;
+        }
+        .task-header .task-id {
+            font-weight: 700;
+            color: #3b82f6;
+            margin-right: 12px;
+            font-size: 1.05rem;
+        }
+        .task-header .task-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .task-header .task-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .task-header .task-badges .tag {
+            font-size: 0.7rem;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+        .task-header .chevron {
+            transition: transform 0.25s;
+            font-size: 1.3rem;
+            color: #94a3b8;
+            margin-left: 12px;
+        }
+        .task-header.open .chevron {
+            transform: rotate(180deg);
+        }
+
+        .task-body {
+            padding: 0 24px 24px;
+            display: none;
+            overflow: hidden;
+        }
+        .task-body.open {
+            display: block;
+        }
+
+        .task-body h3 {
+            font-size: 1.15rem;
+            margin-top: 22px;
+            margin-bottom: 8px;
+            color: #0f172a;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 4px;
+        }
+        .task-body h4 {
+            font-size: 1rem;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            color: #334155;
+        }
+        .task-body p {
+            margin-bottom: 8px;
+        }
+        .task-body ul,
+        .task-body ol {
+            padding-left: 24px;
+            margin-bottom: 10px;
+        }
+        .task-body li {
+            margin-bottom: 3px;
+        }
+        .task-body .field-label {
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+        .checklist li {
+            padding: 3px 0 3px 30px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') left center no-repeat;
+            background-size: 18px;
+        }
+
+        .pitfall-box {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .tip-box {
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .arch-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #e2e8f0;
+            padding: 1px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-right: 4px;
+        }
+        .tag-blue {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .tag-green {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .tag-amber {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .tag-red {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .tag-purple {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+        .tag-slate {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        .tag-indigo {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .flow-diagram {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin: 8px 0 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .flow-diagram .arrow {
+            color: #94a3b8;
+            margin: 0 6px;
+        }
+        .flow-diagram .step {
+            color: #0f172a;
+            font-weight: 500;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            margin: 10px 0 16px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            background: #fff;
+        }
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+            text-align: left;
+            padding: 8px 14px;
+            border-bottom: 2px solid #e2e8f0;
+            color: #0f172a;
+        }
+        td {
+            padding: 8px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .hr {
+            border: none;
+            border-top: 2px dashed #e2e8f0;
+            margin: 32px 0;
+        }
+
+        .code-block {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin: 6px 0 12px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .code-block .comment {
+            color: #94a3b8;
+        }
+        .code-block .keyword {
+            color: #f472b6;
+        }
+        .code-block .string {
+            color: #34d399;
+        }
+        .code-block .func {
+            color: #60a5fa;
+        }
+
+        .subtask {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 12px 18px;
+            margin: 10px 0;
+            border-left: 4px solid #3b82f6;
+        }
+        .subtask strong {
+            color: #0f172a;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 16px;
+            }
+            h1 {
+                font-size: 1.8rem;
+                flex-wrap: wrap;
+            }
+            .task-header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .task-body {
+                padding: 0 16px 16px;
+            }
+            .phase-banner {
+                padding: 16px;
+            }
+            .phase-banner .meta {
+                flex-direction: column;
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <h1>
+            💬 Jalsa – Phase 12: Chatbot
+            <small>Expanded Implementation Handbook · 4 Tasks · 25+ Subtasks</small>
+        </h1>
+
+        <!-- ====== PHASE BANNER ====== -->
+        <div class="phase-banner">
+            <h2>💬 Phase 12 – Chatbot</h2>
+            <p><strong>Purpose:</strong> Build the patient support chatbot with real‑time messaging using SignalR. This phase enables patients to chat with an AI assistant, receive responses, and trigger crisis alerts. Therapists can monitor patient chats and view crisis alerts. The system uses SignalR for bi‑directional real‑time communication.</p>
+            <div class="meta">
+                <span>📋 Tasks: 4</span>
+                <span>⏱️ Total Effort: ~22 hours</span>
+                <span>👤 Owners: M4 (Frontend Developer), M3 (Frontend Lead)</span>
+                <span>🔗 Dependencies: Phase 5 (Authentication), Phase 2 (Core Architecture)</span>
+                <span>🎯 Deliverable: Complete chatbot system with SignalR integration, patient chat UI, therapist monitoring, and crisis alert mechanism</span>
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 1: CHAT MODULE SETUP (ROUTES, SERVICE, STATE)                   -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-CHAT-001</span><span class="task-name">Chat Module Setup (Routes, Service, State)</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">5h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-CHAT-001</li>
+                    <li><strong>Task Name:</strong> Chat Module Setup (Routes, Service, State)</li>
+                    <li><strong>Owner:</strong> M4 (Frontend Developer)</li>
+                    <li><strong>Dependencies:</strong> FE-CORE-001 (HttpClientService), FE-CORE-002 (Models), FE-AUTH-002 (AuthService), FE-LAYOUT-001 (Main layout)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 5 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create the chat feature with lazy‑loaded routes, a ChatService for SignalR and HTTP communication, and a ChatStateService for managing chat state using Signals. This provides the foundation for real‑time messaging.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Enable patients to get immediate AI‑powered support and therapists to monitor conversations and crisis alerts.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Set up lazy‑loaded routes, install SignalR client, create a service that manages the SignalR connection and HTTP endpoints, and create a state service with Signals for reactive message handling.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular lazy loading with Standalone components.</li>
+                    <li>Knowledge of Signals and services.</li>
+                    <li>Understanding of WebSockets and SignalR concepts.</li>
+                    <li>API contract for chat endpoints.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-CORE-001:</strong> HttpClientService for HTTP calls.</li>
+                    <li><strong>FE-CORE-002:</strong> Chat model interfaces.</li>
+                    <li><strong>FE-AUTH-002:</strong> AuthService for user identification and token.</li>
+                    <li><strong>FE-LAYOUT-001:</strong> Main layout as parent route.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>API endpoints from <code>api-endpoints.ts</code>.</li>
+                    <li>SignalR hub URL from environment.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>features/chatbot/chatbot.routes.ts</code> – Lazy‑loaded routes.</li>
+                    <li><code>core/services/chat.service.ts</code> – Chat service with SignalR.</li>
+                    <li><code>core/state/chat-state.service.ts</code> – Chat state management with Signals.</li>
+                    <li>Updated <code>core/models/chat.model.ts</code>.</li>
+                    <li>Placeholder components (chat, chat-monitor).</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Install SignalR Client</h4>
+                <div class="code-block">
+                    npm install @microsoft/signalr
+                </div>
+
+                <h4>Step 2: Create Routes File</h4>
+                <div class="code-block">
+                    <span class="comment">// features/chatbot/chatbot.routes.ts</span>
+                    <span class="keyword">import</span> { Routes } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+                    <span class="keyword">import</span> { authGuard, roleGuard } <span class="keyword">from</span> <span class="string">'../../core/guards'</span>;
+
+                    export <span class="keyword">const</span> CHATBOT_ROUTES: Routes = [
+                        {
+                            path: '',
+                            canActivate: [authGuard],
+                            children: [
+                                {
+                                    path: 'patient',
+                                    canActivate: [roleGuard(['Patient'])],
+                                    loadComponent: () => import('./pages/chat/chat.component').then(m => m.ChatComponent),
+                                },
+                                {
+                                    path: 'monitor',
+                                    canActivate: [roleGuard(['Therapist', 'Admin'])],
+                                    loadComponent: () => import('./pages/chat-monitor/chat-monitor.component').then(m => m.ChatMonitorComponent),
+                                },
+                            ],
+                        },
+                    ];
+                </div>
+
+                <h4>Step 3: Register Routes in App Routes</h4>
+                <p>Add lazy loading in <code>app.routes.ts</code> under the main layout.</p>
+
+                <div class="code-block">
+                    <span class="comment">// app.routes.ts (inside the main layout children)</span>
+                    {
+                        path: 'chatbot',
+                        loadChildren: () => import('./features/chatbot/chatbot.routes').then(m => m.CHATBOT_ROUTES),
+                    },
+                </div>
+
+                <h4>Step 4: Define Chat Models</h4>
+                <p>Ensure <code>core/models/chat.model.ts</code> has all necessary interfaces.</p>
+
+                <div class="code-block">
+                    <span class="comment">// core/models/chat.model.ts</span>
+                    export interface ChatMessage {
+                        id: string;
+                        sessionId: string;
+                        senderId: string;
+                        senderName: string;
+                        content: string;
+                        timestamp: string;
+                        isFromAI: boolean;
+                        isCrisisAlert?: boolean;
+                    }
+
+                    export interface SendChatMessageRequest {
+                        sessionId: string;
+                        message: string;
+                    }
+
+                    export interface ChatSession {
+                        id: string;
+                        patientId: string;
+                        patientName: string;
+                        startedAt: string;
+                        lastMessageAt: string;
+                        messageCount: number;
+                        hasCrisisAlert: boolean;
+                    }
+
+                    export interface CrisisAlert {
+                        id: string;
+                        patientId: string;
+                        patientName: string;
+                        message: string;
+                        timestamp: string;
+                        resolved: boolean;
+                    }
+                </div>
+
+                <h4>Step 5: Create Chat Service (with SignalR)</h4>
+                <div class="code-block">
+                    <span class="comment">// core/services/chat.service.ts</span>
+                    <span class="keyword">import</span> { Injectable, inject, signal, effect } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { HttpClientService } <span class="keyword">from</span> <span class="string">'../api/http-client.service'</span>;
+                    <span class="keyword">import</span> { API } <span class="keyword">from</span> <span class="string">'../api/api-endpoints'</span>;
+                    <span class="keyword">import</span> { ChatMessage, SendChatMessageRequest, ChatSession, CrisisAlert } <span class="keyword">from</span> <span class="string">'../models'</span>;
+                    <span class="keyword">import</span> { AuthService } <span class="keyword">from</span> <span class="string">'./auth.service'</span>;
+                    <span class="keyword">import</span> { environment } <span class="keyword">from</span> <span class="string">'../../../environments/environment'</span>;
+                    <span class="keyword">import</span> { HubConnection, HubConnectionBuilder, LogLevel } <span class="keyword">from</span> <span class="string">'@microsoft/signalr'</span>;
+                    <span class="keyword">import</span> { Observable } <span class="keyword">from</span> <span class="string">'rxjs'</span>;
+
+                    <span class="keyword">@Injectable</span>({
+                        providedIn: <span class="string">'root'</span>,
+                    })
+                    export <span class="keyword">class</span> ChatService {
+                        private http = inject(HttpClientService);
+                        private authService = inject(AuthService);
+
+                        private connection: HubConnection | null = null;
+                        private isConnected = signal(false);
+
+                        // Public signals for message updates
+                        private messagesSignal = signal&lt;ChatMessage[]&gt;([]);
+                        readonly messages = this.messagesSignal.asReadonly();
+
+                        readonly connected = this.isConnected.asReadonly();
+
+                        constructor() {
+                            // Initialize connection when user is authenticated
+                            effect(() => {
+                                const user = this.authService.currentUser();
+                                if (user) {
+                                    this.initializeConnection();
+                                } else {
+                                    this.stopConnection();
+                                }
+                            });
+                        }
+
+                        private initializeConnection() {
+                            const token = this.authService.getToken();
+                            if (!token) return;
+
+                            this.connection = new HubConnectionBuilder()
+                                .withUrl(environment.signalRHubUrl, {
+                                    accessTokenFactory: () => token,
+                                })
+                                .configureLogging(LogLevel.Information)
+                                .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+                                .build();
+
+                            // Register event handlers
+                            this.connection.on('ReceiveMessage', (message: ChatMessage) => {
+                                this.messagesSignal.update(list => [...list, message]);
+                            });
+
+                            this.connection.on('CrisisAlert', (alert: CrisisAlert) => {
+                                // Handle crisis alert (show notification, etc.)
+                                console.warn('Crisis alert received:', alert);
+                            });
+
+                            this.connection.start()
+                                .then(() => {
+                                    this.isConnected.set(true);
+                                    console.log('SignalR connected');
+                                })
+                                .catch(err => {
+                                    console.error('SignalR connection failed:', err);
+                                    this.isConnected.set(false);
+                                });
+                        }
+
+                        private stopConnection() {
+                            if (this.connection) {
+                                this.connection.stop().then(() => {
+                                    this.isConnected.set(false);
+                                });
+                            }
+                        }
+
+                        // Public API methods
+                        sendMessage(sessionId: string, message: string): Promise<void> {
+                            if (!this.connection) {
+                                return Promise.reject('Connection not established');
+                            }
+                            return this.connection.invoke('SendMessage', { sessionId, message });
+                        }
+
+                        sendCrisisAlert(sessionId: string, message: string): Promise<void> {
+                            if (!this.connection) {
+                                return Promise.reject('Connection not established');
+                            }
+                            return this.connection.invoke('SendCrisisAlert', { sessionId, message });
+                        }
+
+                        getHistory(sessionId: string): Observable&lt;ChatMessage[]&gt; {
+                            return this.http.get&lt;ChatMessage[]&gt;(API.chat.history(sessionId));
+                        }
+
+                        getActiveSessions(): Observable&lt;ChatSession[]&gt; {
+                            return this.http.get&lt;ChatSession[]&gt;(API.chat.activeSessions);
+                        }
+
+                        getCrisisAlerts(): Observable&lt;CrisisAlert[]&gt; {
+                            return this.http.get&lt;CrisisAlert[]&gt;(API.chat.crisisAlerts);
+                        }
+
+                        resolveCrisisAlert(alertId: string): Observable&lt;void&gt; {
+                            return this.http.post&lt;void&gt;(API.chat.resolveCrisis(alertId), null);
+                        }
+
+                        // Cleanup
+                        dispose() {
+                            this.stopConnection();
+                        }
+                    }
+                </div>
+
+                <h4>Step 6: Create Chat State Service</h4>
+                <p>We may not need a separate state service if ChatService manages state. We can use ChatService directly. But for separation, we can create a lightweight state service that wraps ChatService signals. For simplicity, we'll keep state in ChatService.</p>
+
+                <h4>Step 7: Generate Placeholder Components</h4>
+                <div class="code-block">
+                    ng g c features/chatbot/pages/chat --standalone --skip-tests
+                    ng g c features/chatbot/pages/chat-monitor --standalone --skip-tests
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>features/chatbot/chatbot.routes.ts</code></li>
+                    <li><code>core/services/chat.service.ts</code></li>
+                    <li>Update <code>core/models/chat.model.ts</code></li>
+                    <li>Placeholder components.</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    npm install @microsoft/signalr
+                    ng g s core/services/chat --skip-tests
+                    ng g c features/chatbot/pages/chat --standalone --skip-tests
+                    ng g c features/chatbot/pages/chat-monitor --standalone --skip-tests
+                </div>
+
+                <h3>Code Flow</h3>
+                <div class="flow-diagram">
+                    <span class="step">User navigates to /chatbot/patient</span> <span class="arrow">→</span>
+                    <span class="step">ChatComponent loads</span> <span class="arrow">→</span>
+                    <span class="step">ChatService initializes SignalR connection</span> <span class="arrow">→</span>
+                    <span class="step">Loads history, sends/receives messages</span>
+                </div>
+
+                <h3>API Interaction Flow</h3>
+                <div class="flow-diagram">
+                    <span class="step">User sends message</span> <span class="arrow">→</span>
+                    <span class="step">ChatComponent calls ChatService.sendMessage()</span> <span class="arrow">→</span>
+                    <span class="step">SignalR Hub</span> <span class="arrow">→</span>
+                    <span class="step">AI processes, broadcasts response</span> <span class="arrow">→</span>
+                    <span class="step">ReceiveMessage event → update messages</span>
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>SignalR client library</li>
+                    <li>WebSocket communication</li>
+                    <li>Angular Signals</li>
+                    <li>Dependency injection</li>
+                </ul>
+
+                <h3>Tools/Libraries Required</h3>
+                <ul>
+                    <li>@microsoft/signalr</li>
+                </ul>
+
+                <h3>Angular Concepts Required</h3>
+                <ul>
+                    <li>Standalone components</li>
+                    <li>Lazy loading</li>
+                    <li>Services with providedIn: 'root'</li>
+                    <li>Effect for reactive initialization</li>
+                </ul>
+
+                <h3>RxJS Concepts Required</h3>
+                <ul>
+                    <li>Observables for HTTP</li>
+                </ul>
+
+                <h3>Signals Concepts Required</h3>
+                <ul>
+                    <li>signal, computed, effect</li>
+                    <li>Update signals with .update()</li>
+                </ul>
+
+                <h3>UI/UX Requirements</h3>
+                <ul>
+                    <li>Chat interface should be clean and responsive.</li>
+                    <li>Messages should show sender and timestamp.</li>
+                    <li>Crisis alert button should be prominent.</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test routes are lazy‑loaded.</li>
+                    <li>Test SignalR connection establishes with token.</li>
+                    <li>Test send/receive messages.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Chat routes, service, and state ready.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not handling token refresh in SignalR connection.
+                    <br /><strong>Fix:</strong> Use accessTokenFactory to provide token dynamically.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>Connection drops → auto‑reconnect should handle it.</li>
+                    <li>User logs out → stop connection.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Chat routes, service with SignalR, and state are implemented.</li>
+                </ul>
+
+                <h3>Frontend Architecture Notes</h3>
+                <ul>
+                    <li>ChatService manages the SignalR connection and message state.</li>
+                    <li>Component subscribes to messages via signals.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> ChatService is the central point for all chat operations.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 2: CHAT COMPONENT (PATIENT)                                      -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-CHAT-002</span><span class="task-name">Chat Component (Patient)</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">8h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-CHAT-002</li>
+                    <li><strong>Task Name:</strong> Chat Component (Patient)</li>
+                    <li><strong>Owner:</strong> M4 (Frontend Developer)</li>
+                    <li><strong>Dependencies:</strong> FE-CHAT-001, FE-SHARED-002 (Button), FE-SHARED-003 (Input)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 8 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Build the patient chat UI with message bubbles, typing indicators, AI responses, and a crisis alert button. The component should display message history, send messages, and handle real‑time updates via SignalR.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Allow patients to interact with an AI assistant for support, with a crisis button for immediate alerts.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use ChatService to send/receive messages, display messages in a scrollable list, show typing animation, and handle crisis alerts.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular components and signals.</li>
+                    <li>Knowledge of async data handling.</li>
+                    <li>Bootstrap for styling.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-CHAT-001:</strong> ChatService with SignalR.</li>
+                    <li><strong>FE-SHARED-002:</strong> Button component.</li>
+                    <li><strong>FE-SHARED-003:</strong> Input component.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>None (patient ID from auth).</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>chat.component.ts</code></li>
+                    <li><code>chat.component.html</code></li>
+                    <li><code>chat.component.scss</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Implement Component Logic</h4>
+
+                <div class="code-block">
+                    <span class="comment">// chat.component.ts</span>
+                    <span class="keyword">import</span> { Component, inject, signal, OnInit, OnDestroy, ViewChild, ElementRef } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { FormsModule } <span class="keyword">from</span> <span class="string">'@angular/forms'</span>;
+                    <span class="keyword">import</span> { ChatService } <span class="keyword">from</span> <span class="string">'../../../../core/services/chat.service'</span>;
+                    <span class="keyword">import</span> { AuthService } <span class="keyword">from</span> <span class="string">'../../../../core/services/auth.service'</span>;
+                    <span class="keyword">import</span> { ButtonComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/button/button.component'</span>;
+                    <span class="keyword">import</span> { InputComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/input/input.component'</span>;
+                    <span class="keyword">import</span> { DateAgoPipe } <span class="keyword">from</span> <span class="string">'../../../../shared/pipes/date-ago.pipe'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-chat',
+                        standalone: true,
+                        imports: [FormsModule, ButtonComponent, InputComponent, DateAgoPipe],
+                        templateUrl: './chat.component.html',
+                        styleUrls: ['./chat.component.scss'],
+                    })
+                    export <span class="keyword">class</span> ChatComponent implements OnInit, OnDestroy {
+                        private chatService = inject(ChatService);
+                        private authService = inject(AuthService);
+
+                        @ViewChild('messageContainer') messageContainer!: ElementRef;
+
+                        messages = this.chatService.messages;
+                        isConnected = this.chatService.connected;
+                        newMessage = '';
+                        isSending = signal(false);
+                        isTyping = signal(false);
+                        sessionId = signal<string>('');
+                        error = signal<string | null>(null);
+
+                        ngOnInit(): void {
+                            // Get or create chat session ID (could be from route or generated)
+                            // For simplicity, we use a fixed session ID or user ID
+                            const user = this.authService.currentUser();
+                            if (user) {
+                                this.sessionId.set(user.id); // In real app, use a proper session ID
+                                this.loadHistory();
+                            }
+                        }
+
+                        loadHistory() {
+                            this.chatService.getHistory(this.sessionId()).subscribe({
+                                next: (history) => {
+                                    // History is loaded; ChatService might already have messages
+                                    // We can set messages manually if needed
+                                    // For now, we trust SignalR to receive messages
+                                },
+                                error: (err) => {
+                                    this.error.set('Failed to load history');
+                                    console.error(err);
+                                },
+                            });
+                        }
+
+                        sendMessage() {
+                            const message = this.newMessage.trim();
+                            if (!message || !this.sessionId()) return;
+
+                            this.isSending.set(true);
+                            this.newMessage = '';
+
+                            this.chatService.sendMessage(this.sessionId(), message)
+                                .then(() => {
+                                    this.isSending.set(false);
+                                    this.scrollToBottom();
+                                })
+                                .catch((err) => {
+                                    this.isSending.set(false);
+                                    this.error.set('Failed to send message');
+                                    console.error(err);
+                                });
+                        }
+
+                        sendCrisisAlert() {
+                            const confirmSend = confirm('Are you sure you want to send a crisis alert?');
+                            if (!confirmSend) return;
+
+                            const message = 'Crisis alert triggered by patient.';
+                            this.chatService.sendCrisisAlert(this.sessionId(), message)
+                                .then(() => {
+                                    // Show confirmation
+                                    alert('Crisis alert sent. Help is on the way.');
+                                })
+                                .catch((err) => {
+                                    alert('Failed to send crisis alert. Please try again or contact support directly.');
+                                    console.error(err);
+                                });
+                        }
+
+                        scrollToBottom() {
+                            setTimeout(() => {
+                                if (this.messageContainer) {
+                                    this.messageContainer.nativeElement.scrollTop = this.messageContainer.nativeElement.scrollHeight;
+                                }
+                            }, 100);
+                        }
+
+                        ngOnDestroy(): void {
+                            // Cleanup if needed
+                        }
+                    }
+                </div>
+
+                <h4>Step 2: Create Template</h4>
+
+                <div class="code-block">
+                    <span class="comment">// chat.component.html</span>
+                    &lt;div class="chat-container"&gt;
+                        &lt;div class="chat-header"&gt;
+                            &lt;h5&gt;AI Support Chat&lt;/h5&gt;
+                            &lt;span class="badge" [class.bg-success]="isConnected()" [class.bg-danger]="!isConnected()"&gt;
+                                {{ isConnected() ? 'Connected' : 'Disconnected' }}
+                            &lt;/span&gt;
+                        &lt;/div&gt;
+
+                        &lt;div class="chat-messages" #messageContainer&gt;
+                            &lt;div *<span class="keyword">if</span>="error()" class="alert alert-danger"&gt;{{ error() }}&lt;/div&gt;
+                            &lt;div *<span class="keyword">if</span>="messages().length === 0 &amp;&amp; isConnected()" class="text-center text-muted p-5"&gt;
+                                No messages yet. Start a conversation!
+                            &lt;/div&gt;
+                            &lt;div *<span class="keyword">for</span>="let message of messages()" class="message"
+                                 [class.message-out]="!message.isFromAI"
+                                 [class.message-in]="message.isFromAI"&gt;
+                                &lt;div class="message-bubble"&gt;
+                                    &lt;div class="message-sender"&gt;{{ message.senderName }}&lt;/div&gt;
+                                    &lt;div class="message-content"&gt;{{ message.content }}&lt;/div&gt;
+                                    &lt;div class="message-time"&gt;{{ message.timestamp | dateAgo }}&lt;/div&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                            &lt;div *<span class="keyword">if</span>="isTyping()" class="typing-indicator"&gt;
+                                &lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+
+                        &lt;div class="chat-input"&gt;
+                            &lt;app-input
+                                type="text"
+                                placeholder="Type your message..."
+                                [(ngModel)]="newMessage"
+                                (keyup.enter)="sendMessage()"
+                                [disabled]="!isConnected() || isSending()"
+                                class="flex-grow-1"
+                            &gt;&lt;/app-input&gt;
+                            &lt;app-button
+                                variant="primary"
+                                (click)="sendMessage()"
+                                [loading]="isSending()"
+                                [disabled]="!isConnected() || !newMessage.trim()"
+                            &gt;Send&lt;/app-button&gt;
+                            &lt;app-button
+                                variant="danger"
+                                (click)="sendCrisisAlert()"
+                                [disabled]="!isConnected()"
+                                class="ms-2"
+                            &gt;Crisis&lt;/app-button&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                </div>
+
+                <h4>Step 3: Add Styles</h4>
+
+                <div class="code-block">
+                    <span class="comment">// chat.component.scss</span>
+                    .chat-container {
+                        display: flex;
+                        flex-direction: column;
+                        height: 80vh;
+                        max-height: 700px;
+                        border: 1px solid $border-color;
+                        border-radius: 8px;
+                        background: #fff;
+                    }
+
+                    .chat-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        padding: 0.75rem 1.5rem;
+                        border-bottom: 1px solid $border-color;
+                        background: #f8fafc;
+                    }
+
+                    .chat-messages {
+                        flex: 1;
+                        padding: 1rem;
+                        overflow-y: auto;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 0.5rem;
+                    }
+
+                    .message {
+                        display: flex;
+                        flex-direction: column;
+                        max-width: 80%;
+                        margin-bottom: 0.5rem;
+                    }
+
+                    .message-out {
+                        align-self: flex-end;
+                    }
+
+                    .message-in {
+                        align-self: flex-start;
+                    }
+
+                    .message-bubble {
+                        background: #f1f5f9;
+                        padding: 0.5rem 1rem;
+                        border-radius: 12px;
+                        border-top-left-radius: 0;
+                        word-break: break-word;
+                    }
+
+                    .message-out .message-bubble {
+                        background: #3b82f6;
+                        color: #fff;
+                        border-top-left-radius: 12px;
+                        border-top-right-radius: 0;
+                    }
+
+                    .message-sender {
+                        font-size: 0.75rem;
+                        font-weight: 600;
+                        margin-bottom: 2px;
+                        color: $text-muted;
+                    }
+
+                    .message-out .message-sender {
+                        color: rgba(255,255,255,0.8);
+                    }
+
+                    .message-time {
+                        font-size: 0.65rem;
+                        margin-top: 2px;
+                        color: $text-muted;
+                        text-align: right;
+                    }
+
+                    .message-out .message-time {
+                        color: rgba(255,255,255,0.7);
+                    }
+
+                    .typing-indicator {
+                        display: flex;
+                        gap: 4px;
+                        padding: 0.5rem;
+                        align-self: flex-start;
+                    }
+
+                    .typing-indicator span {
+                        width: 8px;
+                        height: 8px;
+                        background: #94a3b8;
+                        border-radius: 50%;
+                        animation: typing 1.4s infinite both;
+                    }
+
+                    .typing-indicator span:nth-child(1) { animation-delay: 0s; }
+                    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+                    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+                    @keyframes typing {
+                        0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+                        40% { transform: scale(1); opacity: 1; }
+                    }
+
+                    .chat-input {
+                        display: flex;
+                        gap: 0.5rem;
+                        padding: 0.75rem 1rem;
+                        border-top: 1px solid $border-color;
+                        align-items: center;
+                    }
+
+                    .chat-input app-input {
+                        flex: 1;
+                    }
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>chat.component.ts</code></li>
+                    <li><code>chat.component.html</code></li>
+                    <li><code>chat.component.scss</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    <span class="comment"># Already generated</span>
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Angular templates with *ngFor, *ngIf</li>
+                    <li>Two‑way binding with ngModel</li>
+                    <li>Event handling (click, keyup.enter)</li>
+                    <li>ViewChild for scrolling</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Verify chat UI renders.</li>
+                    <li>Send a message and see it appear.</li>
+                    <li>Receive AI response and see it appear.</li>
+                    <li>Test crisis alert button (confirm dialog).</li>
+                    <li>Test typing indicator (simulate).</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Patient chat component fully functional.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not scrolling to bottom when new messages arrive.
+                    <br /><strong>Fix:</strong> Call scrollToBottom after sending and when messages update.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 2:</strong> Not handling empty messages or network errors.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>User sends empty message → should not send.</li>
+                    <li>Connection lost → show disconnected state.</li>
+                    <li>Long messages → should wrap.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Chat component works with full functionality.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Chat is the main interface for patients.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 3: CHAT MONITORING (THERAPIST)                                   -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-CHAT-003</span><span class="task-name">Chat Monitoring (Therapist)</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">5h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-CHAT-003</li>
+                    <li><strong>Task Name:</strong> Chat Monitoring (Therapist)</li>
+                    <li><strong>Owner:</strong> M4 (Frontend Developer)</li>
+                    <li><strong>Dependencies:</strong> FE-CHAT-001, FE-SHARED-005 (Table), FE-SHARED-002 (Button)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 5 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Build the therapist monitoring page that displays active chat sessions, engagement summaries, crisis alerts, and allows therapists to view patient chat details.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Enable therapists to oversee patient chats, identify at‑risk patients via crisis alerts, and intervene when necessary.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Fetch active sessions and crisis alerts from ChatService, display them in a table, and provide navigation to view individual chat details.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Shared Table component.</li>
+                    <li>ChatService methods for active sessions and crisis alerts.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-CHAT-001:</strong> ChatService.</li>
+                    <li><strong>FE-SHARED-005:</strong> Table component.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>None.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>chat-monitor.component.ts</code></li>
+                    <li><code>chat-monitor.component.html</code></li>
+                    <li><code>chat-monitor.component.scss</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Implement Component</h4>
+
+                <div class="code-block">
+                    <span class="comment">// chat-monitor.component.ts</span>
+                    <span class="keyword">import</span> { Component, inject, signal, OnInit } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { RouterLink } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+                    <span class="keyword">import</span> { ChatService } <span class="keyword">from</span> <span class="string">'../../../../core/services/chat.service'</span>;
+                    <span class="keyword">import</span> { TableComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/table/table.component'</span>;
+                    <span class="keyword">import</span> { ButtonComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/button/button.component'</span>;
+                    <span class="keyword">import</span> { DateAgoPipe } <span class="keyword">from</span> <span class="string">'../../../../shared/pipes/date-ago.pipe'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-chat-monitor',
+                        standalone: true,
+                        imports: [TableComponent, ButtonComponent, RouterLink, DateAgoPipe],
+                        templateUrl: './chat-monitor.component.html',
+                        styleUrls: ['./chat-monitor.component.scss'],
+                    })
+                    export <span class="keyword">class</span> ChatMonitorComponent implements OnInit {
+                        private chatService = inject(ChatService);
+
+                        sessions = signal&lt;any[]&gt;([]);
+                        crisisAlerts = signal&lt;any[]&gt;([]);
+                        loading = signal(true);
+                        error = signal&lt;string | null&gt;(<span class="keyword">null</span>);
+
+                        ngOnInit(): void {
+                            this.loadData();
+                            // Set up polling or SignalR listening for new alerts
+                            // For simplicity, we'll load on init
+                        }
+
+                        loadData() {
+                            this.loading.set(true);
+                            this.chatService.getActiveSessions().subscribe({
+                                next: (data) => {
+                                    this.sessions.set(data);
+                                    this.loading.set(false);
+                                },
+                                error: (err) => {
+                                    this.error.set('Failed to load sessions');
+                                    this.loading.set(false);
+                                },
+                            });
+
+                            this.chatService.getCrisisAlerts().subscribe({
+                                next: (data) => {
+                                    this.crisisAlerts.set(data);
+                                },
+                                error: () => {
+                                    // Ignore
+                                },
+                            });
+                        }
+
+                        resolveAlert(alertId: string) {
+                            this.chatService.resolveCrisisAlert(alertId).subscribe({
+                                next: () => {
+                                    this.crisisAlerts.update(list => list.filter(a => a.id !== alertId));
+                                },
+                                error: (err) => {
+                                    console.error('Failed to resolve alert', err);
+                                },
+                            });
+                        }
+
+                        refresh() {
+                            this.loadData();
+                        }
+                    }
+                </div>
+
+                <h4>Step 2: Create Template</h4>
+
+                <div class="code-block">
+                    <span class="comment">// chat-monitor.component.html</span>
+                    &lt;div class="chat-monitor"&gt;
+                        &lt;div class="d-flex justify-content-between align-items-center mb-3"&gt;
+                            &lt;h2&gt;Chat Monitoring&lt;/h2&gt;
+                            &lt;button class="btn btn-sm btn-outline-secondary" (click)="refresh()"&gt;
+                                &lt;i class="bi bi-arrow-clockwise"&gt;&lt;/i&gt; Refresh
+                            &lt;/button&gt;
+                        &lt;/div&gt;
+
+                        &lt;div *<span class="keyword">if</span>="loading()" class="text-center py-5"&gt;
+                            &lt;app-spinner size="lg"&gt;&lt;/app-spinner&gt;
+                        &lt;/div&gt;
+
+                        &lt;div *<span class="keyword">if</span>="error()" class="alert alert-danger"&gt;{{ error() }}&lt;/div&gt;
+
+                        &lt;div *<span class="keyword">if</span>="!loading()"&gt;
+                            &lt;!-- Crisis Alerts Section --&gt;
+                            &lt;div class="card mb-4 border-danger" *<span class="keyword">if</span>="crisisAlerts().length > 0"&gt;
+                                &lt;div class="card-header bg-danger text-white"&gt;
+                                    &lt;i class="bi bi-exclamation-triangle-fill me-2"&gt;&lt;/i&gt; Crisis Alerts
+                                &lt;/div&gt;
+                                &lt;div class="card-body"&gt;
+                                    &lt;div *<span class="keyword">for</span>="let alert of crisisAlerts()" class="alert-item d-flex justify-content-between align-items-center border-bottom py-2"&gt;
+                                        &lt;div&gt;
+                                            &lt;strong&gt;{{ alert.patientName }}&lt;/strong&gt; - {{ alert.message }}
+                                            &lt;div class="text-muted small"&gt;{{ alert.timestamp | dateAgo }}&lt;/div&gt;
+                                        &lt;/div&gt;
+                                        &lt;button class="btn btn-sm btn-success" (click)="resolveAlert(alert.id)"&gt;Resolve&lt;/button&gt;
+                                    &lt;/div&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+
+                            &lt;!-- Active Sessions --&gt;
+                            &lt;h4 class="mb-2"&gt;Active Sessions&lt;/h4&gt;
+                            &lt;app-table
+                                [data]="sessions()"
+                                [columns]="[
+                                    { key: 'patientName', label: 'Patient' },
+                                    { key: 'lastMessageAt', label: 'Last Activity' },
+                                    { key: 'messageCount', label: 'Messages' },
+                                    { key: 'hasCrisisAlert', label: 'Crisis' }
+                                ]"
+                                [loading]="loading()"
+                                emptyMessage="No active chat sessions"
+                            &gt;
+                                &lt;ng-template #cell let-row let-col="col"&gt;
+                                    &lt;ng-container *<span class="keyword">if</span>="col.key === 'hasCrisisAlert'"&gt;
+                                        &lt;span *<span class="keyword">if</span>="row.hasCrisisAlert" class="badge bg-danger"&gt;Alert&lt;/span&gt;
+                                    &lt;/ng-container&gt;
+                                    &lt;ng-container *<span class="keyword">if</span>="col.key === 'lastMessageAt'"&gt;
+                                        {{ row.lastMessageAt | dateAgo }}
+                                    &lt;/ng-container&gt;
+                                &lt;/ng-template&gt;
+                                &lt;ng-template #actions let-row&gt;
+                                    &lt;button class="btn btn-sm btn-secondary" (click)="viewChat(row.id)"&gt;View&lt;/button&gt;
+                                &lt;/ng-template&gt;
+                            &lt;/app-table&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                </div>
+
+                <h4>Step 3: Add Methods</h4>
+
+                <div class="code-block">
+                    <span class="comment">// In chat-monitor.component.ts</span>
+                    viewChat(sessionId: string) {
+                        // Navigate to a detail view or open a modal with the chat
+                        // For now, we can navigate to a read‑only chat view
+                        this.router.navigate(['/chatbot/session', sessionId]);
+                    }
+                </div>
+
+                <h4>Step 4: Add Styles</h4>
+
+                <div class="code-block">
+                    <span class="comment">// chat-monitor.component.scss</span>
+                    .chat-monitor {
+                        padding: 1rem 0;
+                    }
+                    .alert-item:last-child {
+                        border-bottom: none !important;
+                    }
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>chat-monitor.component.ts</code></li>
+                    <li><code>chat-monitor.component.html</code></li>
+                    <li><code>chat-monitor.component.scss</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    <span class="comment"># Already generated</span>
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Table component integration</li>
+                    <li>Async data fetching</li>
+                    <li>Signal updates</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Verify active sessions load.</li>
+                    <li>Verify crisis alerts display.</li>
+                    <li>Test resolve alert.</li>
+                    <li>Test refresh.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Chat monitor component ready.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not handling empty states.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>No active sessions → empty state.</li>
+                    <li>New crisis alert arrives → should appear automatically (via SignalR).</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Monitor works with real data.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Monitor is the therapist's oversight tool.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 4: STATE MANAGEMENT AND INTEGRATION                             -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-CHAT-004</span><span class="task-name">State Management and Integration</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-CHAT-004</li>
+                    <li><strong>Task Name:</strong> State Management and Integration</li>
+                    <li><strong>Owner:</strong> M4 (Frontend Developer)</li>
+                    <li><strong>Dependencies:</strong> All previous chat tasks</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Ensure the chat components use the ChatService consistently, handle connection lifecycle properly, integrate with authentication (connect on login, disconnect on logout), and provide robust error handling.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Reliable chat functionality depends on proper connection management and state handling.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Refine the ChatService to handle reconnection, token refresh, and cleanup. Add global error handling and integrate with the notification service for user feedback.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>All chat components implemented.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li>All FE-CHAT tasks.</li>
+                    <li>FE-CORE-003 (NotificationService) for user feedback.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Existing components.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Updated ChatService with improved error handling and reconnection.</li>
+                    <li>Integration with NotificationService.</li>
+                    <li>Connection status management.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Enhance ChatService with Reconnection Logic</h4>
+                <p>Add automatic reconnection using <code>withAutomaticReconnect</code> and handle connection state changes.</p>
+
+                <div class="code-block">
+                    <span class="comment">// In ChatService, add connection state monitoring</span>
+                    this.connection.onreconnecting((error) => {
+                        this.isConnected.set(false);
+                        this.notification.warning('Connection lost, reconnecting...');
+                    });
+
+                    this.connection.onreconnected((connectionId) => {
+                        this.isConnected.set(true);
+                        this.notification.success('Reconnected to chat server.');
+                    });
+
+                    this.connection.onclose((error) => {
+                        this.isConnected.set(false);
+                        this.notification.error('Connection closed. Please refresh the page.');
+                    });
+                </div>
+
+                <h4>Step 2: Add Token Refresh Handling</h4>
+                <p>In <code>initializeConnection()</code>, use <code>accessTokenFactory</code> to get the latest token.</p>
+
+                <div class="code-block">
+                    accessTokenFactory: () => {
+                        const token = this.authService.getToken();
+                        if (!token) {
+                            throw new Error('No token available');
+                        }
+                        return token;
+                    }
+                </div>
+
+                <h4>Step 3: Integrate with NotificationService</h4>
+                <p>Inject NotificationService and show messages for connection events and errors.</p>
+
+                <h4>Step 4: Add Cleanup on Logout</h4>
+                <p>In AuthService's logout, call <code>chatService.dispose()</code> to stop the connection.</p>
+
+                <h4>Step 5: Update Components to Use Signals</h4>
+                <p>Ensure ChatComponent and ChatMonitorComponent use the ChatService signals correctly and handle loading/error states.</p>
+
+                <h4>Step 6: Add Unit Tests for ChatService</h4>
+                <p>Test connection, send/receive, and error handling.</p>
+
+                <h3>Files To Modify</h3>
+                <ul>
+                    <li><code>core/services/chat.service.ts</code></li>
+                    <li><code>features/chatbot/pages/chat/chat.component.ts</code></li>
+                    <li><code>features/chatbot/pages/chat-monitor/chat-monitor.component.ts</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <p>No new commands.</p>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>SignalR reconnection strategies</li>
+                    <li>Token refresh with SignalR</li>
+                    <li>Global error handling</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Simulate network loss, verify reconnection.</li>
+                    <li>Log out, verify connection is stopped.</li>
+                    <li>Test token expiration and refresh.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>ChatService robust with reconnection and notifications.</li>
+                    <li>Components fully integrated.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not handling connection errors gracefully.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>Token expires during chat → should refresh or reconnect.</li>
+                    <li>User logs out while chat is active → disconnect cleanly.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Chat system is robust and integrated.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> ChatService handles all connectivity; components just use it.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- PHASE COMPLETION CRITERIA                                             -->
+        <!-- ===================================================================== -->
+        <hr class="hr" />
+
+        <h2 style="background: #f0fdf4; border-left-color: #22c55e; padding:12px 20px; border-left:6px solid #22c55e; border-radius:8px;">✅ Phase Completion Criteria</h2>
+        <ul class="checklist">
+            <li>All 4 chat tasks are complete (FE-CHAT-001 to FE-CHAT-004).</li>
+            <li>Chat routes are lazy‑loaded and guarded.</li>
+            <li>ChatService with SignalR is implemented and handles connection lifecycle.</li>
+            <li>Patient Chat Component displays messages, sends, receives, and has crisis alert.</li>
+            <li>Therapist Chat Monitor shows active sessions and crisis alerts.</li>
+            <li>Reconnection and token refresh are handled.</li>
+            <li>All components use the ChatService consistently.</li>
+            <li>All tests pass.</li>
+            <li>All changes are committed.</li>
+        </ul>
+
+        <h2 style="background: #f0f9ff; border-left-color: #3b82f6; padding:12px 20px; border-left:6px solid #3b82f6; border-radius:8px; margin-top:24px;">📋 Code Review Checklist</h2>
+        <ul class="checklist">
+            <li>ChatService uses Signals correctly.</li>
+            <li>SignalR connection is established with token.</li>
+            <li>Reconnection logic is tested.</li>
+            <li>Crisis alert flow works.</li>
+            <li>Monitoring displays real data.</li>
+            <li>Error handling and notifications are in place.</li>
+        </ul>
+
+        <h2 style="background: #fefce8; border-left-color: #f59e0b; padding:12px 20px; border-left:6px solid #f59e0b; border-radius:8px; margin-top:24px;">🚀 Pull Request Checklist</h2>
+        <ul class="checklist">
+            <li>Branch up‑to‑date with main.</li>
+            <li>All tests pass.</li>
+            <li>Code review completed.</li>
+            <li>Documentation updated.</li>
+        </ul>
+
+        <h2 style="background: #fef2f2; border-left-color: #ef4444; padding:12px 20px; border-left:6px solid #ef4444; border-radius:8px; margin-top:24px;">🧪 Deployment Readiness Checklist</h2>
+        <ul class="checklist">
+            <li>Chat works end‑to‑end for patients.</li>
+            <li>Therapists can monitor chats and see alerts.</li>
+            <li>Crisis alert triggers notification.</li>
+            <li>Reconnection works under network issues.</li>
+        </ul>
+
+        <hr class="hr" />
+        <div style="text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 20px 0 0;">
+            Jalsa – Phase 12: Chatbot – Expanded Implementation Handbook &bull; v1.0 &bull; For development team
+        </div>
+    </div>
+
+    <script>
+        function toggleTask(header) {
+            const body = header.nextElementSibling;
+            const isOpen = body.classList.contains('open');
+            body.classList.toggle('open');
+            header.classList.toggle('open');
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstHeader = document.querySelector('.task-header');
+            if (firstHeader) firstHeader.click();
+        });
+    </script>
+</body>
+</html>

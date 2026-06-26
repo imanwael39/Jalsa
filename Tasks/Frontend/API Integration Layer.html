@@ -1,0 +1,2193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jalsa – Phase 14: API Integration Layer – Expanded Implementation Handbook</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+            padding: 30px 20px;
+            line-height: 1.7;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            padding: 40px 45px;
+        }
+        h1 {
+            font-size: 2.4rem;
+            color: #0f172a;
+            border-bottom: 4px solid #3b82f6;
+            padding-bottom: 18px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        h1 small {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #64748b;
+            margin-left: auto;
+        }
+        .phase-banner {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 20px 28px;
+            margin-bottom: 32px;
+            border-left: 8px solid #3b82f6;
+        }
+        .phase-banner h2 {
+            margin: 0 0 8px 0;
+            font-size: 1.6rem;
+            color: #0f172a;
+            background: none;
+            padding: 0;
+            border-left: none;
+        }
+        .phase-banner p {
+            margin: 0;
+            color: #475569;
+        }
+        .phase-banner .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px 40px;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+        .phase-banner .meta span {
+            font-weight: 500;
+            color: #0f172a;
+        }
+
+        .task-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+        .task-header {
+            background: #f8fafc;
+            padding: 16px 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.15s;
+            user-select: none;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .task-header:hover {
+            background: #f1f5f9;
+        }
+        .task-header .task-id {
+            font-weight: 700;
+            color: #3b82f6;
+            margin-right: 12px;
+            font-size: 1.05rem;
+        }
+        .task-header .task-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .task-header .task-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .task-header .task-badges .tag {
+            font-size: 0.7rem;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+        .task-header .chevron {
+            transition: transform 0.25s;
+            font-size: 1.3rem;
+            color: #94a3b8;
+            margin-left: 12px;
+        }
+        .task-header.open .chevron {
+            transform: rotate(180deg);
+        }
+
+        .task-body {
+            padding: 0 24px 24px;
+            display: none;
+            overflow: hidden;
+        }
+        .task-body.open {
+            display: block;
+        }
+
+        .task-body h3 {
+            font-size: 1.15rem;
+            margin-top: 22px;
+            margin-bottom: 8px;
+            color: #0f172a;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 4px;
+        }
+        .task-body h4 {
+            font-size: 1rem;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            color: #334155;
+        }
+        .task-body p {
+            margin-bottom: 8px;
+        }
+        .task-body ul,
+        .task-body ol {
+            padding-left: 24px;
+            margin-bottom: 10px;
+        }
+        .task-body li {
+            margin-bottom: 3px;
+        }
+        .task-body .field-label {
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+        .checklist li {
+            padding: 3px 0 3px 30px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') left center no-repeat;
+            background-size: 18px;
+        }
+
+        .pitfall-box {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .tip-box {
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .arch-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #e2e8f0;
+            padding: 1px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-right: 4px;
+        }
+        .tag-blue {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .tag-green {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .tag-amber {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .tag-red {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .tag-purple {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+        .tag-slate {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        .tag-indigo {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .flow-diagram {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin: 8px 0 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .flow-diagram .arrow {
+            color: #94a3b8;
+            margin: 0 6px;
+        }
+        .flow-diagram .step {
+            color: #0f172a;
+            font-weight: 500;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            margin: 10px 0 16px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            background: #fff;
+        }
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+            text-align: left;
+            padding: 8px 14px;
+            border-bottom: 2px solid #e2e8f0;
+            color: #0f172a;
+        }
+        td {
+            padding: 8px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .hr {
+            border: none;
+            border-top: 2px dashed #e2e8f0;
+            margin: 32px 0;
+        }
+
+        .code-block {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin: 6px 0 12px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .code-block .comment {
+            color: #94a3b8;
+        }
+        .code-block .keyword {
+            color: #f472b6;
+        }
+        .code-block .string {
+            color: #34d399;
+        }
+        .code-block .func {
+            color: #60a5fa;
+        }
+
+        .subtask {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 12px 18px;
+            margin: 10px 0;
+            border-left: 4px solid #3b82f6;
+        }
+        .subtask strong {
+            color: #0f172a;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 16px;
+            }
+            h1 {
+                font-size: 1.8rem;
+                flex-wrap: wrap;
+            }
+            .task-header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .task-body {
+                padding: 0 16px 16px;
+            }
+            .phase-banner {
+                padding: 16px;
+            }
+            .phase-banner .meta {
+                flex-direction: column;
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <h1>
+            🔌 Jalsa – Phase 14: API Integration Layer
+            <small>Expanded Implementation Handbook · 8 Tasks · 45+ Subtasks</small>
+        </h1>
+
+        <!-- ====== PHASE BANNER ====== -->
+        <div class="phase-banner">
+            <h2>🔌 Phase 14 – API Integration Layer</h2>
+            <p><strong>Purpose:</strong> Build a robust, centralized API integration layer that handles all backend communication with consistent error handling, authentication, loading states, and retry logic. This phase consolidates API endpoints, enhances the HTTP client, implements functional interceptors, and integrates with the state management system.</p>
+            <div class="meta">
+                <span>📋 Tasks: 8</span>
+                <span>⏱️ Total Effort: ~22 hours</span>
+                <span>👤 Owners: M3 (Frontend Lead), M4 (Frontend Developer)</span>
+                <span>🔗 Dependencies: Phase 2 (Core Architecture), Phase 13 (State Management)</span>
+                <span>🎯 Deliverable: Complete API integration layer with interceptors, error handling, and full state integration</span>
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 1: CONSOLIDATE AND ENHANCE API ENDPOINTS                       -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-API-001</span><span class="task-name">Consolidate and Enhance API Endpoints</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-API-001</li>
+                    <li><strong>Task Name:</strong> Consolidate and Enhance API Endpoints</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-CORE-001 (existing API endpoints)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Consolidate all API endpoint definitions into a single, well‑organized file with full TypeScript typing, including request/response types, query parameters, and dynamic path segments. Add metadata for caching, retry, and response transformations.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Centralizing endpoints ensures that all API calls are consistent, easy to update, and self‑documenting. This reduces errors when the backend API changes.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Create a comprehensive <code>api-endpoints.ts</code> file that defines every endpoint with its method, path, request type, response type, and optional metadata (e.g., cache duration, retry count). This file will be imported by all feature services.</p>
+
+                <h3>Prerequisites</h3>
+                <h4>Concepts Required</h4>
+                <ul>
+                    <li>RESTful API design patterns</li>
+                    <li>TypeScript generics and utility types</li>
+                    <li>HTTP methods and status codes</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-CORE-001:</strong> Existing API endpoints need to be reviewed and updated.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Backend OpenAPI/Swagger specification (if available)</li>
+                    <li>Existing <code>api-endpoints.ts</code> from Phase 2</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>core/api/api-endpoints.ts</code> – Enhanced with full typing and metadata.</li>
+                    <li><code>core/api/api-types.ts</code> – Shared types for API responses.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Review Existing Endpoints</h4>
+                <p><strong>What to do:</strong> Examine the current <code>api-endpoints.ts</code> file and identify gaps: missing endpoints, incorrect paths, or missing types.</p>
+                <p><strong>Why it is required:</strong> The API contract must be complete and accurate before feature services use it.</p>
+
+                <h4>Step 2: Define API Type Utilities</h4>
+                <p>Create helper types for API responses, paginated responses, and request options.</p>
+
+                <div class="code-block">
+                    <span class="comment">// core/api/api-types.ts</span>
+                    <span class="keyword">export interface</span> ApiResponse&lt;T&gt; {
+                        data: T;
+                        message: string;
+                        success: boolean;
+                        errors?: string[];
+                    }
+
+                    <span class="keyword">export interface</span> PaginatedResponse&lt;T&gt; {
+                        items: T[];
+                        totalCount: number;
+                        page: number;
+                        pageSize: number;
+                        totalPages: number;
+                    }
+
+                    <span class="keyword">export interface</span> ApiRequestOptions {
+                        cache?: {
+                            duration: number; <span class="comment">// milliseconds</span>
+                            key?: string;
+                        };
+                        retry?: {
+                            count: number;
+                            delay: number;
+                        };
+                        skipAuth?: boolean;
+                        skipLoading?: boolean;
+                    }
+                </div>
+
+                <h4>Step 3: Define All Endpoints with Types</h4>
+                <p>Create a comprehensive endpoint definition object.</p>
+
+                <div class="code-block">
+                    <span class="comment">// core/api/api-endpoints.ts</span>
+                    <span class="keyword">import</span> { ApiResponse, PaginatedResponse } <span class="keyword">from</span> <span class="string">'./api-types'</span>;
+                    <span class="keyword">import</span> { Patient, Session, Exercise, Report, DashboardStats, ChatMessage, LoginRequest, LoginResponse, User } <span class="keyword">from</span> <span class="string">'../models'</span>;
+
+                    <span class="keyword">export const</span> API = {
+                        auth: {
+                            login: {
+                                path: <span class="string">'/auth/login'</span>,
+                                method: <span class="string">'POST'</span>,
+                                requestType: {} <span class="keyword">as</span> LoginRequest,
+                                responseType: {} <span class="keyword">as</span> ApiResponse&lt;LoginResponse&gt;,
+                            },
+                            register: {
+                                path: <span class="string">'/auth/register'</span>,
+                                method: <span class="string">'POST'</span>,
+                            },
+                            refresh: {
+                                path: <span class="string">'/auth/refresh'</span>,
+                                method: <span class="string">'POST'</span>,
+                                options: { skipAuth: true },
+                            },
+                            profile: {
+                                path: <span class="string">'/auth/profile'</span>,
+                                method: <span class="string">'GET'</span>,
+                                responseType: {} <span class="keyword">as</span> ApiResponse&lt;User&gt;,
+                            },
+                            changePassword: {
+                                path: <span class="string">'/auth/change-password'</span>,
+                                method: <span class="string">'POST'</span>,
+                            },
+                            forgotPassword: {
+                                path: <span class="string">'/auth/forgot-password'</span>,
+                                method: <span class="string">'POST'</span>,
+                            },
+                            resetPassword: {
+                                path: <span class="string">'/auth/reset-password'</span>,
+                                method: <span class="string">'POST'</span>,
+                            },
+                        },
+
+                        patients: {
+                            base: {
+                                path: <span class="string">'/patients'</span>,
+                                method: <span class="string">'GET'</span>,
+                                responseType: {} <span class="keyword">as</span> PaginatedResponse&lt;Patient&gt;,
+                                options: { cache: { duration: 60000 } },
+                            },
+                            byId: {
+                                path: (id: <span class="keyword">string</span>) => <span class="string">`/patients/${id}`</span>,
+                                method: <span class="string">'GET'</span>,
+                                responseType: {} <span class="keyword">as</span> ApiResponse&lt;Patient&gt;,
+                            },
+                            create: {
+                                path: <span class="string">'/patients'</span>,
+                                method: <span class="string">'POST'</span>,
+                                responseType: {} <span class="keyword">as</span> ApiResponse&lt;Patient&gt;,
+                            },
+                            update: {
+                                path: (id: <span class="keyword">string</span>) => <span class="string">`/patients/${id}`</span>,
+                                method: <span class="string">'PUT'</span>,
+                                responseType: {} <span class="keyword">as</span> ApiResponse&lt;Patient&gt;,
+                            },
+                            archive: {
+                                path: (id: <span class="keyword">string</span>) => <span class="string">`/patients/${id}/archive`</span>,
+                                method: <span class="string">'DELETE'</span>,
+                            },
+                            restore: {
+                                path: (id: <span class="keyword">string</span>) => <span class="string">`/patients/${id}/restore`</span>,
+                                method: <span class="string">'POST'</span>,
+                            },
+                            intake: {
+                                get: {
+                                    path: (id: <span class="keyword">string</span>) => <span class="string">`/patients/${id}/intake`</span>,
+                                    method: <span class="string">'GET'</span>,
+                                },
+                                save: {
+                                    path: (id: <span class="keyword">string</span>) => <span class="string">`/patients/${id}/intake`</span>,
+                                    method: <span class="string">'POST'</span>,
+                                },
+                                uploadImage: {
+                                    path: (id: <span class="keyword">string</span>) => <span class="string">`/patients/${id}/intake/image`</span>,
+                                    method: <span class="string">'POST'</span>,
+                                    isMultipart: true,
+                                },
+                            },
+                            assessments: {
+                                list: {
+                                    path: (id: <span class="keyword">string</span>) => <span class="string">`/patients/${id}/assessments`</span>,
+                                    method: <span class="string">'GET'</span>,
+                                },
+                                add: {
+                                    path: (id: <span class="keyword">string</span>) => <span class="string">`/patients/${id}/assessments`</span>,
+                                    method: <span class="string">'POST'</span>,
+                                },
+                            },
+                        },
+
+                        sessions: {
+                            list: {
+                                path: (patientId: <span class="keyword">string</span>) => <span class="string">`/sessions/patient/${patientId}`</span>,
+                                method: <span class="string">'GET'</span>,
+                            },
+                            byId: {
+                                path: (id: <span class="keyword">string</span>) => <span class="string">`/sessions/${id}`</span>,
+                                method: <span class="string">'GET'</span>,
+                            },
+                            create: {
+                                path: <span class="string">'/sessions'</span>,
+                                method: <span class="string">'POST'</span>,
+                            },
+                            update: {
+                                path: (id: <span class="keyword">string</span>) => <span class="string">`/sessions/${id}`</span>,
+                                method: <span class="string">'PUT'</span>,
+                            },
+                            delete: {
+                                path: (id: <span class="keyword">string</span>) => <span class="string">`/sessions/${id}`</span>,
+                                method: <span class="string">'DELETE'</span>,
+                            },
+                            voiceMemo: {
+                                path: (id: <span class="keyword">string</span>) => <span class="string">`/sessions/${id}/voice`</span>,
+                                method: <span class="string">'POST'</span>,
+                                isMultipart: true,
+                            },
+                            summary: {
+                                path: (id: <span class="keyword">string</span>) => <span class="string">`/sessions/${id}/summary`</span>,
+                                method: <span class="string">'GET'</span>,
+                            },
+                        },
+
+                        exercises: {
+                            list: {
+                                path: <span class="string">'/exercises'</span>,
+                                method: <span class="string">'GET'</span>,
+                            },
+                            assign: {
+                                path: <span class="string">'/exercises/assign'</span>,
+                                method: <span class="string">'POST'</span>,
+                            },
+                            byPatient: {
+                                path: (patientId: <span class="keyword">string</span>) => <span class="string">`/exercises/patient/${patientId}`</span>,
+                                method: <span class="string">'GET'</span>,
+                            },
+                            updateStatus: {
+                                path: (id: <span class="keyword">string</span>) => <span class="string">`/exercises/${id}/status`</span>,
+                                method: <span class="string">'PUT'</span>,
+                            },
+                        },
+
+                        reports: {
+                            list: {
+                                path: <span class="string">'/reports'</span>,
+                                method: <span class="string">'GET'</span>,
+                            },
+                            byId: {
+                                path: (id: <span class="keyword">string</span>) => <span class="string">`/reports/${id}`</span>,
+                                method: <span class="string">'GET'</span>,
+                            },
+                            generate: {
+                                path: <span class="string">'/reports/generate'</span>,
+                                method: <span class="string">'POST'</span>,
+                            },
+                            update: {
+                                path: (id: <span class="keyword">string</span>) => <span class="string">`/reports/${id}`</span>,
+                                method: <span class="string">'PUT'</span>,
+                            },
+                            approve: {
+                                path: (id: <span class="keyword">string</span>) => <span class="string">`/reports/${id}/approve`</span>,
+                                method: <span class="string">'POST'</span>,
+                            },
+                            reject: {
+                                path: (id: <span class="keyword">string</span>) => <span class="string">`/reports/${id}/reject`</span>,
+                                method: <span class="string">'POST'</span>,
+                            },
+                            exportPDF: {
+                                path: (id: <span class="keyword">string</span>) => <span class="string">`/reports/${id}/export`</span>,
+                                method: <span class="string">'GET'</span>,
+                                responseType: <span class="string">'blob'</span>,
+                            },
+                        },
+
+                        dashboard: {
+                            stats: {
+                                path: <span class="string">'/dashboard/stats'</span>,
+                                method: <span class="string">'GET'</span>,
+                                options: { cache: { duration: 120000 } },
+                            },
+                            trends: {
+                                path: <span class="string">'/dashboard/trends'</span>,
+                                method: <span class="string">'GET'</span>,
+                                options: { cache: { duration: 120000 } },
+                            },
+                        },
+
+                        chat: {
+                            history: {
+                                path: (sessionId: <span class="keyword">string</span>) => <span class="string">`/chat/${sessionId}/history`</span>,
+                                method: <span class="string">'GET'</span>,
+                            },
+                            send: {
+                                path: <span class="string">'/chat/send'</span>,
+                                method: <span class="string">'POST'</span>,
+                            },
+                            activeSessions: {
+                                path: <span class="string">'/chat/active-sessions'</span>,
+                                method: <span class="string">'GET'</span>,
+                            },
+                            crisisAlerts: {
+                                path: <span class="string">'/chat/crisis-alerts'</span>,
+                                method: <span class="string">'GET'</span>,
+                            },
+                            resolveCrisis: {
+                                path: (alertId: <span class="keyword">string</span>) => <span class="string">`/chat/crisis/${alertId}/resolve`</span>,
+                                method: <span class="string">'POST'</span>,
+                            },
+                        },
+                    } <span class="keyword">as const</span>;
+
+                    <span class="comment">// Type helper to extract endpoint definitions</span>
+                    <span class="keyword">export type</span> ApiEndpoint = typeof API;
+                </div>
+
+                <h4>Step 4: Update Barrel Export</h4>
+                <div class="code-block">
+                    <span class="comment">// core/api/index.ts</span>
+                    export * from './api-endpoints';
+                    export * from './api-types';
+                </div>
+
+                <h4>Step 5: Documentation</h4>
+                <p>Add comments to explain each section and usage.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>core/api/api-endpoints.ts</code> (updated)</li>
+                    <li><code>core/api/api-types.ts</code> (new)</li>
+                    <li><code>core/api/index.ts</code> (updated)</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <p>No CLI commands; manual editing.</p>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>REST API design</li>
+                    <li>TypeScript advanced types</li>
+                    <li>Path parameter functions</li>
+                </ul>
+
+                <h3>Tools/Libraries Required</h3>
+                <ul>
+                    <li>None</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Verify all endpoints are defined with correct paths.</li>
+                    <li>Check that TypeScript compiles without errors.</li>
+                    <li>Ensure path functions return correct strings.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Comprehensive endpoint definition file.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Forgetting to add <code>as const</code> to preserve literal types.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>All endpoints are defined, typed, and exported.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Import <code>API</code> from <code>@core/api</code> for all endpoint references.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 2: ENHANCE HTTP CLIENT SERVICE                                  -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-API-002</span><span class="task-name">Enhance HTTP Client Service</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-API-002</li>
+                    <li><strong>Task Name:</strong> Enhance HTTP Client Service</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-API-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Enhance the <code>HttpClientService</code> to support retry logic, caching, request/response logging, and integration with the API endpoint definitions. Provide methods that accept endpoint objects and automatically handle request/response types.</p>
+
+                <h3>Business Purpose</h3>
+                <p>A robust HTTP client reduces boilerplate in feature services, ensures consistent error handling, and provides automatic retries for transient network issues.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Create a typed HTTP client that wraps Angular's HttpClient and provides methods for GET, POST, PUT, DELETE, and PATCH with automatic URL construction, parameter handling, and response transformation.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular HttpClient and interceptors</li>
+                    <li>RxJS operators for retry and caching</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-API-001:</strong> API endpoints defined.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Existing <code>http-client.service.ts</code> from Phase 2.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>core/api/http-client.service.ts</code> – Enhanced version.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Define Request Methods</h4>
+                <p>Create typed methods that accept endpoint definitions.</p>
+
+                <div class="code-block">
+                    <span class="comment">// core/api/http-client.service.ts</span>
+                    <span class="keyword">import</span> { Injectable, inject } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { HttpClient, HttpParams, HttpHeaders } <span class="keyword">from</span> <span class="string">'@angular/common/http'</span>;
+                    <span class="keyword">import</span> { Observable, of, throwError } <span class="keyword">from</span> <span class="string">'rxjs'</span>;
+                    <span class="keyword">import</span> { retry, catchError, shareReplay, timeout } <span class="keyword">from</span> <span class="string">'rxjs/operators'</span>;
+                    <span class="keyword">import</span> { environment } <span class="keyword">from</span> <span class="string">'../../../environments/environment'</span>;
+
+                    <span class="keyword">export type</span> HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+
+                    <span class="keyword">export interface</span> RequestOptions {
+                        params?: { [key: string]: string | number | boolean | readonly (string | number | boolean)[] };
+                        headers?: HttpHeaders | { [header: string]: string | string[] };
+                        responseType?: 'json' | 'blob' | 'text' | 'arraybuffer';
+                        skipAuth?: boolean;
+                        skipLoading?: boolean;
+                        retryCount?: number;
+                        retryDelay?: number;
+                        timeoutMs?: number;
+                    }
+
+                    <span class="keyword">@Injectable</span>({
+                        providedIn: <span class="string">'root'</span>,
+                    })
+                    export <span class="keyword">class</span> HttpClientService {
+                        private http = inject(HttpClient);
+                        private baseUrl = environment.apiUrl;
+
+                        private cacheMap = new Map&lt;string, { data: Observable&lt;any&gt;; timestamp: number }&gt;();
+                        private cacheDuration = 60000; <span class="comment">// 1 minute default</span>
+
+                        get<T>(endpoint: { path: string; method: 'GET' }, options?: RequestOptions): Observable&lt;T&gt; {
+                            return this.request&lt;T&gt;('GET', endpoint.path, null, options);
+                        }
+
+                        getWithId<T>(endpoint: { path: (id: string) => string; method: 'GET' }, id: string, options?: RequestOptions): Observable&lt;T&gt; {
+                            return this.request&lt;T&gt;('GET', endpoint.path(id), null, options);
+                        }
+
+                        post<T>(endpoint: { path: string; method: 'POST' }, body: any, options?: RequestOptions): Observable&lt;T&gt; {
+                            return this.request&lt;T&gt;('POST', endpoint.path, body, options);
+                        }
+
+                        postWithId<T>(endpoint: { path: (id: string) => string; method: 'POST' }, id: string, body: any, options?: RequestOptions): Observable&lt;T&gt; {
+                            return this.request&lt;T&gt;('POST', endpoint.path(id), body, options);
+                        }
+
+                        put<T>(endpoint: { path: string; method: 'PUT' }, body: any, options?: RequestOptions): Observable&lt;T&gt; {
+                            return this.request&lt;T&gt;('PUT', endpoint.path, body, options);
+                        }
+
+                        putWithId<T>(endpoint: { path: (id: string) => string; method: 'PUT' }, id: string, body: any, options?: RequestOptions): Observable&lt;T&gt; {
+                            return this.request&lt;T&gt;('PUT', endpoint.path(id), body, options);
+                        }
+
+                        delete<T>(endpoint: { path: string; method: 'DELETE' }, options?: RequestOptions): Observable&lt;T&gt; {
+                            return this.request&lt;T&gt;('DELETE', endpoint.path, null, options);
+                        }
+
+                        deleteWithId<T>(endpoint: { path: (id: string) => string; method: 'DELETE' }, id: string, options?: RequestOptions): Observable&lt;T&gt; {
+                            return this.request&lt;T&gt;('DELETE', endpoint.path(id), null, options);
+                        }
+
+                        patch<T>(endpoint: { path: string; method: 'PATCH' }, body: any, options?: RequestOptions): Observable&lt;T&gt; {
+                            return this.request&lt;T&gt;('PATCH', endpoint.path, body, options);
+                        }
+
+                        upload<T>(endpoint: { path: string; method: 'POST'; isMultipart?: boolean }, formData: FormData, options?: RequestOptions): Observable&lt;T&gt; {
+                            const opts: RequestOptions = {
+                                ...options,
+                                headers: new HttpHeaders({}),
+                            };
+                            return this.request&lt;T&gt;('POST', endpoint.path, formData, opts);
+                        }
+
+                        uploadWithId<T>(endpoint: { path: (id: string) => string; method: 'POST'; isMultipart?: boolean }, id: string, formData: FormData, options?: RequestOptions): Observable&lt;T&gt; {
+                            const opts: RequestOptions = {
+                                ...options,
+                                headers: new HttpHeaders({}),
+                            };
+                            return this.request&lt;T&gt;('POST', endpoint.path(id), formData, opts);
+                        }
+
+                        private request<T>(method: HttpMethod, url: string, body: any, options: RequestOptions = {}): Observable&lt;T&gt; {
+                            const fullUrl = this.baseUrl + url;
+                            const retryCount = options.retryCount ?? 0;
+                            const retryDelay = options.retryDelay ?? 1000;
+                            const timeoutMs = options.timeoutMs ?? 30000;
+                            const skipLoading = options.skipLoading ?? false;
+
+                            let httpParams = new HttpParams();
+                            if (options.params) {
+                                Object.entries(options.params).forEach(([key, value]) => {
+                                    if (value !== undefined && value !== null) {
+                                        httpParams = httpParams.set(key, String(value));
+                                    }
+                                });
+                            }
+
+                            let request$ = this.http.request(method, fullUrl, {
+                                body,
+                                params: httpParams,
+                                headers: options.headers,
+                                responseType: options.responseType || 'json',
+                            }) as Observable<T>;
+
+                            // Apply retry
+                            if (retryCount > 0) {
+                                request$ = request$.pipe(
+                                    retry({ count: retryCount, delay: retryDelay })
+                                );
+                            }
+
+                            // Apply timeout
+                            request$ = request$.pipe(timeout(timeoutMs));
+
+                            // Error handling (will be caught by error interceptor)
+                            request$ = request$.pipe(
+                                catchError((error) => {
+                                    // Re-throw; error interceptor will handle
+                                    return throwError(() => error);
+                                })
+                            );
+
+                            return request$;
+                        }
+
+                        // Cache support
+                        getCached<T>(endpoint: { path: string; method: 'GET' }, options?: RequestOptions & { cacheDuration?: number }): Observable&lt;T&gt; {
+                            const key = endpoint.path;
+                            const cacheDuration = options?.cacheDuration || this.cacheDuration;
+                            const cached = this.cacheMap.get(key);
+
+                            if (cached && Date.now() - cached.timestamp < cacheDuration) {
+                                return cached.data as Observable&lt;T&gt;;
+                            }
+
+                            const request$ = this.get<T>(endpoint, options).pipe(shareReplay(1));
+                            this.cacheMap.set(key, { data: request$, timestamp: Date.now() });
+                            return request$;
+                        }
+
+                        clearCache(key?: string) {
+                            if (key) {
+                                this.cacheMap.delete(key);
+                            } else {
+                                this.cacheMap.clear();
+                            }
+                        }
+                    }
+                </div>
+
+                <h4>Step 2: Update Barrel Export</h4>
+                <div class="code-block">
+                    <span class="comment">// core/api/index.ts</span>
+                    export * from './api-endpoints';
+                    export * from './api-types';
+                    export * from './http-client.service';
+                </div>
+
+                <h4>Step 3: Documentation</h4>
+                <p>Add JSDoc comments for each method.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>core/api/http-client.service.ts</code> (updated)</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    <span class="comment"># If re-generating</span>
+                    ng g s core/api/http-client --skip-tests
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Angular HttpClient</li>
+                    <li>RxJS operators (retry, timeout, shareReplay)</li>
+                    <li>Cache patterns</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Unit test each method with mock HttpClient.</li>
+                    <li>Test caching: verify subsequent calls return cached data.</li>
+                    <li>Test retry logic: simulate failures and verify retries.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Enhanced HTTP client with full typing and features.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not handling the case where cache key is not unique.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>HTTP client service is enhanced and passes tests.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use HttpClientService for all API calls.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 3: AUTHENTICATION INTERCEPTOR (REFRESH TOKEN LOGIC)             -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-API-003</span><span class="task-name">Authentication Interceptor with Refresh Token Logic</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">5h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-API-003</li>
+                    <li><strong>Task Name:</strong> Authentication Interceptor with Refresh Token Logic</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-API-002, FE-AUTH-002 (AuthService)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 5 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Implement an authentication interceptor that adds JWT tokens to outgoing requests, handles token expiration by attempting to refresh the token, and retries the original request after a successful refresh.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Users should stay logged in seamlessly without having to re‑authenticate when the token expires. This improves user experience and reduces friction.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Create a functional interceptor that intercepts HTTP requests, adds the Authorization header, detects 401 responses, refreshes the token using the refresh endpoint, and retries the original request. Use RxJS operators to manage this flow.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular interceptors and HTTP pipeline.</li>
+                    <li>Knowledge of JWT tokens and refresh token flow.</li>
+                    <li>RxJS operators: <code>switchMap</code>, <code>catchError</code>, <code>retry</code>.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-API-002:</strong> HttpClientService.</li>
+                    <li><strong>FE-AUTH-002:</strong> AuthService for token and refresh.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>AuthService with <code>getToken()</code>, <code>refreshToken()</code>, <code>logout()</code>.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>core/interceptors/auth.interceptor.ts</code> – Enhanced with refresh logic.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Create/Update Auth Interceptor</h4>
+                <div class="code-block">
+                    <span class="comment">// core/interceptors/auth.interceptor.ts</span>
+                    <span class="keyword">import</span> { HttpInterceptorFn } <span class="keyword">from</span> <span class="string">'@angular/common/http'</span>;
+                    <span class="keyword">import</span> { inject } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { AuthService } <span class="keyword">from</span> <span class="string">'../services/auth.service'</span>;
+                    <span class="keyword">import</span> { catchError, switchMap, throwError } <span class="keyword">from</span> <span class="string">'rxjs'</span>;
+
+                    <span class="keyword">export const</span> authInterceptor: HttpInterceptorFn = (req, next) => {
+                        const authService = inject(AuthService);
+                        const token = authService.getToken();
+
+                        // Skip auth for refresh endpoint
+                        if (req.url.includes('/auth/refresh')) {
+                            return next(req);
+                        }
+
+                        // Add token to request
+                        let authReq = req;
+                        if (token) {
+                            authReq = req.clone({
+                                setHeaders: {
+                                    Authorization: `Bearer ${token}`,
+                                },
+                            });
+                        }
+
+                        // Handle 401 with refresh
+                        return next(authReq).pipe(
+                            catchError((error) => {
+                                if (error.status === 401 && !req.url.includes('/auth/login')) {
+                                    // Attempt to refresh token
+                                    return authService.refreshToken().pipe(
+                                        switchMap((response) => {
+                                            // Retry the original request with new token
+                                            const newToken = authService.getToken();
+                                            const retryReq = req.clone({
+                                                setHeaders: {
+                                                    Authorization: `Bearer ${newToken}`,
+                                                },
+                                            });
+                                            return next(retryReq);
+                                        }),
+                                        catchError((refreshError) => {
+                                            // Refresh failed – log out
+                                            authService.logout();
+                                            return throwError(() => refreshError);
+                                        })
+                                    );
+                                }
+                                return throwError(() => error);
+                            })
+                        );
+                    };
+                </div>
+
+                <h4>Step 2: Handle Concurrent Refresh Requests</h4>
+                <p>Add a flag to prevent multiple refresh requests when multiple 401 responses occur simultaneously.</p>
+
+                <div class="code-block">
+                    <span class="comment">// Add a refresh token in progress flag</span>
+                    let isRefreshing = false;
+                    let refreshSubject: Subject&lt;any&gt; | null = null;
+
+                    <span class="keyword">export const</span> authInterceptor: HttpInterceptorFn = (req, next) => {
+                        // ... (same as above)
+                        // Inside catchError, check isRefreshing
+                        if (error.status === 401 && !isRefreshing) {
+                            isRefreshing = true;
+                            refreshSubject = new Subject();
+
+                            authService.refreshToken().subscribe({
+                                next: (response) => {
+                                    isRefreshing = false;
+                                    refreshSubject?.next(response);
+                                    refreshSubject?.complete();
+                                },
+                                error: (err) => {
+                                    isRefreshing = false;
+                                    authService.logout();
+                                    refreshSubject?.error(err);
+                                    refreshSubject?.complete();
+                                },
+                            });
+
+                            return refreshSubject.pipe(
+                                switchMap(() => {
+                                    const newToken = authService.getToken();
+                                    const retryReq = req.clone({
+                                        setHeaders: { Authorization: `Bearer ${newToken}` },
+                                    });
+                                    return next(retryReq);
+                                })
+                            );
+                        } else if (error.status === 401 && isRefreshing) {
+                            // Wait for refresh to complete
+                            return refreshSubject!.pipe(
+                                switchMap(() => {
+                                    const newToken = authService.getToken();
+                                    const retryReq = req.clone({
+                                        setHeaders: { Authorization: `Bearer ${newToken}` },
+                                    });
+                                    return next(retryReq);
+                                })
+                            );
+                        }
+                        return throwError(() => error);
+                    };
+                </div>
+
+                <h4>Step 3: Update AuthService Refresh Method</h4>
+                <p>Ensure <code>refreshToken()</code> returns an observable that handles the refresh call.</p>
+
+                <div class="code-block">
+                    <span class="comment">// In auth.service.ts</span>
+                    refreshToken(): Observable&lt;LoginResponse&gt; {
+                        return this.http.post&lt;LoginResponse&gt;(API.auth.refresh, {})
+                            .pipe(
+                                tap((response) => {
+                                    this.handleAuthentication(response.token);
+                                })
+                            );
+                    }
+                </div>
+
+                <h4>Step 4: Register Interceptor</h4>
+                <p>Ensure the interceptor is registered in <code>app.config.ts</code> with <code>withInterceptors</code>.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>core/interceptors/auth.interceptor.ts</code> (updated)</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g interceptor core/interceptors/auth --functional --skip-tests
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>JWT refresh token flow</li>
+                    <li>Concurrent request handling with RxJS Subjects</li>
+                    <li>Functional interceptors</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test request with valid token (success).</li>
+                    <li>Test request with expired token (refresh then retry).</li>
+                    <li>Test concurrent requests with expired token (single refresh).</li>
+                    <li>Test refresh failure (logout and redirect).</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Authentication interceptor with refresh logic.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not handling concurrent requests, causing multiple refresh calls.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 2:</strong> Not skipping auth for refresh endpoint.</div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Interceptor handles token refresh and retries.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Token refresh is automatic; no need to handle 401 manually.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 4: ERROR INTERCEPTOR                                            -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-API-004</span><span class="task-name">Error Interceptor</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">3h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-API-004</li>
+                    <li><strong>Task Name:</strong> Error Interceptor</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-CORE-003 (NotificationService), FE-STATE-003 (AppStateService)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 3 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Implement a global error interceptor that catches all HTTP errors, maps them to user‑friendly messages, displays notifications via AppStateService, and logs errors for debugging.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Provide clear, non‑technical error messages to users, improving usability and reducing support tickets.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Catch HTTP errors, parse the response, determine the appropriate message based on status code, and show a toast notification. Also log errors to the console and optionally to a monitoring service.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of HTTP status codes.</li>
+                    <li>AppStateService for notifications.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-STATE-003:</strong> AppStateService.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>HTTP error responses.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>core/interceptors/error.interceptor.ts</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Create Error Interceptor</h4>
+                <div class="code-block">
+                    <span class="comment">// core/interceptors/error.interceptor.ts</span>
+                    <span class="keyword">import</span> { HttpInterceptorFn } <span class="keyword">from</span> <span class="string">'@angular/common/http'</span>;
+                    <span class="keyword">import</span> { inject } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { catchError, throwError } <span class="keyword">from</span> <span class="string">'rxjs'</span>;
+                    <span class="keyword">import</span> { AppStateService } <span class="keyword">from</span> <span class="string">'../state/app-state.service'</span>;
+
+                    <span class="keyword">export const</span> errorInterceptor: HttpInterceptorFn = (req, next) => {
+                        const appState = inject(AppStateService);
+
+                        return next(req).pipe(
+                            catchError((error) => {
+                                // Log error for debugging
+                                console.error('HTTP Error:', {
+                                    status: error.status,
+                                    message: error.message,
+                                    url: error.url,
+                                    error: error.error,
+                                });
+
+                                // Determine user message
+                                let userMessage = 'An unexpected error occurred. Please try again.';
+
+                                if (error.status === 0) {
+                                    userMessage = 'Network error. Please check your connection.';
+                                } else if (error.status === 400) {
+                                    userMessage = error.error?.message || 'Invalid request. Please check your input.';
+                                } else if (error.status === 401) {
+                                    // Auth interceptor handles this; but if it reaches here, we can show a message
+                                    userMessage = 'Your session has expired. Please log in again.';
+                                } else if (error.status === 403) {
+                                    userMessage = 'You do not have permission to perform this action.';
+                                } else if (error.status === 404) {
+                                    userMessage = 'The requested resource was not found.';
+                                } else if (error.status === 409) {
+                                    userMessage = error.error?.message || 'Conflict with existing data.';
+                                } else if (error.status === 422) {
+                                    // Validation errors
+                                    const validationErrors = error.error?.errors;
+                                    if (validationErrors) {
+                                        const messages = Object.values(validationErrors).flat() as string[];
+                                        userMessage = messages.join(', ');
+                                    } else {
+                                        userMessage = 'Validation failed. Please check your input.';
+                                    }
+                                } else if (error.status === 429) {
+                                    userMessage = 'Too many requests. Please wait a moment and try again.';
+                                } else if (error.status >= 500) {
+                                    userMessage = 'A server error occurred. Please try again later.';
+                                }
+
+                                // Show notification
+                                appState.addNotification(userMessage, 'error');
+
+                                // Re-throw the error for component-level handling if needed
+                                return throwError(() => error);
+                            })
+                        );
+                    };
+                </div>
+
+                <h4>Step 2: Register Interceptor</h4>
+                <p>Add to <code>app.config.ts</code>.</p>
+
+                <h4>Step 3: Handle Validation Error Details</h4>
+                <p>For 422 errors, parse the validation errors and show detailed messages.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>core/interceptors/error.interceptor.ts</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g interceptor core/interceptors/error --functional --skip-tests
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>HTTP status codes</li>
+                    <li>Error handling patterns</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test 400 error with custom message.</li>
+                    <li>Test 422 validation errors.</li>
+                    <li>Test network error (status 0).</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Error interceptor with full error handling.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not handling different error response formats.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Error interceptor works and shows user‑friendly messages.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Errors are handled globally; no need to duplicate error handling in components.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 5: LOADING INTERCEPTOR                                          -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-API-005</span><span class="task-name">Loading Interceptor</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">2h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-API-005</li>
+                    <li><strong>Task Name:</strong> Loading Interceptor</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-STATE-003 (AppStateService)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 2 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Implement a loading interceptor that automatically shows and hides a global loading indicator for all HTTP requests, with the ability to skip loading for certain requests.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Provide visual feedback to users when the application is loading data, improving the perceived performance and user experience.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use AppStateService to track the number of active requests and show/hide the global loading indicator accordingly. Support skipping loading for background requests.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>AppStateService with <code>showGlobalLoading()</code> and <code>hideGlobalLoading()</code>.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-STATE-003:</strong> AppStateService.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>HTTP requests.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>core/interceptors/loading.interceptor.ts</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Create Loading Interceptor</h4>
+                <div class="code-block">
+                    <span class="comment">// core/interceptors/loading.interceptor.ts</span>
+                    <span class="keyword">import</span> { HttpInterceptorFn } <span class="keyword">from</span> <span class="string">'@angular/common/http'</span>;
+                    <span class="keyword">import</span> { inject } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { finalize } <span class="keyword">from</span> <span class="string">'rxjs'</span>;
+                    <span class="keyword">import</span> { AppStateService } <span class="keyword">from</span> <span class="string">'../state/app-state.service'</span>;
+
+                    let activeRequests = 0;
+
+                    <span class="keyword">export const</span> loadingInterceptor: HttpInterceptorFn = (req, next) => {
+                        const appState = inject(AppStateService);
+
+                        // Skip loading for certain requests
+                        if (req.url.includes('/refresh') || req.headers.get('skip-loading') === 'true') {
+                            return next(req);
+                        }
+
+                        activeRequests++;
+                        if (activeRequests === 1) {
+                            appState.showGlobalLoading();
+                        }
+
+                        return next(req).pipe(
+                            finalize(() => {
+                                activeRequests--;
+                                if (activeRequests === 0) {
+                                    appState.hideGlobalLoading();
+                                }
+                            })
+                        );
+                    };
+                </div>
+
+                <h4>Step 2: Register Interceptor</h4>
+
+                <h4>Step 3: Add Skip Option to HttpClientService</h4>
+                <p>In HttpClientService, add a <code>skipLoading</code> option that adds a header.</p>
+
+                <div class="code-block">
+                    <span class="comment">// In request method</span>
+                    if (options.skipLoading) {
+                        headers = headers.set('skip-loading', 'true');
+                    }
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>core/interceptors/loading.interceptor.ts</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g interceptor core/interceptors/loading --functional --skip-tests
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Request tracking</li>
+                    <li>finalize operator</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test that loading indicator shows on request start.</li>
+                    <li>Test that it hides when request completes.</li>
+                    <li>Test skip loading option.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Loading interceptor.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not decrementing activeRequests on error.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Loading interceptor works with global loading indicator.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Loading state is managed automatically.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 6: INTEGRATE API SERVICES WITH STATE SERVICES                   -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-API-006</span><span class="task-name">Integrate API Services with State Services</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-API-006</li>
+                    <li><strong>Task Name:</strong> Integrate API Services with State Services</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-API-002, FE-STATE-004 (Feature State Services)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Update all feature state services (PatientStateService, SessionStateService, etc.) to use the enhanced HttpClientService for API calls. Move all data‑fetching logic from components into these state services.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Decouple data fetching from UI components, making components simpler and promoting reusability.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Feature state services should own the data and provide methods to load, refresh, and update data. Components call these methods and bind to state signals.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Feature state services exist.</li>
+                    <li>HttpClientService is enhanced.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-API-002:</strong> HttpClientService.</li>
+                    <li><strong>FE-STATE-004:</strong> Feature state services.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Existing feature state services and API calls.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Updated feature state services with API integration.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Update PatientStateService</h4>
+                <div class="code-block">
+                    <span class="comment">// core/state/patient-state.service.ts</span>
+                    <span class="keyword">import</span> { Injectable, inject } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { BaseStateService } <span class="keyword">from</span> <span class="string">'./base-state.service'</span>;
+                    <span class="keyword">import</span> { HttpClientService } <span class="keyword">from</span> <span class="string">'../api/http-client.service'</span>;
+                    <span class="keyword">import</span> { API } <span class="keyword">from</span> <span class="string">'../api/api-endpoints'</span>;
+                    <span class="keyword">import</span> { Patient, CreatePatientRequest, UpdatePatientRequest } <span class="keyword">from</span> <span class="string">'../models'</span>;
+                    <span class="keyword">import</span> { AppStateService } <span class="keyword">from</span> <span class="string">'./app-state.service'</span>;
+                    <span class="keyword">import</span> { finalize, catchError, throwError } <span class="keyword">from</span> <span class="string">'rxjs'</span>;
+
+                    <span class="keyword">@Injectable</span>({
+                        providedIn: <span class="string">'root'</span>,
+                    })
+                    export <span class="keyword">class</span> PatientStateService extends BaseStateService&lt;Patient[]&gt; {
+                        private http = inject(HttpClientService);
+                        private appState = inject(AppStateService);
+
+                        loadPatients(params: { search?: string; page?: number; size?: number; includeArchived?: boolean } = {}) {
+                            this.startLoading();
+                            this.http.get(API.patients.base, { params })
+                                .pipe(
+                                    finalize(() => this.stopLoading()),
+                                    catchError((err) => {
+                                        this.setError(err.message || 'Failed to load patients');
+                                        return throwError(() => err);
+                                    })
+                                )
+                                .subscribe({
+                                    next: (response) => {
+                                        this.setData(response.items);
+                                        // Also store total count if needed
+                                    },
+                                });
+                        }
+
+                        loadPatient(id: string) {
+                            this.startLoading();
+                            this.http.getWithId(API.patients.byId, id)
+                                .pipe(finalize(() => this.stopLoading()))
+                                .subscribe({
+                                    next: (response) => {
+                                        // Handle response
+                                    },
+                                    error: (err) => this.setError(err.message),
+                                });
+                        }
+
+                        createPatient(data: CreatePatientRequest) {
+                            this.startLoading();
+                            this.http.post(API.patients.create, data)
+                                .pipe(finalize(() => this.stopLoading()))
+                                .subscribe({
+                                    next: (response) => {
+                                        this.updateData(current => current ? [...current, response] : [response]);
+                                        this.appState.addNotification('Patient created successfully', 'success');
+                                    },
+                                    error: (err) => {
+                                        this.setError(err.message);
+                                        this.appState.addNotification('Failed to create patient', 'error');
+                                    },
+                                });
+                        }
+
+                        updatePatient(id: string, data: UpdatePatientRequest) {
+                            this.startLoading();
+                            this.http.putWithId(API.patients.update, id, data)
+                                .pipe(finalize(() => this.stopLoading()))
+                                .subscribe({
+                                    next: (response) => {
+                                        this.updateData(current =>
+                                            current ? current.map(p => p.id === id ? response : p) : current
+                                        );
+                                        this.appState.addNotification('Patient updated successfully', 'success');
+                                    },
+                                    error: (err) => {
+                                        this.setError(err.message);
+                                        this.appState.addNotification('Failed to update patient', 'error');
+                                    },
+                                });
+                        }
+
+                        archivePatient(id: string) {
+                            this.http.deleteWithId(API.patients.archive, id)
+                                .subscribe({
+                                    next: () => {
+                                        this.updateData(current =>
+                                            current ? current.map(p => p.id === id ? { ...p, isArchived: true } : p) : current
+                                        );
+                                        this.appState.addNotification('Patient archived', 'info');
+                                    },
+                                    error: (err) => {
+                                        this.appState.addNotification('Failed to archive patient', 'error');
+                                    },
+                                });
+                        }
+
+                        restorePatient(id: string) {
+                            this.http.postWithId(API.patients.restore, id, null)
+                                .subscribe({
+                                    next: () => {
+                                        this.updateData(current =>
+                                            current ? current.map(p => p.id === id ? { ...p, isArchived: false } : p) : current
+                                        );
+                                        this.appState.addNotification('Patient restored', 'success');
+                                    },
+                                    error: (err) => {
+                                        this.appState.addNotification('Failed to restore patient', 'error');
+                                    },
+                                });
+                        }
+                    }
+                </div>
+
+                <h4>Step 2: Update Other Feature State Services</h4>
+                <p>Apply the same pattern to Session, Exercise, Report, Dashboard, and Chat state services. Each should have methods like <code>loadXxx()</code>, <code>createXxx()</code>, <code>updateXxx()</code>, etc., that call the HttpClientService and update the state signals.</p>
+
+                <h4>Step 3: Update Components</h4>
+                <p>Replace direct API calls in components with calls to state service methods.</p>
+
+                <div class="code-block">
+                    <span class="comment">// Before: component calls PatientService</span>
+                    this.patientService.getPatients().subscribe(...)
+
+                    <span class="comment">// After: component calls PatientStateService</span>
+                    this.patientState.loadPatients();
+                    <span class="comment">// And binds to patientState.data</span>
+                </div>
+
+                <h3>Files To Modify</h3>
+                <ul>
+                    <li>All feature state services (<code>core/state/*.service.ts</code>).</li>
+                    <li>All feature components (to use state services instead of API services).</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <p>None; manual refactoring.</p>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Service integration patterns</li>
+                    <li>Observer pattern with RxJS</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test each state service method with mocked HttpClient.</li>
+                    <li>Test that components correctly display loading, error, and data states.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>All state services integrated with HTTP client.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Forgetting to handle errors in state services.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>All state services use HttpClientService and handle API calls.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Components should not directly call API services.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 7: MOCK API SETUP (OPTIONAL)                                   -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-API-007</span><span class="task-name">Mock API Setup (Optional)</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">2h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-API-007</li>
+                    <li><strong>Task Name:</strong> Mock API Setup (Optional)</li>
+                    <li><strong>Owner:</strong> M4 (Frontend Developer)</li>
+                    <li><strong>Dependencies:</strong> FE-API-002</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 2 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">Medium</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Set up a mock API server (e.g., using json-server or a custom interceptor) that provides realistic mock data for all endpoints, allowing frontend development to proceed independently of the backend.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Enables parallel frontend development even when the backend is not yet available or is under development.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Provide mock responses for all API endpoints, including pagination, filtering, and error simulation. Use environment flag to toggle between mock and real API.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of json-server or similar tools.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-API-002:</strong> HTTP client service.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Mock data schemas.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>server/mock-data/</code> JSON files.</li>
+                    <li><code>package.json</code> scripts for mock server.</li>
+                    <li><code>core/interceptors/mock.interceptor.ts</code> (optional, if using interceptors).</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Install json-server</h4>
+                <div class="code-block">
+                    npm install --save-dev json-server
+                </div>
+
+                <h4>Step 2: Create Mock Data Files</h4>
+                <p>Create <code>server/mock-data/db.json</code> with realistic data.</p>
+
+                <div class="code-block">
+                    {
+                        "patients": [
+                            { "id": "1", "firstName": "John", "lastName": "Doe", "email": "john@example.com", ... }
+                        ],
+                        "sessions": [ ... ],
+                        "exercises": [ ... ],
+                        "reports": [ ... ],
+                        "users": [ { "id": "1", "email": "therapist@jalsa.com", "password": "password123", "role": "Therapist" } ]
+                    }
+                </div>
+
+                <h4>Step 3: Add Mock Server Script</h4>
+                <div class="code-block">
+                    <span class="comment">// package.json</span>
+                    "scripts": {
+                        "mock": "json-server --watch server/mock-data/db.json --port 5000 --routes server/routes.json"
+                    }
+                </div>
+
+                <h4>Step 4: Configure Environment</h4>
+                <p>In <code>environment.ts</code>, set <code>enableMockApi: true</code> and point <code>apiUrl</code> to the mock server.</p>
+
+                <h4>Step 5: (Optional) Create Mock Interceptor</h4>
+                <p>If you prefer an in‑app mock, create a mock interceptor that returns mock responses based on the request URL.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>server/mock-data/db.json</code></li>
+                    <li><code>server/routes.json</code> (optional, for route customization)</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    npm install --save-dev json-server
+                    npm run mock
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>JSON Server</li>
+                    <li>Mock data generation</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Start the mock server.</li>
+                    <li>Run the Angular app with <code>enableMockApi: true</code>.</li>
+                    <li>Verify API calls return mock data.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Mock API server ready.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Mock data not matching the expected schema.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Mock API works and is ready for development.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use <code>npm run mock</code> to start the mock server.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 8: TESTING AND VALIDATION                                      -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-API-008</span><span class="task-name">Testing and Validation</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">3h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-API-008</li>
+                    <li><strong>Task Name:</strong> Testing and Validation</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> All previous API tasks</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 3 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Write comprehensive unit and integration tests for the entire API integration layer, including the HTTP client service, interceptors, and state service integrations. Ensure that the layer handles all error scenarios correctly.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Reliable API integration is critical for the application. Thorough testing catches edge cases and prevents regressions.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Test the HTTP client with mock backend, test interceptors in isolation and together, and test that state services correctly update data from API responses.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Jasmine/Karma setup.</li>
+                    <li>HttpClientTestingModule for mocking HTTP requests.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li>All previous tasks.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>All API layer code.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Unit test files for HttpClientService, interceptors, and state services.</li>
+                    <li>Test coverage report.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Test HttpClientService</h4>
+                <p>Write tests for each method (get, post, etc.) using <code>HttpClientTestingController</code>.</p>
+
+                <div class="code-block">
+                    <span class="comment">// http-client.service.spec.ts</span>
+                    describe('HttpClientService', () => {
+                        let service: HttpClientService;
+                        let httpMock: HttpTestingController;
+
+                        beforeEach(() => {
+                            TestBed.configureTestingModule({
+                                imports: [HttpClientTestingModule],
+                                providers: [HttpClientService],
+                            });
+                            service = TestBed.inject(HttpClientService);
+                            httpMock = TestBed.inject(HttpTestingController);
+                        });
+
+                        it('should make GET request', () => {
+                            service.get({ path: '/test', method: 'GET' }).subscribe();
+                            const req = httpMock.expectOne('http://localhost:5000/api/test');
+                            expect(req.request.method).toBe('GET');
+                            req.flush({ data: 'test' });
+                        });
+
+                        // ... more tests
+                    });
+                </div>
+
+                <h4>Step 2: Test Interceptors</h4>
+                <p>Test auth interceptor with token, expired token, and refresh scenarios. Test error interceptor with different status codes. Test loading interceptor.</p>
+
+                <h4>Step 3: Test State Services Integration</h4>
+                <p>Test that state services call the correct endpoints and update state signals.</p>
+
+                <h4>Step 4: Run Tests and Check Coverage</h4>
+                <p>Run <code>ng test --code-coverage</code> and ensure coverage is above 80%.</p>
+
+                <h4>Step 5: Fix Issues</h4>
+                <p>Address any failing tests or coverage gaps.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>core/api/http-client.service.spec.ts</code></li>
+                    <li><code>core/interceptors/auth.interceptor.spec.ts</code></li>
+                    <li><code>core/interceptors/error.interceptor.spec.ts</code></li>
+                    <li><code>core/interceptors/loading.interceptor.spec.ts</code></li>
+                    <li><code>core/state/patient-state.service.spec.ts</code> (and others)</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng test --code-coverage
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Angular testing</li>
+                    <li>HttpClientTestingModule</li>
+                    <li>Mocking interceptors</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Run all tests.</li>
+                    <li>Verify coverage reports.</li>
+                    <li>Fix any failed tests.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>All tests pass with high coverage.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not flushing HTTP requests in tests.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>All tests pass, coverage ≥ 80%.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> The API layer is now thoroughly tested and ready for production.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- PHASE COMPLETION CRITERIA                                             -->
+        <!-- ===================================================================== -->
+        <hr class="hr" />
+
+        <h2 style="background: #f0fdf4; border-left-color: #22c55e; padding:12px 20px; border-left:6px solid #22c55e; border-radius:8px;">✅ Phase Completion Criteria</h2>
+        <ul class="checklist">
+            <li>All 8 API integration tasks are complete.</li>
+            <li>API endpoints are consolidated and fully typed.</li>
+            <li>HttpClientService supports retry, caching, and typed endpoints.</li>
+            <li>Auth interceptor handles token refresh and concurrent requests.</li>
+            <li>Error interceptor displays user‑friendly messages.</li>
+            <li>Loading interceptor manages global loading state.</li>
+            <li>All feature state services use HttpClientService.</li>
+            <li>Mock API is available for development (optional).</li>
+            <li>Unit tests pass with ≥ 80% coverage.</li>
+            <li>All changes are committed.</li>
+        </ul>
+
+        <h2 style="background: #f0f9ff; border-left-color: #3b82f6; padding:12px 20px; border-left:6px solid #3b82f6; border-radius:8px; margin-top:24px;">📋 Code Review Checklist</h2>
+        <ul class="checklist">
+            <li>HttpClientService methods are typed and handle errors.</li>
+            <li>Interceptors are functional and registered correctly.</li>
+            <li>Refresh token logic handles concurrent requests.</li>
+            <li>Error interceptor covers all status codes.</li>
+            <li>State services use HttpClientService correctly.</li>
+            <li>Tests cover edge cases.</li>
+        </ul>
+
+        <h2 style="background: #fefce8; border-left-color: #f59e0b; padding:12px 20px; border-left:6px solid #f59e0b; border-radius:8px; margin-top:24px;">🚀 Pull Request Checklist</h2>
+        <ul class="checklist">
+            <li>Branch up‑to‑date with main.</li>
+            <li>All tests pass.</li>
+            <li>Code review completed.</li>
+            <li>Documentation updated.</li>
+        </ul>
+
+        <h2 style="background: #fef2f2; border-left-color: #ef4444; padding:12px 20px; border-left:6px solid #ef4444; border-radius:8px; margin-top:24px;">🧪 Deployment Readiness Checklist</h2>
+        <ul class="checklist">
+            <li>API integration works end‑to‑end.</li>
+            <li>Token refresh works seamlessly.</li>
+            <li>Errors are displayed correctly.</li>
+            <li>Loading state is shown.</li>
+        </ul>
+
+        <hr class="hr" />
+        <div style="text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 20px 0 0;">
+            Jalsa – Phase 14: API Integration Layer – Expanded Implementation Handbook &bull; v1.0 &bull; For development team
+        </div>
+    </div>
+
+    <script>
+        function toggleTask(header) {
+            const body = header.nextElementSibling;
+            const isOpen = body.classList.contains('open');
+            body.classList.toggle('open');
+            header.classList.toggle('open');
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstHeader = document.querySelector('.task-header');
+            if (firstHeader) firstHeader.click();
+        });
+    </script>
+</body>
+</html>
