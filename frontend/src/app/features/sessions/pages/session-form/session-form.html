@@ -25,6 +25,19 @@
                 }
             </div>
 
+            <div class="form-group mb-3">
+                <label class="form-label">Session Notes (Rich Text)</label>
+                <quill-editor
+                    formControlName="content"
+                    [modules]="quillConfig"
+                    placeholder="Enter session notes..."
+                    [style]="{ minHeight: '200px' }"
+                ></quill-editor>
+                @if (form.get('content')?.invalid && form.get('content')?.touched) {
+                    <div class="text-danger small mt-1">Session notes are required.</div>
+                }
+            </div>
+
             <app-input
                 label="Session Type"
                 type="text"
@@ -45,6 +58,18 @@
                     <option value="Completed">Completed</option>
                     <option value="Archived">Archived</option>
                 </select>
+            </div>
+
+            <div class="mt-3">
+                <app-voice-recorder
+                    (uploaded)="onVoiceUploaded($event)"
+                    [sessionId]="sessionId()"
+                ></app-voice-recorder>
+                @if (voiceMemoUrl()) {
+                    <div class="mt-2 text-success">
+                        <i class="bi bi-check-circle" aria-hidden="true"></i> Voice memo uploaded.
+                    </div>
+                }
             </div>
 
             <div class="d-flex gap-2 mt-4">
