@@ -1,3 +1,219 @@
 <div class="patient-detail">
-    <p>Patient Detail - Coming Soon</p>
+    <div class="detail-header">
+        <div class="header-left">
+            <app-button variant="ghost" size="sm" (clicked)="goBack()" ariaLabel="Go back to patients list">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i> Back
+            </app-button>
+            @if (patient(); as p) {
+                <h1 class="patient-name">{{ p.fullName }}</h1>
+            }
+        </div>
+        <div class="header-actions">
+            @if (patient(); as p) {
+                @if (p.status === 'Active') {
+                    <app-button variant="secondary" (clicked)="navigateToEdit()" ariaLabel="Edit patient">
+                        <i class="bi bi-pencil" aria-hidden="true"></i> Edit
+                    </app-button>
+                    <app-button variant="secondary" (clicked)="navigateToIntake()" ariaLabel="Open intake form">
+                        <i class="bi bi-file-text" aria-hidden="true"></i> Intake Form
+                    </app-button>
+                    <app-button variant="secondary" (clicked)="navigateToAssessments()" ariaLabel="View assessments">
+                        <i class="bi bi-clipboard-check" aria-hidden="true"></i> Assessments
+                    </app-button>
+                    <app-button variant="danger" (clicked)="openArchiveModal()" ariaLabel="Archive patient">
+                        <i class="bi bi-archive" aria-hidden="true"></i> Archive
+                    </app-button>
+                } @else {
+                    <app-button variant="secondary" (clicked)="openArchiveModal()" ariaLabel="Restore patient">
+                        <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Restore
+                    </app-button>
+                }
+                <app-button variant="danger" (clicked)="openDeleteModal()" ariaLabel="Delete patient">
+                    <i class="bi bi-trash" aria-hidden="true"></i> Delete
+                </app-button>
+            }
+        </div>
+    </div>
+
+    @if (loading()) {
+        <div class="loading-container">
+            <app-spinner size="lg" label="Loading patient data..."></app-spinner>
+        </div>
+    }
+
+    @if (error()) {
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+            {{ error() }}
+            <app-button variant="ghost" size="sm" (clicked)="goBack()" class="ms-2">
+                Go Back
+            </app-button>
+        </div>
+    }
+
+    @if (patient(); as p) {
+        @if (p.status === 'Archived') {
+            <div class="archived-banner" role="alert">
+                <i class="bi bi-archive" aria-hidden="true"></i>
+                This patient is archived. Some actions are unavailable.
+            </div>
+        }
+
+        <div class="patient-info-card">
+            <div class="info-grid">
+                <div class="info-section">
+                    <h3 class="section-title">Personal Information</h3>
+                    <dl class="info-list">
+                        <dt>Full Name</dt>
+                        <dd>{{ p.fullName }}</dd>
+                        <dt>Date of Birth</dt>
+                        <dd>{{ formatDate(p.dateOfBirth) }}</dd>
+                        <dt>Gender</dt>
+                        <dd>{{ p.gender || 'Not specified' }}</dd>
+                        <dt>Status</dt>
+                        <dd>
+                            <span class="badge" [class.bg-success]="p.status === 'Active'" [class.bg-danger]="p.status === 'Archived'">
+                                {{ p.status }}
+                            </span>
+                        </dd>
+                    </dl>
+                </div>
+                <div class="info-section">
+                    <h3 class="section-title">Contact Information</h3>
+                    <dl class="info-list">
+                        <dt>Email</dt>
+                        <dd>{{ p.email || 'Not provided' }}</dd>
+                        <dt>Phone</dt>
+                        <dd>{{ p.phone || 'Not provided' }}</dd>
+                        <dt>Address</dt>
+                        <dd>{{ p.address || 'Not provided' }}</dd>
+                    </dl>
+                </div>
+                <div class="info-section">
+                    <h3 class="section-title">Clinical Information</h3>
+                    <dl class="info-list">
+                        <dt>Referral Source</dt>
+                        <dd>{{ p.referralSource || 'Not specified' }}</dd>
+                        <dt>Chief Complaint</dt>
+                        <dd>{{ p.chiefComplaint || 'Not specified' }}</dd>
+                        <dt>Created</dt>
+                        <dd>{{ p.createdAt | date:'medium' }}</dd>
+                        <dt>Last Updated</dt>
+                        <dd>{{ p.updatedAt | date:'medium' }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs-section">
+            <nav class="nav-tabs" role="tablist" aria-label="Patient details tabs">
+                <button class="nav-link" [class.active]="activeTab() === 'overview'"
+                        (click)="setTab('overview')" role="tab"
+                        [attr.aria-selected]="activeTab() === 'overview'" aria-controls="tab-overview">
+                    <i class="bi bi-person" aria-hidden="true"></i> Overview
+                </button>
+                <button class="nav-link" [class.active]="activeTab() === 'sessions'"
+                        (click)="setTab('sessions')" role="tab"
+                        [attr.aria-selected]="activeTab() === 'sessions'" aria-controls="tab-sessions">
+                    <i class="bi bi-calendar-event" aria-hidden="true"></i> Sessions
+                </button>
+                <button class="nav-link" [class.active]="activeTab() === 'exercises'"
+                        (click)="setTab('exercises')" role="tab"
+                        [attr.aria-selected]="activeTab() === 'exercises'" aria-controls="tab-exercises">
+                    <i class="bi bi-journal-check" aria-hidden="true"></i> Exercises
+                </button>
+                <button class="nav-link" [class.active]="activeTab() === 'reports'"
+                        (click)="setTab('reports')" role="tab"
+                        [attr.aria-selected]="activeTab() === 'reports'" aria-controls="tab-reports">
+                    <i class="bi bi-file-earmark-text" aria-hidden="true"></i> Reports
+                </button>
+                <button class="nav-link" [class.active]="activeTab() === 'assessments'"
+                        (click)="setTab('assessments')" role="tab"
+                        [attr.aria-selected]="activeTab() === 'assessments'" aria-controls="tab-assessments">
+                    <i class="bi bi-clipboard-check" aria-hidden="true"></i> Assessments
+                </button>
+            </nav>
+
+            <div class="tab-content">
+                @if (activeTab() === 'overview') {
+                    <div id="tab-overview" class="tab-pane active" role="tabpanel">
+                        <div class="overview-content">
+                            <p class="text-muted">Intake form summary and assessment history will be displayed here.</p>
+                        </div>
+                    </div>
+                }
+                @if (activeTab() === 'sessions') {
+                    <div id="tab-sessions" class="tab-pane active" role="tabpanel">
+                        <div class="tab-placeholder">
+                            <p class="text-muted">Session list will be integrated here.</p>
+                        </div>
+                    </div>
+                }
+                @if (activeTab() === 'exercises') {
+                    <div id="tab-exercises" class="tab-pane active" role="tabpanel">
+                        <div class="tab-placeholder">
+                            <p class="text-muted">Exercise list will be integrated here.</p>
+                        </div>
+                    </div>
+                }
+                @if (activeTab() === 'reports') {
+                    <div id="tab-reports" class="tab-pane active" role="tabpanel">
+                        <div class="tab-placeholder">
+                            <p class="text-muted">Report list will be integrated here.</p>
+                        </div>
+                    </div>
+                }
+                @if (activeTab() === 'assessments') {
+                    <div id="tab-assessments" class="tab-pane active" role="tabpanel">
+                        <div class="tab-placeholder">
+                            <p class="text-muted">Assessment list will be integrated here.</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <app-modal [showModal]="showArchiveModal()" (showModalChange)="showArchiveModal.set($event)"
+               [title]="isArchived() ? 'Restore Patient' : 'Archive Patient'" size="sm">
+        <div modal-body>
+            @if (isArchived()) {
+                <p>Are you sure you want to restore <strong>{{ patient()?.fullName }}</strong>?</p>
+                <p class="text-muted">The patient will become active again and be visible in the patient list.</p>
+            } @else {
+                <p>Are you sure you want to archive <strong>{{ patient()?.fullName }}</strong>?</p>
+                <p class="text-muted">The patient will be hidden from the main list but can be restored later.</p>
+            }
+        </div>
+        <div modal-footer>
+            <app-button variant="ghost" (clicked)="closeArchiveModal()" [disabled]="actionLoading()">
+                Cancel
+            </app-button>
+            @if (isArchived()) {
+                <app-button variant="primary" (clicked)="restorePatient()" [loading]="actionLoading()">
+                    Restore Patient
+                </app-button>
+            } @else {
+                <app-button variant="danger" (clicked)="archivePatient()" [loading]="actionLoading()">
+                    Archive Patient
+                </app-button>
+            }
+        </div>
+    </app-modal>
+
+    <app-modal [showModal]="showDeleteModal()" (showModalChange)="showDeleteModal.set($event)"
+               title="Delete Patient" size="sm">
+        <div modal-body>
+            <p>Are you sure you want to permanently delete <strong>{{ patient()?.fullName }}</strong>?</p>
+            <p class="text-danger"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> This action cannot be undone. All patient data will be permanently removed.</p>
+        </div>
+        <div modal-footer>
+            <app-button variant="ghost" (clicked)="closeDeleteModal()" [disabled]="actionLoading()">
+                Cancel
+            </app-button>
+            <app-button variant="danger" (clicked)="deletePatient()" [loading]="actionLoading()">
+                Delete Patient
+            </app-button>
+        </div>
+    </app-modal>
 </div>
