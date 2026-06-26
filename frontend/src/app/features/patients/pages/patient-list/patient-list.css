@@ -1,0 +1,16 @@
+.patient-list {
+    padding: 1rem 0;
+}
+
+.filters {
+    gap: 0.5rem;
+}
+
+.filters .form-check {
+    display: flex;
+    align-items: center;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}

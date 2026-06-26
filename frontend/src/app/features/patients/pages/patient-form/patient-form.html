@@ -1,0 +1,154 @@
+<div class="patient-form">
+    <div class="form-header">
+        <div class="header-left">
+            <app-button variant="ghost" size="sm" (clicked)="goBack()" ariaLabel="Go back to patients list">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i> Back
+            </app-button>
+            <h1 class="form-title">{{ isEdit() ? 'Edit Patient' : 'Add New Patient' }}</h1>
+        </div>
+    </div>
+
+    @if (loading() && !isEdit()) {
+        <div class="loading-container">
+            <app-spinner size="lg" label="Loading patient data..."></app-spinner>
+        </div>
+    }
+
+    @if (error()) {
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+            {{ error() }}
+        </div>
+    }
+
+    @if (!loading() || isEdit()) {
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-content" novalidate>
+            <div class="form-section">
+                <h2 class="section-title">Personal Information</h2>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <app-input
+                            label="Full Name"
+                            type="text"
+                            placeholder="Enter full name"
+                            formControlName="fullName"
+                            [required]="true"
+                            [error]="isFieldInvalid('fullName') ? getFieldError('fullName') : ''"
+                            id="fullName"
+                            name="fullName"
+                            autocomplete="name">
+                        </app-input>
+                    </div>
+                    <div class="form-field">
+                        <app-input
+                            label="Email Address"
+                            type="email"
+                            placeholder="Enter email address"
+                            formControlName="email"
+                            [error]="isFieldInvalid('email') ? getFieldError('email') : ''"
+                            id="email"
+                            name="email"
+                            autocomplete="email">
+                        </app-input>
+                    </div>
+                    <div class="form-field">
+                        <app-input
+                            label="Phone Number"
+                            type="tel"
+                            placeholder="Enter phone number"
+                            formControlName="phone"
+                            [error]="isFieldInvalid('phone') ? getFieldError('phone') : ''"
+                            id="phone"
+                            name="phone"
+                            autocomplete="tel">
+                        </app-input>
+                    </div>
+                    <div class="form-field">
+                        <label for="dateOfBirth" class="form-label">Date of Birth</label>
+                        <input
+                            type="date"
+                            id="dateOfBirth"
+                            class="form-control"
+                            formControlName="dateOfBirth"
+                            name="dateOfBirth"
+                            autocomplete="bday">
+                    </div>
+                    <div class="form-field">
+                        <label for="gender" class="form-label">Gender</label>
+                        <select
+                            id="gender"
+                            class="form-select"
+                            formControlName="gender"
+                            name="gender">
+                            <option value="">Select gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2 class="section-title">Additional Information</h2>
+                <div class="form-grid">
+                    <div class="form-field full-width">
+                        <app-input
+                            label="Address"
+                            type="text"
+                            placeholder="Enter address"
+                            formControlName="address"
+                            [error]="isFieldInvalid('address') ? getFieldError('address') : ''"
+                            id="address"
+                            name="address"
+                            autocomplete="street-address">
+                        </app-input>
+                    </div>
+                    <div class="form-field">
+                        <app-input
+                            label="Referral Source"
+                            type="text"
+                            placeholder="How did they find us?"
+                            formControlName="referralSource"
+                            [error]="isFieldInvalid('referralSource') ? getFieldError('referralSource') : ''"
+                            id="referralSource"
+                            name="referralSource">
+                        </app-input>
+                    </div>
+                    <div class="form-field full-width">
+                        <label for="chiefComplaint" class="form-label">Chief Complaint</label>
+                        <textarea
+                            id="chiefComplaint"
+                            class="form-control"
+                            formControlName="chiefComplaint"
+                            name="chiefComplaint"
+                            rows="3"
+                            placeholder="Describe the main reason for the visit"
+                            [class.is-invalid]="isFieldInvalid('chiefComplaint')"></textarea>
+                        @if (isFieldInvalid('chiefComplaint')) {
+                            <div class="invalid-feedback">{{ getFieldError('chiefComplaint') }}</div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <app-button
+                    type="submit"
+                    variant="primary"
+                    [loading]="loading()"
+                    ariaLabel="Save patient">
+                    {{ isEdit() ? 'Update Patient' : 'Create Patient' }}
+                </app-button>
+                <app-button
+                    type="button"
+                    variant="secondary"
+                    (clicked)="goBack()"
+                    [disabled]="loading()"
+                    ariaLabel="Cancel and go back">
+                    Cancel
+                </app-button>
+            </div>
+        </form>
+    }
+</div>

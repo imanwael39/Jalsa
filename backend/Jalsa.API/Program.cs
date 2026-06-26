@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -81,7 +82,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", policy =>
+    options.AddPolicy("AngularPolicy", policy =>
     {
         policy.WithOrigins("http://localhost:4200")
               .AllowAnyHeader()
@@ -121,16 +122,65 @@ builder.Services.AddHangfireServer();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<Galsa_DBDbContext>();
+    db.Database.Migrate();
+
+    var roleNames = new[] { "Therapist", "Patient", "Admin" };
+    foreach (var roleName in roleNames)
+    {
+        if (!db.Roles.Any(r => r.Name == roleName))
+        {
+            db.Roles.Add(new Jalsa.Domain.Models.Identity.Role
+            {
+                Id = Guid.NewGuid(),
+                Name = roleName
+            });
+        }
+    }
+    db.SaveChanges();
+}
+
 app.UseExceptionHandler(exceptionApp =>
 {
     exceptionApp.Run(async context =>
     {
         var exception = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
+
+        context.Response.ContentType = "application/json";
+
         if (exception is ApiException apiEx)
         {
             context.Response.StatusCode = apiEx.StatusCode;
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsJsonAsync(new { error = apiEx.Message });
+            await context.Response.WriteAsJsonAsync(new
+            {
+                success = false,
+                message = apiEx.Message
+            });
+        }
+        else if (exception is Microsoft.EntityFrameworkCore.DbUpdateException dbEx
+                 && dbEx.InnerException is Microsoft.Data.SqlClient.SqlException sqlEx
+                 && (sqlEx.Number == 2601 || sqlEx.Number == 2627))
+        {
+            context.Response.StatusCode = StatusCodes.Status409Conflict;
+            await context.Response.WriteAsJsonAsync(new
+            {
+                success = false,
+                message = "A duplicate entry violates a unique constraint."
+            });
+        }
+        else
+        {
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+
+            object response;
+            if (app.Environment.IsDevelopment())
+                response = new { success = false, message = exception?.Message ?? "An unexpected error occurred.", detail = exception?.InnerException?.Message };
+            else
+                response = new { success = false, message = "An unexpected error occurred." };
+
+            await context.Response.WriteAsJsonAsync(response);
         }
     });
 });
@@ -141,7 +191,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowFrontend");
+app.UseRouting();
+app.UseCors("AngularPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

@@ -1,0 +1,79 @@
+<div class="patient-list">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Patients</h2>
+        <app-button variant="primary" (clicked)="navigateToNew()" ariaLabel="Add new patient">
+            <i class="bi bi-plus-lg" aria-hidden="true"></i> Add Patient
+        </app-button>
+    </div>
+
+    <div class="filters d-flex flex-wrap gap-2 mb-3">
+        <div class="flex-grow-1">
+            <app-input
+                type="search"
+                placeholder="Search patients..."
+                [(ngModel)]="searchTerm"
+                (ngModelChange)="onSearch($event)"
+                ariaLabel="Search patients"
+            ></app-input>
+        </div>
+        <div class="form-check d-flex align-items-center">
+            <input class="form-check-input" type="checkbox" id="includeArchived"
+                   [(ngModel)]="includeArchived"
+                   (ngModelChange)="onToggleArchived()">
+            <label class="form-check-label ms-2" for="includeArchived">Show Archived</label>
+        </div>
+    </div>
+
+    @if (error()) {
+        <div class="alert alert-danger" role="alert">{{ error() }}</div>
+    }
+
+    <div class="table-responsive">
+        <app-table
+            [data]="patients()"
+            [columns]="columns"
+            [loading]="loading()"
+            emptyMessage="No patients found"
+            (rowClick)="onRowClick($event)"
+        >
+            <ng-template appColumnCell="dateOfBirth" let-row>
+                {{ formatDate(row.dateOfBirth) }}
+            </ng-template>
+            <ng-template appColumnCell="status" let-row>
+                <span class="badge" [class.bg-success]="row.status === 'Active'" [class.bg-danger]="row.status === 'Archived'">
+                    {{ row.status }}
+                </span>
+            </ng-template>
+            <ng-template appColumnCell="actions" let-row>
+                <div class="d-flex gap-1 justify-content-center">
+                    <app-button variant="secondary" size="sm" (clicked)="navigateToView(row.id)" ariaLabel="View patient">
+                        <i class="bi bi-eye" aria-hidden="true"></i>
+                    </app-button>
+                    <app-button variant="primary" size="sm" (clicked)="navigateToEdit(row.id)" ariaLabel="Edit patient">
+                        <i class="bi bi-pencil" aria-hidden="true"></i>
+                    </app-button>
+                    @if (row.status === 'Active') {
+                        <app-button variant="danger" size="sm" (clicked)="archivePatient(row.id)" ariaLabel="Archive patient">
+                            <i class="bi bi-archive" aria-hidden="true"></i>
+                        </app-button>
+                    } @else {
+                        <app-button variant="secondary" size="sm" (clicked)="restorePatient(row.id)" ariaLabel="Restore patient">
+                            <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                        </app-button>
+                    }
+                </div>
+            </ng-template>
+        </app-table>
+    </div>
+
+    @if (totalItems > 0) {
+        <div class="mt-3">
+            <app-pagination
+                [totalItems]="totalItems"
+                [pageSize]="pageSize"
+                [currentPage]="currentPage"
+                (pageChange)="onPageChange($event)"
+            ></app-pagination>
+        </div>
+    }
+</div>
