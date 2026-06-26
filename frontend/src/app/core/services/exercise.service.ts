@@ -4,9 +4,10 @@ import { HttpClientService } from '../api/http-client.service';
 import { API } from '../api/api-endpoints';
 import {
     Exercise,
-    ExerciseAssignment,
-    AssignExerciseRequest,
-    UpdateExerciseStatusRequest,
+    CreateExerciseRequest,
+    UpdateExerciseRequest,
+    ExerciseLog,
+    LogExerciseRequest,
 } from '../models';
 
 @Injectable({
@@ -19,15 +20,39 @@ export class ExerciseService {
         return this.http.get<Exercise[]>(API.exercises.base);
     }
 
-    getPatientExercises(patientId: string): Observable<ExerciseAssignment[]> {
-        return this.http.get<ExerciseAssignment[]>(API.exercises.byPatient(patientId));
+    getExercise(id: string): Observable<Exercise> {
+        return this.http.get<Exercise>(`${API.exercises.base}/${id}`);
     }
 
-    assignExercise(data: AssignExerciseRequest): Observable<ExerciseAssignment> {
-        return this.http.post<ExerciseAssignment>(API.exercises.assign, data);
+    getExercisesByPatient(patientId: string): Observable<Exercise[]> {
+        return this.http.get<Exercise[]>(API.exercises.byPatient(patientId));
     }
 
-    updateStatus(id: string, data: UpdateExerciseStatusRequest): Observable<void> {
-        return this.http.put<void>(API.exercises.status(id), data);
+    createExercise(data: CreateExerciseRequest): Observable<Exercise> {
+        return this.http.post<Exercise>(API.exercises.base, data);
+    }
+
+    updateExercise(id: string, data: UpdateExerciseRequest): Observable<Exercise> {
+        return this.http.put<Exercise>(`${API.exercises.base}/${id}`, data);
+    }
+
+    deleteExercise(id: string): Observable<void> {
+        return this.http.delete<void>(`${API.exercises.base}/${id}`);
+    }
+
+    extendDueDate(id: string, newDueDate: string): Observable<void> {
+        return this.http.put<void>(`${API.exercises.base}/${id}/extend`, { newDueDate });
+    }
+
+    getMyExercises(): Observable<Exercise[]> {
+        return this.http.get<Exercise[]>(API.exercises.myExercises);
+    }
+
+    logCompletion(data: LogExerciseRequest): Observable<ExerciseLog> {
+        return this.http.post<ExerciseLog>(API.exercises.log, data);
+    }
+
+    getMyLogs(): Observable<ExerciseLog[]> {
+        return this.http.get<ExerciseLog[]>(API.exercises.myLogs);
     }
 }
