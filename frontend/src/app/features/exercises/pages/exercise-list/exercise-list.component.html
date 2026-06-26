@@ -1,4 +1,39 @@
 <div class="exercise-list">
-  <h2>Exercises</h2>
-  <p class="text-muted">Exercise list coming soon.</p>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Exercises</h2>
+    <app-button variant="primary" (clicked)="navigateToAssign()" ariaLabel="Assign new exercise">
+      <i class="bi bi-plus-lg" aria-hidden="true"></i> Assign Exercise
+    </app-button>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-danger" role="alert">{{ error() }}</div>
+  }
+
+  <div class="table-responsive">
+    <app-table
+      [data]="exercises()"
+      [columns]="columns"
+      [loading]="loading()"
+      emptyMessage="No exercises found."
+    >
+      <ng-template appColumnCell="description" let-row>
+        {{ row.description | truncate: 80 }}
+      </ng-template>
+      <ng-template appColumnCell="frequency" let-row>
+        {{ row.frequency || '-' }}
+      </ng-template>
+      <ng-template appColumnCell="status" let-row>
+        <span class="badge"
+          [class.bg-secondary]="row.status === 'NotStarted'"
+          [class.bg-warning]="row.status === 'InProgress'"
+          [class.bg-success]="row.status === 'Completed'">
+          {{ row.status }}
+        </span>
+      </ng-template>
+      <ng-template appColumnCell="dueDate" let-row>
+        {{ formatDate(row.dueDate) }}
+      </ng-template>
+    </app-table>
+  </div>
 </div>
