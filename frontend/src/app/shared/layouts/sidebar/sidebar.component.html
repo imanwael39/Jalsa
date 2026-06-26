@@ -1,14 +1,14 @@
-<aside class="sidebar" [class.collapsed]="collapsed">
+<aside class="sidebar" [class.collapsed]="collapsed()">
     <div class="sidebar-header">
         <div class="sidebar-brand">
-            @if (!collapsed) {
+            @if (!collapsed()) {
                 <span>جلسة</span>
             } @else {
                 <span>ج</span>
             }
         </div>
-        <button class="toggle-btn" (click)="toggleSidebar()" [attr.aria-label]="collapsed ? 'توسيع الشريط الجانبي' : 'طي الشريط الجانبي'">
-            <i class="bi" [class.bi-chevron-left]="!collapsed" [class.bi-chevron-right]="collapsed"></i>
+        <button class="toggle-btn" (click)="toggleSidebar()" [attr.aria-label]="collapsed() ? 'توسيع الشريط الجانبي' : 'طي الشريط الجانبي'">
+            <i class="bi" [class.bi-chevron-left]="!collapsed()" [class.bi-chevron-right]="collapsed()"></i>
         </button>
     </div>
     <nav class="sidebar-nav" aria-label="التنقل الرئيسي">
@@ -21,7 +21,7 @@
                        [routerLinkActiveOptions]="{ exact: false }"
                        [attr.aria-label]="item.label">
                         <i class="bi {{ item.icon }}"></i>
-                        @if (!collapsed) {
+                        @if (!collapsed()) {
                             <span>{{ item.label }}</span>
                         }
                     </a>
