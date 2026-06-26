@@ -1,0 +1,2622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jalsa – Phase 5: Authentication – Expanded Implementation Handbook</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+            padding: 30px 20px;
+            line-height: 1.7;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            padding: 40px 45px;
+        }
+        h1 {
+            font-size: 2.4rem;
+            color: #0f172a;
+            border-bottom: 4px solid #3b82f6;
+            padding-bottom: 18px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        h1 small {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #64748b;
+            margin-left: auto;
+        }
+        .phase-banner {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 20px 28px;
+            margin-bottom: 32px;
+            border-left: 8px solid #3b82f6;
+        }
+        .phase-banner h2 {
+            margin: 0 0 8px 0;
+            font-size: 1.6rem;
+            color: #0f172a;
+            background: none;
+            padding: 0;
+            border-left: none;
+        }
+        .phase-banner p {
+            margin: 0;
+            color: #475569;
+        }
+        .phase-banner .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px 40px;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+        .phase-banner .meta span {
+            font-weight: 500;
+            color: #0f172a;
+        }
+
+        .task-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+        .task-header {
+            background: #f8fafc;
+            padding: 16px 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.15s;
+            user-select: none;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .task-header:hover {
+            background: #f1f5f9;
+        }
+        .task-header .task-id {
+            font-weight: 700;
+            color: #3b82f6;
+            margin-right: 12px;
+            font-size: 1.05rem;
+        }
+        .task-header .task-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .task-header .task-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .task-header .task-badges .tag {
+            font-size: 0.7rem;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+        .task-header .chevron {
+            transition: transform 0.25s;
+            font-size: 1.3rem;
+            color: #94a3b8;
+            margin-left: 12px;
+        }
+        .task-header.open .chevron {
+            transform: rotate(180deg);
+        }
+
+        .task-body {
+            padding: 0 24px 24px;
+            display: none;
+            overflow: hidden;
+        }
+        .task-body.open {
+            display: block;
+        }
+
+        .task-body h3 {
+            font-size: 1.15rem;
+            margin-top: 22px;
+            margin-bottom: 8px;
+            color: #0f172a;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 4px;
+        }
+        .task-body h4 {
+            font-size: 1rem;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            color: #334155;
+        }
+        .task-body p {
+            margin-bottom: 8px;
+        }
+        .task-body ul,
+        .task-body ol {
+            padding-left: 24px;
+            margin-bottom: 10px;
+        }
+        .task-body li {
+            margin-bottom: 3px;
+        }
+        .task-body .field-label {
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+        .checklist li {
+            padding: 3px 0 3px 30px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') left center no-repeat;
+            background-size: 18px;
+        }
+
+        .pitfall-box {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .tip-box {
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .arch-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #e2e8f0;
+            padding: 1px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-right: 4px;
+        }
+        .tag-blue {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .tag-green {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .tag-amber {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .tag-red {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .tag-purple {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+        .tag-slate {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        .tag-indigo {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .flow-diagram {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin: 8px 0 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .flow-diagram .arrow {
+            color: #94a3b8;
+            margin: 0 6px;
+        }
+        .flow-diagram .step {
+            color: #0f172a;
+            font-weight: 500;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            margin: 10px 0 16px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            background: #fff;
+        }
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+            text-align: left;
+            padding: 8px 14px;
+            border-bottom: 2px solid #e2e8f0;
+            color: #0f172a;
+        }
+        td {
+            padding: 8px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .hr {
+            border: none;
+            border-top: 2px dashed #e2e8f0;
+            margin: 32px 0;
+        }
+
+        .code-block {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin: 6px 0 12px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .code-block .comment {
+            color: #94a3b8;
+        }
+        .code-block .keyword {
+            color: #f472b6;
+        }
+        .code-block .string {
+            color: #34d399;
+        }
+        .code-block .func {
+            color: #60a5fa;
+        }
+
+        .subtask {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 12px 18px;
+            margin: 10px 0;
+            border-left: 4px solid #3b82f6;
+        }
+        .subtask strong {
+            color: #0f172a;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 16px;
+            }
+            h1 {
+                font-size: 1.8rem;
+                flex-wrap: wrap;
+            }
+            .task-header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .task-body {
+                padding: 0 16px 16px;
+            }
+            .phase-banner {
+                padding: 16px;
+            }
+            .phase-banner .meta {
+                flex-direction: column;
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <h1>
+            🔐 Jalsa – Phase 5: Authentication
+            <small>Expanded Implementation Handbook · 7 Tasks · 35+ Subtasks</small>
+        </h1>
+
+        <!-- ====== PHASE BANNER ====== -->
+        <div class="phase-banner">
+            <h2>🔐 Phase 5 – Authentication</h2>
+            <p><strong>Purpose:</strong> Build the complete authentication system for the Jalsa platform. This includes the AuthService with JWT handling and Signals, Login and Register components, Reset Password flow, Profile management, HTTP interceptors for token injection and error handling, and functional route guards. This phase secures the application and provides users with a seamless login and registration experience.</p>
+            <div class="meta">
+                <span>📋 Tasks: 7</span>
+                <span>⏱️ Total Effort: ~32 hours</span>
+                <span>👤 Owners: M3 (Frontend Lead), M4 (Frontend Developer)</span>
+                <span>🔗 Dependencies: Phase 2 (Core Architecture), Phase 3 (RTL & Design System), Phase 4 (Shared Components)</span>
+                <span>🎯 Deliverable: Complete authentication system with login, register, reset password, profile, guards, and interceptors</span>
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 1: AUTH ROUTES SETUP                                             -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-AUTH-001</span><span class="task-name">Auth Routes Setup (Standalone)</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">3h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-AUTH-001</li>
+                    <li><strong>Task Name:</strong> Auth Routes Setup (Standalone)</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-SETUP-004 (Folder structure), FE-SETUP-005 (App routing)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 3 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create the authentication feature routes with lazy loading, define the route structure for login, register, reset password, and profile, and set up the auth layout component that wraps all auth pages.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Authentication routes are the entry point to the application. They must be properly structured to handle all authentication flows and redirect unauthenticated users to login.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Set up <code>features/auth/auth.routes.ts</code> with lazy loading, create a dedicated auth layout for pages that don't show the main sidebar, and register the routes in <code>app.routes.ts</code>.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular lazy loading with Standalone components.</li>
+                    <li>Knowledge of route definitions and child routes.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-SETUP-004:</strong> <code>features/auth/</code> folder exists.</li>
+                    <li><strong>FE-SETUP-005:</strong> <code>app.routes.ts</code> is configured.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>None.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>features/auth/auth.routes.ts</code> with full route configuration.</li>
+                    <li><code>shared/layouts/auth-layout/auth-layout.component.ts</code> (Standalone).</li>
+                    <li>Updated <code>app.routes.ts</code> with lazy loading for auth.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Create Auth Layout Component</h4>
+                <p><strong>What to do:</strong> Generate a layout component for authentication pages (login, register, etc.) that doesn't include the main sidebar.</p>
+                <p><strong>Why it is required:</strong> Auth pages should be simple, centered, and not show the application sidebar.</p>
+
+                <div class="code-block">
+                    ng g c shared/layouts/auth-layout --standalone --skip-tests
+                </div>
+
+                <p>Template (<code>auth-layout.component.html</code>):</p>
+                <div class="code-block">
+                    &lt;div class="auth-layout"&gt;
+                        &lt;div class="auth-container"&gt;
+                            &lt;div class="auth-brand"&gt;
+                                &lt;h1&gt;جلسة&lt;/h1&gt;
+                                &lt;p&gt;Jalsa Platform&lt;/p&gt;
+                            &lt;/div&gt;
+                            &lt;div class="auth-card"&gt;
+                                &lt;ng-content&gt;&lt;/ng-content&gt;
+                            &lt;/div&gt;
+                            &lt;div class="auth-footer"&gt;
+                                &copy; {{ currentYear }} Jalsa. All rights reserved.
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                </div>
+
+                <p>Styles (<code>auth-layout.component.scss</code>): Use flexbox to center content.</p>
+
+                <h4>Step 2: Create Auth Routes File</h4>
+                <p><strong>What to do:</strong> Define routes for all auth pages.</p>
+
+                <div class="code-block">
+                    <span class="comment">// features/auth/auth.routes.ts</span>
+                    <span class="keyword">import</span> { Routes } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+                    <span class="keyword">import</span> { AuthLayoutComponent } <span class="keyword">from</span> <span class="string">'../../shared/layouts/auth-layout/auth-layout.component'</span>;
+
+                    <span class="comment">// Lazy-loaded components (will be created in later tasks)</span>
+                    export <span class="keyword">const</span> AUTH_ROUTES: Routes = [
+                        {
+                            path: '',
+                            component: AuthLayoutComponent,
+                            children: [
+                                {
+                                    path: 'login',
+                                    loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent),
+                                },
+                                {
+                                    path: 'register',
+                                    loadComponent: () => import('./pages/register/register.component').then(m => m.RegisterComponent),
+                                },
+                                {
+                                    path: 'forgot-password',
+                                    loadComponent: () => import('./pages/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent),
+                                },
+                                {
+                                    path: 'reset-password',
+                                    loadComponent: () => import('./pages/reset-password/reset-password.component').then(m => m.ResetPasswordComponent),
+                                },
+                                {
+                                    path: 'profile',
+                                    loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent),
+                                },
+                                {
+                                    path: '',
+                                    redirectTo: 'login',
+                                    pathMatch: 'full',
+                                },
+                            ],
+                        },
+                    ];
+                </div>
+
+                <h4>Step 3: Register Auth Routes in App Routes</h4>
+                <p>Add lazy loading in <code>app.routes.ts</code>.</p>
+
+                <div class="code-block">
+                    <span class="comment">// app.routes.ts</span>
+                    {
+                        path: 'auth',
+                        loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES),
+                    },
+                    <span class="comment">// Redirect root to auth</span>
+                    {
+                        path: '',
+                        redirectTo: 'auth/login',
+                        pathMatch: 'full',
+                    },
+                    <span class="comment">// Catch-all redirect to auth/login</span>
+                    {
+                        path: '**',
+                        redirectTo: 'auth/login',
+                    },
+                </div>
+
+                <h4>Step 4: Create Placeholder Components</h4>
+                <p>Generate placeholder components for all auth pages (they will be implemented in later tasks).</p>
+
+                <div class="code-block">
+                    ng g c features/auth/pages/login --standalone --skip-tests
+                    ng g c features/auth/pages/register --standalone --skip-tests
+                    ng g c features/auth/pages/forgot-password --standalone --skip-tests
+                    ng g c features/auth/pages/reset-password --standalone --skip-tests
+                    ng g c features/auth/pages/profile --standalone --skip-tests
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>features/auth/auth.routes.ts</code></li>
+                    <li><code>shared/layouts/auth-layout/auth-layout.component.ts</code></li>
+                    <li><code>shared/layouts/auth-layout/auth-layout.component.html</code></li>
+                    <li><code>shared/layouts/auth-layout/auth-layout.component.scss</code></li>
+                    <li>Placeholder components in <code>features/auth/pages/</code>.</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g c shared/layouts/auth-layout --standalone --skip-tests
+                    ng g c features/auth/pages/login --standalone --skip-tests
+                    ng g c features/auth/pages/register --standalone --skip-tests
+                    ng g c features/auth/pages/forgot-password --standalone --skip-tests
+                    ng g c features/auth/pages/reset-password --standalone --skip-tests
+                    ng g c features/auth/pages/profile --standalone --skip-tests
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Lazy loading with <code>loadChildren</code></li>
+                    <li>Standalone components</li>
+                    <li>Child routes</li>
+                    <li>Componentless routes</li>
+                </ul>
+
+                <h3>Tools/Libraries Required</h3>
+                <ul>
+                    <li>Angular Router</li>
+                </ul>
+
+                <h3>Angular Concepts Required</h3>
+                <ul>
+                    <li><code>loadChildren</code> with <code>import()</code></li>
+                    <li><code>loadComponent</code> for lazy loading Standalone components</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Run <code>ng serve</code> and navigate to <code>/auth/login</code>.</li>
+                    <li>Verify the auth layout renders.</li>
+                    <li>Check that lazy loading works (network tab).</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Auth routes configured with lazy loading.</li>
+                    <li>Auth layout component created.</li>
+                    <li>Placeholder components generated.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Using <code>loadChildren</code> incorrectly for Standalone routes.
+                    <br /><strong>Fix:</strong> Use <code>loadChildren: () => import('./path').then(m => m.MODULE_ROUTES)</code>.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 2:</strong> Forgetting to add the auth layout component to the route.
+                    <br /><strong>Fix:</strong> Wrap all auth pages with <code>component: AuthLayoutComponent</code>.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>If user is already authenticated, they should be redirected to dashboard instead of login.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Auth routes are configured and lazy‑loaded.</li>
+                    <li>Auth layout renders correctly.</li>
+                    <li>All placeholder components are created.</li>
+                </ul>
+
+                <h3>Frontend Architecture Notes</h3>
+                <ul>
+                    <li>Auth pages use a separate layout without the sidebar for a clean login experience.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Auth routes are at <code>/auth</code>. Add new auth pages as children.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 2: AUTH SERVICE                                                  -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-AUTH-002</span><span class="task-name">Auth Service with Signals</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">6h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-AUTH-002</li>
+                    <li><strong>Task Name:</strong> Auth Service with Signals</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-CORE-001 (HttpClientService), FE-CORE-002 (Models), FE-CORE-003 (NotificationService)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 6 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create the authentication service that handles login, register, logout, token storage, session restoration, and user state using Angular Signals. The service should be the single source of truth for authentication state.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Centralises all authentication logic, manages user session state, and provides reactive user data to components. This ensures consistent authentication behaviour across the application.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use <code>HttpClientService</code> for API calls, <code>jwt-decode</code> for token parsing, <code>localStorage</code> for token storage, and <code>signal</code> for reactive user state.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular Signals.</li>
+                    <li>Knowledge of JWT tokens and <code>jwt-decode</code> library.</li>
+                    <li>Understanding of HttpClient and observables.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-CORE-001:</strong> HttpClientService for API calls.</li>
+                    <li><strong>FE-CORE-002:</strong> User model interfaces.</li>
+                    <li><strong>FE-CORE-003:</strong> NotificationService for user feedback.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>API endpoints from <code>api-endpoints.ts</code>.</li>
+                    <li>User model interface.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>core/services/auth.service.ts</code> with full implementation.</li>
+                    <li>Methods: <code>login()</code>, <code>register()</code>, <code>logout()</code>, <code>refreshToken()</code>, <code>getProfile()</code>, <code>updateProfile()</code>, <code>changePassword()</code>, <code>forgotPassword()</code>, <code>resetPassword()</code>.</li>
+                    <li>Signal: <code>currentUser</code> (readonly) for reactive user state.</li>
+                    <li>Methods: <code>isAuthenticated()</code>, <code>hasRole()</code>, <code>hasAnyRole()</code>, <code>getToken()</code>.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Generate the Service</h4>
+                <div class="code-block">
+                    ng g s core/services/auth --skip-tests
+                </div>
+
+                <h4>Step 2: Install jwt-decode</h4>
+                <div class="code-block">
+                    npm install jwt-decode
+                </div>
+
+                <h4>Step 3: Implement AuthService</h4>
+
+                <div class="code-block">
+                    <span class="comment">// core/services/auth.service.ts</span>
+                    <span class="keyword">import</span> { Injectable, signal, computed, effect } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { Observable, tap, catchError, throwError } <span class="keyword">from</span> <span class="string">'rxjs'</span>;
+                    <span class="keyword">import</span> { HttpClientService } <span class="keyword">from</span> <span class="string">'../api/http-client.service'</span>;
+                    <span class="keyword">import</span> { API } <span class="keyword">from</span> <span class="string">'../api/api-endpoints'</span>;
+                    <span class="keyword">import</span> { User, LoginRequest, LoginResponse, RegisterRequest, UpdateProfileRequest, ChangePasswordRequest, ForgotPasswordRequest, ResetPasswordRequest } <span class="keyword">from</span> <span class="string">'../models'</span>;
+                    <span class="keyword">import</span> { jwtDecode } <span class="keyword">from</span> <span class="string">'jwt-decode'</span>;
+                    <span class="keyword">import</span> { NotificationService } <span class="keyword">from</span> <span class="string">'./notification.service'</span>;
+
+                    <span class="keyword">interface</span> DecodedToken {
+                        sub: string;
+                        email: string;
+                        firstName: string;
+                        lastName: string;
+                        roles: string[];
+                        exp: number;
+                        iat: number;
+                    }
+
+                    <span class="keyword">@Injectable</span>({
+                        providedIn: <span class="string">'root'</span>,
+                    })
+                    export <span class="keyword">class</span> AuthService {
+                        private readonly TOKEN_KEY = <span class="string">'jalsa_token'</span>;
+
+                        <span class="comment">// Private signals</span>
+                        private userSignal = signal&lt;User | null&gt;(<span class="keyword">null</span>);
+                        private loadingSignal = signal&lt;boolean&gt;(false);
+
+                        <span class="comment">// Public readonly signals</span>
+                        readonly currentUser = this.userSignal.asReadonly();
+                        readonly isLoading = this.loadingSignal.asReadonly();
+
+                        <span class="comment">// Computed: is authenticated</span>
+                        readonly isAuthenticated = computed(() => this.userSignal() !== <span class="keyword">null</span> && this.getToken() !== <span class="keyword">null</span>);
+
+                        constructor(
+                            private http: HttpClientService,
+                            private notification: NotificationService,
+                        ) {
+                            <span class="comment">// Restore session on app initialization</span>
+                            this.restoreSession();
+
+                            <span class="comment">// Effect to log user changes (optional)</span>
+                            effect(() => {
+                                const user = this.userSignal();
+                                if (user) {
+                                    console.log('User authenticated:', user.email);
+                                } else {
+                                    console.log('User not authenticated');
+                                }
+                            });
+                        }
+
+                        <span class="comment">// ============================================================</span>
+                        <span class="comment">// Public API Methods</span>
+                        <span class="comment">// ============================================================</span>
+
+                        login(credentials: LoginRequest): Observable&lt;LoginResponse&gt; {
+                            this.loadingSignal.set(true);
+                            return this.http.post&lt;LoginResponse&gt;(API.auth.login, credentials).pipe(
+                                tap(response => {
+                                    this.handleAuthentication(response.token);
+                                    this.notification.success('Welcome back!');
+                                }),
+                                catchError((error) => {
+                                    this.loadingSignal.set(false);
+                                    <span class="keyword">return</span> throwError(() => error);
+                                }),
+                            );
+                        }
+
+                        register(userData: RegisterRequest): Observable&lt;any&gt; {
+                            this.loadingSignal.set(true);
+                            return this.http.post(API.auth.register, userData).pipe(
+                                tap(() => {
+                                    this.loadingSignal.set(false);
+                                    this.notification.success('Account created successfully! Please log in.');
+                                }),
+                                catchError((error) => {
+                                    this.loadingSignal.set(false);
+                                    <span class="keyword">return</span> throwError(() => error);
+                                }),
+                            );
+                        }
+
+                        logout(): void {
+                            localStorage.removeItem(this.TOKEN_KEY);
+                            this.userSignal.set(<span class="keyword">null</span>);
+                            this.notification.info('You have been logged out.');
+                        }
+
+                        refreshToken(): Observable&lt;LoginResponse&gt; {
+                            <span class="keyword">return</span> this.http.post&lt;LoginResponse&gt;(API.auth.refresh, {}).pipe(
+                                tap(response => {
+                                    this.handleAuthentication(response.token);
+                                }),
+                            );
+                        }
+
+                        getProfile(): Observable&lt;User&gt; {
+                            <span class="keyword">return</span> this.http.get&lt;User&gt;(API.auth.profile);
+                        }
+
+                        updateProfile(data: UpdateProfileRequest): Observable&lt;User&gt; {
+                            <span class="keyword">return</span> this.http.put&lt;User&gt;(API.auth.profile, data).pipe(
+                                tap(user => {
+                                    this.userSignal.set(user);
+                                    this.notification.success('Profile updated successfully!');
+                                }),
+                            );
+                        }
+
+                        changePassword(data: ChangePasswordRequest): Observable&lt;any&gt; {
+                            <span class="keyword">return</span> this.http.post(API.auth.changePassword, data).pipe(
+                                tap(() => {
+                                    this.notification.success('Password changed successfully!');
+                                }),
+                            );
+                        }
+
+                        forgotPassword(email: string): Observable&lt;any&gt; {
+                            <span class="keyword">return</span> this.http.post(API.auth.forgotPassword, { email }).pipe(
+                                tap(() => {
+                                    this.notification.success('Password reset link sent to your email.');
+                                }),
+                            );
+                        }
+
+                        resetPassword(data: ResetPasswordRequest): Observable&lt;any&gt; {
+                            <span class="keyword">return</span> this.http.post(API.auth.resetPassword, data).pipe(
+                                tap(() => {
+                                    this.notification.success('Password reset successfully! Please log in.');
+                                }),
+                            );
+                        }
+
+                        <span class="comment">// ============================================================</span>
+                        <span class="comment">// Token &amp; Session Management</span>
+                        <span class="comment">// ============================================================</span>
+
+                        getToken(): string | null {
+                            return localStorage.getItem(this.TOKEN_KEY);
+                        }
+
+                        private setToken(token: string): void {
+                            localStorage.setItem(this.TOKEN_KEY, token);
+                        }
+
+                        private handleAuthentication(token: string): void {
+                            this.setToken(token);
+                            const user = this.decodeToken(token);
+                            if (user) {
+                                this.userSignal.set(user);
+                            }
+                            this.loadingSignal.set(false);
+                        }
+
+                        private decodeToken(token: string): User | null {
+                            try {
+                                const decoded = jwtDecode&lt;DecodedToken&gt;(token);
+                                <span class="keyword">return</span> {
+                                    id: decoded.sub,
+                                    email: decoded.email,
+                                    firstName: decoded.firstName,
+                                    lastName: decoded.lastName,
+                                    roles: decoded.roles || [],
+                                };
+                            } catch (error) {
+                                console.error('Failed to decode token:', error);
+                                <span class="keyword">return</span> null;
+                            }
+                        }
+
+                        private restoreSession(): void {
+                            const token = this.getToken();
+                            if (token) {
+                                const user = this.decodeToken(token);
+                                if (user) {
+                                    this.userSignal.set(user);
+                                    <span class="comment">// Optionally check token expiration here</span>
+                                } else {
+                                    this.logout();
+                                }
+                            }
+                        }
+
+                        <span class="comment">// ============================================================</span>
+                        <span class="comment">// Role &amp; Permission Checks</span>
+                        <span class="comment">// ============================================================</span>
+
+                        hasRole(role: string): boolean {
+                            const user = this.userSignal();
+                            return user?.roles?.includes(role) ?? false;
+                        }
+
+                        hasAnyRole(roles: string[]): boolean {
+                            const user = this.userSignal();
+                            if (!user) return false;
+                            return roles.some(role => user.roles.includes(role));
+                        }
+
+                        <span class="comment">// ============================================================</span>
+                        <span class="comment">// Utility</span>
+                        <span class="comment">// ============================================================</span>
+
+                        getCurrentUser(): User | null {
+                            return this.userSignal();
+                        }
+                    }
+                </div>
+
+                <h4>Step 4: Add to Models</h4>
+                <p>Ensure <code>user.model.ts</code> includes all necessary request/response types.</p>
+
+                <div class="code-block">
+                    <span class="comment">// core/models/user.model.ts</span>
+                    export interface User {
+                        id: string;
+                        email: string;
+                        firstName: string;
+                        lastName: string;
+                        roles: string[];
+                    }
+
+                    export interface LoginRequest {
+                        email: string;
+                        password: string;
+                    }
+
+                    export interface LoginResponse {
+                        token: string;
+                    }
+
+                    export interface RegisterRequest {
+                        firstName: string;
+                        lastName: string;
+                        email: string;
+                        password: string;
+                        role?: string;
+                    }
+
+                    export interface UpdateProfileRequest {
+                        firstName?: string;
+                        lastName?: string;
+                        email?: string;
+                    }
+
+                    export interface ChangePasswordRequest {
+                        currentPassword: string;
+                        newPassword: string;
+                    }
+
+                    export interface ForgotPasswordRequest {
+                        email: string;
+                    }
+
+                    export interface ResetPasswordRequest {
+                        token: string;
+                        newPassword: string;
+                    }
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>core/services/auth.service.ts</code></li>
+                    <li>Update <code>core/models/user.model.ts</code>.</li>
+                    <li>Update <code>core/models/index.ts</code>.</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g s core/services/auth --skip-tests
+                    npm install jwt-decode
+                </div>
+
+                <h3>Code Flow</h3>
+                <div class="flow-diagram">
+                    <span class="step">Component</span> <span class="arrow">→</span>
+                    <span class="step">AuthService.login()</span> <span class="arrow">→</span>
+                    <span class="step">HttpClientService.post()</span> <span class="arrow">→</span>
+                    <span class="step">API</span> <span class="arrow">↕</span>
+                    <span class="step">Token stored, user signal updated</span>
+                </div>
+
+                <h3>State Flow</h3>
+                <div class="flow-diagram">
+                    <span class="step">Login successful</span> <span class="arrow">→</span>
+                    <span class="step">setToken()</span> <span class="arrow">→</span>
+                    <span class="step">decodeToken()</span> <span class="arrow">→</span>
+                    <span class="step">userSignal.set()</span> <span class="arrow">→</span>
+                    <span class="step">Components react via computed signals</span>
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Angular Signals (<code>signal</code>, <code>computed</code>, <code>effect</code>)</li>
+                    <li>JWT tokens and decoding</li>
+                    <li>RxJS operators (<code>tap</code>, <code>catchError</code>)</li>
+                    <li>localStorage for client-side storage</li>
+                </ul>
+
+                <h3>Tools/Libraries Required</h3>
+                <ul>
+                    <li>jwt-decode</li>
+                    <li>RxJS</li>
+                </ul>
+
+                <h3>Security Considerations</h3>
+                <ul>
+                    <li>Token stored in localStorage (XSS risk – mitigated by CSP).</li>
+                    <li>Token expiration should be handled (refresh token logic).</li>
+                    <li>Never log tokens in console.</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Unit test login: mock HttpClientService, verify token is stored.</li>
+                    <li>Unit test logout: verify token is removed and user signal is null.</li>
+                    <li>Test role checking methods.</li>
+                    <li>Test session restoration on app load.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>AuthService fully implemented.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not handling token expiration or invalid tokens.
+                    <br /><strong>Fix:</strong> Check <code>exp</code> claim and refresh or logout.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 2:</strong> Using <code>localStorage</code> directly without a constant key.
+                    <br /><strong>Fix:</strong> Use a constant for the token key.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 3:</strong> Not setting <code>loadingSignal</code> to false on error.
+                    <br /><strong>Fix:</strong> Always set loading state in <code>catchError</code>.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>Token is invalid or expired → logout and redirect to login.</li>
+                    <li>User closes and reopens the app → session should be restored.</li>
+                    <li>Multiple tabs → token is shared, but state is per‑tab (consider using storage events).</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>AuthService is implemented and works with all methods.</li>
+                    <li>Token storage and session restoration work.</li>
+                    <li>Signals provide reactive user state.</li>
+                </ul>
+
+                <h3>Frontend Architecture Notes</h3>
+                <ul>
+                    <li>AuthService is provided in root and is a singleton.</li>
+                    <li>All authentication logic is encapsulated in this service.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use <code>authService.currentUser()</code> to access user state.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 3: LOGIN COMPONENT                                               -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-AUTH-003</span><span class="task-name">Login Component</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-AUTH-003</li>
+                    <li><strong>Task Name:</strong> Login Component</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-AUTH-002 (AuthService), FE-SHARED-002 (Button), FE-SHARED-003 (Input)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Build the login page with a reactive form, validation, loading state, error handling, and redirect to the dashboard after successful authentication.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Allow therapists and patients to log in to the application. This is the primary entry point for users.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use <code>FormBuilder</code> with validation (email, required), call <code>AuthService.login()</code>, handle success (navigate to dashboard) and error (display messages), and manage loading state.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Reactive Forms.</li>
+                    <li>Knowledge of Router navigation.</li>
+                    <li>Shared components (Button, Input).</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-AUTH-002:</strong> AuthService with login method.</li>
+                    <li><strong>FE-SHARED-002:</strong> Button component.</li>
+                    <li><strong>FE-SHARED-003:</strong> Input component.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Query param <code>returnUrl</code> for redirect after login.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>features/auth/pages/login/login.component.ts</code></li>
+                    <li><code>login.component.html</code></li>
+                    <li><code>login.component.scss</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Generate Component</h4>
+                <div class="code-block">
+                    ng g c features/auth/pages/login --standalone --skip-tests
+                </div>
+
+                <h4>Step 2: Implement Login Component</h4>
+
+                <div class="code-block">
+                    <span class="comment">// login.component.ts</span>
+                    <span class="keyword">import</span> { Component, inject, signal } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { FormBuilder, ReactiveFormsModule, Validators } <span class="keyword">from</span> <span class="string">'@angular/forms'</span>;
+                    <span class="keyword">import</span> { Router, ActivatedRoute } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+                    <span class="keyword">import</span> { AuthService } <span class="keyword">from</span> <span class="string">'../../../../core/services/auth.service'</span>;
+                    <span class="keyword">import</span> { ButtonComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/button/button.component'</span>;
+                    <span class="keyword">import</span> { InputComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/input/input.component'</span>;
+                    <span class="keyword">import</span> { RouterLink } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-login',
+                        standalone: true,
+                        imports: [ReactiveFormsModule, ButtonComponent, InputComponent, RouterLink],
+                        templateUrl: './login.component.html',
+                        styleUrls: ['./login.component.scss'],
+                    })
+                    export <span class="keyword">class</span> LoginComponent {
+                        private fb = inject(FormBuilder);
+                        private authService = inject(AuthService);
+                        private router = inject(Router);
+                        private route = inject(ActivatedRoute);
+
+                        loading = signal(false);
+                        loginError = signal&lt;string | null&gt;(<span class="keyword">null</span>);
+
+                        loginForm = this.fb.group({
+                            email: ['', [Validators.required, Validators.email]],
+                            password: ['', [Validators.required, Validators.minLength(6)]],
+                        });
+
+                        get returnUrl(): string {
+                            return this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+                        }
+
+                        onSubmit(): void {
+                            if (this.loginForm.invalid) {
+                                this.loginForm.markAllAsTouched();
+                                return;
+                            }
+
+                            this.loading.set(true);
+                            this.loginError.set(null);
+
+                            const { email, password } = this.loginForm.value;
+
+                            this.authService.login({ email: email!, password: password! }).subscribe({
+                                next: () => {
+                                    this.loading.set(false);
+                                    this.router.navigateByUrl(this.returnUrl);
+                                },
+                                error: (err) => {
+                                    this.loading.set(false);
+                                    this.loginError.set(err.error?.message || 'Invalid email or password. Please try again.');
+                                },
+                            });
+                        }
+                    }
+                </div>
+
+                <h4>Step 3: Create Template</h4>
+
+                <div class="code-block">
+                    <span class="comment">// login.component.html</span>
+                    &lt;div class="login-form"&gt;
+                        &lt;h2 class="text-center mb-4"&gt;Welcome Back&lt;/h2&gt;
+
+                        &lt;form [formGroup]="loginForm" (ngSubmit)="onSubmit()"&gt;
+                            &lt;app-input
+                                label="Email Address"
+                                type="email"
+                                placeholder="Enter your email"
+                                formControlName="email"
+                                [error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched ? getEmailError() : ''"
+                            &gt;&lt;/app-input&gt;
+
+                            &lt;app-input
+                                label="Password"
+                                type="password"
+                                placeholder="Enter your password"
+                                formControlName="password"
+                                [error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched ? 'Password is required and must be at least 6 characters' : ''"
+                            &gt;&lt;/app-input&gt;
+
+                            &lt;div class="d-flex justify-content-between align-items-center mt-2"&gt;
+                                &lt;a routerLink="/auth/forgot-password" class="forgot-link"&gt;Forgot Password?&lt;/a&gt;
+                            &lt;/div&gt;
+
+                            &lt;div class="mt-4"&gt;
+                                &lt;app-button
+                                    type="submit"
+                                    variant="primary"
+                                    [loading]="loading()"
+                                    [disabled]="loginForm.invalid"
+                                    class="w-100"
+                                &gt;Sign In&lt;/app-button&gt;
+                            &lt;/div&gt;
+
+                            &lt;div class="mt-3 text-center"&gt;
+                                &lt;span class="text-muted"&gt;Don't have an account?&lt;/span&gt;
+                                &lt;a routerLink="/auth/register" class="ms-2"&gt;Sign Up&lt;/a&gt;
+                            &lt;/div&gt;
+
+                            &lt;div *<span class="keyword">if</span>="loginError()" class="alert alert-danger mt-3" role="alert"&gt;
+                                {{ loginError() }}
+                            &lt;/div&gt;
+                        &lt;/form&gt;
+                    &lt;/div&gt;
+                </div>
+
+                <h4>Step 4: Add Styles</h4>
+
+                <div class="code-block">
+                    <span class="comment">// login.component.scss</span>
+                    :host {
+                        display: block;
+                        width: 100%;
+                        max-width: 400px;
+                        margin: 0 auto;
+                    }
+
+                    .login-form {
+                        padding: 1rem;
+                    }
+
+                    .forgot-link {
+                        font-size: 0.9rem;
+                        color: var(--bs-secondary);
+                        text-decoration: none;
+
+                        &:hover {
+                            text-decoration: underline;
+                        }
+                    }
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>features/auth/pages/login/login.component.ts</code></li>
+                    <li><code>login.component.html</code></li>
+                    <li><code>login.component.scss</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g c features/auth/pages/login --standalone --skip-tests
+                </div>
+
+                <h3>Code Flow</h3>
+                <div class="flow-diagram">
+                    <span class="step">User submits form</span> <span class="arrow">→</span>
+                    <span class="step">LoginComponent.onSubmit()</span> <span class="arrow">→</span>
+                    <span class="step">AuthService.login()</span> <span class="arrow">→</span>
+                    <span class="step">API</span> <span class="arrow">↕</span>
+                    <span class="step">Success → Navigate to dashboard</span>
+                    <span class="step">Error → Display error message</span>
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Reactive Forms</li>
+                    <li>Form validation</li>
+                    <li>Router navigation</li>
+                    <li>Signals for loading state</li>
+                </ul>
+
+                <h3>Tools/Libraries Required</h3>
+                <ul>
+                    <li>Angular Reactive Forms</li>
+                    <li>Shared components</li>
+                </ul>
+
+                <h3>UI/UX Requirements</h3>
+                <ul>
+                    <li>Form should be centered on the page.</li>
+                    <li>Loading state should disable the button.</li>
+                    <li>Error messages should be displayed clearly.</li>
+                    <li>RTL support for Arabic.</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test form validation: empty fields, invalid email.</li>
+                    <li>Test successful login: redirect to dashboard.</li>
+                    <li>Test failed login: error message displayed.</li>
+                    <li>Test loading state: button disabled and spinner shown.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Login component fully functional.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not handling subscription cleanup.
+                    <br /><strong>Fix:</strong> Use <code>takeUntil</code> or <code>async</code> pipe.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 2:</strong> Not calling <code>markAllAsTouched()</code> on invalid form.
+                    <br /><strong>Fix:</strong> Always mark all touched before showing errors.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>User is already authenticated → redirect to dashboard.</li>
+                    <li>Return URL from query params should be used after login.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Login component works with form validation.</li>
+                    <li>Login flow succeeds and redirects.</li>
+                    <li>Error handling displays messages.</li>
+                </ul>
+
+                <h3>Frontend Architecture Notes</h3>
+                <ul>
+                    <li>Uses shared Input and Button components for consistency.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Login is the entry point; test thoroughly.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 4: REGISTER COMPONENT                                            -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-AUTH-004</span><span class="task-name">Register Component</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-AUTH-004</li>
+                    <li><strong>Task Name:</strong> Register Component</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-AUTH-002 (AuthService), FE-SHARED-002 (Button), FE-SHARED-003 (Input)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Build the registration page for therapists to sign up, with form validation, password confirmation, and success redirection.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Allow new therapists to create accounts and join the platform.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Reactive form with fields: firstName, lastName, email, password, confirmPassword (with custom validator for match), and role selection.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Reactive Forms and custom validators.</li>
+                    <li>Shared components (Button, Input).</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-AUTH-002:</strong> AuthService.register method.</li>
+                    <li><strong>FE-SHARED-002:</strong> Button component.</li>
+                    <li><strong>FE-SHARED-003:</strong> Input component.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>None.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>features/auth/pages/register/register.component.ts</code></li>
+                    <li><code>register.component.html</code></li>
+                    <li><code>register.component.scss</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Generate Component</h4>
+                <div class="code-block">
+                    ng g c features/auth/pages/register --standalone --skip-tests
+                </div>
+
+                <h4>Step 2: Create Password Match Validator</h4>
+                <p>Create a custom validator function.</p>
+
+                <div class="code-block">
+                    <span class="comment">// validators/password-match.validator.ts</span>
+                    <span class="keyword">import</span> { AbstractControl, ValidationErrors, ValidatorFn } <span class="keyword">from</span> <span class="string">'@angular/forms'</span>;
+
+                    export <span class="keyword">const</span> passwordMatchValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+                        const password = control.get('password');
+                        const confirmPassword = control.get('confirmPassword');
+
+                        if (password && confirmPassword && password.value !== confirmPassword.value) {
+                            return { passwordMismatch: true };
+                        }
+                        return null;
+                    };
+                </div>
+
+                <h4>Step 3: Implement Register Component</h4>
+
+                <div class="code-block">
+                    <span class="comment">// register.component.ts</span>
+                    <span class="keyword">import</span> { Component, inject, signal } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { FormBuilder, ReactiveFormsModule, Validators } <span class="keyword">from</span> <span class="string">'@angular/forms'</span>;
+                    <span class="keyword">import</span> { Router, RouterLink } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+                    <span class="keyword">import</span> { AuthService } <span class="keyword">from</span> <span class="string">'../../../../core/services/auth.service'</span>;
+                    <span class="keyword">import</span> { ButtonComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/button/button.component'</span>;
+                    <span class="keyword">import</span> { InputComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/input/input.component'</span>;
+                    <span class="keyword">import</span> { passwordMatchValidator } <span class="keyword">from</span> <span class="string">'../../../../shared/validators/password-match.validator'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-register',
+                        standalone: true,
+                        imports: [ReactiveFormsModule, ButtonComponent, InputComponent, RouterLink],
+                        templateUrl: './register.component.html',
+                        styleUrls: ['./register.component.scss'],
+                    })
+                    export <span class="keyword">class</span> RegisterComponent {
+                        private fb = inject(FormBuilder);
+                        private authService = inject(AuthService);
+                        private router = inject(Router);
+
+                        loading = signal(false);
+                        registerError = signal&lt;string | null&gt;(<span class="keyword">null</span>);
+                        success = signal(false);
+
+                        registerForm = this.fb.group({
+                            firstName: ['', [Validators.required, Validators.minLength(2)]],
+                            lastName: ['', [Validators.required, Validators.minLength(2)]],
+                            email: ['', [Validators.required, Validators.email]],
+                            password: ['', [Validators.required, Validators.minLength(6)]],
+                            confirmPassword: ['', [Validators.required]],
+                            role: ['Therapist', [Validators.required]],
+                        }, { validators: passwordMatchValidator });
+
+                        onSubmit(): void {
+                            if (this.registerForm.invalid) {
+                                this.registerForm.markAllAsTouched();
+                                return;
+                            }
+
+                            this.loading.set(true);
+                            this.registerError.set(null);
+
+                            const { firstName, lastName, email, password, role } = this.registerForm.value;
+
+                            this.authService.register({ firstName: firstName!, lastName: lastName!, email: email!, password: password!, role: role! }).subscribe({
+                                next: () => {
+                                    this.loading.set(false);
+                                    this.success.set(true);
+                                    setTimeout(() => {
+                                        this.router.navigate(['/auth/login']);
+                                    }, 2000);
+                                },
+                                error: (err) => {
+                                    this.loading.set(false);
+                                    this.registerError.set(err.error?.message || 'Registration failed. Please try again.');
+                                },
+                            });
+                        }
+                    }
+                </div>
+
+                <h4>Step 4: Create Template</h4>
+
+                <div class="code-block">
+                    <span class="comment">// register.component.html</span>
+                    &lt;div class="register-form"&gt;
+                        &lt;h2 class="text-center mb-4"&gt;Create Account&lt;/h2&gt;
+
+                        &lt;div *<span class="keyword">if</span>="success()" class="alert alert-success" role="alert"&gt;
+                            Account created successfully! Redirecting to login...
+                        &lt;/div&gt;
+
+                        &lt;form [formGroup]="registerForm" (ngSubmit)="onSubmit()" *<span class="keyword">if</span>="!success()"&gt;
+                            &lt;div class="row"&gt;
+                                &lt;div class="col-md-6"&gt;
+                                    &lt;app-input
+                                        label="First Name"
+                                        type="text"
+                                        placeholder="Enter first name"
+                                        formControlName="firstName"
+                                        [error]="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched ? 'First name is required' : ''"
+                                    &gt;&lt;/app-input&gt;
+                                &lt;/div&gt;
+                                &lt;div class="col-md-6"&gt;
+                                    &lt;app-input
+                                        label="Last Name"
+                                        type="text"
+                                        placeholder="Enter last name"
+                                        formControlName="lastName"
+                                        [error]="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched ? 'Last name is required' : ''"
+                                    &gt;&lt;/app-input&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+
+                            &lt;app-input
+                                label="Email Address"
+                                type="email"
+                                placeholder="Enter your email"
+                                formControlName="email"
+                                [error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched ? 'Valid email is required' : ''"
+                            &gt;&lt;/app-input&gt;
+
+                            &lt;app-input
+                                label="Password"
+                                type="password"
+                                placeholder="Create a password"
+                                formControlName="password"
+                                [error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched ? 'Password must be at least 6 characters' : ''"
+                            &gt;&lt;/app-input&gt;
+
+                            &lt;app-input
+                                label="Confirm Password"
+                                type="password"
+                                placeholder="Confirm your password"
+                                formControlName="confirmPassword"
+                                [error]="registerForm.errors?.['passwordMismatch'] && registerForm.get('confirmPassword')?.touched ? 'Passwords do not match' : ''"
+                            &gt;&lt;/app-input&gt;
+
+                            &lt;div class="form-group"&gt;
+                                &lt;label&gt;Role&lt;/label&gt;
+                                &lt;select class="form-select" formControlName="role"&gt;
+                                    &lt;option value="Therapist"&gt;Therapist&lt;/option&gt;
+                                    &lt;option value="Admin"&gt;Admin&lt;/option&gt;
+                                &lt;/select&gt;
+                            &lt;/div&gt;
+
+                            &lt;div class="mt-4"&gt;
+                                &lt;app-button
+                                    type="submit"
+                                    variant="primary"
+                                    [loading]="loading()"
+                                    [disabled]="registerForm.invalid"
+                                    class="w-100"
+                                &gt;Create Account&lt;/app-button&gt;
+                            &lt;/div&gt;
+
+                            &lt;div class="mt-3 text-center"&gt;
+                                &lt;span class="text-muted"&gt;Already have an account?&lt;/span&gt;
+                                &lt;a routerLink="/auth/login" class="ms-2"&gt;Sign In&lt;/a&gt;
+                            &lt;/div&gt;
+
+                            &lt;div *<span class="keyword">if</span>="registerError()" class="alert alert-danger mt-3" role="alert"&gt;
+                                {{ registerError() }}
+                            &lt;/div&gt;
+                        &lt;/form&gt;
+                    &lt;/div&gt;
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>features/auth/pages/register/register.component.ts</code></li>
+                    <li><code>register.component.html</code></li>
+                    <li><code>register.component.scss</code></li>
+                    <li><code>shared/validators/password-match.validator.ts</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g c features/auth/pages/register --standalone --skip-tests
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Reactive Forms with custom validators</li>
+                    <li>Cross‑field validation</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test form validation (required fields, email, password match).</li>
+                    <li>Test successful registration (redirect to login).</li>
+                    <li>Test error handling.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Register component fully functional.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Forgetting to add the custom validator to the form group.
+                    <br /><strong>Fix:</strong> Include <code>{ validators: passwordMatchValidator }</code>.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 2:</strong> Not handling the success state before redirect.
+                    <br /><strong>Fix:</strong> Show success message and redirect after a delay.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>Email already registered → error message from API.</li>
+                    <li>Weak password → validation prevents submission.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Register component works with validation.</li>
+                    <li>Registration flow succeeds.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Registration creates new therapist accounts.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 5: RESET PASSWORD COMPONENTS                                     -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-AUTH-005</span><span class="task-name">Reset Password Components</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-AUTH-005</li>
+                    <li><strong>Task Name:</strong> Reset Password Components</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-AUTH-002 (AuthService), FE-SHARED-002 (Button), FE-SHARED-003 (Input)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create two components: <code>ForgotPasswordComponent</code> (request reset link) and <code>ResetPasswordComponent</code> (set new password using token from query param).</p>
+
+                <h3>Business Purpose</h3>
+                <p>Allow users to reset their password if they forget it, improving user experience and reducing support tickets.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Implement two-step flow: request reset (email) and reset password (token + new password) using the AuthService.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Reactive Forms.</li>
+                    <li>ActivatedRoute for token parameter.</li>
+                    <li>Shared components.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-AUTH-002:</strong> AuthService methods: <code>forgotPassword()</code>, <code>resetPassword()</code>.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Token from query parameter for reset.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>features/auth/pages/forgot-password/forgot-password.component.ts</code></li>
+                    <li><code>features/auth/pages/reset-password/reset-password.component.ts</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Generate Components</h4>
+                <div class="code-block">
+                    ng g c features/auth/pages/forgot-password --standalone --skip-tests
+                    ng g c features/auth/pages/reset-password --standalone --skip-tests
+                </div>
+
+                <h4>Step 2: Implement ForgotPasswordComponent</h4>
+
+                <div class="code-block">
+                    <span class="comment">// forgot-password.component.ts</span>
+                    <span class="keyword">import</span> { Component, inject, signal } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { FormBuilder, ReactiveFormsModule, Validators } <span class="keyword">from</span> <span class="string">'@angular/forms'</span>;
+                    <span class="keyword">import</span> { RouterLink } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+                    <span class="keyword">import</span> { AuthService } <span class="keyword">from</span> <span class="string">'../../../../core/services/auth.service'</span>;
+                    <span class="keyword">import</span> { ButtonComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/button/button.component'</span>;
+                    <span class="keyword">import</span> { InputComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/input/input.component'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-forgot-password',
+                        standalone: true,
+                        imports: [ReactiveFormsModule, ButtonComponent, InputComponent, RouterLink],
+                        templateUrl: './forgot-password.component.html',
+                        styleUrls: ['./forgot-password.component.scss'],
+                    })
+                    export <span class="keyword">class</span> ForgotPasswordComponent {
+                        private fb = inject(FormBuilder);
+                        private authService = inject(AuthService);
+
+                        loading = signal(false);
+                        submitted = signal(false);
+                        error = signal&lt;string | null&gt;(<span class="keyword">null</span>);
+
+                        forgotForm = this.fb.group({
+                            email: ['', [Validators.required, Validators.email]],
+                        });
+
+                        onSubmit(): void {
+                            if (this.forgotForm.invalid) {
+                                this.forgotForm.markAllAsTouched();
+                                return;
+                            }
+
+                            this.loading.set(true);
+                            this.error.set(null);
+
+                            const email = this.forgotForm.value.email!;
+
+                            this.authService.forgotPassword(email).subscribe({
+                                next: () => {
+                                    this.loading.set(false);
+                                    this.submitted.set(true);
+                                },
+                                error: (err) => {
+                                    this.loading.set(false);
+                                    this.error.set(err.error?.message || 'Failed to send reset link. Please try again.');
+                                },
+                            });
+                        }
+                    }
+                </div>
+
+                <h4>Step 3: Implement ResetPasswordComponent</h4>
+
+                <div class="code-block">
+                    <span class="comment">// reset-password.component.ts</span>
+                    <span class="keyword">import</span> { Component, inject, signal, OnInit } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { FormBuilder, ReactiveFormsModule, Validators } <span class="keyword">from</span> <span class="string">'@angular/forms'</span>;
+                    <span class="keyword">import</span> { ActivatedRoute, Router, RouterLink } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+                    <span class="keyword">import</span> { AuthService } <span class="keyword">from</span> <span class="string">'../../../../core/services/auth.service'</span>;
+                    <span class="keyword">import</span> { ButtonComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/button/button.component'</span>;
+                    <span class="keyword">import</span> { InputComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/input/input.component'</span>;
+                    <span class="keyword">import</span> { passwordMatchValidator } <span class="keyword">from</span> <span class="string">'../../../../shared/validators/password-match.validator'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-reset-password',
+                        standalone: true,
+                        imports: [ReactiveFormsModule, ButtonComponent, InputComponent, RouterLink],
+                        templateUrl: './reset-password.component.html',
+                        styleUrls: ['./reset-password.component.scss'],
+                    })
+                    export <span class="keyword">class</span> ResetPasswordComponent implements OnInit {
+                        private fb = inject(FormBuilder);
+                        private authService = inject(AuthService);
+                        private route = inject(ActivatedRoute);
+                        private router = inject(Router);
+
+                        loading = signal(false);
+                        success = signal(false);
+                        error = signal&lt;string | null&gt;(<span class="keyword">null</span>);
+                        token = signal&lt;string | null&gt;(<span class="keyword">null</span>);
+
+                        resetForm = this.fb.group({
+                            password: ['', [Validators.required, Validators.minLength(6)]],
+                            confirmPassword: ['', [Validators.required]],
+                        }, { validators: passwordMatchValidator });
+
+                        ngOnInit(): void {
+                            this.token.set(this.route.snapshot.queryParams['token'] || null);
+                            if (!this.token()) {
+                                this.error.set('Invalid or missing reset token. Please request a new password reset link.');
+                            }
+                        }
+
+                        onSubmit(): void {
+                            if (this.resetForm.invalid || !this.token()) {
+                                this.resetForm.markAllAsTouched();
+                                return;
+                            }
+
+                            this.loading.set(true);
+                            this.error.set(null);
+
+                            const password = this.resetForm.value.password!;
+
+                            this.authService.resetPassword({ token: this.token()!, newPassword: password }).subscribe({
+                                next: () => {
+                                    this.loading.set(false);
+                                    this.success.set(true);
+                                    setTimeout(() => {
+                                        this.router.navigate(['/auth/login']);
+                                    }, 3000);
+                                },
+                                error: (err) => {
+                                    this.loading.set(false);
+                                    this.error.set(err.error?.message || 'Failed to reset password. Please try again.');
+                                },
+                            });
+                        }
+                    }
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>forgot-password.component.ts</code>, <code>.html</code>, <code>.scss</code></li>
+                    <li><code>reset-password.component.ts</code>, <code>.html</code>, <code>.scss</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g c features/auth/pages/forgot-password --standalone --skip-tests
+                    ng g c features/auth/pages/reset-password --standalone --skip-tests
+                </div>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test forgot password: valid email → success message.</li>
+                    <li>Test forgot password: invalid email → error.</li>
+                    <li>Test reset password: valid token → success and redirect.</li>
+                    <li>Test reset password: invalid/expired token → error.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Two components for reset password flow.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not checking for token presence before allowing reset.
+                    <br /><strong>Fix:</strong> Display error if token is missing.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Both components work and the flow is complete.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Reset password flow uses email and token.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 6: PROFILE COMPONENT                                             -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-AUTH-006</span><span class="task-name">Profile Component</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-AUTH-006</li>
+                    <li><strong>Task Name:</strong> Profile Component</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-AUTH-002 (AuthService), FE-SHARED-002 (Button), FE-SHARED-003 (Input)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create a profile page where users can view and update their information, and change their password.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Allow users to manage their own profile information.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Fetch current user data via AuthService, display in a form, allow updates (name, email) and password change (current, new, confirm).</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Reactive Forms with nested groups.</li>
+                    <li>AuthService methods: <code>getProfile()</code>, <code>updateProfile()</code>, <code>changePassword()</code>.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-AUTH-002:</strong> AuthService.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>User ID from auth state.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>features/auth/pages/profile/profile.component.ts</code></li>
+                    <li><code>profile.component.html</code></li>
+                    <li><code>profile.component.scss</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Generate Component</h4>
+                <div class="code-block">
+                    ng g c features/auth/pages/profile --standalone --skip-tests
+                </div>
+
+                <h4>Step 2: Implement Profile Component</h4>
+
+                <div class="code-block">
+                    <span class="comment">// profile.component.ts</span>
+                    <span class="keyword">import</span> { Component, inject, signal, OnInit } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { FormBuilder, ReactiveFormsModule, Validators } <span class="keyword">from</span> <span class="string">'@angular/forms'</span>;
+                    <span class="keyword">import</span> { AuthService } <span class="keyword">from</span> <span class="string">'../../../../core/services/auth.service'</span>;
+                    <span class="keyword">import</span> { ButtonComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/button/button.component'</span>;
+                    <span class="keyword">import</span> { InputComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/input/input.component'</span>;
+                    <span class="keyword">import</span> { passwordMatchValidator } <span class="keyword">from</span> <span class="string">'../../../../shared/validators/password-match.validator'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-profile',
+                        standalone: true,
+                        imports: [ReactiveFormsModule, ButtonComponent, InputComponent],
+                        templateUrl: './profile.component.html',
+                        styleUrls: ['./profile.component.scss'],
+                    })
+                    export <span class="keyword">class</span> ProfileComponent implements OnInit {
+                        private fb = inject(FormBuilder);
+                        private authService = inject(AuthService);
+
+                        loading = signal(true);
+                        updating = signal(false);
+                        changingPassword = signal(false);
+                        error = signal&lt;string | null&gt;(<span class="keyword">null</span>);
+                        passwordError = signal&lt;string | null&gt;(<span class="keyword">null</span>);
+                        success = signal(false);
+
+                        profileForm = this.fb.group({
+                            firstName: ['', [Validators.required, Validators.minLength(2)]],
+                            lastName: ['', [Validators.required, Validators.minLength(2)]],
+                            email: ['', [Validators.required, Validators.email]],
+                        });
+
+                        passwordForm = this.fb.group({
+                            currentPassword: ['', [Validators.required]],
+                            newPassword: ['', [Validators.required, Validators.minLength(6)]],
+                            confirmPassword: ['', [Validators.required]],
+                        }, { validators: passwordMatchValidator });
+
+                        ngOnInit(): void {
+                            this.loadProfile();
+                        }
+
+                        loadProfile(): void {
+                            this.loading.set(true);
+                            this.authService.getProfile().subscribe({
+                                next: (user) => {
+                                    this.profileForm.patchValue({
+                                        firstName: user.firstName,
+                                        lastName: user.lastName,
+                                        email: user.email,
+                                    });
+                                    this.loading.set(false);
+                                },
+                                error: () => {
+                                    this.loading.set(false);
+                                    this.error.set('Failed to load profile. Please try again.');
+                                },
+                            });
+                        }
+
+                        updateProfile(): void {
+                            if (this.profileForm.invalid) {
+                                this.profileForm.markAllAsTouched();
+                                return;
+                            }
+
+                            this.updating.set(true);
+                            this.error.set(null);
+
+                            const { firstName, lastName, email } = this.profileForm.value;
+
+                            this.authService.updateProfile({ firstName: firstName!, lastName: lastName!, email: email! }).subscribe({
+                                next: () => {
+                                    this.updating.set(false);
+                                    this.success.set(true);
+                                    setTimeout(() => this.success.set(false), 3000);
+                                },
+                                error: (err) => {
+                                    this.updating.set(false);
+                                    this.error.set(err.error?.message || 'Failed to update profile.');
+                                },
+                            });
+                        }
+
+                        changePassword(): void {
+                            if (this.passwordForm.invalid) {
+                                this.passwordForm.markAllAsTouched();
+                                return;
+                            }
+
+                            this.changingPassword.set(true);
+                            this.passwordError.set(null);
+
+                            const { currentPassword, newPassword } = this.passwordForm.value;
+
+                            this.authService.changePassword({ currentPassword: currentPassword!, newPassword: newPassword! }).subscribe({
+                                next: () => {
+                                    this.changingPassword.set(false);
+                                    this.passwordForm.reset();
+                                    this.success.set(true);
+                                    setTimeout(() => this.success.set(false), 3000);
+                                },
+                                error: (err) => {
+                                    this.changingPassword.set(false);
+                                    this.passwordError.set(err.error?.message || 'Failed to change password.');
+                                },
+                            });
+                        }
+                    }
+                </div>
+
+                <h4>Step 3: Create Template</h4>
+
+                <div class="code-block">
+                    <span class="comment">// profile.component.html</span>
+                    &lt;div class="profile-container"&gt;
+                        &lt;h2 class="mb-4"&gt;Profile&lt;/h2&gt;
+
+                        &lt;div *<span class="keyword">if</span>="loading()" class="text-center py-5"&gt;
+                            &lt;app-spinner size="lg"&gt;&lt;/app-spinner&gt;
+                        &lt;/div&gt;
+
+                        &lt;div *<span class="keyword">if</span>="!loading()"&gt;
+                            &lt;div *<span class="keyword">if</span>="success()" class="alert alert-success" role="alert"&gt;
+                                Changes saved successfully!
+                            &lt;/div&gt;
+
+                            &lt;div class="card mb-4"&gt;
+                                &lt;div class="card-header"&gt;
+                                    &lt;h5 class="mb-0"&gt;Personal Information&lt;/h5&gt;
+                                &lt;/div&gt;
+                                &lt;div class="card-body"&gt;
+                                    &lt;form [formGroup]="profileForm"&gt;
+                                        &lt;div class="row"&gt;
+                                            &lt;div class="col-md-6"&gt;
+                                                &lt;app-input
+                                                    label="First Name"
+                                                    type="text"
+                                                    placeholder="Enter first name"
+                                                    formControlName="firstName"
+                                                    [error]="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched ? 'First name is required' : ''"
+                                                &gt;&lt;/app-input&gt;
+                                            &lt;/div&gt;
+                                            &lt;div class="col-md-6"&gt;
+                                                &lt;app-input
+                                                    label="Last Name"
+                                                    type="text"
+                                                    placeholder="Enter last name"
+                                                    formControlName="lastName"
+                                                    [error]="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched ? 'Last name is required' : ''"
+                                                &gt;&lt;/app-input&gt;
+                                            &lt;/div&gt;
+                                        &lt;/div&gt;
+
+                                        &lt;app-input
+                                            label="Email Address"
+                                            type="email"
+                                            placeholder="Enter your email"
+                                            formControlName="email"
+                                            [error]="profileForm.get('email')?.invalid && profileForm.get('email')?.touched ? 'Valid email is required' : ''"
+                                        &gt;&lt;/app-input&gt;
+
+                                        &lt;div *<span class="keyword">if</span>="error()" class="alert alert-danger mt-3"&gt;
+                                            {{ error() }}
+                                        &lt;/div&gt;
+
+                                        &lt;div class="mt-3"&gt;
+                                            &lt;app-button
+                                                type="button"
+                                                variant="primary"
+                                                [loading]="updating()"
+                                                (click)="updateProfile()"
+                                            &gt;Update Profile&lt;/app-button&gt;
+                                        &lt;/div&gt;
+                                    &lt;/form&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+
+                            &lt;div class="card"&gt;
+                                &lt;div class="card-header"&gt;
+                                    &lt;h5 class="mb-0"&gt;Change Password&lt;/h5&gt;
+                                &lt;/div&gt;
+                                &lt;div class="card-body"&gt;
+                                    &lt;form [formGroup]="passwordForm"&gt;
+                                        &lt;app-input
+                                            label="Current Password"
+                                            type="password"
+                                            placeholder="Enter current password"
+                                            formControlName="currentPassword"
+                                            [error]="passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched ? 'Current password is required' : ''"
+                                        &gt;&lt;/app-input&gt;
+
+                                        &lt;app-input
+                                            label="New Password"
+                                            type="password"
+                                            placeholder="Enter new password"
+                                            formControlName="newPassword"
+                                            [error]="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched ? 'Password must be at least 6 characters' : ''"
+                                        &gt;&lt;/app-input&gt;
+
+                                        &lt;app-input
+                                            label="Confirm New Password"
+                                            type="password"
+                                            placeholder="Confirm new password"
+                                            formControlName="confirmPassword"
+                                            [error]="passwordForm.errors?.['passwordMismatch'] && passwordForm.get('confirmPassword')?.touched ? 'Passwords do not match' : ''"
+                                        &gt;&lt;/app-input&gt;
+
+                                        &lt;div *<span class="keyword">if</span>="passwordError()" class="alert alert-danger mt-3"&gt;
+                                            {{ passwordError() }}
+                                        &lt;/div&gt;
+
+                                        &lt;div class="mt-3"&gt;
+                                            &lt;app-button
+                                                type="button"
+                                                variant="danger"
+                                                [loading]="changingPassword()"
+                                                (click)="changePassword()"
+                                            &gt;Change Password&lt;/app-button&gt;
+                                        &lt;/div&gt;
+                                    &lt;/form&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>profile.component.ts</code>, <code>.html</code>, <code>.scss</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g c features/auth/pages/profile --standalone --skip-tests
+                </div>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test profile loads correctly.</li>
+                    <li>Test profile update.</li>
+                    <li>Test password change with current password validation.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Profile component fully functional.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not updating the AuthService user signal after profile update.
+                    <br /><strong>Fix:</strong> AuthService should update the user signal in <code>updateProfile()</code>.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Profile component works with all features.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Profile page is accessible from the sidebar.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 7: HTTP INTERCEPTORS                                             -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-AUTH-007</span><span class="task-name">HTTP Interceptors (Auth, Error, Loading)</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">5h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-AUTH-007</li>
+                    <li><strong>Task Name:</strong> HTTP Interceptors (Auth, Error, Loading)</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-AUTH-002 (AuthService), FE-CORE-003 (NotificationService, LoadingService)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 5 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create three functional HTTP interceptors: <code>authInterceptor</code> (adds JWT token), <code>errorInterceptor</code> (handles 401, 403, 500 errors), and <code>loadingInterceptor</code> (tracks global loading state).</p>
+
+                <h3>Business Purpose</h3>
+                <p>Ensure all API requests are authenticated, handle token expiration gracefully, provide user‑friendly error messages, and show a global loading indicator.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use <code>HttpInterceptorFn</code> (Angular 15+) for cleaner, tree‑shakable interceptors. Integrate with <code>LoadingService</code> and <code>NotificationService</code>.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular HTTP interceptors.</li>
+                    <li>Knowledge of RxJS operators (<code>catchError</code>, <code>throwError</code>, <code>finalize</code>).</li>
+                    <li>Functional interceptors in Angular 15+.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-AUTH-002:</strong> AuthService for token and logout.</li>
+                    <li><strong>FE-CORE-003:</strong> LoadingService and NotificationService.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>AuthService with <code>getToken()</code>, <code>logout()</code>.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>core/interceptors/auth.interceptor.ts</code></li>
+                    <li><code>core/interceptors/error.interceptor.ts</code></li>
+                    <li><code>core/interceptors/loading.interceptor.ts</code></li>
+                    <li><code>core/interceptors/index.ts</code></li>
+                    <li>Updated <code>app.config.ts</code> with interceptors registered.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Generate Interceptors</h4>
+                <div class="code-block">
+                    ng g interceptor core/interceptors/auth --functional --skip-tests
+                    ng g interceptor core/interceptors/error --functional --skip-tests
+                    ng g interceptor core/interceptors/loading --functional --skip-tests
+                </div>
+
+                <h4>Step 2: Implement <code>auth.interceptor.ts</code></h4>
+
+                <div class="code-block">
+                    <span class="comment">// core/interceptors/auth.interceptor.ts</span>
+                    <span class="keyword">import</span> { HttpInterceptorFn } <span class="keyword">from</span> <span class="string">'@angular/common/http'</span>;
+                    <span class="keyword">import</span> { inject } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { AuthService } <span class="keyword">from</span> <span class="string">'../services/auth.service'</span>;
+
+                    <span class="keyword">export const</span> authInterceptor: HttpInterceptorFn = (req, next) => {
+                        const authService = inject(AuthService);
+                        const token = authService.getToken();
+
+                        <span class="keyword">if</span> (token) {
+                            const clonedReq = req.clone({
+                                setHeaders: {
+                                    Authorization: <span class="string">`Bearer ${token}`</span>,
+                                },
+                            });
+                            <span class="keyword">return</span> next(clonedReq);
+                        }
+
+                        <span class="keyword">return</span> next(req);
+                    };
+                </div>
+
+                <h4>Step 3: Implement <code>error.interceptor.ts</code></h4>
+
+                <div class="code-block">
+                    <span class="comment">// core/interceptors/error.interceptor.ts</span>
+                    <span class="keyword">import</span> { HttpInterceptorFn } <span class="keyword">from</span> <span class="string">'@angular/common/http'</span>;
+                    <span class="keyword">import</span> { inject } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { catchError, throwError } <span class="keyword">from</span> <span class="string">'rxjs'</span>;
+                    <span class="keyword">import</span> { NotificationService } <span class="keyword">from</span> <span class="string">'../services/notification.service'</span>;
+                    <span class="keyword">import</span> { AuthService } <span class="keyword">from</span> <span class="string">'../services/auth.service'</span>;
+                    <span class="keyword">import</span> { Router } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+
+                    <span class="keyword">export const</span> errorInterceptor: HttpInterceptorFn = (req, next) => {
+                        const notification = inject(NotificationService);
+                        const authService = inject(AuthService);
+                        const router = inject(Router);
+
+                        <span class="keyword">return</span> next(req).pipe(
+                            catchError((error) => {
+                                console.error('HTTP Error:', error);
+
+                                <span class="keyword">if</span> (error.status === 401) {
+                                    <span class="comment">// Unauthorized – log out and redirect to login</span>
+                                    authService.logout();
+                                    router.navigate(['/auth/login']);
+                                    notification.error('Your session has expired. Please log in again.');
+                                } <span class="keyword">else</span> <span class="keyword">if</span> (error.status === 403) {
+                                    notification.error('You do not have permission to perform this action.');
+                                } <span class="keyword">else</span> <span class="keyword">if</span> (error.status === 400) {
+                                    const message = error.error?.message || 'Invalid request. Please check your input.';
+                                    notification.error(message);
+                                } <span class="keyword">else</span> <span class="keyword">if</span> (error.status === 500) {
+                                    notification.error('A server error occurred. Please try again later.');
+                                } <span class="keyword">else</span> <span class="keyword">if</span> (error.status === 0) {
+                                    notification.error('Network error. Please check your connection.');
+                                } <span class="keyword">else</span> {
+                                    notification.error('An unexpected error occurred. Please try again.');
+                                }
+
+                                <span class="keyword">return</span> throwError(() => error);
+                            })
+                        );
+                    };
+                </div>
+
+                <h4>Step 4: Implement <code>loading.interceptor.ts</code></h4>
+
+                <div class="code-block">
+                    <span class="comment">// core/interceptors/loading.interceptor.ts</span>
+                    <span class="keyword">import</span> { HttpInterceptorFn } <span class="keyword">from</span> <span class="string">'@angular/common/http'</span>;
+                    <span class="keyword">import</span> { inject } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { finalize } <span class="keyword">from</span> <span class="string">'rxjs'</span>;
+                    <span class="keyword">import</span> { LoadingService } <span class="keyword">from</span> <span class="string">'../services/loading.service'</span>;
+
+                    <span class="keyword">export const</span> loadingInterceptor: HttpInterceptorFn = (req, next) => {
+                        const loadingService = inject(LoadingService);
+
+                        <span class="comment">// Skip loading for certain requests</span>
+                        <span class="keyword">if</span> (req.url.includes('/refresh')) {
+                            <span class="keyword">return</span> next(req);
+                        }
+
+                        loadingService.show();
+
+                        <span class="keyword">return</span> next(req).pipe(
+                            finalize(() => loadingService.hide())
+                        );
+                    };
+                </div>
+
+                <h4>Step 5: Create Barrel Export</h4>
+
+                <div class="code-block">
+                    <span class="comment">// core/interceptors/index.ts</span>
+                    export * from './auth.interceptor';
+                    export * from './error.interceptor';
+                    export * from './loading.interceptor';
+                </div>
+
+                <h4>Step 6: Register Interceptors in <code>app.config.ts</code></h4>
+
+                <div class="code-block">
+                    <span class="comment">// app.config.ts</span>
+                    <span class="keyword">import</span> { provideHttpClient, withInterceptors } <span class="keyword">from</span> <span class="string">'@angular/common/http'</span>;
+                    <span class="keyword">import</span> { authInterceptor, errorInterceptor, loadingInterceptor } <span class="keyword">from</span> <span class="string">'./core/interceptors'</span>;
+
+                    export <span class="keyword">const</span> appConfig: ApplicationConfig = {
+                        providers: [
+                            provideHttpClient(
+                                withInterceptors([authInterceptor, errorInterceptor, loadingInterceptor])
+                            ),
+                            <span class="comment">// ... other providers</span>
+                        ],
+                    };
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>core/interceptors/auth.interceptor.ts</code></li>
+                    <li><code>core/interceptors/error.interceptor.ts</code></li>
+                    <li><code>core/interceptors/loading.interceptor.ts</code></li>
+                    <li><code>core/interceptors/index.ts</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g interceptor core/interceptors/auth --functional --skip-tests
+                    ng g interceptor core/interceptors/error --functional --skip-tests
+                    ng g interceptor core/interceptors/loading --functional --skip-tests
+                </div>
+
+                <h3>Code Flow</h3>
+                <div class="flow-diagram">
+                    <span class="step">HttpClient.get()</span> <span class="arrow">→</span>
+                    <span class="step">authInterceptor (add token)</span> <span class="arrow">→</span>
+                    <span class="step">loadingInterceptor (show)</span> <span class="arrow">→</span>
+                    <span class="step">API</span> <span class="arrow">↕</span>
+                    <span class="step">errorInterceptor (catch)</span> <span class="arrow">→</span>
+                    <span class="step">loadingInterceptor (hide)</span>
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>HttpInterceptorFn (functional interceptors)</li>
+                    <li>RxJS operators: <code>catchError</code>, <code>throwError</code>, <code>finalize</code></li>
+                    <li>Dependency injection with <code>inject()</code></li>
+                </ul>
+
+                <h3>Tools/Libraries Required</h3>
+                <ul>
+                    <li>Angular HttpClient</li>
+                </ul>
+
+                <h3>Angular Concepts Required</h3>
+                <ul>
+                    <li>HTTP interceptors</li>
+                    <li>Functional interceptors (Angular 15+)</li>
+                </ul>
+
+                <h3>RxJS Concepts Required</h3>
+                <ul>
+                    <li><code>catchError</code>, <code>finalize</code>, <code>throwError</code></li>
+                </ul>
+
+                <h3>Security Considerations</h3>
+                <ul>
+                    <li>Tokens are sent with every request via the auth interceptor.</li>
+                    <li>401 responses trigger logout and redirect, preventing stale tokens.</li>
+                    <li>Refresh token endpoint should be excluded from auth interceptor if needed.</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Unit test each interceptor with mock <code>HttpHandler</code>.</li>
+                    <li>Test auth interceptor adds token when present.</li>
+                    <li>Test error interceptor shows notification and handles 401.</li>
+                    <li>Test loading interceptor shows/hides loading.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Three interceptors implemented and registered.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Forgetting to register interceptors in <code>app.config.ts</code>.
+                    <br /><strong>Fix:</strong> Add <code>withInterceptors([...])</code> to <code>provideHttpClient</code>.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 2:</strong> Not cloning the request before modifying headers.
+                    <br /><strong>Fix:</strong> Always clone the request in auth interceptor.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 3:</strong> Infinite loop when refresh token also returns 401.
+                    <br /><strong>Fix:</strong> Skip auth interceptor for refresh token endpoint.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>Refresh token request should not trigger auth interceptor.</li>
+                    <li>If token is expired, 401 triggers logout; ensure <code>logout()</code> doesn't cause infinite redirect.</li>
+                    <li>Network errors (status 0) should show a network error message.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>All interceptors are implemented and registered.</li>
+                    <li>HTTP requests include token, show loading, and handle errors.</li>
+                </ul>
+
+                <h3>Frontend Architecture Notes</h3>
+                <ul>
+                    <li>Interceptors are the single point for cross‑cutting concerns.</li>
+                    <li>All HTTP requests go through this pipeline.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Interceptors automatically handle token injection and errors; no need to duplicate logic in services.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- PHASE COMPLETION CRITERIA                                             -->
+        <!-- ===================================================================== -->
+        <hr class="hr" />
+
+        <h2 style="background: #f0fdf4; border-left-color: #22c55e; padding:12px 20px; border-left:6px solid #22c55e; border-radius:8px;">✅ Phase Completion Criteria</h2>
+        <ul class="checklist">
+            <li>All 7 authentication tasks are complete (FE-AUTH-001 to FE-AUTH-007).</li>
+            <li>Auth routes are configured with lazy loading.</li>
+            <li>AuthService is fully implemented with Signals and JWT handling.</li>
+            <li>Login component works with validation and redirect.</li>
+            <li>Register component works with validation and success redirect.</li>
+            <li>Forgot Password and Reset Password components work.</li>
+            <li>Profile component allows viewing and updating user information and changing password.</li>
+            <li>Interceptors (auth, error, loading) are implemented and registered.</li>
+            <li>All components follow the design system and are RTL‑aware.</li>
+            <li>Unit tests pass for each component and service.</li>
+            <li>All changes are committed to the repository.</li>
+        </ul>
+
+        <h2 style="background: #f0f9ff; border-left-color: #3b82f6; padding:12px 20px; border-left:6px solid #3b82f6; border-radius:8px; margin-top:24px;">📋 Code Review Checklist</h2>
+        <ul class="checklist">
+            <li>AuthService uses Signals correctly (<code>signal</code>, <code>computed</code>, <code>effect</code>).</li>
+            <li>Token storage uses a constant key.</li>
+            <li>Login and Register forms have proper validation.</li>
+            <li>Password match validator works correctly.</li>
+            <li>Interceptors are functional and handle all error cases.</li>
+            <li>Guards (from Core phase) are applied to protected routes.</li>
+            <li>All components are Standalone and use shared components.</li>
+            <li>RTL support is verified.</li>
+        </ul>
+
+        <h2 style="background: #fefce8; border-left-color: #f59e0b; padding:12px 20px; border-left:6px solid #f59e0b; border-radius:8px; margin-top:24px;">🚀 Pull Request Checklist</h2>
+        <ul class="checklist">
+            <li>Branch is up‑to‑date with main.</li>
+            <li>All tests pass.</li>
+            <li>Code review completed.</li>
+            <li>Commit message follows conventional commits.</li>
+        </ul>
+
+        <h2 style="background: #fef2f2; border-left-color: #ef4444; padding:12px 20px; border-left:6px solid #ef4444; border-radius:8px; margin-top:24px;">🧪 Deployment Readiness Checklist</h2>
+        <ul class="checklist">
+            <li>Authentication flow works end‑to‑end (login → dashboard).</li>
+            <li>Registration works and creates new users.</li>
+            <li>Reset password flow works with valid tokens.</li>
+            <li>Interceptors handle 401 and redirect to login.</li>
+        </ul>
+
+        <hr class="hr" />
+        <div style="text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 20px 0 0;">
+            Jalsa – Phase 5: Authentication – Expanded Implementation Handbook &bull; v1.0 &bull; For development team
+        </div>
+    </div>
+
+    <script>
+        function toggleTask(header) {
+            const body = header.nextElementSibling;
+            const isOpen = body.classList.contains('open');
+            body.classList.toggle('open');
+            header.classList.toggle('open');
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstHeader = document.querySelector('.task-header');
+            if (firstHeader) firstHeader.click();
+        });
+    </script>
+</body>
+</html>

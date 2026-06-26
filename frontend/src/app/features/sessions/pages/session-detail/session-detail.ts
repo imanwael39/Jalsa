@@ -7,11 +7,12 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { Session } from '../../../../core/models';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { Summary } from '../../components/summary/summary';
 
 @Component({
     selector: 'app-session-detail',
     standalone: true,
-    imports: [ButtonComponent, SpinnerComponent],
+    imports: [ButtonComponent, SpinnerComponent, Summary],
     templateUrl: './session-detail.html',
     styleUrl: './session-detail.css',
     changeDetection: ChangeDetectionStrategy.OnPush,

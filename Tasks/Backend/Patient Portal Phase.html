@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jalsa – Patient Portal Phase Implementation Playbook</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+            padding: 30px 20px;
+            line-height: 1.7;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+            padding: 40px 45px;
+        }
+        h1 {
+            font-size: 2.4rem;
+            color: #0f172a;
+            border-bottom: 4px solid #3b82f6;
+            padding-bottom: 18px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        h1 small { font-size:1rem; font-weight:400; color:#64748b; margin-left:auto; }
+        .phase-banner {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 20px 28px;
+            margin-bottom: 32px;
+            border-left: 8px solid #3b82f6;
+        }
+        .phase-banner h2 { margin:0 0 8px 0; font-size:1.6rem; color:#0f172a; background:none; padding:0; border-left:none; }
+        .phase-banner p { margin:0; color:#475569; }
+        .phase-banner .meta { display:flex; flex-wrap:wrap; gap:20px 40px; margin-top:10px; font-size:0.95rem; }
+        .phase-banner .meta span { font-weight:500; color:#0f172a; }
+
+        .task-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            overflow: hidden;
+        }
+        .task-header {
+            background: #f8fafc;
+            padding: 16px 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.15s;
+            user-select: none;
+        }
+        .task-header:hover { background: #f1f5f9; }
+        .task-header .task-id { font-weight:700; color:#3b82f6; margin-right:12px; font-size:1.05rem; }
+        .task-header .task-name { font-weight:600; font-size:1.05rem; }
+        .task-header .task-badges { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+        .task-header .task-badges .tag { font-size:0.7rem; padding:2px 12px; border-radius:30px; font-weight:600; }
+        .task-header .chevron { transition:transform 0.25s; font-size:1.3rem; color:#94a3b8; margin-left:12px; }
+        .task-header.open .chevron { transform:rotate(180deg); }
+
+        .task-body { padding:0 24px 24px; display:none; overflow:hidden; }
+        .task-body.open { display:block; }
+
+        .task-body h3 { font-size:1.15rem; margin-top:22px; margin-bottom:8px; color:#0f172a; border-bottom:2px solid #e2e8f0; padding-bottom:4px; }
+        .task-body h4 { font-size:1rem; margin-top:16px; margin-bottom:6px; color:#334155; }
+        .task-body p { margin-bottom:8px; }
+        .task-body ul, .task-body ol { padding-left:24px; margin-bottom:10px; }
+        .task-body li { margin-bottom:3px; }
+
+        .checklist { list-style:none; padding-left:0; }
+        .checklist li { padding:3px 0 3px 30px; background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') left center no-repeat; background-size:18px; }
+
+        .pitfall-box { background:#fef2f2; border-left:4px solid #ef4444; padding:10px 16px; border-radius:8px; margin:8px 0; }
+        .tip-box { background:#f0fdf4; border-left:4px solid #22c55e; padding:10px 16px; border-radius:8px; margin:8px 0; }
+        .arch-box { background:#f0f9ff; border-left:4px solid #3b82f6; padding:10px 16px; border-radius:8px; margin:8px 0; }
+
+        .tag { display:inline-block; background:#e2e8f0; padding:1px 12px; border-radius:30px; font-size:0.7rem; font-weight:600; color:#1e293b; margin-right:4px; }
+        .tag-blue { background:#dbeafe; color:#1d4ed8; }
+        .tag-green { background:#dcfce7; color:#15803d; }
+        .tag-amber { background:#fef3c7; color:#b45309; }
+        .tag-red { background:#fee2e2; color:#b91c1c; }
+        .tag-purple { background:#ede9fe; color:#6d28d9; }
+
+        .flow-diagram {
+            background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:14px 18px; margin:8px 0 12px;
+            font-family:'Courier New', monospace; font-size:0.9rem; overflow-x:auto; white-space:nowrap;
+        }
+        .flow-diagram .arrow { color:#94a3b8; margin:0 6px; }
+        .flow-diagram .step { color:#0f172a; font-weight:500; }
+
+        .table-wrap { overflow-x:auto; margin:10px 0 16px; border-radius:10px; border:1px solid #e2e8f0; }
+        table { width:100%; border-collapse:collapse; font-size:0.9rem; background:#fff; }
+        th { background:#f1f5f9; font-weight:600; text-align:left; padding:8px 14px; border-bottom:2px solid #e2e8f0; color:#0f172a; }
+        td { padding:8px 14px; border-bottom:1px solid #f1f5f9; vertical-align:top; }
+        tr:last-child td { border-bottom:none; }
+
+        .hr { border:none; border-top:2px dashed #e2e8f0; margin:32px 0; }
+
+        @media (max-width:768px) {
+            .container { padding:20px 16px; }
+            h1 { font-size:1.8rem; flex-wrap:wrap; }
+            .task-header { flex-wrap:wrap; gap:8px; }
+            .task-header .task-badges { margin-left:0; }
+            .task-body { padding:0 16px 16px; }
+            .phase-banner { padding:16px; }
+            .phase-banner .meta { flex-direction:column; gap:6px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <h1>
+        🔑 Jalsa – Patient Portal Phase Implementation Playbook
+        <small>Phase 9 · 8 Tasks · Patient Experience</small>
+    </h1>
+
+    <div class="phase-banner">
+        <h2>🔑 Patient Portal (Auth + Exercise + Chat) – Phase 9</h2>
+        <p><strong>Purpose:</strong> Enable patients to log in, view and update their exercises, and communicate via an AI‑powered support chat. This phase builds the patient‑facing backend for authentication, exercise tracking, and chat with crisis detection.</p>
+        <div class="meta">
+            <span>📋 Tasks: 8 (all backend)</span>
+            <span>⏱️ Total Effort: ~30 hours</span>
+            <span>👤 Owners: M2 (Backend) + M5 (AI/DevOps)</span>
+            <span>🔗 Dependencies: Phase 2 (Authentication), Phase 5 (Exercise), Phase 6 (AI Services), Phase 3 (Patient)</span>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK BE-PATPT-001                                                     -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">BE-PATPT-001</span><span class="task-name">Patient Auth Endpoints</span></span>
+            <span class="task-badges">
+                <span class="tag tag-blue">P0</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">3h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> BE-PATPT-001</li>
+                <li><strong>Task Name:</strong> Patient Auth Endpoints</li>
+                <li><strong>Owner:</strong> M2 (Backend)</li>
+                <li><strong>Dependencies:</strong> BE-AUTH-003 (AuthService), BE-AUTH-009 (Patient login already done?) Actually BE-AUTH-009 implemented patient login/ logout, but we need separate endpoints for patient portal. We'll reuse or extend.</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 3 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Provide dedicated endpoints for patient login and logout, separate from therapist authentication, to be used by the patient portal frontend. Ensure tokens include the "Patient" role and restrict access to patient-specific resources.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Patients need a secure way to access their own data (exercises, chat) without therapist privileges. This task enables that.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Extend the existing authentication service to handle patient login, return a JWT with the Patient role, and optionally implement a separate logout (client-side token removal).</p>
+
+            <h3>Prerequisites</h3>
+            <h4>Backend</h4>
+            <ul>
+                <li><strong>JWT Authentication:</strong> Already implemented in Phase 2.</li>
+                <li><strong>AuthService:</strong> Login, token generation.</li>
+                <li><strong>User entity:</strong> Role field.</li>
+            </ul>
+            <h4>Frontend</h4>
+            <ul>
+                <li>None – this is backend.</li>
+            </ul>
+            <h4>Database</h4>
+            <ul>
+                <li>Users table, Roles table.</li>
+            </ul>
+            <h4>AI</h4>
+            <ul>
+                <li>Not applicable.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>LoginRequest DTO (Email, Password).</li>
+                <li>AuthService.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Controller endpoint: <code>POST /api/patient/auth/login</code>.</li>
+                <li>Returns TokenResponse with Patient role.</li>
+                <li>Optional <code>POST /api/patient/auth/logout</code> (client-side).</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create <code>PatientAuthController</code></strong> in <code>Jalsa.API/Controllers/</code> with route <code>[Route("api/patient/auth")]</code>.
+                </li>
+                <li>
+                    <strong>Inject <code>IAuthService</code></strong>.
+                </li>
+                <li>
+                    <strong>Implement <code>Login</code> endpoint</strong>: call <code>authService.LoginAsync(loginRequest)</code>, but ensure the user has role "Patient". If not, return 403 Forbidden.
+                </li>
+                <li>
+                    <strong>Implement <code>Logout</code> endpoint</strong> (optional – client can clear token). If implemented, simply return 204.
+                </li>
+                <li>
+                    <strong>Apply <code>[AllowAnonymous]</code></strong> for login, since it's public.
+                </li>
+                <li>
+                    <strong>Add validation</strong> using FluentValidation for LoginRequest.
+                </li>
+            </ol>
+
+            <h3>Detailed Database Workflow</h3>
+            <p>No new tables; uses existing Users and Roles.</p>
+
+            <h3>Detailed Frontend Workflow</h3>
+            <p>Frontend will call these endpoints for patient login; frontend handles storing token and redirecting.</p>
+
+            <h3>API Design</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Route</th><th>Method</th><th>Request</th><th>Response</th><th>Auth</th></tr></thead>
+                    <tbody>
+                        <tr><td>/api/patient/auth/login</td><td>POST</td><td>LoginRequest</td><td>TokenResponse</td><td>None</td></tr>
+                        <tr><td>/api/patient/auth/logout</td><td>POST</td><td>None</td><td>204 No Content</td><td>Authorized (Patient)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p><strong>Validation Rules:</strong> Email required, valid email; Password required.</p>
+            <p><strong>Authorization Rules:</strong> Login public; Logout requires Patient role.</p>
+
+            <h3>Data Flow Diagram</h3>
+            <div class="flow-diagram">
+                <span class="step">Patient</span> <span class="arrow">→</span>
+                <span class="step">/login</span> <span class="arrow">→</span>
+                <span class="step">AuthService</span> <span class="arrow">→</span>
+                <span class="step">DB (User)</span> <span class="arrow">→</span>
+                <span class="step">Token</span> <span class="arrow">→</span>
+                <span class="step">Patient</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li><code>PatientAuthController</code>.</li>
+                <li>Endpoint documentation (Swagger).</li>
+                <li>Unit tests for login (success, wrong password, patient role check).</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ Login returns token with Patient role.</li>
+                <li>☐ Invalid credentials return 401.</li>
+                <li>☐ Therapist user trying to login via patient endpoint returns 403.</li>
+                <li>☐ Logout endpoint (if implemented) requires authentication.</li>
+            </ul>
+
+            <h3>Testing Strategy</h3>
+            <h4>Unit Tests</h4>
+            <ul>
+                <li>Test login with valid patient credentials.</li>
+                <li>Test login with invalid password.</li>
+                <li>Test login with therapist account – expect 403.</li>
+                <li>Test logout – verify 204.</li>
+            </ul>
+            <h4>Integration Tests</h4>
+            <ul>
+                <li>End-to-end login flow with test database.</li>
+            </ul>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Not checking the user's role before issuing token – could allow therapist to access patient endpoints. Always verify role.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Endpoint implemented and tested.</li>
+                <li>Swagger updated.</li>
+                <li>Unit tests pass.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <p><strong>Must Know:</strong> JWT authentication, ASP.NET Core controllers, role‑based authorization.</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK BE-PATPT-002                                                     -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">BE-PATPT-002</span><span class="task-name">Patient Exercise – View</span></span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">3h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> BE-PATPT-002</li>
+                <li><strong>Task Name:</strong> Patient Exercise – View</li>
+                <li><strong>Owner:</strong> M2 (Backend)</li>
+                <li><strong>Dependencies:</strong> BE-EXE-003 (ExerciseService), BE-AUTH-009 (Patient auth)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 3 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Provide an endpoint for patients to view their assigned exercises, with optional filtering by status (e.g., pending, completed).</p>
+
+            <h3>Business Purpose</h3>
+            <p>Patients need to see what exercises are assigned to them, their due dates, and their current status.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Expose patient‑specific exercise data from the ExerciseService, filtering by the authenticated patient's ID.</p>
+
+            <h3>Prerequisites</h3>
+            <h4>Backend</h4>
+            <ul>
+                <li><strong>ExerciseService</strong> with method to get patient exercises (already implemented in BE-EXE-003).</li>
+                <li><strong>CurrentUserService</strong> to extract patient ID from JWT.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Patient ID from token (via ICurrentUserService).</li>
+                <li>Optional query parameters: status (Pending, Complete, etc.).</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>List of <code>PatientExerciseViewDto</code> for the patient.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create endpoint</strong> <code>GET /api/patient/exercises</code> in a new <code>PatientController</code> (or a dedicated PatientPortalController) with route <code>[Route("api/patient")]</code>.
+                </li>
+                <li>
+                    <strong>Inject IExerciseService, ICurrentUserService</strong>.
+                </li>
+                <li>
+                    <strong>Get patient ID</strong> from <code>ICurrentUserService.GetUserId()</code>.
+                </li>
+                <li>
+                    <strong>Call exerciseService.GetPatientExercisesAsync(patientId, statusFilter)</strong> (if filter is provided).
+                </li>
+                <li>
+                    <strong>Return</strong> list of DTOs.
+                </li>
+                <li>
+                    <strong>Apply <code>[Authorize(Roles = "Patient")]</code></strong>.
+                </li>
+            </ol>
+
+            <h3>Detailed Database Workflow</h3>
+            <p>Uses existing PatientExercise table with indexes on PatientId, Status for performance.</p>
+
+            <h3>API Design</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Route</th><th>Method</th><th>Request</th><th>Response</th><th>Auth</th></tr></thead>
+                    <tbody>
+                        <tr><td>/api/patient/exercises</td><td>GET</td><td>Query: status (optional)</td><td>List&lt;PatientExerciseViewDto&gt;</td><td>Patient</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p><strong>Response DTO:</strong> PatientExerciseViewDto includes ExerciseId, Title, Description, DueDate, Status, Reflection.</p>
+
+            <h3>Data Flow Diagram</h3>
+            <div class="flow-diagram">
+                <span class="step">Patient</span> <span class="arrow">→</span>
+                <span class="step">/api/patient/exercises</span> <span class="arrow">→</span>
+                <span class="step">Get patient ID</span> <span class="arrow">→</span>
+                <span class="step">ExerciseService</span> <span class="arrow">→</span>
+                <span class="step">Repository</span> <span class="arrow">→</span>
+                <span class="step">Response</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>PatientController with endpoint.</li>
+                <li>Unit tests for service call and authorization.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ Endpoint returns only exercises for the authenticated patient.</li>
+                <li>☐ Filter by status works.</li>
+                <li>☐ 401 if not authenticated.</li>
+            </ul>
+
+            <h3>Testing Strategy</h3>
+            <p><em>Unit Tests:</em> Mock ICurrentUserService, ExerciseService, test endpoint.</p>
+            <p><em>Integration Tests:</em> Test with a real patient and exercises.</p>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Endpoint implemented and tested.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK BE-PATPT-003                                                     -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">BE-PATPT-003</span><span class="task-name">Patient Exercise – Update Status</span></span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">4h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> BE-PATPT-003</li>
+                <li><strong>Task Name:</strong> Patient Exercise – Update Status</li>
+                <li><strong>Owner:</strong> M2 (Backend)</li>
+                <li><strong>Dependencies:</strong> BE-EXE-003 (ExerciseService), BE-PATPT-002</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 4 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Allow patients to update the status of an assigned exercise (Complete/Partial/Skipped) and optionally add a reflection note.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Patients can track their progress and provide feedback on exercises.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Call ExerciseService to update the PatientExercise status, ensuring the exercise belongs to the authenticated patient.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>ExerciseService with <code>UpdatePatientExerciseStatusAsync</code> method.</li>
+                <li>Ownership validation: ensure the patient owns the exercise.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>PatientExercise ID (from route).</li>
+                <li>CompletionDto (Status, Reflection).</li>
+                <li>Patient ID from token.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Updated PatientExerciseViewDto.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create endpoint</strong> <code>PUT /api/patient/exercises/{id}/status</code>.
+                </li>
+                <li>
+                    <strong>Retrieve patient ID</strong> from token.
+                </li>
+                <li>
+                    <strong>Fetch the PatientExercise</strong> by id to verify ownership – if not owned by patient, return 403.
+                </li>
+                <li>
+                    <strong>Call ExerciseService.UpdateStatusAsync</strong> with the DTO.
+                </li>
+                <li>
+                    <strong>Return</strong> updated DTO.
+                </li>
+            </ol>
+
+            <h3>API Design</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Route</th><th>Method</th><th>Request</th><th>Response</th><th>Auth</th></tr></thead>
+                    <tbody>
+                        <tr><td>/api/patient/exercises/{id}/status</td><td>PUT</td><td>CompletionDto (Status, Reflection)</td><td>PatientExerciseViewDto</td><td>Patient</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p><strong>Validation Rules:</strong> Status must be one of Complete, Partial, Skipped; Reflection max length 1000.</p>
+
+            <h3>Data Flow Diagram</h3>
+            <div class="flow-diagram">
+                <span class="step">Patient</span> <span class="arrow">→</span>
+                <span class="step">PUT /status</span> <span class="arrow">→</span>
+                <span class="step">Verify ownership</span> <span class="arrow">→</span>
+                <span class="step">ExerciseService</span> <span class="arrow">→</span>
+                <span class="step">Repository</span> <span class="arrow">→</span>
+                <span class="step">Response</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Endpoint in PatientController.</li>
+                <li>Unit tests for ownership and update.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ Only patient can update their own exercise.</li>
+                <li>☐ Invalid status returns 400.</li>
+                <li>☐ Reflection saved.</li>
+            </ul>
+
+            <h3>Testing Strategy</h3>
+            <p><em>Unit Tests:</em> Test ownership check, update success.</p>
+            <p><em>Integration Tests:</em> Test full flow.</p>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Endpoint works.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK BE-PATPT-004                                                     -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">BE-PATPT-004</span><span class="task-name">Support Chat – Start</span></span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">3h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> BE-PATPT-004</li>
+                <li><strong>Task Name:</strong> Support Chat – Start</li>
+                <li><strong>Owner:</strong> M2 (Backend) with M5</li>
+                <li><strong>Dependencies:</strong> DB-005 (ChatSession entity), Patient authentication</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 3 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Create an endpoint to start a new chat session for a patient, returning a session ID that will be used for subsequent messages.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Patients need to initiate a support chat with the AI assistant.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Create a ChatSession record in the database with IsActive = true, and return the session ID.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>ChatSession entity.</li>
+                <li>Repository for ChatSession.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Patient ID from token.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>ChatSessionViewDto with Id, StartedAt, IsActive.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create endpoint</strong> <code>POST /api/patient/chat/start</code>.
+                </li>
+                <li>
+                    <strong>Create a new ChatSession</strong> entity with PatientId, StartedAt = DateTime.UtcNow, IsActive = true.
+                </li>
+                <li>
+                    <strong>Save</strong> via repository and UnitOfWork.
+                </li>
+                <li>
+                    <strong>Return</strong> the session DTO.
+                </li>
+            </ol>
+
+            <h3>API Design</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Route</th><th>Method</th><th>Request</th><th>Response</th><th>Auth</th></tr></thead>
+                    <tbody>
+                        <tr><td>/api/patient/chat/start</td><td>POST</td><td>None</td><td>ChatSessionViewDto</td><td>Patient</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Data Flow</h3>
+            <div class="flow-diagram">
+                <span class="step">Patient</span> <span class="arrow">→</span>
+                <span class="step">POST /start</span> <span class="arrow">→</span>
+                <span class="step">Create Session</span> <span class="arrow">→</span>
+                <span class="step">DB</span> <span class="arrow">→</span>
+                <span class="step">Session ID</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Endpoint to start chat.</li>
+                <li>Unit tests.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ Session created with correct patient ID.</li>
+                <li>☐ IsActive = true.</li>
+            </ul>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Start chat works.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK BE-PATPT-005                                                     -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">BE-PATPT-005</span><span class="task-name">Support Chat – Send Message</span></span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-red">High</span>
+                <span class="tag">6h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> BE-PATPT-005</li>
+                <li><strong>Task Name:</strong> Support Chat – Send Message</li>
+                <li><strong>Owner:</strong> M5 (AI Lead) with M2</li>
+                <li><strong>Dependencies:</strong> BE-PATPT-004 (ChatSession), BE-AI-007 (AI response), BE-AI-009 (Crisis detection), SignalR</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                <li><strong>Estimated Effort:</strong> 6 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Implement the message sending functionality: store the patient's message, call the AI service to generate a response, store the AI response, and optionally detect crisis. Return both messages (or use SignalR for real‑time).</p>
+
+            <h3>Business Purpose</h3>
+            <p>Enable real‑time conversation between patient and AI assistant, with crisis detection.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Integrate with ChatService, AI service, and SignalR to provide a responsive chat experience.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li><strong>SignalR:</strong> Hub for real‑time messaging.</li>
+                <li><strong>ChatService:</strong> Repository for ChatMessage.</li>
+                <li><strong>AI Service:</strong> IConversationService (from BE-AI-007).</li>
+                <li><strong>Crisis detection:</strong> ICrisisDetectionService.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Session ID, message content.</li>
+                <li>Patient ID from token.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>AI response message (or sent via SignalR).</li>
+                <li>ChatMessage records saved.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create endpoint</strong> <code>POST /api/patient/chat/send</code> (or SignalR hub method).
+                </li>
+                <li>
+                    <strong>Validate</strong> that the session exists and belongs to the patient.
+                </li>
+                <li>
+                    <strong>Save patient message</strong> as ChatMessage with Sender = Patient.
+                </li>
+                <li>
+                    <strong>Call AI service</strong> to get response (passing conversation history, RAG context).
+                </li>
+                <li>
+                    <strong>Save AI message</strong> as ChatMessage with Sender = AI.
+                </li>
+                <li>
+                    <strong>Run crisis detection</strong> on the AI message (or patient message) – if crisis, create CrisisAlert and notify.
+                </li>
+                <li>
+                    <strong>Return</strong> or broadcast the AI message via SignalR.
+                </li>
+            </ol>
+
+            <h3>Detailed AI Workflow</h3>
+            <div class="flow-diagram">
+                <span class="step">Patient Message</span> <span class="arrow">→</span>
+                <span class="step">Save</span> <span class="arrow">→</span>
+                <span class="step">RAG + History</span> <span class="arrow">→</span>
+                <span class="step">GPT‑4o</span> <span class="arrow">→</span>
+                <span class="step">AI Response</span> <span class="arrow">→</span>
+                <span class="step">Save</span> <span class="arrow">→</span>
+                <span class="step">Crisis Check</span> <span class="arrow">→</span>
+                <span class="step">Notify</span>
+            </div>
+
+            <h3>API Design</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Route</th><th>Method</th><th>Request</th><th>Response</th><th>Auth</th></tr></thead>
+                    <tbody>
+                        <tr><td>/api/patient/chat/send</td><td>POST</td><td>{ sessionId, message }</td><td>{ aiResponse }</td><td>Patient</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Data Flow</h3>
+            <div class="flow-diagram">
+                <span class="step">Patient</span> <span class="arrow">→</span>
+                <span class="step">POST /send</span> <span class="arrow">→</span>
+                <span class="step">ChatService</span> <span class="arrow">→</span>
+                <span class="step">AI Service</span> <span class="arrow">→</span>
+                <span class="step">Crisis Detection</span> <span class="arrow">→</span>
+                <span class="step">Response</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Send message endpoint/hub method.</li>
+                <li>Integration with AI and crisis detection.</li>
+                <li>Unit tests.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ Message saved correctly.</li>
+                <li>☐ AI response generated and saved.</li>
+                <li>☐ Crisis detection triggers alert if needed.</li>
+                <li>☐ SignalR broadcast works.</li>
+            </ul>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Not handling AI API timeouts – implement retry and fallback.
+            </div>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Forgetting to check session ownership – patient could send message to another patient's session.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Send message works end‑to‑end.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK BE-PATPT-006                                                     -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">BE-PATPT-006</span><span class="task-name">Support Chat – History</span></span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">3h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> BE-PATPT-006</li>
+                <li><strong>Task Name:</strong> Support Chat – History</li>
+                <li><strong>Owner:</strong> M2 (Backend)</li>
+                <li><strong>Dependencies:</strong> BE-PATPT-005 (Chat messages), ChatSession</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 3 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Provide an endpoint for patients to retrieve the chat history of a given session (or all sessions).</p>
+
+            <h3>Business Purpose</h3>
+            <p>Patients can review past conversations with the AI assistant.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Query ChatMessages for the session, order by timestamp, return as DTOs.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>ChatMessage repository.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Session ID (optional – if not provided, return all sessions for patient).</li>
+                <li>Patient ID from token.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>List of ChatMessageViewDto (with sender, content, timestamp).</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create endpoint</strong> <code>GET /api/patient/chat/history</code> with optional query parameter <code>sessionId</code>.
+                </li>
+                <li>
+                    <strong>Validate</strong> that the session belongs to the patient.
+                </li>
+                <li>
+                    <strong>Query messages</strong> for the session, ordered by Timestamp.
+                </li>
+                <li>
+                    <strong>Return</strong> list of messages.
+                </li>
+            </ol>
+
+            <h3>API Design</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Route</th><th>Method</th><th>Request</th><th>Response</th><th>Auth</th></tr></thead>
+                    <tbody>
+                        <tr><td>/api/patient/chat/history</td><td>GET</td><td>Query: sessionId (optional)</td><td>List&lt;ChatMessageViewDto&gt;</td><td>Patient</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Data Flow</h3>
+            <div class="flow-diagram">
+                <span class="step">Patient</span> <span class="arrow">→</span>
+                <span class="step">GET /history</span> <span class="arrow">→</span>
+                <span class="step">Validate session</span> <span class="arrow">→</span>
+                <span class="step">Query messages</span> <span class="arrow">→</span>
+                <span class="step">Response</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>History endpoint.</li>
+                <li>Unit tests.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ Returns only messages for the patient's session.</li>
+                <li>☐ Messages ordered by time.</li>
+            </ul>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>History retrieval works.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK BE-PATPT-007                                                     -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">BE-PATPT-007</span><span class="task-name">Support Chat – Crisis Alert</span></span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">3h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> BE-PATPT-007</li>
+                <li><strong>Task Name:</strong> Support Chat – Crisis Alert</li>
+                <li><strong>Owner:</strong> M5 (AI Lead)</li>
+                <li><strong>Dependencies:</strong> BE-AI-010 (Crisis escalation), BE-PATPT-005</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 3 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Allow patients to manually trigger a crisis alert (e.g., via a button in the chat) to immediately notify their therapist.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Provide a safety net – patients can directly request help in case of emergency.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Create a CrisisAlert record and send a notification to the therapist, similar to automatic crisis detection.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>CrisisAlert entity.</li>
+                <li>Notification service.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Session ID (optional).</li>
+                <li>Message content (optional).</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Success response.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create endpoint</strong> <code>POST /api/patient/chat/crisis</code>.
+                </li>
+                <li>
+                    <strong>Get patient ID</strong> from token.
+                </li>
+                <li>
+                    <strong>Create CrisisAlert</strong> with PatientId, TriggeredAt = now, Severity = "High", Source = "PatientManual".
+                </li>
+                <li>
+                    <strong>Call escalation service</strong> to send notification.
+                </li>
+                <li>
+                    <strong>Return</strong> 200 OK.
+                </li>
+            </ol>
+
+            <h3>API Design</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Route</th><th>Method</th><th>Request</th><th>Response</th><th>Auth</th></tr></thead>
+                    <tbody>
+                        <tr><td>/api/patient/chat/crisis</td><td>POST</td><td>None</td><td>200 OK</td><td>Patient</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Data Flow</h3>
+            <div class="flow-diagram">
+                <span class="step">Patient</span> <span class="arrow">→</span>
+                <span class="step">POST /crisis</span> <span class="arrow">→</span>
+                <span class="step">Create Alert</span> <span class="arrow">→</span>
+                <span class="step">Notify Therapist</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Crisis alert endpoint.</li>
+                <li>Unit tests.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ Alert created.</li>
+                <li>☐ Notification sent.</li>
+            </ul>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Manual crisis alert works.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK BE-PATPT-008                                                     -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">BE-PATPT-008</span><span class="task-name">Patient Portal Unit Tests</span></span>
+            <span class="task-badges">
+                <span class="tag tag-green">P2</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">6h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> BE-PATPT-008</li>
+                <li><strong>Task Name:</strong> Patient Portal Unit Tests</li>
+                <li><strong>Owner:</strong> M2 (Backend) with M5</li>
+                <li><strong>Dependencies:</strong> All BE-PATPT-001..007</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 6 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Write unit tests for all patient portal endpoints: auth, exercise view/update, chat start/send/history, crisis alert.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Ensure all patient‑facing functionality works correctly and is secure.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Test controllers, services, and AI integration with mocks.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>xUnit, Moq, FluentAssertions.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Mock dependencies: IAuthService, IExerciseService, IChatService, IConversationService, ICrisisDetectionService.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Test classes for all patient portal controllers.</li>
+                <li>Passing tests.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create <code>PatientAuthControllerTests</code></strong> – test login, logout, role checks.
+                </li>
+                <li>
+                    <strong>Create <code>PatientExerciseControllerTests</code></strong> – test view and update with ownership.
+                </li>
+                <li>
+                    <strong>Create <code>PatientChatControllerTests</code></strong> – test start, send, history, crisis.
+                    <ul>
+                        <li>Mock AI service responses.</li>
+                        <li>Test crisis detection integration.</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Test error cases</strong> – unauthorized, not found, validation failures.
+                </li>
+            </ol>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Test classes with passing tests.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>☐ All test methods pass.</li>
+                <li>☐ Coverage > 80% for critical paths.</li>
+            </ul>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Unit tests pass.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- FINAL SECTIONS                                                        -->
+    <!-- ===================================================================== -->
+    <hr class="hr" />
+
+    <h2 style="background: #f0fdf4; border-left-color: #22c55e;">✅ Phase Completion Criteria</h2>
+    <ul class="checklist">
+        <li>All 8 tasks (BE-PATPT-001..008) are completed and committed.</li>
+        <li>Patient authentication endpoints work – patients can login and logout.</li>
+        <li>Patient exercise endpoints: view and update status work with ownership checks.</li>
+        <li>Chat endpoints: start session, send message (with AI response and crisis detection), history, manual crisis alert.</li>
+        <li>All endpoints have proper authorization (Patient role only).</li>
+        <li>AI integration for chat responses works (with RAG and conversation memory).</li>
+        <li>Crisis detection and escalation (both automatic and manual) work.</li>
+        <li>Unit tests for all patient portal controllers pass.</li>
+        <li>Integration tests (if any) pass.</li>
+        <li>Swagger/OpenAPI documentation is updated for all new endpoints.</li>
+    </ul>
+
+    <h2 style="background: #f0f9ff; border-left-color: #3b82f6;">📋 Code Review Checklist</h2>
+    <ul class="checklist">
+        <li>Ownership checks implemented on all patient‑specific resources.</li>
+        <li>Authorization attributes correctly applied.</li>
+        <li>AI service calls have error handling (retries, fallbacks).</li>
+        <li>Crisis detection uses both keyword and GPT sentiment.</li>
+        <li>Notification service integration for crisis alerts.</li>
+        <li>Unit tests cover both success and failure scenarios.</li>
+        <li>DTOs are validated.</li>
+        <li>Database indexes on ChatMessage (SessionId, Timestamp) for performance.</li>
+    </ul>
+
+    <h2 style="background: #fefce8; border-left-color: #f59e0b;">🚀 Pull Request Checklist</h2>
+    <ul class="checklist">
+        <li>Branch up‑to‑date with <code>develop</code>.</li>
+        <li>CI pipeline passes.</li>
+        <li>Code review approved.</li>
+        <li>All checklist items satisfied.</li>
+        <li>Migrations (if any) included and tested.</li>
+        <li>Manual testing done on patient portal flows.</li>
+    </ul>
+
+    <h2 style="background: #fef2f2; border-left-color: #ef4444;">🧪 Deployment Readiness Checklist</h2>
+    <ul class="checklist">
+        <li>All Phase 9 tasks complete and merged.</li>
+        <li>Patient login works in staging.</li>
+        <li>Patient can view and update exercises.</li>
+        <li>Chat functionality (start, send, history) works with AI responses.</li>
+        <li>Crisis alerts trigger notifications.</li>
+        <li>Integration tests pass against deployed environment.</li>
+    </ul>
+
+    <hr class="hr" />
+    <div style="text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 20px 0 0;">
+        Jalsa – Patient Portal Implementation Playbook &bull; v1.0 &bull; For development team
+    </div>
+</div>
+
+<script>
+    function toggleTask(header) {
+        const body = header.nextElementSibling;
+        const isOpen = body.classList.contains('open');
+        body.classList.toggle('open');
+        header.classList.toggle('open');
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        const firstHeader = document.querySelector('.task-header');
+        if (firstHeader) firstHeader.click();
+    });
+</script>
+</body>
+</html>

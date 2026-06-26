@@ -144,9 +144,9 @@
                 }
                 @if (activeTab() === 'sessions') {
                     <div id="tab-sessions" class="tab-pane active" role="tabpanel" aria-labelledby="tab-btn-sessions">
-                        <div class="tab-placeholder">
-                            <p class="text-muted">Session list will be integrated here.</p>
-                        </div>
+                        @if (patient(); as p) {
+                            <app-session-list [patientIdInput]="p.id"></app-session-list>
+                        }
                     </div>
                 }
                 @if (activeTab() === 'exercises') {

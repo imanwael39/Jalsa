@@ -1,0 +1,1989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jalsa – Phase 1: Foundation Setup – Expanded Implementation Handbook</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+            padding: 30px 20px;
+            line-height: 1.7;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            padding: 40px 45px;
+        }
+        h1 {
+            font-size: 2.4rem;
+            color: #0f172a;
+            border-bottom: 4px solid #3b82f6;
+            padding-bottom: 18px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        h1 small {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #64748b;
+            margin-left: auto;
+        }
+        .phase-banner {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 20px 28px;
+            margin-bottom: 32px;
+            border-left: 8px solid #3b82f6;
+        }
+        .phase-banner h2 {
+            margin: 0 0 8px 0;
+            font-size: 1.6rem;
+            color: #0f172a;
+            background: none;
+            padding: 0;
+            border-left: none;
+        }
+        .phase-banner p {
+            margin: 0;
+            color: #475569;
+        }
+        .phase-banner .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px 40px;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+        .phase-banner .meta span {
+            font-weight: 500;
+            color: #0f172a;
+        }
+
+        .task-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+        .task-header {
+            background: #f8fafc;
+            padding: 16px 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.15s;
+            user-select: none;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .task-header:hover {
+            background: #f1f5f9;
+        }
+        .task-header .task-id {
+            font-weight: 700;
+            color: #3b82f6;
+            margin-right: 12px;
+            font-size: 1.05rem;
+        }
+        .task-header .task-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .task-header .task-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .task-header .task-badges .tag {
+            font-size: 0.7rem;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+        .task-header .chevron {
+            transition: transform 0.25s;
+            font-size: 1.3rem;
+            color: #94a3b8;
+            margin-left: 12px;
+        }
+        .task-header.open .chevron {
+            transform: rotate(180deg);
+        }
+
+        .task-body {
+            padding: 0 24px 24px;
+            display: none;
+            overflow: hidden;
+        }
+        .task-body.open {
+            display: block;
+        }
+
+        .task-body h3 {
+            font-size: 1.15rem;
+            margin-top: 22px;
+            margin-bottom: 8px;
+            color: #0f172a;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 4px;
+        }
+        .task-body h4 {
+            font-size: 1rem;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            color: #334155;
+        }
+        .task-body p {
+            margin-bottom: 8px;
+        }
+        .task-body ul,
+        .task-body ol {
+            padding-left: 24px;
+            margin-bottom: 10px;
+        }
+        .task-body li {
+            margin-bottom: 3px;
+        }
+        .task-body .field-label {
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+        .checklist li {
+            padding: 3px 0 3px 30px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') left center no-repeat;
+            background-size: 18px;
+        }
+
+        .pitfall-box {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .tip-box {
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .arch-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #e2e8f0;
+            padding: 1px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-right: 4px;
+        }
+        .tag-blue {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .tag-green {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .tag-amber {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .tag-red {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .tag-purple {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+        .tag-slate {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        .tag-indigo {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .flow-diagram {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin: 8px 0 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .flow-diagram .arrow {
+            color: #94a3b8;
+            margin: 0 6px;
+        }
+        .flow-diagram .step {
+            color: #0f172a;
+            font-weight: 500;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            margin: 10px 0 16px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            background: #fff;
+        }
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+            text-align: left;
+            padding: 8px 14px;
+            border-bottom: 2px solid #e2e8f0;
+            color: #0f172a;
+        }
+        td {
+            padding: 8px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .hr {
+            border: none;
+            border-top: 2px dashed #e2e8f0;
+            margin: 32px 0;
+        }
+
+        .code-block {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin: 6px 0 12px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .code-block .comment {
+            color: #94a3b8;
+        }
+        .code-block .keyword {
+            color: #f472b6;
+        }
+        .code-block .string {
+            color: #34d399;
+        }
+        .code-block .func {
+            color: #60a5fa;
+        }
+
+        .subtask {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 12px 18px;
+            margin: 10px 0;
+            border-left: 4px solid #3b82f6;
+        }
+        .subtask strong {
+            color: #0f172a;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 16px;
+            }
+            h1 {
+                font-size: 1.8rem;
+                flex-wrap: wrap;
+            }
+            .task-header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .task-body {
+                padding: 0 16px 16px;
+            }
+            .phase-banner {
+                padding: 16px;
+            }
+            .phase-banner .meta {
+                flex-direction: column;
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <h1>
+            🏗️ Jalsa – Phase 1: Foundation Setup
+            <small>Expanded Implementation Handbook · 7 Tasks · 35+ Subtasks</small>
+        </h1>
+
+        <!-- ====== PHASE BANNER ====== -->
+        <div class="phase-banner">
+            <h2>🏗️ Phase 1 – Foundation Setup</h2>
+            <p><strong>Purpose:</strong> Create the initial Angular 17 project, install all necessary dependencies, configure environment files, set up the folder structure, and prepare the development environment so that the team can start building features immediately. This phase transforms the planning documents into a runnable application skeleton.</p>
+            <div class="meta">
+                <span>📋 Tasks: 7</span>
+                <span>⏱️ Total Effort: ~20 hours</span>
+                <span>👤 Owners: M3 (Frontend Lead), M4 (Frontend Developer)</span>
+                <span>🔗 Dependencies: Phase 0 (Planning & Analysis) must be complete</span>
+                <span>🎯 Deliverable: Fully configured Angular project with all tooling and base structure</span>
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 1: ANGULAR PROJECT INITIALIZATION                                 -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-SETUP-001</span><span class="task-name">Angular Project Initialization</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">3h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-SETUP-001</li>
+                    <li><strong>Task Name:</strong> Angular Project Initialization</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> Phase 0 complete (planning documents, tooling)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 3 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create a new Angular 17 project using the Standalone architecture, with SCSS as the stylesheet format, routing enabled, and no server‑side rendering (SSR) for simplicity.</p>
+
+                <h3>Business Purpose</h3>
+                <p>This is the starting point for all frontend development. A properly initialized project saves hours of configuration later and ensures we follow best practices from the beginning.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Generate the base Angular project with the correct configuration: Standalone components, SCSS, routing, and minimal dependencies. This provides a clean foundation for the team to build upon.</p>
+
+                <h3>Prerequisites</h3>
+                <h4>Concepts Required</h4>
+                <ul>
+                    <li><strong>Node.js and npm:</strong> JavaScript runtime and package manager. Ensure Node.js 18+ is installed.</li>
+                    <li><strong>Angular CLI:</strong> Command‑line interface for Angular. Install globally with <code>npm install -g @angular/cli</code>.</li>
+                    <li><strong>Standalone Architecture:</strong> Angular 17+ default; no NgModules needed.</li>
+                </ul>
+                <h4>Access Required</h4>
+                <ul>
+                    <li>Git repository (create one if not exists)</li>
+                    <li>Terminal/command prompt access</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>Phase 0:</strong> Planning documents provide the project name and structure.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Project name: <code>jalsa-frontend</code> (or as decided)</li>
+                    <li>Folder location for the new project</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>A new Angular 17 project directory with all base files.</li>
+                    <li><code>package.json</code> with initial dependencies.</li>
+                    <li><code>angular.json</code> with build configuration.</li>
+                    <li><code>tsconfig.json</code> with strict TypeScript settings.</li>
+                    <li><code>src/</code> folder with default app component (Standalone).</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Verify Node.js and npm</h4>
+                <p><strong>What to do:</strong> Run <code>node -v</code> and <code>npm -v</code> to ensure versions are correct.</p>
+                <p><strong>Why it is required:</strong> The CLI requires Node.js 18+ and npm 6+.</p>
+                <p><strong>Expected result:</strong> Node v18.x.x and npm v9.x.x or higher.</p>
+
+                <div class="code-block">
+                    node -v   <span class="comment"># Should be v18 or higher</span>
+                    npm -v    <span class="comment"># Should be v9 or higher</span>
+                </div>
+
+                <h4>Step 2: Install Angular CLI Globally (if not already)</h4>
+                <p><strong>What to do:</strong> Install the Angular CLI globally using npm.</p>
+                <p><strong>Why it is required:</strong> The <code>ng</code> command is used to create and manage the project.</p>
+                <p><strong>Expected result:</strong> <code>ng version</code> shows Angular CLI 17+.</p>
+
+                <div class="code-block">
+                    npm install -g @angular/cli@17
+                </div>
+
+                <h4>Step 3: Create the Angular Project</h4>
+                <p><strong>What to do:</strong> Run the <code>ng new</code> command with appropriate flags.</p>
+                <p><strong>Why it is required:</strong> This generates the entire project skeleton.</p>
+                <p><strong>Expected result:</strong> A new folder named <code>jalsa-frontend</code> with all initial files.</p>
+
+                <div class="code-block">
+                    ng new jalsa-frontend --standalone --style=scss --routing --ssr=false
+                </div>
+
+                <p><strong>Explanation of flags:</strong></p>
+                <ul>
+                    <li><code>--standalone</code> – Use Standalone components (no NgModules).</li>
+                    <li><code>--style=scss</code> – Use SCSS for styles.</li>
+                    <li><code>--routing</code> – Generate a routing module (app.routes.ts).</li>
+                    <li><code>--ssr=false</code> – Disable server‑side rendering (we use SPA).</li>
+                </ul>
+
+                <h4>Step 4: Navigate into the Project Directory</h4>
+                <p><strong>What to do:</strong> Change directory to the new project.</p>
+                <p><strong>Why it is required:</strong> Subsequent commands must run inside the project.</p>
+                <p><strong>Expected result:</strong> Inside <code>jalsa-frontend</code> folder.</p>
+
+                <div class="code-block">
+                    cd jalsa-frontend
+                </div>
+
+                <h4>Step 5: Install Initial Dependencies (optional)</h4>
+                <p>Angular CLI automatically installs base packages. We will add more in later tasks.</p>
+
+                <h4>Step 6: Test the Application</h4>
+                <p><strong>What to do:</strong> Run <code>ng serve</code> and open <code>http://localhost:4200</code> in a browser.</p>
+                <p><strong>Why it is required:</strong> Verify the project builds correctly.</p>
+                <p><strong>Expected result:</strong> The default Angular welcome page appears.</p>
+
+                <div class="code-block">
+                    ng serve
+                    <span class="comment"># Open http://localhost:4200</span>
+                </div>
+
+                <h4>Step 7: Initialize Git Repository (if not already)</h4>
+                <p><strong>What to do:</strong> If not created automatically, initialize Git and make the first commit.</p>
+                <p><strong>Why it is required:</strong> Version control is essential.</p>
+                <p><strong>Expected result:</strong> Git repository with initial commit.</p>
+
+                <div class="code-block">
+                    git init
+                    git add .
+                    git commit -m "feat: initialize Angular project"
+                </div>
+
+                <h3>Folder Structure</h3>
+                <p>After creation, the project has the following key files:</p>
+                <div class="code-block">
+                    jalsa-frontend/
+                    ├── .angular/                     <span class="comment"># Cache</span>
+                    ├── .vscode/                      <span class="comment"># (if configured)</span>
+                    ├── node_modules/                 <span class="comment"># Dependencies</span>
+                    ├── src/
+                    │   ├── app/
+                    │   │   ├── app.component.html
+                    │   │   ├── app.component.scss
+                    │   │   ├── app.component.spec.ts
+                    │   │   ├── app.component.ts      <span class="comment"># Standalone root component</span>
+                    │   │   ├── app.config.ts          <span class="comment"># Application configuration</span>
+                    │   │   └── app.routes.ts          <span class="comment"># Root routing</span>
+                    │   ├── assets/
+                    │   ├── environments/             <span class="comment"># (will create)</span>
+                    │   ├── favicon.ico
+                    │   ├── index.html
+                    │   ├── main.ts                    <span class="comment"># Bootstrap</span>
+                    │   └── styles.scss                <span class="comment"># Global styles</span>
+                    ├── .editorconfig
+                    ├── .gitignore
+                    ├── angular.json                   <span class="comment"># Build configuration</span>
+                    ├── package.json
+                    ├── tsconfig.app.json
+                    ├── tsconfig.json
+                    └── tsconfig.spec.json
+                </div>
+
+                <h3>Files To Create</h3>
+                <p>This task generates all files automatically via CLI. No manual creation needed.</p>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    <span class="comment"># Install CLI (if not global)</span>
+                    npm install -g @angular/cli@17
+
+                    <span class="comment"># Create project</span>
+                    ng new jalsa-frontend --standalone --style=scss --routing --ssr=false
+
+                    <span class="comment"># Navigate</span>
+                    cd jalsa-frontend
+
+                    <span class="comment"># Serve</span>
+                    ng serve
+                </div>
+
+                <h3>Code Flow</h3>
+                <div class="flow-diagram">
+                    <span class="step">main.ts</span> <span class="arrow">→</span>
+                    <span class="step">bootstrapApplication(AppComponent, appConfig)</span> <span class="arrow">→</span>
+                    <span class="step">AppComponent</span> <span class="arrow">→</span>
+                    <span class="step">AppComponent template</span>
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Angular CLI</li>
+                    <li>Standalone components</li>
+                    <li>Bootstrapping an Angular application</li>
+                </ul>
+
+                <h3>Tools/Libraries Required</h3>
+                <ul>
+                    <li>Node.js 18+</li>
+                    <li>Angular CLI 17</li>
+                    <li>Git</li>
+                </ul>
+
+                <h3>Angular Concepts Required</h3>
+                <ul>
+                    <li><code>main.ts</code> bootstrapping with <code>bootstrapApplication</code></li>
+                    <li><code>app.config.ts</code> for providers</li>
+                    <li><code>app.routes.ts</code> for routing</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Run <code>ng serve</code> and verify the app loads at localhost:4200.</li>
+                    <li>Run <code>ng build</code> and verify it builds without errors.</li>
+                    <li>Run <code>ng test</code> to ensure default tests pass.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>A fully functional Angular project.</li>
+                </ul>
+
+                <h3>Acceptance Criteria</h3>
+                <ul class="checklist">
+                    <li>The project builds with <code>ng build</code>.</li>
+                    <li>The app serves with <code>ng serve</code> and displays the default page.</li>
+                    <li>Standalone flag is active (no <code>AppModule</code>).</li>
+                    <li>SCSS is configured correctly.</li>
+                    <li>Routing is enabled.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Using an older Angular CLI version.
+                    <br /><strong>Fix:</strong> Check <code>ng version</code> and update with <code>npm install -g @angular/cli@latest</code>.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 2:</strong> Forgetting the <code>--standalone</code> flag, resulting in a module‑based project.
+                    <br /><strong>Fix:</strong> Delete and recreate with the flag.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 3:</strong> Not using <code>--ssr=false</code>, which adds unnecessary complexity.
+                    <br /><strong>Fix:</strong> Regenerate without SSR.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li><strong>Port 4200 already in use:</strong> Use <code>ng serve --port 4201</code>.</li>
+                    <li><strong>npm install fails:</strong> Clear cache with <code>npm cache clean --force</code> and retry.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Project created and builds successfully.</li>
+                    <li>App runs at localhost:4200.</li>
+                    <li>Initial commit pushed to repository.</li>
+                </ul>
+
+                <h3>Frontend Architecture Notes</h3>
+                <ul>
+                    <li>We use Standalone to reduce boilerplate and improve tree‑shaking.</li>
+                    <li>All future components will be Standalone.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All frontend developers.</li>
+                    <li><strong>Key Takeaways:</strong> The project skeleton is ready. Next task: Environment Configuration.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 2: ENVIRONMENT CONFIGURATION                                      -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-SETUP-002</span><span class="task-name">Environment Configuration</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">2h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-SETUP-002</li>
+                    <li><strong>Task Name:</strong> Environment Configuration</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-SETUP-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 2 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Set up environment files for development, staging, and production. Centralize all environment‑specific variables (API URLs, SignalR hub URLs, feature flags, etc.) so that the application can be deployed to different environments with zero code changes.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Enable seamless deployment across different environments (local, staging, production) without modifying code. This reduces human error and accelerates the release process.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use Angular's built‑in environment replacement feature to swap configurations at build time. All environment‑specific values are defined in <code>environment.ts</code> files.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular environment files.</li>
+                    <li>Knowledge of the API endpoints (from Phase 0).</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-SETUP-001:</strong> Project must exist.</li>
+                    <li><strong>Phase 0:</strong> API contracts define the base URLs.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>API base URL for each environment (e.g., local: <code>http://localhost:5000/api</code>, staging: <code>https://staging-api.jalsa.com/api</code>, production: <code>https://api.jalsa.com/api</code>).</li>
+                    <li>SignalR hub URL for each environment.</li>
+                    <li>AI service URL if separate.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>src/environments/environment.ts</code> – Development defaults.</li>
+                    <li><code>src/environments/environment.prod.ts</code> – Production values.</li>
+                    <li><code>src/environments/environment.staging.ts</code> – Staging values (optional).</li>
+                    <li>Updated <code>angular.json</code> to recognize staging and production configurations.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Create the Environments Folder</h4>
+                <p><strong>What to do:</strong> If not present, create <code>src/environments/</code>.</p>
+                <p><strong>Why it is required:</strong> Angular CLI uses this folder by convention.</p>
+                <p><strong>Expected result:</strong> A folder with environment files.</p>
+
+                <div class="code-block">
+                    mkdir -p src/environments
+                </div>
+
+                <h4>Step 2: Define Environment Interfaces</h4>
+                <p><strong>What to do:</strong> Create a type or interface to enforce consistency across environment files.</p>
+                <p><strong>Why it is required:</strong> Ensures all environment files have the same properties.</p>
+                <p><strong>Expected result:</strong> <code>src/environments/environment.model.ts</code>.</p>
+
+                <div class="code-block">
+                    <span class="comment">// src/environments/environment.model.ts</span>
+                    export interface Environment {
+                        production: boolean;
+                        apiUrl: string;
+                        signalRHubUrl: string;
+                        aiServiceUrl: string;
+                        appName: string;
+                        enableMockApi: boolean;
+                        logLevel: 'debug' | 'info' | 'warn' | 'error';
+                    }
+                </div>
+
+                <h4>Step 3: Create Environment Files</h4>
+                <p><strong>What to do:</strong> Create three files: development, staging, production.</p>
+                <p><strong>Why it is required:</strong> Each environment has different values.</p>
+                <p><strong>Expected result:</strong> Three environment files.</p>
+
+                <div class="code-block">
+                    <span class="comment">// src/environments/environment.ts (development)</span>
+                    <span class="keyword">import</span> { Environment } <span class="keyword">from</span> <span class="string">'./environment.model'</span>;
+
+                    export <span class="keyword">const</span> environment: Environment = {
+                        production: false,
+                        apiUrl: 'http://localhost:5000/api',
+                        signalRHubUrl: 'http://localhost:5000/chatHub',
+                        aiServiceUrl: 'http://localhost:5001',
+                        appName: 'Jalsa (Dev)',
+                        enableMockApi: true,
+                        logLevel: 'debug',
+                    };
+                </div>
+
+                <div class="code-block">
+                    <span class="comment">// src/environments/environment.staging.ts</span>
+                    <span class="keyword">import</span> { Environment } <span class="keyword">from</span> <span class="string">'./environment.model'</span>;
+
+                    export <span class="keyword">const</span> environment: Environment = {
+                        production: false,
+                        apiUrl: 'https://staging-api.jalsa.com/api',
+                        signalRHubUrl: 'https://staging-api.jalsa.com/chatHub',
+                        aiServiceUrl: 'https://staging-ai.jalsa.com',
+                        appName: 'Jalsa (Staging)',
+                        enableMockApi: false,
+                        logLevel: 'info',
+                    };
+                </div>
+
+                <div class="code-block">
+                    <span class="comment">// src/environments/environment.prod.ts</span>
+                    <span class="keyword">import</span> { Environment } <span class="keyword">from</span> <span class="string">'./environment.model'</span>;
+
+                    export <span class="keyword">const</span> environment: Environment = {
+                        production: true,
+                        apiUrl: 'https://api.jalsa.com/api',
+                        signalRHubUrl: 'https://api.jalsa.com/chatHub',
+                        aiServiceUrl: 'https://ai.jalsa.com',
+                        appName: 'Jalsa',
+                        enableMockApi: false,
+                        logLevel: 'error',
+                    };
+                </div>
+
+                <h4>Step 4: Update angular.json to Include Staging and Production Configurations</h4>
+                <p><strong>What to do:</strong> Modify <code>angular.json</code> to add <code>staging</code> and <code>production</code> configurations for the <code>build</code> and <code>serve</code> targets.</p>
+                <p><strong>Why it is required:</strong> So that <code>ng build --configuration=production</code> uses the correct environment file.</p>
+                <p><strong>Expected result:</strong> Angular builds with environment‑specific values.</p>
+
+                <div class="code-block">
+                    <span class="comment">// In angular.json, under projects > jalsa-frontend > architect > build > configurations</span>
+                    <span class="string">"staging"</span>: {
+                        <span class="string">"fileReplacements"</span>: [
+                            {
+                                <span class="string">"src"</span>: <span class="string">"src/environments/environment.ts"</span>,
+                                <span class="string">"replace"</span>: <span class="string">"src/environments/environment.staging.ts"</span>
+                            }
+                        ],
+                        <span class="string">"optimization"</span>: true,
+                        <span class="string">"outputHashing"</span>: <span class="string">"all"</span>,
+                        <span class="string">"sourceMap"</span>: false,
+                        <span class="string">"namedChunks"</span>: false,
+                        <span class="string">"extractLicenses"</span>: true,
+                        <span class="string">"vendorChunk"</span>: false,
+                        <span class="string">"buildOptimizer"</span>: true,
+                        <span class="string">"budgets"</span>: [ /* ... */ ]
+                    },
+                    <span class="string">"production"</span>: {
+                        <span class="string">"fileReplacements"</span>: [
+                            {
+                                <span class="string">"src"</span>: <span class="string">"src/environments/environment.ts"</span>,
+                                <span class="string">"replace"</span>: <span class="string">"src/environments/environment.prod.ts"</span>
+                            }
+                        ],
+                        <span class="comment">// ... same as staging</span>
+                    }
+                </div>
+
+                <p>Also update the <code>serve</code> target to allow <code>--configuration=staging</code> and <code>--configuration=production</code>.</p>
+
+                <h4>Step 5: Test Environment Switching</h4>
+                <p><strong>What to do:</strong> Run <code>ng serve --configuration=staging</code> and verify the environment values are used.</p>
+                <p><strong>Why it is required:</strong> Confirm the configuration works.</p>
+                <p><strong>Expected result:</strong> The application runs with staging values.</p>
+
+                <div class="code-block">
+                    ng serve --configuration=staging
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>src/environments/environment.model.ts</code></li>
+                    <li><code>src/environments/environment.ts</code></li>
+                    <li><code>src/environments/environment.staging.ts</code></li>
+                    <li><code>src/environments/environment.prod.ts</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    <span class="comment"># Build for production</span>
+                    ng build --configuration=production
+
+                    <span class="comment"># Serve with staging</span>
+                    ng serve --configuration=staging
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Angular environment files</li>
+                    <li>Build configurations</li>
+                    <li>File replacement</li>
+                </ul>
+
+                <h3>Tools/Libraries Required</h3>
+                <ul>
+                    <li>Angular CLI</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Add a temporary console log in <code>app.component.ts</code> to print <code>environment.apiUrl</code>.</li>
+                    <li>Run with different configurations and verify the correct URL is printed.</li>
+                    <li>Remove the log after testing.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>All environment files created and configured.</li>
+                    <li><code>angular.json</code> updated with staging and production configurations.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Forgetting to add file replacement configurations in angular.json.
+                    <br /><strong>Fix:</strong> Verify the fileReplacements array exists for each environment.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 2:</strong> Using environment variables in components without importing the correct interface.
+                    <br /><strong>Fix:</strong> Always import <code>environment</code> from the correct file.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li><strong>Missing API URL:</strong> Provide a fallback or error if environment is not defined.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>All environment files exist.</li>
+                    <li>Builds for each environment succeed.</li>
+                    <li>Environment values are correctly used in the app.</li>
+                </ul>
+
+                <h3>Frontend Architecture Notes</h3>
+                <ul>
+                    <li>Environment variables are injected at build time, not runtime.</li>
+                    <li>This approach is simple and secure; no secrets are exposed on the client.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use <code>environment.apiUrl</code> for all API calls; never hardcode URLs.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 3: INSTALL AND CONFIGURE DEPENDENCIES                             -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-SETUP-003</span><span class="task-name">Install and Configure Dependencies</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-SETUP-003</li>
+                    <li><strong>Task Name:</strong> Install and Configure Dependencies</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-SETUP-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Install all required third‑party libraries: Bootstrap with RTL, SCSS tooling, SignalR client, Chart.js, and any other dependencies identified in the planning phase. Configure them correctly so they are ready to use.</p>
+
+                <h3>Business Purpose</h3>
+                <p>These libraries are the building blocks of the user interface and real‑time communication. Without them, the application cannot be built as designed.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Add and configure dependencies to support:</p>
+                <ul>
+                    <li>Styling (Bootstrap RTL, SCSS)</li>
+                    <li>Real‑time communication (SignalR)</li>
+                    <li>Charts (Chart.js)</li>
+                    <li>Additional utilities (jwt‑decode, etc.)</li>
+                </ul>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Angular project exists.</li>
+                    <li>Knowledge of npm install and package.json.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-SETUP-001:</strong> Project must exist.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>List of required packages and their versions.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>package.json</code> updated with all dependencies.</li>
+                    <li><code>node_modules/</code> installed.</li>
+                    <li>Configuration files for each library (if needed).</li>
+                    <li>Global styles importing Bootstrap and custom SCSS.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Install Core Dependencies</h4>
+                <p><strong>What to do:</strong> Install the following packages:</p>
+                <ul>
+                    <li><code>bootstrap</code></li>
+                    <li><code>@popperjs/core</code> (required by Bootstrap)</li>
+                    <li><code>bootstrap-rtl</code> (for RTL support)</li>
+                    <li><code>chart.js</code></li>
+                    <li><code>ng2-charts</code> (Angular wrapper for Chart.js)</li>
+                    <li><code>@microsoft/signalr</code> (SignalR client)</li>
+                    <li><code>jwt-decode</code> (for JWT decoding)</li>
+                    <li><code>@angular/material</code> and <code>@angular/cdk</code> (optional, but may be used for advanced UI)</li>
+                </ul>
+                <p><strong>Why it is required:</strong> These libraries provide essential functionality.</p>
+                <p><strong>Expected result:</strong> All packages are installed.</p>
+
+                <div class="code-block">
+                    npm install bootstrap @popperjs/core bootstrap-rtl
+                    npm install chart.js ng2-charts
+                    npm install @microsoft/signalr
+                    npm install jwt-decode
+                </div>
+
+                <h4>Step 2: Configure Bootstrap RTL in Global Styles</h4>
+                <p><strong>What to do:</strong> Import Bootstrap and Bootstrap RTL in <code>src/styles.scss</code>.</p>
+                <p><strong>Why it is required:</strong> Bootstrap styles must be available globally.</p>
+                <p><strong>Expected result:</strong> Styles are applied.</p>
+
+                <div class="code-block">
+                    <span class="comment">// src/styles.scss</span>
+                    <span class="comment">// Order matters: Bootstrap first, then RTL override</span>
+                    <span class="keyword">@import</span> <span class="string">'bootstrap/scss/bootstrap'</span>;
+                    <span class="keyword">@import</span> <span class="string">'bootstrap-rtl/scss/bootstrap-rtl'</span>;
+
+                    <span class="comment">// Custom variables and overrides</span>
+                    <span class="keyword">@import</span> <span class="string">'./variables'</span>;
+                    <span class="keyword">@import</span> <span class="string">'./typography'</span>;
+                    <span class="keyword">@import</span> <span class="string">'./utilities'</span>;
+                </div>
+
+                <h4>Step 3: Configure Chart.js</h4>
+                <p><strong>What to do:</strong> No specific configuration needed; just import the module when using charts.</p>
+                <p><strong>Why it is required:</strong> Charts are used in the dashboard.</p>
+
+                <h4>Step 4: Configure SignalR</h4>
+                <p><strong>What to do:</strong> Install and ensure the SignalR client is available. We'll create a service later.</p>
+
+                <h4>Step 5: Configure Angular JSON for Bootstrap Styles</h4>
+                <p><strong>What to do:</strong> Ensure the styles are correctly referenced in <code>angular.json</code>.</p>
+                <p><strong>Why it is required:</strong> The build process includes the styles.</p>
+                <p><strong>Expected result:</strong> <code>styles</code> array includes <code>src/styles.scss</code>.</p>
+
+                <p>This is already set by default.</p>
+
+                <h4>Step 6: Verify Installation</h4>
+                <p><strong>What to do:</strong> Try using a Bootstrap component in the app template to ensure styles load.</p>
+                <p><strong>Why it is required:</strong> Confirm everything works.</p>
+
+                <div class="code-block">
+                    <span class="comment">// app.component.html</span>
+                    &lt;button class="btn btn-primary"&gt;Test Bootstrap&lt;/button&gt;
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li>None new; only modifications to <code>styles.scss</code>.</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    <span class="comment"># Install all</span>
+                    npm install bootstrap @popperjs/core bootstrap-rtl chart.js ng2-charts @microsoft/signalr jwt-decode
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>npm package management</li>
+                    <li>SCSS imports</li>
+                    <li>RTL styling</li>
+                </ul>
+
+                <h3>Tools/Libraries Required</h3>
+                <ul>
+                    <li>Bootstrap 5</li>
+                    <li>Chart.js</li>
+                    <li>SignalR</li>
+                </ul>
+
+                <h3>Angular Concepts Required</h3>
+                <ul>
+                    <li>Global styles</li>
+                    <li>Importing third‑party libraries</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>After installation, add a Bootstrap button and verify it appears with correct styles.</li>
+                    <li>Check that RTL works (e.g., text direction).</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>All dependencies installed and configured.</li>
+                    <li>Global styles import Bootstrap with RTL support.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Forgetting to install <code>@popperjs/core</code> (required for Bootstrap dropdowns/modals).
+                    <br /><strong>Fix:</strong> Always install the peer dependencies.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 2:</strong> Importing Bootstrap RTL before Bootstrap (order matters).
+                    <br /><strong>Fix:</strong> Import Bootstrap first, then Bootstrap RTL.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li><strong>Version conflicts:</strong> Use <code>--save-exact</code> or pin versions to avoid breaking changes.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>All dependencies installed.</li>
+                    <li>Bootstrap RTL works in the app.</li>
+                    <li>SignalR and Chart.js packages are available.</li>
+                </ul>
+
+                <h3>Frontend Architecture Notes</h3>
+                <ul>
+                    <li>We use Bootstrap for layout and components; we can use custom SCSS for branding.</li>
+                    <li>SignalR will be used for real‑time chat and notifications.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Libraries are ready to use in components.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 4: FOLDER STRUCTURE AND SCAFFOLDING                              -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-SETUP-004</span><span class="task-name">Folder Structure and Scaffolding</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-SETUP-004</li>
+                    <li><strong>Task Name:</strong> Folder Structure and Scaffolding</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-SETUP-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create the complete folder structure as defined in the architecture design. Create placeholder files for core services, guards, interceptors, models, and shared components so that the team can start implementing features immediately.</p>
+
+                <h3>Business Purpose</h3>
+                <p>An organised folder structure improves maintainability, reduces confusion, and accelerates onboarding. It provides a home for every piece of code.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Establish the base folders and files (e.g., <code>core/</code>, <code>shared/</code>, <code>features/</code>) with barrel exports and placeholder services. This reduces friction when developers start adding features.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of the architecture from Phase 0.</li>
+                    <li>Knowledge of Angular project structure.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-SETUP-001:</strong> Project exists.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Architecture document (folder structure).</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Complete folder structure under <code>src/app/</code>.</li>
+                    <li>Placeholder files (e.g., <code>core/services/.gitkeep</code>, <code>shared/components/.gitkeep</code>).</li>
+                    <li>Barrel index files (optional).</li>
+                    <li>Base model files (e.g., <code>core/models/user.model.ts</code>).</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Create the Main Folders</h4>
+                <p><strong>What to do:</strong> Using the terminal, create the following folders inside <code>src/app/</code>:</p>
+                <ul>
+                    <li><code>core/</code></li>
+                    <li><code>shared/</code></li>
+                    <li><code>features/</code></li>
+                </ul>
+                <p><strong>Why it is required:</strong> These are the top‑level separation of concerns.</p>
+                <p><strong>Expected result:</strong> Folders exist.</p>
+
+                <div class="code-block">
+                    cd src/app
+                    mkdir core shared features
+                    <span class="comment"># Inside core:</span>
+                    cd core && mkdir api guards interceptors models services state
+                    cd ../shared && mkdir components directives pipes layouts
+                    cd ../features && mkdir auth patients sessions exercises reports dashboard chatbot
+                </div>
+
+                <h4>Step 2: Create Placeholder Files</h4>
+                <p><strong>What to do:</strong> Add a <code>.gitkeep</code> file in each folder to ensure they are tracked by Git (if empty).</p>
+                <p><strong>Why it is required:</strong> Git ignores empty directories.</p>
+
+                <div class="code-block">
+                    touch core/api/.gitkeep core/guards/.gitkeep core/interceptors/.gitkeep core/models/.gitkeep core/services/.gitkeep core/state/.gitkeep
+                    touch shared/components/.gitkeep shared/directives/.gitkeep shared/pipes/.gitkeep shared/layouts/.gitkeep
+                    <span class="comment"># For features, we can add a .gitkeep in each</span>
+                    touch features/auth/.gitkeep features/patients/.gitkeep ...
+                </div>
+
+                <h4>Step 3: Create Initial Model Files</h4>
+                <p><strong>What to do:</strong> Create some base model files as per the API contract.</p>
+                <p><strong>Why it is required:</strong> Early scaffolding speeds up development.</p>
+                <p><strong>Expected result:</strong> <code>core/models/user.model.ts</code>, <code>core/models/api-response.model.ts</code>.</p>
+
+                <div class="code-block">
+                    <span class="comment">// core/models/user.model.ts</span>
+                    export interface User {
+                        id: string;
+                        email: string;
+                        firstName: string;
+                        lastName: string;
+                        roles: string[];
+                    }
+                </div>
+
+                <div class="code-block">
+                    <span class="comment">// core/models/api-response.model.ts</span>
+                    export interface ApiResponse<T> {
+                        data: T;
+                        message: string;
+                        success: boolean;
+                        errors?: string[];
+                    }
+                </div>
+
+                <h4>Step 4: Create Barrel Exports (optional)</h4>
+                <p><strong>What to do:</strong> Create <code>index.ts</code> files to export all files in a folder.</p>
+                <p><strong>Why it is required:</strong> Simplifies imports (e.g., <code>import { User } from '@core/models';</code>).</p>
+
+                <div class="code-block">
+                    <span class="comment">// core/models/index.ts</span>
+                    export * from './user.model';
+                    export * from './api-response.model';
+                </div>
+
+                <p>Repeat for other folders as needed.</p>
+
+                <h4>Step 5: Create Root Feature Route Placeholders</h4>
+                <p><strong>What to do:</strong> In each feature folder, create a routes file placeholder (e.g., <code>auth.routes.ts</code>).</p>
+                <p><strong>Why it is required:</strong> Later tasks will fill these with actual routes.</p>
+
+                <div class="code-block">
+                    <span class="comment">// features/auth/auth.routes.ts</span>
+                    import { Routes } from '@angular/router';
+
+                    export const AUTH_ROUTES: Routes = [];
+                </div>
+
+                <p>Repeat for other features.</p>
+
+                <h3>Folder Structure (Final)</h3>
+                <p>The final folder structure should match the design from Phase 0.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li>All folders and placeholder files.</li>
+                    <li><code>core/models/user.model.ts</code></li>
+                    <li><code>core/models/api-response.model.ts</code></li>
+                    <li><code>features/auth/auth.routes.ts</code></li>
+                    <li><code>features/patients/patients.routes.ts</code></li>
+                    <li><code>features/sessions/sessions.routes.ts</code></li>
+                    <li><code>features/exercises/exercises.routes.ts</code></li>
+                    <li><code>features/reports/reports.routes.ts</code></li>
+                    <li><code>features/dashboard/dashboard.routes.ts</code></li>
+                    <li><code>features/chatbot/chatbot.routes.ts</code></li>
+                    <li>Barrel <code>index.ts</code> files where beneficial.</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    <span class="comment"># Create folder structure (run from src/app)</span>
+                    mkdir -p core/api core/guards core/interceptors core/models core/services core/state
+                    mkdir -p shared/components shared/directives shared/pipes shared/layouts
+                    mkdir -p features/auth features/patients features/sessions features/exercises features/reports features/dashboard features/chatbot
+
+                    <span class="comment"># Create placeholder files</span>
+                    touch core/api/.gitkeep core/guards/.gitkeep core/interceptors/.gitkeep core/models/.gitkeep core/services/.gitkeep core/state/.gitkeep
+                    touch shared/components/.gitkeep shared/directives/.gitkeep shared/pipes/.gitkeep shared/layouts/.gitkeep
+                    touch features/auth/auth.routes.ts features/patients/patients.routes.ts features/sessions/sessions.routes.ts features/exercises/exercises.routes.ts features/reports/reports.routes.ts features/dashboard/dashboard.routes.ts features/chatbot/chatbot.routes.ts
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Angular project structure</li>
+                    <li>Barrel exports</li>
+                    <li>Lazy loading (routes)</li>
+                </ul>
+
+                <h3>Tools/Libraries Required</h3>
+                <ul>
+                    <li>Terminal / command prompt</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Verify all folders exist and contain placeholder files.</li>
+                    <li>Run <code>ng build</code> to ensure no errors from empty files.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>A well‑organised folder structure.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Forgetting to create <code>.gitkeep</code> files, causing empty folders to not be tracked.
+                    <br /><strong>Fix:</strong> Add <code>.gitkeep</code> in each empty folder.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 2:</strong> Naming inconsistencies (e.g., using singular vs plural).
+                    <br /><strong>Fix:</strong> Follow the agreed naming conventions from architecture.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>None significant.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>All folders and placeholder files are created.</li>
+                    <li>Project builds without errors.</li>
+                </ul>
+
+                <h3>Frontend Architecture Notes</h3>
+                <ul>
+                    <li>The folder structure is designed to scale with the project.</li>
+                    <li>Each feature is lazy‑loaded.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Place your feature files in the appropriate folders.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 5: ROUTING AND APPLICATION CONFIGURATION                          -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-SETUP-005</span><span class="task-name">Routing and Application Configuration</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">3h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-SETUP-005</li>
+                    <li><strong>Task Name:</strong> Routing and Application Configuration</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-SETUP-004 (folder structure)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 3 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Set up the root routing (<code>app.routes.ts</code>) with lazy loading for all feature modules. Configure <code>app.config.ts</code> with necessary providers (HttpClient, etc.).</p>
+
+                <h3>Business Purpose</h3>
+                <p>Routing enables navigation between features. Lazy loading ensures fast initial load times by only loading the code needed for the current view.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Define the application's route structure and register global providers (e.g., <code>provideHttpClient</code>, <code>provideAnimations</code>).</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular routing.</li>
+                    <li>Knowledge of standalone application configuration.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-SETUP-004:</strong> Feature routes files exist.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Feature route definitions (will be added later).</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>src/app/app.routes.ts</code> with lazy loading.</li>
+                    <li><code>src/app/app.config.ts</code> with providers.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Update <code>app.routes.ts</code></h4>
+                <p><strong>What to do:</strong> Define routes for each feature using <code>loadChildren</code>.</p>
+                <p><strong>Why it is required:</strong> This enables lazy loading.</p>
+                <p><strong>Expected result:</strong> A route configuration that loads features on demand.</p>
+
+                <div class="code-block">
+                    <span class="comment">// src/app/app.routes.ts</span>
+                    <span class="keyword">import</span> { Routes } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+
+                    export <span class="keyword">const</span> routes: Routes = [
+                        {
+                            path: 'auth',
+                            loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES),
+                        },
+                        {
+                            path: 'patients',
+                            loadChildren: () => import('./features/patients/patients.routes').then(m => m.PATIENTS_ROUTES),
+                        },
+                        {
+                            path: 'sessions',
+                            loadChildren: () => import('./features/sessions/sessions.routes').then(m => m.SESSIONS_ROUTES),
+                        },
+                        {
+                            path: 'exercises',
+                            loadChildren: () => import('./features/exercises/exercises.routes').then(m => m.EXERCISES_ROUTES),
+                        },
+                        {
+                            path: 'reports',
+                            loadChildren: () => import('./features/reports/reports.routes').then(m => m.REPORTS_ROUTES),
+                        },
+                        {
+                            path: 'dashboard',
+                            loadChildren: () => import('./features/dashboard/dashboard.routes').then(m => m.DASHBOARD_ROUTES),
+                        },
+                        {
+                            path: 'chatbot',
+                            loadChildren: () => import('./features/chatbot/chatbot.routes').then(m => m.CHATBOT_ROUTES),
+                        },
+                        {
+                            path: '',
+                            redirectTo: 'auth/login',
+                            pathMatch: 'full',
+                        },
+                        {
+                            path: '**',
+                            redirectTo: 'auth/login',
+                        },
+                    ];
+                </div>
+
+                <h4>Step 2: Update <code>app.config.ts</code></h4>
+                <p><strong>What to do:</strong> Provide necessary services and configurations.</p>
+                <p><strong>Why it is required:</strong> This is where we configure HttpClient, animations, etc.</p>
+                <p><strong>Expected result:</strong> A configuration object.</p>
+
+                <div class="code-block">
+                    <span class="comment">// src/app/app.config.ts</span>
+                    <span class="keyword">import</span> { ApplicationConfig, provideZoneChangeDetection } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { provideRouter } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+                    <span class="keyword">import</span> { provideHttpClient } <span class="keyword">from</span> <span class="string">'@angular/common/http'</span>;
+                    <span class="keyword">import</span> { provideAnimations } <span class="keyword">from</span> <span class="string">'@angular/platform-browser/animations'</span>;
+                    <span class="keyword">import</span> { routes } <span class="keyword">from</span> <span class="string">'./app.routes'</span>;
+
+                    export <span class="keyword">const</span> appConfig: ApplicationConfig = {
+                        providers: [
+                            provideZoneChangeDetection({ eventCoalescing: true }),
+                            provideRouter(routes),
+                            provideHttpClient(),
+                            provideAnimations(),
+                            <span class="comment">// Add other providers like interceptors later</span>
+                        ],
+                    };
+                </div>
+
+                <h4>Step 3: Update <code>main.ts</code> to use <code>appConfig</code></h4>
+                <p><strong>What to do:</strong> Ensure <code>main.ts</code> bootstraps with the configuration.</p>
+                <p><strong>Why it is required:</strong> The app must use the providers defined.</p>
+                <p><strong>Expected result:</strong> <code>main.ts</code> uses <code>bootstrapApplication</code> with <code>appConfig</code>.</p>
+
+                <div class="code-block">
+                    <span class="comment">// src/main.ts</span>
+                    <span class="keyword">import</span> { bootstrapApplication } <span class="keyword">from</span> <span class="string">'@angular/platform-browser'</span>;
+                    <span class="keyword">import</span> { appConfig } <span class="keyword">from</span> <span class="string">'./app/app.config'</span>;
+                    <span class="keyword">import</span> { AppComponent } <span class="keyword">from</span> <span class="string">'./app/app.component'</span>;
+
+                    bootstrapApplication(AppComponent, appConfig)
+                        .catch((err) => console.error(err));
+                </div>
+
+                <h4>Step 4: Update Feature Route Placeholders (Optional)</h4>
+                <p>We already created placeholder route files. For now, they can be empty arrays. Later tasks will add actual routes.</p>
+
+                <h3>Files To Create / Modify</h3>
+                <ul>
+                    <li><code>src/app/app.routes.ts</code> – created.</li>
+                    <li><code>src/app/app.config.ts</code> – created.</li>
+                    <li><code>src/main.ts</code> – modified to use <code>appConfig</code>.</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <p>None; manual file editing.</p>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Lazy loading with <code>loadChildren</code></li>
+                    <li><code>ApplicationConfig</code> and <code>provideRouter</code></li>
+                    <li><code>bootstrapApplication</code></li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Run <code>ng serve</code> and navigate to <code>/auth/login</code> (should redirect if no route).</li>
+                    <li>Check that lazy loading works (network tab should show chunk loading).</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Working routing with lazy loading.</li>
+                    <li>Application configured with HttpClient and animations.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Incorrect import path in <code>loadChildren</code> (must be a function that returns a Promise).
+                    <br /><strong>Fix:</strong> Use <code>() => import('./path').then(m => m.MODULE_ROUTES)</code>.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 2:</strong> Forgetting to add <code>provideHttpClient()</code> in providers.
+                    <br /><strong>Fix:</strong> Always include <code>provideHttpClient()</code> to use HttpClient.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>If a feature route is not defined, the app will redirect to auth/login.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Root routing is set up with lazy loading.</li>
+                    <li>Application providers are configured.</li>
+                    <li>App runs without errors.</li>
+                </ul>
+
+                <h3>Frontend Architecture Notes</h3>
+                <ul>
+                    <li>Lazy loading reduces initial bundle size.</li>
+                    <li>All features are prefixed with their module name.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Add new routes to <code>app.routes.ts</code>; feature routes are lazy‑loaded.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 6: DEVELOPMENT PROXY (Optional)                                  -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-SETUP-006</span><span class="task-name">Development Proxy Configuration</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">1h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-SETUP-006</li>
+                    <li><strong>Task Name:</strong> Development Proxy Configuration</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-SETUP-002 (environment)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 1 hour</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Set up a proxy configuration for the Angular development server to forward API requests to the backend, avoiding CORS issues during development.</p>
+
+                <h3>Business Purpose</h3>
+                <p>During development, the frontend runs on <code>localhost:4200</code> and the backend on a different port. A proxy forwards requests so that the frontend can call the backend as if they were on the same origin.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Create a <code>proxy.conf.json</code> file and configure the Angular CLI to use it. This simplifies API calls and avoids CORS preflight issues.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Backend API is running on a known URL (e.g., <code>http://localhost:5000</code>).</li>
+                    <li>Knowledge of proxy configuration.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-SETUP-002:</strong> Environment files define the API URL.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Backend API base URL (e.g., <code>http://localhost:5000</code>).</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>proxy.conf.json</code> in the project root.</li>
+                    <li>Updated <code>angular.json</code> to use the proxy when serving.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Create <code>proxy.conf.json</code></h4>
+                <p><strong>What to do:</strong> Create a JSON file that maps API routes to the backend.</p>
+                <p><strong>Why it is required:</strong> The proxy will rewrite requests.</p>
+                <p><strong>Expected result:</strong> A file with proxy rules.</p>
+
+                <div class="code-block">
+                    {
+                        <span class="string">"/api"</span>: {
+                            <span class="string">"target"</span>: <span class="string">"http://localhost:5000"</span>,
+                            <span class="string">"secure"</span>: false,
+                            <span class="string">"changeOrigin"</span>: true,
+                            <span class="string">"logLevel"</span>: <span class="string">"debug"</span>
+                        },
+                        <span class="string">"/chatHub"</span>: {
+                            <span class="string">"target"</span>: <span class="string">"http://localhost:5000"</span>,
+                            <span class="string">"secure"</span>: false,
+                            <span class="string">"changeOrigin"</span>: true,
+                            <span class="string">"ws"</span>: true
+                        }
+                    }
+                </div>
+
+                <h4>Step 2: Update <code>angular.json</code></h4>
+                <p><strong>What to do:</strong> Add the proxy configuration to the <code>serve</code> target.</p>
+                <p><strong>Why it is required:</strong> The CLI needs to know about the proxy.</p>
+
+                <div class="code-block">
+                    <span class="comment">// In angular.json, under projects > jalsa-frontend > architect > serve > options</span>
+                    <span class="string">"proxyConfig"</span>: <span class="string">"proxy.conf.json"</span>
+                </div>
+
+                <h4>Step 3: Test the Proxy</h4>
+                <p><strong>What to do:</strong> Start the dev server and make an API call to <code>/api/...</code>.</p>
+                <p><strong>Why it is required:</strong> Verify that requests are forwarded.</p>
+                <p><strong>Expected result:</strong> API calls succeed without CORS errors.</p>
+
+                <div class="code-block">
+                    ng serve
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>proxy.conf.json</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    <span class="comment"># Create proxy.conf.json manually</span>
+                    <span class="comment"># Then serve</span>
+                    ng serve
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>CORS</li>
+                    <li>HTTP proxy</li>
+                    <li>Angular CLI proxy configuration</li>
+                </ul>
+
+                <h3>Tools/Libraries Required</h3>
+                <ul>
+                    <li>None</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Ensure backend is running.</li>
+                    <li>Make a fetch to <code>/api/patients</code> from the frontend.</li>
+                    <li>Check network tab to see the request is proxied to the backend.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Proxy configuration file.</li>
+                    <li>Angular CLI serves with proxy.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Forgetting to add the proxyConfig path correctly.
+                    <br /><strong>Fix:</strong> Ensure the path is relative to the project root.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 2:</strong> Not including <code>changeOrigin: true</code> for virtual hosts.
+                    <br /><strong>Fix:</strong> Always set <code>changeOrigin</code> to true.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>If backend uses HTTPS, set <code>secure: true</code> and provide certificate.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Proxy works and API calls are forwarded.</li>
+                </ul>
+
+                <h3>Frontend Architecture Notes</h3>
+                <ul>
+                    <li>Proxy is only used in development; in production, API calls go directly to the backend URL.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use the proxy to avoid CORS issues.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 7: VALIDATE AND COMMIT SETUP                                    -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-SETUP-007</span><span class="task-name">Validate and Commit Setup</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">2h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-SETUP-007</li>
+                    <li><strong>Task Name:</strong> Validate and Commit Setup</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> All previous FE-SETUP tasks</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 2 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Perform a final validation of the entire foundation setup: run all tests, build the project, check linting, and commit all changes to the repository with a meaningful message.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Ensure the foundation is stable before starting feature development. A broken foundation will cause delays later.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Verify that all configuration works together: environment switching, routing, dependency imports, linting, and building. Also, commit the baseline so that the team can branch from a known good state.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>All previous tasks completed.</li>
+                    <li>Git repository set up.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li>All FE-SETUP-001 to FE-SETUP-006.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>All code and configuration files.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Successful builds and tests.</li>
+                    <li>Commit pushed to repository.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Run Lint Check</h4>
+                <p><strong>What to do:</strong> Run <code>npm run lint</code> (or <code>ng lint</code>) to ensure no linting errors.</p>
+                <p><strong>Why it is required:</strong> Code quality must be maintained.</p>
+                <p><strong>Expected result:</strong> No errors.</p>
+
+                <div class="code-block">
+                    npm run lint
+                </div>
+
+                <h4>Step 2: Run Tests</h4>
+                <p><strong>What to do:</strong> Run unit tests to ensure they pass.</p>
+                <p><strong>Why it is required:</strong> Ensure default tests are not broken.</p>
+
+                <div class="code-block">
+                    ng test --watch=false
+                </div>
+
+                <h4>Step 3: Build for Development</h4>
+                <p><strong>What to do:</strong> Build the app to check for compile errors.</p>
+
+                <div class="code-block">
+                    ng build
+                </div>
+
+                <h4>Step 4: Build for Production</h4>
+                <p><strong>What to do:</strong> Build with production configuration.</p>
+
+                <div class="code-block">
+                    ng build --configuration=production
+                </div>
+
+                <h4>Step 5: Serve and Test Manually</h4>
+                <p><strong>What to do:</strong> Run <code>ng serve</code> and navigate through the app (though there are no features yet, ensure the default route works).</p>
+
+                <h4>Step 6: Commit All Changes</h4>
+                <p><strong>What to do:</strong> Stage all changes and commit with a descriptive message.</p>
+
+                <div class="code-block">
+                    git add .
+                    git commit -m "feat: foundation setup complete
+
+                    - Angular 17 project with Standalone
+                    - Environment files for dev, staging, prod
+                    - Bootstrap RTL, Chart.js, SignalR installed
+                    - Folder structure scaffolded
+                    - Lazy routing configured
+                    - Proxy configured for development
+                    - Linting and tests passing"
+
+                    git push origin main
+                </div>
+
+                <h3>Files To Create</h3>
+                <p>None; validation only.</p>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    npm run lint
+                    ng test --watch=false
+                    ng build
+                    ng build --configuration=production
+                    git add .
+                    git commit -m "feat: foundation setup complete"
+                    git push
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Git workflow</li>
+                    <li>Continuous integration basics</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Run all checks.</li>
+                    <li>Verify no errors.</li>
+                    <li>Push to repository.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Stable foundation codebase.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Forgetting to commit the <code>package-lock.json</code>.
+                    <br /><strong>Fix:</strong> Always commit both <code>package.json</code> and <code>package-lock.json</code>.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 2:</strong> Not running tests before committing.
+                    <br /><strong>Fix:</strong> Run tests locally before push.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>If tests fail, fix issues and recommit.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>All checks pass.</li>
+                    <li>Code committed to the main branch.</li>
+                </ul>
+
+                <h3>Frontend Architecture Notes</h3>
+                <ul>
+                    <li>This commit serves as the baseline for all future feature branches.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> The foundation is stable. Pull the latest code and start working on features.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- PHASE COMPLETION CRITERIA                                             -->
+        <!-- ===================================================================== -->
+        <hr class="hr" />
+
+        <h2 style="background: #f0fdf4; border-left-color: #22c55e; padding:12px 20px; border-left:6px solid #22c55e; border-radius:8px;">✅ Phase Completion Criteria</h2>
+        <ul class="checklist">
+            <li>All 7 tasks are complete (FE-SETUP-001 to FE-SETUP-007).</li>
+            <li>Angular project builds and runs without errors.</li>
+            <li>Environment files are configured for dev, staging, and production.</li>
+            <li>All required dependencies (Bootstrap RTL, Chart.js, SignalR, etc.) are installed and configured.</li>
+            <li>Folder structure matches the architecture design.</li>
+            <li>Lazy routing is set up with placeholders for all features.</li>
+            <li>Proxy is configured and working.</li>
+            <li>Lint and tests pass.</li>
+            <li>All changes are committed to the repository.</li>
+        </ul>
+
+        <h2 style="background: #f0f9ff; border-left-color: #3b82f6; padding:12px 20px; border-left:6px solid #3b82f6; border-radius:8px; margin-top:24px;">📋 Code Review Checklist</h2>
+        <ul class="checklist">
+            <li><code>angular.json</code> is correctly configured with environment file replacements.</li>
+            <li>All dependencies are listed with appropriate versions.</li>
+            <li>Folder structure is logical and matches the plan.</li>
+            <li>Routing configuration uses lazy loading correctly.</li>
+            <li>Proxy configuration does not expose sensitive information.</li>
+        </ul>
+
+        <h2 style="background: #fefce8; border-left-color: #f59e0b; padding:12px 20px; border-left:6px solid #f59e0b; border-radius:8px; margin-top:24px;">🚀 Pull Request Checklist</h2>
+        <ul class="checklist">
+            <li>All changes are committed with a clear commit message.</li>
+            <li>Branch is up‑to‑date with main.</li>
+            <li>CI pipeline (if any) passes.</li>
+            <li>Code review has been performed.</li>
+        </ul>
+
+        <h2 style="background: #fef2f2; border-left-color: #ef4444; padding:12px 20px; border-left:6px solid #ef4444; border-radius:8px; margin-top:24px;">🧪 Deployment Readiness Checklist</h2>
+        <ul class="checklist">
+            <li>Not applicable for this phase (foundation only).</li>
+            <li>However, the foundation should be deployable to a dev environment.</li>
+        </ul>
+
+        <hr class="hr" />
+        <div style="text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 20px 0 0;">
+            Jalsa – Phase 1: Foundation Setup – Expanded Implementation Handbook &bull; v1.0 &bull; For development team
+        </div>
+    </div>
+
+    <script>
+        function toggleTask(header) {
+            const body = header.nextElementSibling;
+            const isOpen = body.classList.contains('open');
+            body.classList.toggle('open');
+            header.classList.toggle('open');
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstHeader = document.querySelector('.task-header');
+            if (firstHeader) firstHeader.click();
+        });
+    </script>
+</body>
+</html>
