@@ -1,0 +1,17 @@
+<div class="summary">
+    <h5>AI Summary</h5>
+
+    @if (loading()) {
+        <div class="text-center py-3">
+            <app-spinner size="md"></app-spinner>
+        </div>
+    } @else if (error()) {
+        <div class="alert alert-warning" role="alert">{{ error() }}</div>
+    } @else if (summary()) {
+        <div class="summary-content">
+            {{ summary() }}
+        </div>
+    } @else {
+        <div class="text-muted">No summary available.</div>
+    }
+</div>

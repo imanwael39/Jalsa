@@ -1,0 +1,60 @@
+<div class="session-form">
+    <h2>{{ isEdit() ? 'Edit Session' : 'New Session' }}</h2>
+
+    @if (error()) {
+        <div class="alert alert-danger" role="alert">{{ error() }}</div>
+    }
+
+    @if (loading()) {
+        <div class="text-center py-5">
+            <app-spinner size="lg"></app-spinner>
+        </div>
+    } @else {
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+            <div class="form-group mb-3">
+                <label class="form-label" for="sessionDate">Session Date</label>
+                <input
+                    class="form-control"
+                    [class.is-invalid]="form.get('sessionDate')?.invalid && form.get('sessionDate')?.touched"
+                    type="date"
+                    id="sessionDate"
+                    formControlName="sessionDate"
+                />
+                @if (form.get('sessionDate')?.invalid && form.get('sessionDate')?.touched) {
+                    <div class="invalid-feedback">Session date is required.</div>
+                }
+            </div>
+
+            <app-input
+                label="Session Type"
+                type="text"
+                formControlName="sessionType"
+                placeholder="e.g. Individual, Group, Follow-up"
+            ></app-input>
+
+            <app-input
+                label="Duration (minutes)"
+                type="number"
+                formControlName="durationMinutes"
+            ></app-input>
+
+            <div class="form-group mb-3">
+                <label class="form-label" for="status">Status</label>
+                <select class="form-select" id="status" formControlName="status">
+                    <option value="Draft">Draft</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Archived">Archived</option>
+                </select>
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <app-button type="submit" variant="primary" [disabled]="loading()">
+                    {{ isEdit() ? 'Update' : 'Create' }} Session
+                </app-button>
+                <app-button type="button" variant="secondary" (clicked)="cancel()">
+                    Cancel
+                </app-button>
+            </div>
+        </form>
+    }
+</div>
