@@ -41,8 +41,7 @@ export const API = {
         export: (id: string) => `/reports/${id}/export`,
     },
     dashboard: {
-        stats: '/dashboard/stats',
-        trends: '/dashboard/trends',
+        summary: '/api/progress/dashboard',
     },
     chat: {
         history: (sessionId: string) => `/chat/${sessionId}/history`,

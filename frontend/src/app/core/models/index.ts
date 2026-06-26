@@ -16,5 +16,5 @@ export type { Session, SessionNote, VoiceMemo, CreateSessionRequest, UpdateSessi
 export type { Exercise, ExerciseLog, CreateExerciseRequest, UpdateExerciseRequest, LogExerciseRequest, ExtendDueDateRequest, ExerciseAssignment, AssignExerciseRequest, UpdateExerciseStatusRequest } from './exercise.model';
 export type { ReferralReport, ReportVersion } from './report.model';
 export type { ChatConversation, ChatMessage, SendMessageRequest } from './chat.model';
-export type { DashboardStats, TrendData } from './dashboard.model';
+export type { DashboardSummary, TrendDto, ExerciseCompletionBreakdown, Analytics } from './dashboard.model';
 export type { ApiResponse } from './api-response.model';
