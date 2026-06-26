@@ -1,0 +1,95 @@
+<div class="dashboard">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Dashboard</h2>
+        <button class="btn btn-outline-secondary btn-sm" (click)="loadDashboard()">
+            <i class="bi bi-arrow-clockwise"></i> Refresh
+        </button>
+    </div>
+
+    @if (loading()) {
+        <div class="text-center py-5">
+            <app-spinner size="lg"></app-spinner>
+        </div>
+    }
+
+    @if (error()) {
+        <div class="alert alert-danger">{{ error() }}</div>
+    }
+
+    @if (!loading() && !error() && summary()) {
+        <div class="row g-3 mb-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="card border-primary">
+                    <div class="card-body">
+                        <h6 class="text-muted">Total Patients</h6>
+                        <h3>{{ summary()!.totalPatients }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="card border-success">
+                    <div class="card-body">
+                        <h6 class="text-muted">Active Patients</h6>
+                        <h3>{{ summary()!.activePatients }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="card border-info">
+                    <div class="card-body">
+                        <h6 class="text-muted">Total Sessions</h6>
+                        <h3>{{ summary()!.totalSessions }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="card border-warning">
+                    <div class="card-body">
+                        <h6 class="text-muted">Sessions This Month</h6>
+                        <h3>{{ summary()!.sessionsThisMonth }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="text-muted">Exercise Completion Rate</h6>
+                        <h3>{{ summary()!.exerciseCompletionRate }}%</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="text-muted">Average Assessment Score</h6>
+                        <h3>{{ summary()!.averageAssessmentScore }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="text-muted">Archived Patients</h6>
+                        <h3>{{ summary()!.archivedPatients }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (summary()!.recentAlerts.length > 0) {
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Recent Alerts</h6>
+                </div>
+                <ul class="list-group list-group-flush">
+                    @for (alert of summary()!.recentAlerts; track alert) {
+                        <li class="list-group-item">{{ alert }}</li>
+                    }
+                </ul>
+            </div>
+        }
+    }
+</div>

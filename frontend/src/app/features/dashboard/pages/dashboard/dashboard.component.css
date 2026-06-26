@@ -1,0 +1,26 @@
+.dashboard {
+    padding: 0.5rem 0;
+}
+
+.card {
+    border-radius: 8px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-body h6 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 4px;
+}
+
+.card-body h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0;
+}
