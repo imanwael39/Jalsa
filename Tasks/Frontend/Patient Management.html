@@ -1,0 +1,2363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jalsa – Phase 7: Patient Management – Expanded Implementation Handbook</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+            padding: 30px 20px;
+            line-height: 1.7;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            padding: 40px 45px;
+        }
+        h1 {
+            font-size: 2.4rem;
+            color: #0f172a;
+            border-bottom: 4px solid #3b82f6;
+            padding-bottom: 18px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        h1 small {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #64748b;
+            margin-left: auto;
+        }
+        .phase-banner {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 20px 28px;
+            margin-bottom: 32px;
+            border-left: 8px solid #3b82f6;
+        }
+        .phase-banner h2 {
+            margin: 0 0 8px 0;
+            font-size: 1.6rem;
+            color: #0f172a;
+            background: none;
+            padding: 0;
+            border-left: none;
+        }
+        .phase-banner p {
+            margin: 0;
+            color: #475569;
+        }
+        .phase-banner .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px 40px;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+        .phase-banner .meta span {
+            font-weight: 500;
+            color: #0f172a;
+        }
+
+        .task-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+        .task-header {
+            background: #f8fafc;
+            padding: 16px 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.15s;
+            user-select: none;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .task-header:hover {
+            background: #f1f5f9;
+        }
+        .task-header .task-id {
+            font-weight: 700;
+            color: #3b82f6;
+            margin-right: 12px;
+            font-size: 1.05rem;
+        }
+        .task-header .task-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .task-header .task-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .task-header .task-badges .tag {
+            font-size: 0.7rem;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+        .task-header .chevron {
+            transition: transform 0.25s;
+            font-size: 1.3rem;
+            color: #94a3b8;
+            margin-left: 12px;
+        }
+        .task-header.open .chevron {
+            transform: rotate(180deg);
+        }
+
+        .task-body {
+            padding: 0 24px 24px;
+            display: none;
+            overflow: hidden;
+        }
+        .task-body.open {
+            display: block;
+        }
+
+        .task-body h3 {
+            font-size: 1.15rem;
+            margin-top: 22px;
+            margin-bottom: 8px;
+            color: #0f172a;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 4px;
+        }
+        .task-body h4 {
+            font-size: 1rem;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            color: #334155;
+        }
+        .task-body p {
+            margin-bottom: 8px;
+        }
+        .task-body ul,
+        .task-body ol {
+            padding-left: 24px;
+            margin-bottom: 10px;
+        }
+        .task-body li {
+            margin-bottom: 3px;
+        }
+        .task-body .field-label {
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+        .checklist li {
+            padding: 3px 0 3px 30px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') left center no-repeat;
+            background-size: 18px;
+        }
+
+        .pitfall-box {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .tip-box {
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .arch-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #e2e8f0;
+            padding: 1px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-right: 4px;
+        }
+        .tag-blue {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .tag-green {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .tag-amber {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .tag-red {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .tag-purple {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+        .tag-slate {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        .tag-indigo {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .flow-diagram {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin: 8px 0 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .flow-diagram .arrow {
+            color: #94a3b8;
+            margin: 0 6px;
+        }
+        .flow-diagram .step {
+            color: #0f172a;
+            font-weight: 500;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            margin: 10px 0 16px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            background: #fff;
+        }
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+            text-align: left;
+            padding: 8px 14px;
+            border-bottom: 2px solid #e2e8f0;
+            color: #0f172a;
+        }
+        td {
+            padding: 8px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .hr {
+            border: none;
+            border-top: 2px dashed #e2e8f0;
+            margin: 32px 0;
+        }
+
+        .code-block {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin: 6px 0 12px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .code-block .comment {
+            color: #94a3b8;
+        }
+        .code-block .keyword {
+            color: #f472b6;
+        }
+        .code-block .string {
+            color: #34d399;
+        }
+        .code-block .func {
+            color: #60a5fa;
+        }
+
+        .subtask {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 12px 18px;
+            margin: 10px 0;
+            border-left: 4px solid #3b82f6;
+        }
+        .subtask strong {
+            color: #0f172a;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 16px;
+            }
+            h1 {
+                font-size: 1.8rem;
+                flex-wrap: wrap;
+            }
+            .task-header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .task-body {
+                padding: 0 16px 16px;
+            }
+            .phase-banner {
+                padding: 16px;
+            }
+            .phase-banner .meta {
+                flex-direction: column;
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <h1>
+            👤 Jalsa – Phase 7: Patient Management
+            <small>Expanded Implementation Handbook · 7 Tasks · 40+ Subtasks</small>
+        </h1>
+
+        <!-- ====== PHASE BANNER ====== -->
+        <div class="phase-banner">
+            <h2>👤 Phase 7 – Patient Management</h2>
+            <p><strong>Purpose:</strong> Build the complete patient management feature: patient list, details, create/edit forms, digital intake forms with OCR image upload, and psychological assessment recording. This phase enables therapists to manage patient data efficiently.</p>
+            <div class="meta">
+                <span>📋 Tasks: 7</span>
+                <span>⏱️ Total Effort: ~34 hours</span>
+                <span>👤 Owners: M3 (Frontend Lead), M4 (Frontend Developer)</span>
+                <span>🔗 Dependencies: Phase 4 (Shared Components), Phase 5 (Authentication), Phase 6 (Layout System)</span>
+                <span>🎯 Deliverable: Complete patient management system with CRUD, intake forms, and assessments</span>
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 1: PATIENT MODULE SETUP (ROUTES, SERVICE, STATE)                -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-PAT-001</span><span class="task-name">Patient Module Setup (Routes, Service, State)</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">5h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-PAT-001</li>
+                    <li><strong>Task Name:</strong> Patient Module Setup (Routes, Service, State)</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-CORE-001 (HttpClientService), FE-CORE-002 (Models), FE-AUTH-002 (AuthService), FE-LAYOUT-001 (Main layout)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 5 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create the patient feature module with lazy‑loaded routes, a PatientService for API communication, and a PatientStateService for managing patient state using Signals.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Patient management is the core of the application. A well‑structured setup ensures scalability and maintainability.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Set up lazy‑loaded routes under the main layout, create a service that uses HttpClientService for CRUD operations, and create a state service with Signals for reactive data management.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular lazy loading with Standalone components.</li>
+                    <li>Knowledge of Signals and services.</li>
+                    <li>API contract for patient endpoints.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-CORE-001:</strong> HttpClientService for API calls.</li>
+                    <li><strong>FE-CORE-002:</strong> Patient model interfaces.</li>
+                    <li><strong>FE-AUTH-002:</strong> AuthService for guards.</li>
+                    <li><strong>FE-LAYOUT-001:</strong> Main layout as parent route.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>API endpoints from <code>api-endpoints.ts</code>.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>features/patients/patients.routes.ts</code> – Lazy‑loaded routes.</li>
+                    <li><code>core/services/patient.service.ts</code> – Patient API service.</li>
+                    <li><code>core/state/patient-state.service.ts</code> – Patient state management with Signals.</li>
+                    <li>Placeholder components (list, detail, form, intake, assessment).</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Create Routes File</h4>
+                <div class="code-block">
+                    <span class="comment">// features/patients/patients.routes.ts</span>
+                    <span class="keyword">import</span> { Routes } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+                    <span class="keyword">import</span> { authGuard, roleGuard } <span class="keyword">from</span> <span class="string">'../../core/guards'</span>;
+
+                    export <span class="keyword">const</span> PATIENTS_ROUTES: Routes = [
+                        {
+                            path: '',
+                            canActivate: [authGuard, roleGuard(['Therapist', 'Admin'])],
+                            children: [
+                                {
+                                    path: '',
+                                    loadComponent: () => import('./pages/patient-list/patient-list.component').then(m => m.PatientListComponent),
+                                },
+                                {
+                                    path: 'new',
+                                    loadComponent: () => import('./pages/patient-form/patient-form.component').then(m => m.PatientFormComponent),
+                                },
+                                {
+                                    path: ':id',
+                                    loadComponent: () => import('./pages/patient-detail/patient-detail.component').then(m => m.PatientDetailComponent),
+                                },
+                                {
+                                    path: ':id/edit',
+                                    loadComponent: () => import('./pages/patient-form/patient-form.component').then(m => m.PatientFormComponent),
+                                },
+                                {
+                                    path: ':id/intake',
+                                    loadComponent: () => import('./pages/intake-form/intake-form.component').then(m => m.IntakeFormComponent),
+                                },
+                                {
+                                    path: ':id/assessments',
+                                    loadComponent: () => import('./pages/assessment/assessment.component').then(m => m.AssessmentComponent),
+                                },
+                            ],
+                        },
+                    ];
+                </div>
+
+                <h4>Step 2: Register Routes in App Routes</h4>
+                <p>Add lazy loading in <code>app.routes.ts</code> under the main layout.</p>
+
+                <div class="code-block">
+                    <span class="comment">// app.routes.ts (inside the main layout children)</span>
+                    {
+                        path: 'patients',
+                        loadChildren: () => import('./features/patients/patients.routes').then(m => m.PATIENTS_ROUTES),
+                    },
+                </div>
+
+                <h4>Step 3: Create Patient Service</h4>
+                <div class="code-block">
+                    <span class="comment">// core/services/patient.service.ts</span>
+                    <span class="keyword">import</span> { Injectable, inject } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { Observable } <span class="keyword">from</span> <span class="string">'rxjs'</span>;
+                    <span class="keyword">import</span> { HttpClientService } <span class="keyword">from</span> <span class="string">'../api/http-client.service'</span>;
+                    <span class="keyword">import</span> { API } <span class="keyword">from</span> <span class="string">'../api/api-endpoints'</span>;
+                    <span class="keyword">import</span> { Patient, CreatePatientRequest, UpdatePatientRequest, IntakeForm, Assessment, AssessmentRequest } <span class="keyword">from</span> <span class="string">'../models'</span>;
+
+                    <span class="keyword">@Injectable</span>({
+                        providedIn: <span class="string">'root'</span>,
+                    })
+                    export <span class="keyword">class</span> PatientService {
+                        private http = inject(HttpClientService);
+
+                        getPatients(params: { search?: string; page?: number; size?: number; includeArchived?: boolean }): Observable&lt;{ items: Patient[]; totalCount: number }&gt; {
+                            return this.http.get&lt;{ items: Patient[]; totalCount: number }&gt;(API.patients.base, { params });
+                        }
+
+                        getPatient(id: string): Observable&lt;Patient&gt; {
+                            return this.http.get&lt;Patient&gt;(API.patients.byId(id));
+                        }
+
+                        createPatient(data: CreatePatientRequest): Observable&lt;Patient&gt; {
+                            return this.http.post&lt;Patient&gt;(API.patients.base, data);
+                        }
+
+                        updatePatient(id: string, data: UpdatePatientRequest): Observable&lt;Patient&gt; {
+                            return this.http.put&lt;Patient&gt;(API.patients.byId(id), data);
+                        }
+
+                        archivePatient(id: string): Observable&lt;void&gt; {
+                            return this.http.delete&lt;void&gt;(API.patients.archive(id));
+                        }
+
+                        restorePatient(id: string): Observable&lt;void&gt; {
+                            return this.http.post&lt;void&gt;(API.patients.restore(id), null);
+                        }
+
+                        getIntakeForm(patientId: string): Observable&lt;IntakeForm&gt; {
+                            return this.http.get&lt;IntakeForm&gt;(API.patients.intake(patientId));
+                        }
+
+                        saveIntakeForm(patientId: string, data: any): Observable&lt;IntakeForm&gt; {
+                            return this.http.post&lt;IntakeForm&gt;(API.patients.intake(patientId), data);
+                        }
+
+                        uploadIntakeImage(patientId: string, file: File): Observable&lt;{ imageUrl: string; extractedData: any }&gt; {
+                            const formData = new FormData();
+                            formData.append('file', file);
+                            return this.http.upload&lt;{ imageUrl: string; extractedData: any }&gt;(API.patients.intakeImage(patientId), formData);
+                        }
+
+                        getAssessments(patientId: string): Observable&lt;Assessment[]&gt; {
+                            return this.http.get&lt;Assessment[]&gt;(API.patients.assessments(patientId));
+                        }
+
+                        addAssessment(patientId: string, data: AssessmentRequest): Observable&lt;Assessment&gt; {
+                            return this.http.post&lt;Assessment&gt;(API.patients.assessments(patientId), data);
+                        }
+                    }
+                </div>
+
+                <h4>Step 4: Create Patient State Service</h4>
+                <div class="code-block">
+                    <span class="comment">// core/state/patient-state.service.ts</span>
+                    <span class="keyword">import</span> { Injectable, signal, computed } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { Patient } <span class="keyword">from</span> <span class="string">'../models'</span>;
+
+                    <span class="keyword">@Injectable</span>({
+                        providedIn: <span class="string">'root'</span>,
+                    })
+                    export <span class="keyword">class</span> PatientStateService {
+                        private patientsSignal = signal&lt;Patient[]&gt;([]);
+                        private selectedPatientSignal = signal&lt;Patient | null&gt;(<span class="keyword">null</span>);
+                        private loadingSignal = signal(false);
+                        private errorSignal = signal&lt;string | null&gt;(<span class="keyword">null</span>);
+
+                        readonly patients = this.patientsSignal.asReadonly();
+                        readonly selectedPatient = this.selectedPatientSignal.asReadonly();
+                        readonly loading = this.loadingSignal.asReadonly();
+                        readonly error = this.errorSignal.asReadonly();
+
+                        setPatients(patients: Patient[]) {
+                            this.patientsSignal.set(patients);
+                            this.errorSignal.set(null);
+                        }
+
+                        addPatient(patient: Patient) {
+                            this.patientsSignal.update(list => [...list, patient]);
+                        }
+
+                        updatePatient(updated: Patient) {
+                            this.patientsSignal.update(list => list.map(p => p.id === updated.id ? updated : p));
+                            if (this.selectedPatientSignal()?.id === updated.id) {
+                                this.selectedPatientSignal.set(updated);
+                            }
+                        }
+
+                        removePatient(id: string) {
+                            this.patientsSignal.update(list => list.filter(p => p.id !== id));
+                        }
+
+                        selectPatient(patient: Patient) {
+                            this.selectedPatientSignal.set(patient);
+                        }
+
+                        clearSelected() {
+                            this.selectedPatientSignal.set(null);
+                        }
+
+                        setLoading(loading: boolean) {
+                            this.loadingSignal.set(loading);
+                        }
+
+                        setError(error: string | null) {
+                            this.errorSignal.set(error);
+                        }
+
+                        reset() {
+                            this.patientsSignal.set([]);
+                            this.selectedPatientSignal.set(null);
+                            this.loadingSignal.set(false);
+                            this.errorSignal.set(null);
+                        }
+                    }
+                </div>
+
+                <h4>Step 5: Generate Placeholder Components</h4>
+                <div class="code-block">
+                    ng g c features/patients/pages/patient-list --standalone --skip-tests
+                    ng g c features/patients/pages/patient-detail --standalone --skip-tests
+                    ng g c features/patients/pages/patient-form --standalone --skip-tests
+                    ng g c features/patients/pages/intake-form --standalone --skip-tests
+                    ng g c features/patients/pages/assessment --standalone --skip-tests
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>features/patients/patients.routes.ts</code></li>
+                    <li><code>core/services/patient.service.ts</code></li>
+                    <li><code>core/state/patient-state.service.ts</code></li>
+                    <li>Placeholder components.</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g s core/services/patient --skip-tests
+                    ng g s core/state/patient-state --skip-tests
+                    ng g c features/patients/pages/patient-list --standalone --skip-tests
+                    ng g c features/patients/pages/patient-detail --standalone --skip-tests
+                    ng g c features/patients/pages/patient-form --standalone --skip-tests
+                    ng g c features/patients/pages/intake-form --standalone --skip-tests
+                    ng g c features/patients/pages/assessment --standalone --skip-tests
+                </div>
+
+                <h3>Code Flow</h3>
+                <div class="flow-diagram">
+                    <span class="step">User navigates to /patients</span> <span class="arrow">→</span>
+                    <span class="step">PatientListComponent loads</span> <span class="arrow">→</span>
+                    <span class="step">Calls PatientService.getPatients()</span> <span class="arrow">→</span>
+                    <span class="step">Updates PatientStateService.patients</span> <span class="arrow">→</span>
+                    <span class="step">Renders list</span>
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Lazy loading with loadChildren</li>
+                    <li>Standalone components</li>
+                    <li>Angular Signals for state</li>
+                    <li>Dependency injection</li>
+                </ul>
+
+                <h3>Tools/Libraries Required</h3>
+                <ul>
+                    <li>Angular Router</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Verify routes are lazy‑loaded (network tab).</li>
+                    <li>Test PatientService methods with mock data.</li>
+                    <li>Test PatientStateService signals update correctly.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Patient routes, service, and state service ready.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not applying guards to patient routes.
+                    <br /><strong>Fix:</strong> Add <code>canActivate: [authGuard, roleGuard(['Therapist'])]</code>.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 2:</strong> Not using the PatientStateService for reactivity.
+                    <br /><strong>Fix:</strong> Use the state service in components.</div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>User without Therapist role should not access patient routes.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Routes, service, and state service are implemented.</li>
+                </ul>
+
+                <h3>Frontend Architecture Notes</h3>
+                <ul>
+                    <li>PatientStateService is the single source of truth for patient data.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use PatientService for API calls and PatientStateService for state.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 2: PATIENT LIST COMPONENT                                        -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-PAT-002</span><span class="task-name">Patient List Component</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">5h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-PAT-002</li>
+                    <li><strong>Task Name:</strong> Patient List Component</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-PAT-001, FE-SHARED-005 (Table), FE-SHARED-006 (Pagination)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 5 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Build the patient list page with search, filtering, pagination, archive toggle, and actions (view, edit, archive/restore).</p>
+
+                <h3>Business Purpose</h3>
+                <p>Allow therapists to browse, search, and manage patients efficiently.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use shared Table and Pagination components, integrate with PatientService and PatientStateService, implement debounced search, and handle pagination.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of RxJS operators (<code>switchMap</code>, <code>debounceTime</code>).</li>
+                    <li>Shared Table and Pagination components.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-PAT-001:</strong> PatientService and StateService.</li>
+                    <li><strong>FE-SHARED-005:</strong> Table component.</li>
+                    <li><strong>FE-SHARED-006:</strong> Pagination component.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>None.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>features/patients/pages/patient-list/patient-list.component.ts</code></li>
+                    <li><code>patient-list.component.html</code></li>
+                    <li><code>patient-list.component.scss</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Generate Component (already done)</h4>
+                <h4>Step 2: Implement Component Logic</h4>
+
+                <div class="code-block">
+                    <span class="comment">// patient-list.component.ts</span>
+                    <span class="keyword">import</span> { Component, inject, signal, OnInit, effect } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { Router, RouterLink } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+                    <span class="keyword">import</span> { PatientService } <span class="keyword">from</span> <span class="string">'../../../../core/services/patient.service'</span>;
+                    <span class="keyword">import</span> { PatientStateService } <span class="keyword">from</span> <span class="string">'../../../../core/state/patient-state.service'</span>;
+                    <span class="keyword">import</span> { TableComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/table/table.component'</span>;
+                    <span class="keyword">import</span> { PaginationComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/pagination/pagination.component'</span>;
+                    <span class="keyword">import</span> { ButtonComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/button/button.component'</span>;
+                    <span class="keyword">import</span> { InputComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/input/input.component'</span>;
+                    <span class="keyword">import</span> { debounceTime, distinctUntilChanged, switchMap } <span class="keyword">from</span> <span class="string">'rxjs/operators'</span>;
+                    <span class="keyword">import</span> { Subject } <span class="keyword">from</span> <span class="string">'rxjs'</span>;
+                    <span class="keyword">import</span> { FormsModule } <span class="keyword">from</span> <span class="string">'@angular/forms'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-patient-list',
+                        standalone: true,
+                        imports: [TableComponent, PaginationComponent, ButtonComponent, InputComponent, RouterLink, FormsModule],
+                        templateUrl: './patient-list.component.html',
+                        styleUrls: ['./patient-list.component.scss'],
+                    })
+                    export <span class="keyword">class</span> PatientListComponent implements OnInit {
+                        private patientService = inject(PatientService);
+                        private state = inject(PatientStateService);
+                        private router = inject(Router);
+
+                        patients = this.state.patients;
+                        loading = this.state.loading;
+                        error = this.state.error;
+
+                        searchTerm = '';
+                        currentPage = 1;
+                        pageSize = 10;
+                        includeArchived = false;
+                        totalItems = 0;
+
+                        private searchSubject = new Subject&lt;string&gt;();
+
+                        ngOnInit(): void {
+                            this.loadPatients();
+
+                            this.searchSubject.pipe(
+                                debounceTime(300),
+                                distinctUntilChanged(),
+                                switchMap(() => {
+                                    this.currentPage = 1;
+                                    return this.fetchPatients();
+                                })
+                            ).subscribe();
+                        }
+
+                        onSearch(term: string) {
+                            this.searchSubject.next(term);
+                        }
+
+                        onPageChange(page: number) {
+                            this.currentPage = page;
+                            this.fetchPatients().subscribe();
+                        }
+
+                        onToggleArchived() {
+                            this.currentPage = 1;
+                            this.fetchPatients().subscribe();
+                        }
+
+                        private fetchPatients() {
+                            this.state.setLoading(true);
+                            return this.patientService.getPatients({
+                                search: this.searchTerm || undefined,
+                                page: this.currentPage,
+                                size: this.pageSize,
+                                includeArchived: this.includeArchived,
+                            }).subscribe({
+                                next: (result) => {
+                                    this.state.setPatients(result.items);
+                                    this.totalItems = result.totalCount;
+                                    this.state.setLoading(false);
+                                },
+                                error: (err) => {
+                                    this.state.setError(err.message || 'Failed to load patients');
+                                    this.state.setLoading(false);
+                                },
+                            });
+                        }
+
+                        loadPatients() {
+                            this.fetchPatients();
+                        }
+
+                        archivePatient(id: string) {
+                            if (confirm('Are you sure you want to archive this patient?')) {
+                                this.patientService.archivePatient(id).subscribe({
+                                    next: () => {
+                                        this.loadPatients();
+                                    },
+                                    error: (err) => {
+                                        console.error('Archive failed', err);
+                                    },
+                                });
+                            }
+                        }
+
+                        restorePatient(id: string) {
+                            this.patientService.restorePatient(id).subscribe({
+                                next: () => {
+                                    this.loadPatients();
+                                },
+                                error: (err) => {
+                                    console.error('Restore failed', err);
+                                },
+                            });
+                        }
+                    }
+                </div>
+
+                <h4>Step 3: Create Template</h4>
+
+                <div class="code-block">
+                    <span class="comment">// patient-list.component.html</span>
+                    &lt;div class="patient-list"&gt;
+                        &lt;div class="d-flex justify-content-between align-items-center mb-3"&gt;
+                            &lt;h2&gt;Patients&lt;/h2&gt;
+                            &lt;app-button variant="primary" routerLink="/patients/new"&gt;Add Patient&lt;/app-button&gt;
+                        &lt;/div&gt;
+
+                        &lt;div class="filters d-flex flex-wrap gap-2 mb-3"&gt;
+                            &lt;app-input
+                                type="text"
+                                placeholder="Search patients..."
+                                [(ngModel)]="searchTerm"
+                                (ngModelChange)="onSearch($event)"
+                                class="flex-grow-1"
+                            &gt;&lt;/app-input&gt;
+                            &lt;div class="form-check"&gt;
+                                &lt;input class="form-check-input" type="checkbox" id="includeArchived" [(ngModel)]="includeArchived" (change)="onToggleArchived()"&gt;
+                                &lt;label class="form-check-label" for="includeArchived"&gt;Show Archived&lt;/label&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+
+                        &lt;div class="table-responsive"&gt;
+                            &lt;app-table
+                                [data]="patients()"
+                                [columns]="[
+                                    { key: 'firstName', label: 'First Name' },
+                                    { key: 'lastName', label: 'Last Name' },
+                                    { key: 'email', label: 'Email' },
+                                    { key: 'dateOfBirth', label: 'DOB' },
+                                    { key: 'gender', label: 'Gender' },
+                                    { key: 'isArchived', label: 'Archived' }
+                                ]"
+                                [loading]="loading()"
+                                emptyMessage="No patients found"
+                            &gt;
+                                &lt;ng-template #cell let-row let-col="col"&gt;
+                                    &lt;ng-container *<span class="keyword">if</span>="col.key === 'isArchived'"&gt;
+                                        &lt;span class="badge" [class.bg-secondary]="!row.isArchived" [class.bg-danger]="row.isArchived"&gt;
+                                            {{ row.isArchived ? 'Archived' : 'Active' }}
+                                        &lt;/span&gt;
+                                    &lt;/ng-container&gt;
+                                    &lt;ng-container *<span class="keyword">if</span>="col.key === 'dateOfBirth'"&gt;
+                                        {{ row.dateOfBirth | date:'shortDate' }}
+                                    &lt;/ng-container&gt;
+                                &lt;/ng-template&gt;
+                                &lt;ng-template #actions let-row&gt;
+                                    &lt;app-button variant="secondary" size="sm" [routerLink]="['/patients', row.id]"&gt;View&lt;/app-button&gt;
+                                    &lt;app-button variant="primary" size="sm" [routerLink]="['/patients', row.id, 'edit']"&gt;Edit&lt;/app-button&gt;
+                                    &lt;app-button *<span class="keyword">if</span>="!row.isArchived" variant="danger" size="sm" (click)="archivePatient(row.id)"&gt;Archive&lt;/app-button&gt;
+                                    &lt;app-button *<span class="keyword">if</span>="row.isArchived" variant="success" size="sm" (click)="restorePatient(row.id)"&gt;Restore&lt;/app-button&gt;
+                                &lt;/ng-template&gt;
+                            &lt;/app-table&gt;
+                        &lt;/div&gt;
+
+                        &lt;div class="mt-3"&gt;
+                            &lt;app-pagination
+                                [totalItems]="totalItems"
+                                [pageSize]="pageSize"
+                                [currentPage]="currentPage"
+                                (pageChange)="onPageChange($event)"
+                            &gt;&lt;/app-pagination&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                </div>
+
+                <h4>Step 4: Add Styles</h4>
+
+                <div class="code-block">
+                    <span class="comment">// patient-list.component.scss</span>
+                    .patient-list {
+                        padding: 1rem 0;
+                    }
+                    .filters {
+                        gap: 0.5rem;
+                    }
+                    .filters .form-check {
+                        display: flex;
+                        align-items: center;
+                    }
+                    .table-responsive {
+                        overflow-x: auto;
+                    }
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>patient-list.component.ts</code></li>
+                    <li><code>patient-list.component.html</code></li>
+                    <li><code>patient-list.component.scss</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    <span class="comment"># Already generated; now modify</span>
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>RxJS: <code>Subject</code>, <code>debounceTime</code>, <code>switchMap</code></li>
+                    <li>Angular Signals</li>
+                    <li>Shared components integration</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test search debounces and fetches results.</li>
+                    <li>Test pagination changes page and fetches data.</li>
+                    <li>Test archive/restore updates the list.</li>
+                    <li>Test show archived toggle.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Patient list component fully functional.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not unsubscribing from observables – but we use <code>Subject</code> with <code>switchMap</code> and subscribe in component; consider using <code>takeUntil</code>.
+                    <br /><strong>Fix:</strong> Use <code>takeUntil</code> or <code>async</code> pipe.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 2:</strong> Forgetting to update <code>totalItems</code> from response.</div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>Search returns no results → empty state.</li>
+                    <li>Pagination with 0 items → hide pagination.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Patient list works with search, pagination, and actions.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Patient list is the entry point for patient management.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 3: PATIENT DETAIL COMPONENT                                      -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-PAT-003</span><span class="task-name">Patient Detail Component</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">6h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-PAT-003</li>
+                    <li><strong>Task Name:</strong> Patient Detail Component</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-PAT-001, FE-PAT-002, FE-SHARED-004 (Modal)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 6 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create the patient detail page with tabs for overview, sessions, exercises, reports, and assessments. Display patient information, intake form, and allow navigation to related modules.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Provide a comprehensive view of a patient's data, enabling therapists to access all relevant information in one place.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Load patient data via PatientService, display in a tabbed interface, and integrate with child components for sessions, exercises, etc.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular tabs (Bootstrap or custom).</li>
+                    <li>Router and route parameters.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-PAT-001:</strong> PatientService and StateService.</li>
+                    <li><strong>FE-SHARED-004:</strong> Modal (optional).</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Patient ID from route.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>patient-detail.component.ts</code></li>
+                    <li><code>patient-detail.component.html</code></li>
+                    <li><code>patient-detail.component.scss</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Implement Component</h4>
+
+                <div class="code-block">
+                    <span class="comment">// patient-detail.component.ts</span>
+                    <span class="keyword">import</span> { Component, inject, signal, OnInit } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { ActivatedRoute, Router, RouterLink } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+                    <span class="keyword">import</span> { PatientService } <span class="keyword">from</span> <span class="string">'../../../../core/services/patient.service'</span>;
+                    <span class="keyword">import</span> { PatientStateService } <span class="keyword">from</span> <span class="string">'../../../../core/state/patient-state.service'</span>;
+                    <span class="keyword">import</span> { ButtonComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/button/button.component'</span>;
+                    <span class="keyword">import</span> { DatePipe } <span class="keyword">from</span> <span class="string">'@angular/common'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-patient-detail',
+                        standalone: true,
+                        imports: [RouterLink, ButtonComponent, DatePipe],
+                        templateUrl: './patient-detail.component.html',
+                        styleUrls: ['./patient-detail.component.scss'],
+                    })
+                    export <span class="keyword">class</span> PatientDetailComponent implements OnInit {
+                        private route = inject(ActivatedRoute);
+                        private patientService = inject(PatientService);
+                        private state = inject(PatientStateService);
+                        private router = inject(Router);
+
+                        patient = this.state.selectedPatient;
+                        loading = signal(true);
+                        error = signal&lt;string | null&gt;(<span class="keyword">null</span>);
+                        activeTab = 'overview';
+
+                        ngOnInit(): void {
+                            const id = this.route.snapshot.paramMap.get('id');
+                            if (id) {
+                                this.loadPatient(id);
+                            } else {
+                                this.error.set('Patient ID not found');
+                                this.loading.set(false);
+                            }
+                        }
+
+                        loadPatient(id: string) {
+                            this.loading.set(true);
+                            this.patientService.getPatient(id).subscribe({
+                                next: (patient) => {
+                                    this.state.selectPatient(patient);
+                                    this.loading.set(false);
+                                },
+                                error: (err) => {
+                                    this.error.set(err.message || 'Failed to load patient');
+                                    this.loading.set(false);
+                                },
+                            });
+                        }
+
+                        setTab(tab: string) {
+                            this.activeTab = tab;
+                        }
+
+                        goBack() {
+                            this.router.navigate(['/patients']);
+                        }
+                    }
+                </div>
+
+                <h4>Step 2: Create Template</h4>
+
+                <div class="code-block">
+                    <span class="comment">// patient-detail.component.html</span>
+                    &lt;div class="patient-detail"&gt;
+                        &lt;div class="d-flex justify-content-between align-items-start mb-3"&gt;
+                            &lt;div&gt;
+                                &lt;button class="btn btn-link p-0" (click)="goBack()"&gt;
+                                    &lt;i class="bi bi-arrow-left"&gt;&lt;/i&gt; Back
+                                &lt;/button&gt;
+                                &lt;h2 class="mt-2" *<span class="keyword">if</span>="patient()"&gt;{{ patient()?.firstName }} {{ patient()?.lastName }}&lt;/h2&gt;
+                            &lt;/div&gt;
+                            &lt;div class="d-flex gap-2" *<span class="keyword">if</span>="patient()"&gt;
+                                &lt;app-button variant="primary" [routerLink]="['/patients', patient()?.id, 'edit']"&gt;Edit&lt;/app-button&gt;
+                                &lt;app-button variant="secondary" [routerLink]="['/patients', patient()?.id, 'intake']"&gt;Intake Form&lt;/app-button&gt;
+                                &lt;app-button variant="info" [routerLink]="['/patients', patient()?.id, 'assessments']"&gt;Assessments&lt;/app-button&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+
+                        &lt;div *<span class="keyword">if</span>="loading()" class="text-center py-5"&gt;
+                            &lt;app-spinner size="lg"&gt;&lt;/app-spinner&gt;
+                        &lt;/div&gt;
+
+                        &lt;div *<span class="keyword">if</span>="error()" class="alert alert-danger"&gt;{{ error() }}&lt;/div&gt;
+
+                        &lt;div *<span class="keyword">if</span>="patient() &amp;&amp; !loading()"&gt;
+                            &lt;div class="card mb-3"&gt;
+                                &lt;div class="card-body"&gt;
+                                    &lt;div class="row"&gt;
+                                        &lt;div class="col-md-6"&gt;
+                                            &lt;p&gt;&lt;strong&gt;Email:&lt;/strong&gt; {{ patient()?.email }}&lt;/p&gt;
+                                            &lt;p&gt;&lt;strong&gt;Date of Birth:&lt;/strong&gt; {{ patient()?.dateOfBirth | date:'shortDate' }}&lt;/p&gt;
+                                            &lt;p&gt;&lt;strong&gt;Gender:&lt;/strong&gt; {{ patient()?.gender }}&lt;/p&gt;
+                                        &lt;/div&gt;
+                                        &lt;div class="col-md-6"&gt;
+                                            &lt;p&gt;&lt;strong&gt;Emergency Contact:&lt;/strong&gt; {{ patient()?.emergencyContact || 'N/A' }}&lt;/p&gt;
+                                            &lt;p&gt;&lt;strong&gt;Status:&lt;/strong&gt;
+                                                &lt;span class="badge" [class.bg-success]="!patient()?.isArchived" [class.bg-danger]="patient()?.isArchived"&gt;
+                                                    {{ patient()?.isArchived ? 'Archived' : 'Active' }}
+                                                &lt;/span&gt;
+                                            &lt;/p&gt;
+                                        &lt;/div&gt;
+                                    &lt;/div&gt;
+                                    &lt;div class="mt-2" *<span class="keyword">if</span>="patient()?.notes"&gt;
+                                        &lt;strong&gt;Notes:&lt;/strong&gt;
+                                        &lt;p&gt;{{ patient()?.notes }}&lt;/p&gt;
+                                    &lt;/div&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+
+                            &lt;!-- Tabs --&gt;
+                            &lt;ul class="nav nav-tabs"&gt;
+                                &lt;li class="nav-item"&gt;
+                                    &lt;a class="nav-link" [class.active]="activeTab === 'overview'" (click)="setTab('overview')"&gt;Overview&lt;/a&gt;
+                                &lt;/li&gt;
+                                &lt;li class="nav-item"&gt;
+                                    &lt;a class="nav-link" [class.active]="activeTab === 'sessions'" (click)="setTab('sessions')"&gt;Sessions&lt;/a&gt;
+                                &lt;/li&gt;
+                                &lt;li class="nav-item"&gt;
+                                    &lt;a class="nav-link" [class.active]="activeTab === 'exercises'" (click)="setTab('exercises')"&gt;Exercises&lt;/a&gt;
+                                &lt;/li&gt;
+                                &lt;li class="nav-item"&gt;
+                                    &lt;a class="nav-link" [class.active]="activeTab === 'reports'" (click)="setTab('reports')"&gt;Reports&lt;/a&gt;
+                                &lt;/li&gt;
+                            &lt;/ul&gt;
+
+                            &lt;div class="tab-content mt-3"&gt;
+                                &lt;div class="tab-pane" [class.active]="activeTab === 'overview'"&gt;
+                                    &lt;!-- Overview content: intake form, assessments summary --&gt;
+                                    &lt;p&gt;Intake form and assessments will be displayed here.&lt;/p&gt;
+                                &lt;/div&gt;
+                                &lt;div class="tab-pane" [class.active]="activeTab === 'sessions'"&gt;
+                                    &lt;app-session-list [patientId]="patient()?.id" *<span class="keyword">if</span>="patient()?.id"&gt;&lt;/app-session-list&gt;
+                                &lt;/div&gt;
+                                &lt;div class="tab-pane" [class.active]="activeTab === 'exercises'"&gt;
+                                    &lt;app-exercise-list [patientId]="patient()?.id" *<span class="keyword">if</span>="patient()?.id"&gt;&lt;/app-exercise-list&gt;
+                                &lt;/div&gt;
+                                &lt;div class="tab-pane" [class.active]="activeTab === 'reports'"&gt;
+                                    &lt;app-report-list [patientId]="patient()?.id" *<span class="keyword">if</span>="patient()?.id"&gt;&lt;/app-report-list&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                </div>
+
+                <h4>Step 3: Add Styles</h4>
+
+                <div class="code-block">
+                    <span class="comment">// patient-detail.component.scss</span>
+                    .patient-detail {
+                        padding: 1rem 0;
+                    }
+                    .nav-tabs .nav-link {
+                        cursor: pointer;
+                    }
+                    .tab-content .tab-pane {
+                        display: none;
+                    }
+                    .tab-content .tab-pane.active {
+                        display: block;
+                    }
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>patient-detail.component.ts</code></li>
+                    <li><code>patient-detail.component.html</code></li>
+                    <li><code>patient-detail.component.scss</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    <span class="comment"># Already generated</span>
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>ActivatedRoute for route params</li>
+                    <li>Bootstrap tabs</li>
+                    <li>Child components integration</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Navigate to a patient detail page with valid ID.</li>
+                    <li>Verify patient data displays.</li>
+                    <li>Test tab switching.</li>
+                    <li>Test navigation to related components.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Patient detail component with tabs.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not handling invalid patient ID gracefully.
+                    <br /><strong>Fix:</strong> Show error message and provide back navigation.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>Patient has no sessions/exercises etc. → empty state.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Detail page works and integrates with other components.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Detail page uses tabs for related data.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 4: PATIENT FORM (CREATE/EDIT)                                    -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-PAT-004</span><span class="task-name">Patient Form (Create/Edit)</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">5h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-PAT-004</li>
+                    <li><strong>Task Name:</strong> Patient Form (Create/Edit)</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-PAT-001, FE-SHARED-003 (Input components)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 5 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Build a reactive form for creating and editing patients, with validation, loading state, and navigation.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Allow therapists to add new patients and update existing ones.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use Reactive Forms with validation, patch values for edit, and submit to PatientService.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Reactive Forms and custom validators.</li>
+                    <li>Shared input components.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-PAT-001:</strong> PatientService and StateService.</li>
+                    <li><strong>FE-SHARED-003:</strong> Input components.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Patient ID for edit (from route).</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>patient-form.component.ts</code></li>
+                    <li><code>patient-form.component.html</code></li>
+                    <li><code>patient-form.component.scss</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Implement Component</h4>
+
+                <div class="code-block">
+                    <span class="comment">// patient-form.component.ts</span>
+                    <span class="keyword">import</span> { Component, inject, signal, OnInit } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { FormBuilder, ReactiveFormsModule, Validators } <span class="keyword">from</span> <span class="string">'@angular/forms'</span>;
+                    <span class="keyword">import</span> { ActivatedRoute, Router } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+                    <span class="keyword">import</span> { PatientService } <span class="keyword">from</span> <span class="string">'../../../../core/services/patient.service'</span>;
+                    <span class="keyword">import</span> { InputComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/input/input.component'</span>;
+                    <span class="keyword">import</span> { ButtonComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/button/button.component'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-patient-form',
+                        standalone: true,
+                        imports: [ReactiveFormsModule, InputComponent, ButtonComponent],
+                        templateUrl: './patient-form.component.html',
+                        styleUrls: ['./patient-form.component.scss'],
+                    })
+                    export <span class="keyword">class</span> PatientFormComponent implements OnInit {
+                        private fb = inject(FormBuilder);
+                        private patientService = inject(PatientService);
+                        private route = inject(ActivatedRoute);
+                        private router = inject(Router);
+
+                        patientId = signal&lt;string | null&gt;(<span class="keyword">null</span>);
+                        loading = signal(false);
+                        isEdit = signal(false);
+                        error = signal&lt;string | null&gt;(<span class="keyword">null</span>);
+
+                        form = this.fb.group({
+                            firstName: ['', [Validators.required, Validators.minLength(2)]],
+                            lastName: ['', [Validators.required, Validators.minLength(2)]],
+                            email: ['', [Validators.required, Validators.email]],
+                            dateOfBirth: ['', [Validators.required]],
+                            gender: ['Male', [Validators.required]],
+                            emergencyContact: [''],
+                            notes: [''],
+                        });
+
+                        ngOnInit(): void {
+                            const id = this.route.snapshot.paramMap.get('id');
+                            if (id) {
+                                this.patientId.set(id);
+                                this.isEdit.set(true);
+                                this.loadPatient(id);
+                            }
+                        }
+
+                        loadPatient(id: string) {
+                            this.loading.set(true);
+                            this.patientService.getPatient(id).subscribe({
+                                next: (patient) => {
+                                    this.form.patchValue({
+                                        firstName: patient.firstName,
+                                        lastName: patient.lastName,
+                                        email: patient.email,
+                                        dateOfBirth: patient.dateOfBirth,
+                                        gender: patient.gender,
+                                        emergencyContact: patient.emergencyContact || '',
+                                        notes: patient.notes || '',
+                                    });
+                                    this.loading.set(false);
+                                },
+                                error: (err) => {
+                                    this.error.set(err.message || 'Failed to load patient');
+                                    this.loading.set(false);
+                                },
+                            });
+                        }
+
+                        onSubmit() {
+                            if (this.form.invalid) {
+                                this.form.markAllAsTouched();
+                                return;
+                            }
+
+                            this.loading.set(true);
+                            const data = this.form.value;
+
+                            if (this.isEdit()) {
+                                this.patientService.updatePatient(this.patientId()!, data).subscribe({
+                                    next: () => {
+                                        this.loading.set(false);
+                                        this.router.navigate(['/patients', this.patientId()]);
+                                    },
+                                    error: (err) => {
+                                        this.loading.set(false);
+                                        this.error.set(err.message || 'Failed to update patient');
+                                    },
+                                });
+                            } else {
+                                this.patientService.createPatient(data).subscribe({
+                                    next: (patient) => {
+                                        this.loading.set(false);
+                                        this.router.navigate(['/patients', patient.id]);
+                                    },
+                                    error: (err) => {
+                                        this.loading.set(false);
+                                        this.error.set(err.message || 'Failed to create patient');
+                                    },
+                                });
+                            }
+                        }
+                    }
+                </div>
+
+                <h4>Step 2: Create Template</h4>
+
+                <div class="code-block">
+                    <span class="comment">// patient-form.component.html</span>
+                    &lt;div class="patient-form"&gt;
+                        &lt;h2&gt;{{ isEdit() ? 'Edit Patient' : 'Add New Patient' }}&lt;/h2&gt;
+
+                        &lt;div *<span class="keyword">if</span>="loading()" class="text-center py-5"&gt;
+                            &lt;app-spinner size="lg"&gt;&lt;/app-spinner&gt;
+                        &lt;/div&gt;
+
+                        &lt;div *<span class="keyword">if</span>="error()" class="alert alert-danger"&gt;{{ error() }}&lt;/div&gt;
+
+                        &lt;form [formGroup]="form" (ngSubmit)="onSubmit()" *<span class="keyword">if</span>="!loading()"&gt;
+                            &lt;div class="row"&gt;
+                                &lt;div class="col-md-6"&gt;
+                                    &lt;app-input
+                                        label="First Name"
+                                        type="text"
+                                        placeholder="Enter first name"
+                                        formControlName="firstName"
+                                        [error]="form.get('firstName')?.invalid && form.get('firstName')?.touched ? 'First name is required' : ''"
+                                    &gt;&lt;/app-input&gt;
+                                &lt;/div&gt;
+                                &lt;div class="col-md-6"&gt;
+                                    &lt;app-input
+                                        label="Last Name"
+                                        type="text"
+                                        placeholder="Enter last name"
+                                        formControlName="lastName"
+                                        [error]="form.get('lastName')?.invalid && form.get('lastName')?.touched ? 'Last name is required' : ''"
+                                    &gt;&lt;/app-input&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+
+                            &lt;app-input
+                                label="Email Address"
+                                type="email"
+                                placeholder="Enter email"
+                                formControlName="email"
+                                [error]="form.get('email')?.invalid && form.get('email')?.touched ? 'Valid email is required' : ''"
+                            &gt;&lt;/app-input&gt;
+
+                            &lt;app-input
+                                label="Date of Birth"
+                                type="date"
+                                placeholder="Select date"
+                                formControlName="dateOfBirth"
+                                [error]="form.get('dateOfBirth')?.invalid && form.get('dateOfBirth')?.touched ? 'Date of birth is required' : ''"
+                            &gt;&lt;/app-input&gt;
+
+                            &lt;div class="form-group"&gt;
+                                &lt;label&gt;Gender&lt;/label&gt;
+                                &lt;select class="form-select" formControlName="gender"&gt;
+                                    &lt;option value="Male"&gt;Male&lt;/option&gt;
+                                    &lt;option value="Female"&gt;Female&lt;/option&gt;
+                                    &lt;option value="Other"&gt;Other&lt;/option&gt;
+                                &lt;/select&gt;
+                            &lt;/div&gt;
+
+                            &lt;app-input
+                                label="Emergency Contact"
+                                type="text"
+                                placeholder="Emergency contact info"
+                                formControlName="emergencyContact"
+                            &gt;&lt;/app-input&gt;
+
+                            &lt;div class="form-group"&gt;
+                                &lt;label&gt;Notes&lt;/label&gt;
+                                &lt;textarea class="form-control" formControlName="notes" rows="3"&gt;&lt;/textarea&gt;
+                            &lt;/div&gt;
+
+                            &lt;div class="mt-4"&gt;
+                                &lt;app-button type="submit" variant="primary" [loading]="loading()"&gt;
+                                    {{ isEdit() ? 'Update' : 'Create' }} Patient
+                                &lt;/app-button&gt;
+                                &lt;app-button type="button" variant="secondary" class="ms-2" (click)="router.navigate(['/patients'])">Cancel&lt;/app-button&gt;
+                            &lt;/div&gt;
+                        &lt;/form&gt;
+                    &lt;/div&gt;
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>patient-form.component.ts</code>, .html, .scss</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    <span class="comment"># Already generated</span>
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Reactive Forms</li>
+                    <li>PatchValue for edit</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test create new patient: validation, success redirect.</li>
+                    <li>Test edit existing patient: loads data, saves changes.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Patient form fully functional.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not resetting errors on successful submission.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>Email already exists → error from API.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Form works for create and edit.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use the form for patient CRUD.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 5: INTAKE FORM COMPONENT                                         -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-PAT-005</span><span class="task-name">Intake Form Component with OCR Upload</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">6h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-PAT-005</li>
+                    <li><strong>Task Name:</strong> Intake Form Component with OCR Upload</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-PAT-001, FE-SHARED-003 (Input)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 6 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create a component for digital intake form entry, including image upload and OCR preview. Allow therapists to upload a scanned intake form and extract data automatically.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Enable efficient data entry for new patients using OCR.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Combine a reactive form with a file upload, send image to backend for OCR, and pre‑fill the form with extracted data.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>File upload with FormData.</li>
+                    <li>Understanding of reactive forms.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-PAT-001:</strong> PatientService methods for intake.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Patient ID from route.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>intake-form.component.ts</code></li>
+                    <li><code>intake-form.component.html</code></li>
+                    <li><code>intake-form.component.scss</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Implement Component</h4>
+
+                <div class="code-block">
+                    <span class="comment">// intake-form.component.ts</span>
+                    <span class="keyword">import</span> { Component, inject, signal, OnInit } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { FormBuilder, ReactiveFormsModule } <span class="keyword">from</span> <span class="string">'@angular/forms'</span>;
+                    <span class="keyword">import</span> { ActivatedRoute, Router } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+                    <span class="keyword">import</span> { PatientService } <span class="keyword">from</span> <span class="string">'../../../../core/services/patient.service'</span>;
+                    <span class="keyword">import</span> { InputComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/input/input.component'</span>;
+                    <span class="keyword">import</span> { ButtonComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/button/button.component'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-intake-form',
+                        standalone: true,
+                        imports: [ReactiveFormsModule, InputComponent, ButtonComponent],
+                        templateUrl: './intake-form.component.html',
+                        styleUrls: ['./intake-form.component.scss'],
+                    })
+                    export <span class="keyword">class</span> IntakeFormComponent implements OnInit {
+                        private fb = inject(FormBuilder);
+                        private patientService = inject(PatientService);
+                        private route = inject(ActivatedRoute);
+                        private router = inject(Router);
+
+                        patientId = signal&lt;string&gt;('');
+                        loading = signal(false);
+                        error = signal&lt;string | null&gt;(<span class="keyword">null</span>);
+                        ocrResult = signal&lt;any | null&gt;(<span class="keyword">null</span>);
+
+                        form = this.fb.group({
+                            reasonForVisit: [''],
+                            medicalHistory: [''],
+                            medications: [''],
+                            allergies: [''],
+                            otherInfo: [''],
+                        });
+
+                        ngOnInit(): void {
+                            const id = this.route.snapshot.paramMap.get('id');
+                            if (id) {
+                                this.patientId.set(id);
+                                this.loadIntakeForm();
+                            } else {
+                                this.error.set('Patient ID required');
+                            }
+                        }
+
+                        loadIntakeForm() {
+                            this.loading.set(true);
+                            this.patientService.getIntakeForm(this.patientId()).subscribe({
+                                next: (form) => {
+                                    this.form.patchValue(form);
+                                    this.loading.set(false);
+                                },
+                                error: () => {
+                                    // If no form exists, just show empty form
+                                    this.loading.set(false);
+                                },
+                            });
+                        }
+
+                        onFileSelected(event: Event) {
+                            const input = event.target as HTMLInputElement;
+                            if (input.files && input.files.length > 0) {
+                                const file = input.files[0];
+                                this.uploadImage(file);
+                            }
+                        }
+
+                        uploadImage(file: File) {
+                            this.loading.set(true);
+                            this.patientService.uploadIntakeImage(this.patientId(), file).subscribe({
+                                next: (result) => {
+                                    this.ocrResult.set(result.extractedData);
+                                    // Pre‑fill form with extracted data
+                                    if (result.extractedData) {
+                                        this.form.patchValue({
+                                            reasonForVisit: result.extractedData.reasonForVisit || '',
+                                            medicalHistory: result.extractedData.medicalHistory || '',
+                                            medications: result.extractedData.medications || '',
+                                            allergies: result.extractedData.allergies || '',
+                                            otherInfo: result.extractedData.otherInfo || '',
+                                        });
+                                    }
+                                    this.loading.set(false);
+                                },
+                                error: (err) => {
+                                    this.error.set(err.message || 'Failed to upload image');
+                                    this.loading.set(false);
+                                },
+                            });
+                        }
+
+                        onSubmit() {
+                            this.loading.set(true);
+                            this.patientService.saveIntakeForm(this.patientId(), this.form.value).subscribe({
+                                next: () => {
+                                    this.loading.set(false);
+                                    this.router.navigate(['/patients', this.patientId()]);
+                                },
+                                error: (err) => {
+                                    this.error.set(err.message || 'Failed to save intake form');
+                                    this.loading.set(false);
+                                },
+                            });
+                        }
+                    }
+                </div>
+
+                <h4>Step 2: Create Template</h4>
+
+                <div class="code-block">
+                    <span class="comment">// intake-form.component.html</span>
+                    &lt;div class="intake-form"&gt;
+                        &lt;h2&gt;Intake Form&lt;/h2&gt;
+
+                        &lt;div class="mb-3"&gt;
+                            &lt;label class="form-label"&gt;Upload Intake Form Image&lt;/label&gt;
+                            &lt;input type="file" class="form-control" (change)="onFileSelected($event)" accept="image/*" /&gt;
+                            &lt;div *<span class="keyword">if</span>="ocrResult()" class="mt-2 text-success"&gt;
+                                <i class="bi bi-check-circle"></i> OCR data extracted successfully.
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+
+                        &lt;div *<span class="keyword">if</span>="loading()" class="text-center py-3"&gt;
+                            &lt;app-spinner size="md"&gt;&lt;/app-spinner&gt;
+                        &lt;/div&gt;
+
+                        &lt;div *<span class="keyword">if</span>="error()" class="alert alert-danger"&gt;{{ error() }}&lt;/div&gt;
+
+                        &lt;form [formGroup]="form" (ngSubmit)="onSubmit()" *<span class="keyword">if</span>="!loading()"&gt;
+                            &lt;app-input
+                                label="Reason for Visit"
+                                type="text"
+                                placeholder="Enter reason"
+                                formControlName="reasonForVisit"
+                            &gt;&lt;/app-input&gt;
+
+                            &lt;div class="form-group"&gt;
+                                &lt;label&gt;Medical History&lt;/label&gt;
+                                &lt;textarea class="form-control" formControlName="medicalHistory" rows="3"&gt;&lt;/textarea&gt;
+                            &lt;/div&gt;
+
+                            &lt;app-input
+                                label="Medications"
+                                type="text"
+                                placeholder="List medications"
+                                formControlName="medications"
+                            &gt;&lt;/app-input&gt;
+
+                            &lt;app-input
+                                label="Allergies"
+                                type="text"
+                                placeholder="List allergies"
+                                formControlName="allergies"
+                            &gt;&lt;/app-input&gt;
+
+                            &lt;div class="form-group"&gt;
+                                &lt;label&gt;Other Information&lt;/label&gt;
+                                &lt;textarea class="form-control" formControlName="otherInfo" rows="2"&gt;&lt;/textarea&gt;
+                            &lt;/div&gt;
+
+                            &lt;div class="mt-4"&gt;
+                                &lt;app-button type="submit" variant="primary" [loading]="loading()"&gt;Save Intake Form&lt;/app-button&gt;
+                                &lt;app-button type="button" variant="secondary" class="ms-2" (click)="router.navigate(['/patients', patientId()])">Cancel&lt;/app-button&gt;
+                            &lt;/div&gt;
+                        &lt;/form&gt;
+                    &lt;/div&gt;
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>intake-form.component.ts</code>, .html, .scss</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    <span class="comment"># Already generated</span>
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>File upload with FormData</li>
+                    <li>OCR integration</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Upload an image and verify OCR data pre‑fills the form.</li>
+                    <li>Save form and navigate back.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Intake form with image upload and OCR.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not handling large file uploads gracefully.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>No image uploaded → form still works manually.</li>
+                    <li>OCR fails → show error and allow manual entry.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Intake form works with OCR.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> OCR speeds up data entry.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 6: ASSESSMENT COMPONENT                                          -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-PAT-006</span><span class="task-name">Assessment Component</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-PAT-006</li>
+                    <li><strong>Task Name:</strong> Assessment Component</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-PAT-001, FE-SHARED-003 (Input)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create a component to record and view psychological assessments for a patient.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Track patient scores over time.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Form to select assessment type, enter score, date, and list previous assessments.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Reactive Forms.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-PAT-001:</strong> PatientService.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Patient ID.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>assessment.component.ts</code></li>
+                    <li><code>assessment.component.html</code></li>
+                    <li><code>assessment.component.scss</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Implement Component</h4>
+
+                <div class="code-block">
+                    <span class="comment">// assessment.component.ts</span>
+                    <span class="keyword">import</span> { Component, inject, signal, OnInit } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { FormBuilder, ReactiveFormsModule, Validators } <span class="keyword">from</span> <span class="string">'@angular/forms'</span>;
+                    <span class="keyword">import</span> { ActivatedRoute, Router } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+                    <span class="keyword">import</span> { PatientService } <span class="keyword">from</span> <span class="string">'../../../../core/services/patient.service'</span>;
+                    <span class="keyword">import</span> { InputComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/input/input.component'</span>;
+                    <span class="keyword">import</span> { ButtonComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/button/button.component'</span>;
+                    <span class="keyword">import</span> { DatePipe } <span class="keyword">from</span> <span class="string">'@angular/common'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-assessment',
+                        standalone: true,
+                        imports: [ReactiveFormsModule, InputComponent, ButtonComponent, DatePipe],
+                        templateUrl: './assessment.component.html',
+                        styleUrls: ['./assessment.component.scss'],
+                    })
+                    export <span class="keyword">class</span> AssessmentComponent implements OnInit {
+                        private fb = inject(FormBuilder);
+                        private patientService = inject(PatientService);
+                        private route = inject(ActivatedRoute);
+                        private router = inject(Router);
+
+                        patientId = signal&lt;string&gt;('');
+                        assessments = signal&lt;any[]&gt;([]);
+                        loading = signal(false);
+                        error = signal&lt;string | null&gt;(<span class="keyword">null</span>);
+
+                        form = this.fb.group({
+                            type: ['', [Validators.required]],
+                            score: [null, [Validators.required, Validators.min(0)]],
+                            date: [new Date().toISOString().split('T')[0], [Validators.required]],
+                            notes: [''],
+                        });
+
+                        assessmentTypes = ['PHQ-9', 'GAD-7', 'DASS-21', 'Other'];
+
+                        ngOnInit(): void {
+                            const id = this.route.snapshot.paramMap.get('id');
+                            if (id) {
+                                this.patientId.set(id);
+                                this.loadAssessments();
+                            } else {
+                                this.error.set('Patient ID required');
+                            }
+                        }
+
+                        loadAssessments() {
+                            this.loading.set(true);
+                            this.patientService.getAssessments(this.patientId()).subscribe({
+                                next: (data) => {
+                                    this.assessments.set(data);
+                                    this.loading.set(false);
+                                },
+                                error: (err) => {
+                                    this.error.set(err.message || 'Failed to load assessments');
+                                    this.loading.set(false);
+                                },
+                            });
+                        }
+
+                        onSubmit() {
+                            if (this.form.invalid) {
+                                this.form.markAllAsTouched();
+                                return;
+                            }
+
+                            this.loading.set(true);
+                            this.patientService.addAssessment(this.patientId(), this.form.value).subscribe({
+                                next: () => {
+                                    this.loading.set(false);
+                                    this.form.reset({ date: new Date().toISOString().split('T')[0] });
+                                    this.loadAssessments();
+                                },
+                                error: (err) => {
+                                    this.error.set(err.message || 'Failed to add assessment');
+                                    this.loading.set(false);
+                                },
+                            });
+                        }
+                    }
+                </div>
+
+                <h4>Step 2: Create Template</h4>
+
+                <div class="code-block">
+                    <span class="comment">// assessment.component.html</span>
+                    &lt;div class="assessment"&gt;
+                        &lt;h2&gt;Psychological Assessments&lt;/h2&gt;
+
+                        &lt;div *<span class="keyword">if</span>="loading()" class="text-center py-3"&gt;
+                            &lt;app-spinner size="md"&gt;&lt;/app-spinner&gt;
+                        &lt;/div&gt;
+
+                        &lt;div *<span class="keyword">if</span>="error()" class="alert alert-danger"&gt;{{ error() }}&lt;/div&gt;
+
+                        &lt;div class="card mb-4"&gt;
+                            &lt;div class="card-header"&gt;Add New Assessment&lt;/div&gt;
+                            &lt;div class="card-body"&gt;
+                                &lt;form [formGroup]="form" (ngSubmit)="onSubmit()"&gt;
+                                    &lt;div class="row"&gt;
+                                        &lt;div class="col-md-4"&gt;
+                                            &lt;div class="form-group"&gt;
+                                                &lt;label&gt;Type&lt;/label&gt;
+                                                &lt;select class="form-select" formControlName="type"&gt;
+                                                    &lt;option *<span class="keyword">for</span>="let type of assessmentTypes" [value]="type"&gt;{{ type }}&lt;/option&gt;
+                                                &lt;/select&gt;
+                                            &lt;/div&gt;
+                                        &lt;/div&gt;
+                                        &lt;div class="col-md-4"&gt;
+                                            &lt;app-input
+                                                label="Score"
+                                                type="number"
+                                                placeholder="Enter score"
+                                                formControlName="score"
+                                            &gt;&lt;/app-input&gt;
+                                        &lt;/div&gt;
+                                        &lt;div class="col-md-4"&gt;
+                                            &lt;app-input
+                                                label="Date"
+                                                type="date"
+                                                formControlName="date"
+                                            &gt;&lt;/app-input&gt;
+                                        &lt;/div&gt;
+                                    &lt;/div&gt;
+                                    &lt;div class="form-group"&gt;
+                                        &lt;label&gt;Notes&lt;/label&gt;
+                                        &lt;textarea class="form-control" formControlName="notes" rows="2"&gt;&lt;/textarea&gt;
+                                    &lt;/div&gt;
+                                    &lt;div class="mt-3"&gt;
+                                        &lt;app-button type="submit" variant="primary" [loading]="loading()"&gt;Add Assessment&lt;/app-button&gt;
+                                    &lt;/div&gt;
+                                &lt;/form&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+
+                        &lt;h4&gt;Assessment History&lt;/h4&gt;
+                        &lt;div *<span class="keyword">if</span>="assessments().length === 0"&gt;No assessments recorded.&lt;/div&gt;
+                        &lt;table class="table table-striped" *<span class="keyword">if</span>="assessments().length > 0"&gt;
+                            &lt;thead&gt;
+                                &lt;tr&gt;
+                                    &lt;th&gt;Type&lt;/th&gt;
+                                    &lt;th&gt;Score&lt;/th&gt;
+                                    &lt;th&gt;Date&lt;/th&gt;
+                                    &lt;th&gt;Notes&lt;/th&gt;
+                                &lt;/tr&gt;
+                            &lt;/thead&gt;
+                            &lt;tbody&gt;
+                                &lt;tr *<span class="keyword">for</span>="let assessment of assessments()"&gt;
+                                    &lt;td&gt;{{ assessment.type }}&lt;/td&gt;
+                                    &lt;td&gt;{{ assessment.score }}&lt;/td&gt;
+                                    &lt;td&gt;{{ assessment.date | date:'shortDate' }}&lt;/td&gt;
+                                    &lt;td&gt;{{ assessment.notes || '-' }}&lt;/td&gt;
+                                &lt;/tr&gt;
+                            &lt;/tbody&gt;
+                        &lt;/table&gt;
+                    &lt;/div&gt;
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>assessment.component.ts</code>, .html, .scss</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    <span class="comment"># Already generated</span>
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Reactive Forms</li>
+                    <li>Date handling</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Add assessment and verify it appears in the list.</li>
+                    <li>Test validation.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Assessment component ready.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Assessment recording and listing works.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Assessments are tracked per patient.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 7: STATE MANAGEMENT AND INTEGRATION                             -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-PAT-007</span><span class="task-name">State Management and Integration</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-PAT-007</li>
+                    <li><strong>Task Name:</strong> State Management and Integration</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> All previous patient tasks</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Ensure all patient components use the PatientStateService consistently, add caching and error handling, and integrate with other modules (sessions, exercises, reports).</p>
+
+                <h3>Business Purpose</h3>
+                <p>A unified state management approach reduces bugs and ensures data consistency across the application.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Update all components to use the state service, add methods for clearing state, and integrate with other feature services.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>All patient components implemented.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li>All FE-PAT tasks.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Existing components.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Updated components using state service consistently.</li>
+                    <li>Integration with sessions, exercises, reports (placeholders).</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Refactor Components to Use State Service</h4>
+                <p>Ensure PatientListComponent, PatientDetailComponent, etc., use <code>PatientStateService</code> for data and loading states.</p>
+
+                <h4>Step 2: Add Clear State on Navigation</h4>
+                <p>When navigating away from patient detail, clear selected patient.</p>
+
+                <div class="code-block">
+                    <span class="comment">// In patient-detail.component.ts</span>
+                    ngOnDestroy() {
+                        this.state.clearSelected();
+                    }
+                </div>
+
+                <h4>Step 3: Integrate with Other Modules</h4>
+                <p>In PatientDetailComponent tabs, we have placeholders for <code>app-session-list</code>, <code>app-exercise-list</code>, etc. Ensure these child components receive the patient ID via input and fetch data accordingly.</p>
+
+                <h4>Step 4: Add Error Handling to All API Calls</h4>
+                <p>Ensure every API call in PatientService has error handling and updates the state error signal.</p>
+
+                <h4>Step 5: Add Unit Tests for State Service</h4>
+                <p>Test that state updates correctly.</p>
+
+                <h3>Files To Modify</h3>
+                <ul>
+                    <li>All patient components.</li>
+                    <li>PatientStateService (add clearSelected).</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <p>No new commands.</p>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>State management best practices</li>
+                    <li>Lifecycle hooks (ngOnDestroy)</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Verify state persists correctly between components.</li>
+                    <li>Test that navigation clears selected patient.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Patient management fully integrated.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not clearing state on component destroy, causing stale data.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>All components use state service and integrate with other modules.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use PatientStateService for all patient data.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- PHASE COMPLETION CRITERIA                                             -->
+        <!-- ===================================================================== -->
+        <hr class="hr" />
+
+        <h2 style="background: #f0fdf4; border-left-color: #22c55e; padding:12px 20px; border-left:6px solid #22c55e; border-radius:8px;">✅ Phase Completion Criteria</h2>
+        <ul class="checklist">
+            <li>All 7 patient tasks are complete (FE-PAT-001 to FE-PAT-007).</li>
+            <li>Patient routes are lazy‑loaded and guarded.</li>
+            <li>PatientService and PatientStateService are implemented.</li>
+            <li>Patient List works with search, pagination, archive/restore.</li>
+            <li>Patient Detail displays information and tabs.</li>
+            <li>Patient Form works for create and edit.</li>
+            <li>Intake Form supports image upload and OCR.</li>
+            <li>Assessment component records and lists assessments.</li>
+            <li>All components use the state service.</li>
+            <li>All tests pass.</li>
+            <li>All changes are committed.</li>
+        </ul>
+
+        <h2 style="background: #f0f9ff; border-left-color: #3b82f6; padding:12px 20px; border-left:6px solid #3b82f6; border-radius:8px; margin-top:24px;">📋 Code Review Checklist</h2>
+        <ul class="checklist">
+            <li>PatientService methods are typed and handle errors.</li>
+            <li>State service uses Signals correctly.</li>
+            <li>List component uses debounced search and pagination.</li>
+            <li>Detail component uses tabs and integrates child components.</li>
+            <li>Form uses reactive validation.</li>
+            <li>Intake form handles file upload and OCR.</li>
+            <li>Assessment component uses date picker correctly.</li>
+        </ul>
+
+        <h2 style="background: #fefce8; border-left-color: #f59e0b; padding:12px 20px; border-left:6px solid #f59e0b; border-radius:8px; margin-top:24px;">🚀 Pull Request Checklist</h2>
+        <ul class="checklist">
+            <li>Branch up‑to‑date with main.</li>
+            <li>All tests pass.</li>
+            <li>Code review completed.</li>
+            <li>Documentation updated if needed.</li>
+        </ul>
+
+        <h2 style="background: #fef2f2; border-left-color: #ef4444; padding:12px 20px; border-left:6px solid #ef4444; border-radius:8px; margin-top:24px;">🧪 Deployment Readiness Checklist</h2>
+        <ul class="checklist">
+            <li>Patient CRUD works end‑to‑end.</li>
+            <li>Intake form with OCR works.</li>
+            <li>Assessments are saved and displayed.</li>
+            <li>All pages accessible with correct permissions.</li>
+        </ul>
+
+        <hr class="hr" />
+        <div style="text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 20px 0 0;">
+            Jalsa – Phase 7: Patient Management – Expanded Implementation Handbook &bull; v1.0 &bull; For development team
+        </div>
+    </div>
+
+    <script>
+        function toggleTask(header) {
+            const body = header.nextElementSibling;
+            const isOpen = body.classList.contains('open');
+            body.classList.toggle('open');
+            header.classList.toggle('open');
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstHeader = document.querySelector('.task-header');
+            if (firstHeader) firstHeader.click();
+        });
+    </script>
+</body>
+</html>

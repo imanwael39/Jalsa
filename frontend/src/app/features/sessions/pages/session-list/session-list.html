@@ -1,0 +1,53 @@
+<div class="session-list">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Sessions</h2>
+        <app-button variant="primary" (clicked)="navigateToNew()" ariaLabel="Create new session">
+            <i class="bi bi-plus-lg" aria-hidden="true"></i> New Session
+        </app-button>
+    </div>
+
+    @if (error()) {
+        <div class="alert alert-danger" role="alert">{{ error() }}</div>
+    }
+
+    <div class="table-responsive">
+        <app-table
+            [data]="sessions()"
+            [columns]="columns"
+            [loading]="loading()"
+            emptyMessage="No sessions found for this patient."
+            (rowClick)="onRowClick($event)"
+        >
+            <ng-template appColumnCell="sessionDate" let-row>
+                {{ formatDate(row.sessionDate) }}
+            </ng-template>
+            <ng-template appColumnCell="sessionType" let-row>
+                {{ row.sessionType || '-' }}
+            </ng-template>
+            <ng-template appColumnCell="durationMinutes" let-row>
+                {{ formatDuration(row.durationMinutes) }}
+            </ng-template>
+            <ng-template appColumnCell="status" let-row>
+                <span class="badge"
+                    [class.bg-secondary]="row.status === 'Draft'"
+                    [class.bg-success]="row.status === 'Completed'"
+                    [class.bg-warning]="row.status === 'Archived'">
+                    {{ row.status }}
+                </span>
+            </ng-template>
+            <ng-template appColumnCell="actions" let-row>
+                <div class="d-flex gap-1 justify-content-center">
+                    <app-button variant="secondary" size="sm" (clicked)="navigateToView(row.id)" ariaLabel="View session">
+                        <i class="bi bi-eye" aria-hidden="true"></i>
+                    </app-button>
+                    <app-button variant="primary" size="sm" (clicked)="navigateToEdit(row.id)" ariaLabel="Edit session">
+                        <i class="bi bi-pencil" aria-hidden="true"></i>
+                    </app-button>
+                    <app-button variant="danger" size="sm" (clicked)="deleteSession(row.id)" ariaLabel="Delete session">
+                        <i class="bi bi-trash" aria-hidden="true"></i>
+                    </app-button>
+                </div>
+            </ng-template>
+        </app-table>
+    </div>
+</div>

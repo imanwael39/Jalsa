@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Output, EventEmitter, inject, ChangeDetectionStrategy, input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { NavigationService } from '../../../core/services/navigation.service';
 import { AppStateService } from '../../../core/services/app-state.service';
@@ -15,7 +15,7 @@ export class SidebarComponent {
     private readonly navService = inject(NavigationService);
     private readonly appState = inject(AppStateService);
 
-    @Input() collapsed = false;
+    readonly collapsed = input(false);
     @Output() toggle = new EventEmitter<void>();
 
     readonly menuItems = this.navService.menuItems;
@@ -23,4 +23,5 @@ export class SidebarComponent {
     toggleSidebar(): void {
         this.toggle.emit();
     }
+    
 }

@@ -1,0 +1,49 @@
+.session-form {
+    padding: 1rem 0;
+    max-width: 800px;
+}
+
+quill-editor {
+    min-height: 200px;
+    display: block;
+}
+
+:host ::ng-deep .ql-container {
+    min-height: 150px;
+    font-family: inherit;
+}
+
+:host ::ng-deep .ql-editor {
+    min-height: 150px;
+    padding: 1rem;
+}
+
+:host ::ng-deep .ql-toolbar {
+    border-radius: 0.375rem 0.375rem 0 0;
+    background-color: #f8f9fa;
+}
+
+:host ::ng-deep .ql-container.ql-snow {
+    border-radius: 0 0 0.375rem 0.375rem;
+    border-color: #dee2e6;
+}
+
+:host ::ng-deep .ql-editor.ql-blank::before {
+    color: #6c757d;
+    font-style: normal;
+}
+
+/* RTL Support */
+:host ::ng-deep .ql-toolbar.ql-snow {
+    border-start-start-radius: 0.375rem;
+    border-start-end-radius: 0.375rem;
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+}
+
+:host ::ng-deep .ql-container.ql-snow {
+    border-end-start-radius: 0.375rem;
+    border-end-end-radius: 0.375rem;
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+}
