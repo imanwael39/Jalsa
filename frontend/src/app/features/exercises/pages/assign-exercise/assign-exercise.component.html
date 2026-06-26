@@ -1,0 +1,92 @@
+<div class="assign-exercise">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Assign Exercise to Patient</h2>
+    </div>
+
+    @if (error()) {
+        <div class="alert alert-danger" role="alert">{{ error() }}</div>
+    }
+
+    @if (loading() && patients().length === 0) {
+        <div class="text-center py-5">
+            <app-spinner size="lg" label="Loading patients..."></app-spinner>
+        </div>
+    } @else {
+        @if (patients().length === 0) {
+            <div class="alert alert-info">No patients available. Please add patients first.</div>
+        }
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+            <div class="form-group mb-3">
+                <label for="patientId" class="form-label">
+                    Patient <span class="text-danger">*</span>
+                </label>
+                <select
+                    id="patientId"
+                    class="form-select"
+                    formControlName="patientId"
+                    [class.is-invalid]="f['patientId'].touched && f['patientId'].invalid"
+                    aria-describedby="patientIdError"
+                >
+                    <option value="">Select Patient</option>
+                    @for (patient of patients(); track patient.id) {
+                        <option [value]="patient.id">{{ patient.fullName }}</option>
+                    }
+                </select>
+                @if (f['patientId'].touched && f['patientId'].errors?.['required']) {
+                    <div class="invalid-feedback" id="patientIdError">Patient is required.</div>
+                }
+            </div>
+
+            <app-input
+                label="Description"
+                type="text"
+                formControlName="description"
+                [required]="true"
+                [error]="f['description'].touched && f['description'].errors?.['required'] ? 'Description is required.' : f['description'].errors?.['maxlength'] ? 'Description must not exceed 1000 characters.' : ''"
+                placeholder="Describe the exercise for the patient"
+            ></app-input>
+
+            <app-input
+                label="Frequency"
+                type="text"
+                formControlName="frequency"
+                placeholder="e.g., 3 times per week"
+                helpText="How often the patient should perform this exercise"
+            ></app-input>
+
+            <app-input
+                label="Start Date"
+                type="date"
+                formControlName="startDate"
+            ></app-input>
+
+            <app-input
+                label="Due Date"
+                type="date"
+                formControlName="dueDate"
+            ></app-input>
+
+            <div class="d-flex gap-2 mt-4">
+                <app-button
+                    type="submit"
+                    variant="primary"
+                    [loading]="loading()"
+                    [disabled]="loading()"
+                    ariaLabel="Create and assign exercise"
+                >
+                    Assign Exercise
+                </app-button>
+                <app-button
+                    type="button"
+                    variant="secondary"
+                    [disabled]="loading()"
+                    (clicked)="navigateBack()"
+                    ariaLabel="Cancel and go back"
+                >
+                    Cancel
+                </app-button>
+            </div>
+        </form>
+    }
+</div>
