@@ -45,3 +45,26 @@ export interface LogExerciseRequest {
 export interface ExtendDueDateRequest {
     newDueDate: string;
 }
+
+export interface ExerciseAssignment {
+    id: string;
+    exerciseId: string;
+    patientId: string;
+    exercise: Exercise;
+    dueDate: string;
+    status: string;
+    reflection?: string;
+    createdAt: string;
+}
+
+export interface AssignExerciseRequest {
+    patientId: string;
+    exerciseId: string;
+    dueDate: string;
+    notes?: string;
+}
+
+export interface UpdateExerciseStatusRequest {
+    status: string;
+    reflection?: string;
+}
