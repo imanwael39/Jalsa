@@ -5,13 +5,14 @@ import { SessionService } from '../../../../core/services/session.service';
 import { SessionStateService } from '../../../../core/state/session-state.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { Session } from '../../../../core/models';
+import { TableComponent, TableColumn } from '../../../../shared/components/table/table.component';
+import { ColumnCellDirective } from '../../../../shared/components/table/column-cell.directive';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
-import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 
 @Component({
     selector: 'app-session-list',
     standalone: true,
-    imports: [ButtonComponent, SpinnerComponent],
+    imports: [TableComponent, ColumnCellDirective, ButtonComponent],
     templateUrl: './session-list.html',
     styleUrl: './session-list.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,6 +29,15 @@ export class SessionList implements OnInit {
     sessions = this.state.sessions;
     loading = this.state.loading;
     error = this.state.error;
+
+    columns: TableColumn[] = [
+        { key: 'sessionDate', label: 'Date', sortable: true },
+        { key: 'sessionNumber', label: 'Session #', sortable: true },
+        { key: 'sessionType', label: 'Type' },
+        { key: 'durationMinutes', label: 'Duration' },
+        { key: 'status', label: 'Status' },
+        { key: 'actions', label: 'Actions', align: 'center' },
+    ];
 
     ngOnInit(): void {
         this.patientId = this.route.snapshot.paramMap.get('patientId') || '';
@@ -52,6 +62,10 @@ export class SessionList implements OnInit {
             });
     }
 
+    onRowClick(session: Session): void {
+        this.router.navigate(['/sessions', session.id]);
+    }
+
     navigateToNew(): void {
         this.router.navigate(['/sessions/new', this.patientId]);
     }
@@ -65,22 +79,29 @@ export class SessionList implements OnInit {
     }
 
     deleteSession(id: string): void {
-        this.sessionService.deleteSession(id)
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe({
-                next: () => {
-                    this.state.removeSession(id);
-                    this.notification.success('Session deleted successfully');
-                },
-                error: (err) => {
-                    this.notification.error(err.message || 'Failed to delete session');
-                },
-            });
+        if (confirm('Are you sure you want to delete this session?')) {
+            this.sessionService.deleteSession(id)
+                .pipe(takeUntilDestroyed(this.destroyRef))
+                .subscribe({
+                    next: () => {
+                        this.state.removeSession(id);
+                        this.notification.success('Session deleted successfully');
+                    },
+                    error: (err) => {
+                        this.notification.error(err.message || 'Failed to delete session');
+                    },
+                });
+        }
     }
 
     formatDate(date: string): string {
         if (!date) return '-';
         return new Date(date).toLocaleDateString();
+    }
+
+    formatDuration(minutes: number | null): string {
+        if (!minutes) return '-';
+        return `${minutes} min`;
     }
 
     trackBySessionId(index: number, session: Session): string {
