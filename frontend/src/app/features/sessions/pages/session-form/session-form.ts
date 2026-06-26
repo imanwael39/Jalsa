@@ -8,11 +8,20 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { InputComponent } from '../../../../shared/components/input/input.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { VoiceRecorder } from '../../components/voice-recorder/voice-recorder';
+import { QuillModule } from 'ngx-quill';
 
 @Component({
     selector: 'app-session-form',
     standalone: true,
-    imports: [ReactiveFormsModule, ButtonComponent, InputComponent, SpinnerComponent],
+    imports: [
+        ReactiveFormsModule,
+        ButtonComponent,
+        InputComponent,
+        SpinnerComponent,
+        VoiceRecorder,
+        QuillModule,
+    ],
     templateUrl: './session-form.html',
     styleUrl: './session-form.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,13 +40,27 @@ export class SessionForm implements OnInit {
     loading = signal(false);
     isEdit = signal(false);
     error = signal<string | null>(null);
+    voiceMemoUrl = signal<string | null>(null);
 
     form = this.fb.group({
         sessionDate: [new Date().toISOString().split('T')[0], [Validators.required]],
+        content: ['', [Validators.required]],
         sessionType: [''],
         durationMinutes: [null as number | null],
         status: ['Draft'],
     });
+
+    quillConfig = {
+        toolbar: [
+            ['bold', 'italic', 'underline'],
+            ['blockquote', 'code-block'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            [{ size: ['small', false, 'large', 'huge'] }],
+            [{ color: [] }, { background: [] }],
+            ['link', 'image'],
+            ['clean'],
+        ],
+    };
 
     ngOnInit(): void {
         const patientId = this.route.snapshot.paramMap.get('patientId');
@@ -60,10 +83,12 @@ export class SessionForm implements OnInit {
                 next: (session) => {
                     this.form.patchValue({
                         sessionDate: session.sessionDate,
+                        content: session.content,
                         sessionType: session.sessionType,
                         durationMinutes: session.durationMinutes,
                         status: session.status,
                     });
+                    this.voiceMemoUrl.set(session.voiceMemoUrl);
                     this.loading.set(false);
                 },
                 error: (err) => {
@@ -71,6 +96,10 @@ export class SessionForm implements OnInit {
                     this.loading.set(false);
                 },
             });
+    }
+
+    onVoiceUploaded(url: string): void {
+        this.voiceMemoUrl.set(url);
     }
 
     onSubmit(): void {
@@ -85,6 +114,7 @@ export class SessionForm implements OnInit {
         if (this.isEdit() && this.sessionId()) {
             this.sessionService.updateSession(this.sessionId()!, {
                 sessionDate: formValue.sessionDate ?? undefined,
+                content: formValue.content ?? undefined,
                 sessionType: formValue.sessionType ?? undefined,
                 durationMinutes: formValue.durationMinutes ?? undefined,
                 status: formValue.status ?? undefined,
@@ -105,6 +135,7 @@ export class SessionForm implements OnInit {
             this.sessionService.createSession({
                 patientId: this.patientId(),
                 sessionDate: formValue.sessionDate ?? '',
+                content: formValue.content ?? undefined,
                 sessionType: formValue.sessionType ?? undefined,
                 durationMinutes: formValue.durationMinutes ?? undefined,
             }).pipe(takeUntilDestroyed(this.destroyRef))
