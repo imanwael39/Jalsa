@@ -90,11 +90,11 @@
                     </div>
                 </div>
 
-                @if (getLogsForExercise(exercise.id).length > 0) {
+                @if (logsByExercise().get(exercise.id)?.length) {
                     <hr class="my-3">
                     <div class="logs-section">
                         <h6>Completion History</h6>
-                        @for (log of getLogsForExercise(exercise.id); track log.id) {
+                        @for (log of logsByExercise().get(exercise.id)!; track log.id) {
                             <div class="log-entry">
                                 <span class="badge bg-light text-dark">{{ log.completionStatus }}</span>
                                 @if (log.loggedAt) {
