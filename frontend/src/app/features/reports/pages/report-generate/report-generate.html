@@ -1,0 +1,46 @@
+<div class="report-generate">
+    <h2>إنشاء تقرير إحالة بالذكاء الاصطناعي</h2>
+
+    @if (error()) {
+        <div class="alert alert-danger" role="alert">{{ error() }}</div>
+    }
+
+    @if (generating()) {
+        <div class="generating-state text-center py-5">
+            <app-spinner size="lg"></app-spinner>
+            <p class="mt-3 text-muted">جاري إنشاء التقرير بالذكاء الاصطناعي... قد يستغرق هذا بضع ثوانٍ</p>
+        </div>
+    } @else {
+        <div class="card">
+            <div class="card-body">
+                <form [formGroup]="form" (ngSubmit)="onSubmit()">
+                    <div class="mb-3">
+                        <label for="language" class="form-label">لغة التقرير</label>
+                        <select id="language" class="form-select" formControlName="language">
+                            <option value="ar">العربية</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="instructions" class="form-label">تعليمات إضافية للذكاء الاصطناعي (اختياري)</label>
+                        <textarea
+                            id="instructions"
+                            class="form-control"
+                            formControlName="therapistInstructions"
+                            rows="4"
+                            placeholder="مثال: ركّز على تقدم المريض في جلسات العلاج السلوكي المعرفي..."
+                        ></textarea>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end">
+                        <app-button variant="secondary" (clicked)="cancel()" ariaLabel="إلغاء"> إلغاء </app-button>
+                        <app-button variant="primary" type="submit" ariaLabel="إنشاء التقرير">
+                            <i class="bi bi-stars" aria-hidden="true"></i> إنشاء التقرير
+                        </app-button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+</div>
