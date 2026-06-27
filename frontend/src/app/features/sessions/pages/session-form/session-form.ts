@@ -9,7 +9,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
 import { InputComponent } from '../../../../shared/components/input/input.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { VoiceRecorder } from '../../components/voice-recorder/voice-recorder';
-import { QuillModule } from 'ngx-quill';
+import { QuillEditorComponent } from 'ngx-quill';
 
 @Component({
     selector: 'app-session-form',
@@ -20,7 +20,7 @@ import { QuillModule } from 'ngx-quill';
         InputComponent,
         SpinnerComponent,
         VoiceRecorder,
-        QuillModule,
+        QuillEditorComponent,
     ],
     templateUrl: './session-form.html',
     styleUrl: './session-form.css',
