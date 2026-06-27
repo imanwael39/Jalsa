@@ -3,6 +3,7 @@ using FluentAssertions;
 using Jalsa.Application.DTOs.Intake;
 using Jalsa.Application.Interfaces.Repositores;
 using Jalsa.Application.Services;
+using Jalsa.Domain.Models.Clinic;
 using Jalsa.Domain.Models.Patient;
 using Moq;
 
@@ -13,7 +14,9 @@ public class IntakeServiceTests
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IGenericRepository<IntakeForm>> _intakeRepoMock;
     private readonly Mock<IGenericRepository<Patient>> _patientRepoMock;
+    private readonly Mock<IGenericRepository<Therapist>> _therapistRepoMock;
     private readonly IntakeService _sut;
+    private readonly Guid _userId = Guid.NewGuid();
     private readonly Guid _therapistId = Guid.NewGuid();
     private readonly Guid _patientId = Guid.NewGuid();
 
@@ -22,9 +25,14 @@ public class IntakeServiceTests
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _intakeRepoMock = new Mock<IGenericRepository<IntakeForm>>();
         _patientRepoMock = new Mock<IGenericRepository<Patient>>();
+        _therapistRepoMock = new Mock<IGenericRepository<Therapist>>();
 
         _unitOfWorkMock.Setup(u => u.Repository<IntakeForm>()).Returns(_intakeRepoMock.Object);
         _unitOfWorkMock.Setup(u => u.Repository<Patient>()).Returns(_patientRepoMock.Object);
+        _unitOfWorkMock.Setup(u => u.Repository<Therapist>()).Returns(_therapistRepoMock.Object);
+
+        _therapistRepoMock.Setup(r => r.FindSingleAsync(It.IsAny<Expression<Func<Therapist, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Therapist { Id = _therapistId, UserId = _userId, FullName = "Test Therapist", LicenseNumber = "LIC-001" });
 
         _sut = new IntakeService(_unitOfWorkMock.Object);
     }
@@ -60,7 +68,7 @@ public class IntakeServiceTests
         _intakeRepoMock.Setup(r => r.FindSingleAsync(It.IsAny<Expression<Func<IntakeForm, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(form);
 
-        var result = await _sut.GetByPatientIdAsync(_patientId, _therapistId);
+        var result = await _sut.GetByPatientIdAsync(_patientId, _userId);
 
         result.Should().NotBeNull();
         result.PatientId.Should().Be(_patientId);
@@ -76,7 +84,7 @@ public class IntakeServiceTests
         _intakeRepoMock.Setup(r => r.FindSingleAsync(It.IsAny<Expression<Func<IntakeForm, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((IntakeForm?)null);
 
-        var act = () => _sut.GetByPatientIdAsync(_patientId, _therapistId);
+        var act = () => _sut.GetByPatientIdAsync(_patientId, _userId);
 
         await act.Should().ThrowAsync<KeyNotFoundException>();
     }
@@ -85,12 +93,16 @@ public class IntakeServiceTests
     public async Task GetByPatientIdAsync_WrongTherapist_ThrowsUnauthorized()
     {
         var patient = CreatePatient();
+        var wrongUserId = Guid.NewGuid();
         var wrongTherapistId = Guid.NewGuid();
+
+        _therapistRepoMock.Setup(r => r.FindSingleAsync(It.Is<Expression<Func<Therapist, bool>>>(e => true), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Therapist { Id = wrongTherapistId, UserId = wrongUserId, FullName = "Wrong", LicenseNumber = "LIC-999" });
 
         _patientRepoMock.Setup(r => r.GetByIdAsync(_patientId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(patient);
 
-        var act = () => _sut.GetByPatientIdAsync(_patientId, wrongTherapistId);
+        var act = () => _sut.GetByPatientIdAsync(_patientId, wrongUserId);
 
         await act.Should().ThrowAsync<UnauthorizedAccessException>();
     }
@@ -162,7 +174,7 @@ public class IntakeServiceTests
         _unitOfWorkMock.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
-        var result = await _sut.SubmitAsync(_patientId, _therapistId);
+        var result = await _sut.SubmitAsync(_patientId, _userId);
 
         result.Status.Should().Be("Submitted");
         form.SubmittedAt.Should().NotBeNull();
@@ -177,7 +189,7 @@ public class IntakeServiceTests
         _intakeRepoMock.Setup(r => r.FindSingleAsync(It.IsAny<Expression<Func<IntakeForm, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((IntakeForm?)null);
 
-        var act = () => _sut.SubmitAsync(_patientId, _therapistId);
+        var act = () => _sut.SubmitAsync(_patientId, _userId);
 
         await act.Should().ThrowAsync<KeyNotFoundException>();
     }

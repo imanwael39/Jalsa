@@ -2,6 +2,7 @@ using Jalsa.Application.DTOs.Assessment;
 using Jalsa.Application.Interfaces.Repositores;
 using Jalsa.Application.Interfaces.Services;
 using Jalsa.Domain.Models.Assessment;
+using Jalsa.Domain.Models.Clinic;
 using Jalsa.Domain.Models.Patient;
 
 namespace Jalsa.Application.Services;
@@ -75,13 +76,17 @@ public class AssessmentService : IAssessmentService
         return template.Id;
     }
 
-    private async Task EnsurePatientBelongsToTherapist(Guid patientId, Guid therapistId, CancellationToken ct)
+    private async Task EnsurePatientBelongsToTherapist(Guid patientId, Guid userId, CancellationToken ct)
     {
+        var therapist = await _unitOfWork.Repository<Therapist>()
+            .FindSingleAsync(t => t.UserId == userId)
+            ?? throw new UnauthorizedAccessException("Therapist profile not found.");
+
         var patientRepo = _unitOfWork.Repository<Patient>();
         var patient = await patientRepo.GetByIdAsync(patientId, ct)
             ?? throw new KeyNotFoundException($"Patient with ID {patientId} not found.");
 
-        if (patient.TherapistId != therapistId)
+        if (patient.TherapistId != therapist.Id)
             throw new UnauthorizedAccessException("You do not have access to this patient's data.");
     }
 

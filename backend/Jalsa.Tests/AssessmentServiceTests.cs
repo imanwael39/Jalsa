@@ -4,6 +4,7 @@ using Jalsa.Application.DTOs.Assessment;
 using Jalsa.Application.Interfaces.Repositores;
 using Jalsa.Application.Services;
 using Jalsa.Domain.Models.Assessment;
+using Jalsa.Domain.Models.Clinic;
 using Jalsa.Domain.Models.Patient;
 using Moq;
 
@@ -15,7 +16,9 @@ public class AssessmentServiceTests
     private readonly Mock<IGenericRepository<Assessment>> _assessmentRepoMock;
     private readonly Mock<IGenericRepository<Patient>> _patientRepoMock;
     private readonly Mock<IGenericRepository<AssessmentTemplate>> _templateRepoMock;
+    private readonly Mock<IGenericRepository<Therapist>> _therapistRepoMock;
     private readonly AssessmentService _sut;
+    private readonly Guid _userId = Guid.NewGuid();
     private readonly Guid _therapistId = Guid.NewGuid();
     private readonly Guid _patientId = Guid.NewGuid();
 
@@ -25,10 +28,15 @@ public class AssessmentServiceTests
         _assessmentRepoMock = new Mock<IGenericRepository<Assessment>>();
         _patientRepoMock = new Mock<IGenericRepository<Patient>>();
         _templateRepoMock = new Mock<IGenericRepository<AssessmentTemplate>>();
+        _therapistRepoMock = new Mock<IGenericRepository<Therapist>>();
 
         _unitOfWorkMock.Setup(u => u.Repository<Assessment>()).Returns(_assessmentRepoMock.Object);
         _unitOfWorkMock.Setup(u => u.Repository<Patient>()).Returns(_patientRepoMock.Object);
         _unitOfWorkMock.Setup(u => u.Repository<AssessmentTemplate>()).Returns(_templateRepoMock.Object);
+        _unitOfWorkMock.Setup(u => u.Repository<Therapist>()).Returns(_therapistRepoMock.Object);
+
+        _therapistRepoMock.Setup(r => r.FindSingleAsync(It.IsAny<Expression<Func<Therapist, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Therapist { Id = _therapistId, UserId = _userId, FullName = "Test Therapist", LicenseNumber = "LIC-001" });
 
         _sut = new AssessmentService(_unitOfWorkMock.Object);
     }
@@ -56,7 +64,7 @@ public class AssessmentServiceTests
         _assessmentRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<Assessment, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(assessments);
 
-        var result = (await _sut.GetByPatientIdAsync(_patientId, _therapistId)).ToList();
+        var result = (await _sut.GetByPatientIdAsync(_patientId, _userId)).ToList();
 
         result.Should().HaveCount(3);
         result[0].CreatedAt.Should().Be(now);
@@ -67,10 +75,15 @@ public class AssessmentServiceTests
     [Fact]
     public async Task GetByPatientIdAsync_WrongTherapist_ThrowsUnauthorized()
     {
+        var wrongUserId = Guid.NewGuid();
+
+        _therapistRepoMock.Setup(r => r.FindSingleAsync(It.IsAny<Expression<Func<Therapist, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Therapist { Id = Guid.NewGuid(), UserId = wrongUserId, FullName = "Wrong", LicenseNumber = "LIC-999" });
+
         _patientRepoMock.Setup(r => r.GetByIdAsync(_patientId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(CreatePatient());
 
-        var act = () => _sut.GetByPatientIdAsync(_patientId, Guid.NewGuid());
+        var act = () => _sut.GetByPatientIdAsync(_patientId, wrongUserId);
 
         await act.Should().ThrowAsync<UnauthorizedAccessException>();
     }
@@ -81,7 +94,7 @@ public class AssessmentServiceTests
         _patientRepoMock.Setup(r => r.GetByIdAsync(_patientId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Patient?)null);
 
-        var act = () => _sut.GetByPatientIdAsync(_patientId, _therapistId);
+        var act = () => _sut.GetByPatientIdAsync(_patientId, _userId);
 
         await act.Should().ThrowAsync<KeyNotFoundException>();
     }
@@ -173,11 +186,15 @@ public class AssessmentServiceTests
     public async Task CreateAsync_WrongTherapist_ThrowsUnauthorized()
     {
         var dto = new AssessmentCreateDto { TemplateId = "phq-9", TotalScore = 5 };
+        var wrongUserId = Guid.NewGuid();
+
+        _therapistRepoMock.Setup(r => r.FindSingleAsync(It.IsAny<Expression<Func<Therapist, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Therapist { Id = Guid.NewGuid(), UserId = wrongUserId, FullName = "Wrong", LicenseNumber = "LIC-999" });
 
         _patientRepoMock.Setup(r => r.GetByIdAsync(_patientId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(CreatePatient());
 
-        var act = () => _sut.CreateAsync(_patientId, dto, Guid.NewGuid());
+        var act = () => _sut.CreateAsync(_patientId, dto, wrongUserId);
 
         await act.Should().ThrowAsync<UnauthorizedAccessException>();
     }
