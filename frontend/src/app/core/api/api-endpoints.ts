@@ -33,18 +33,18 @@ export const API = {
         myLogs: '/api/exercises/my/logs',
     },
     reports: {
-        base: '/reports',
-        generate: '/reports/generate',
-        byId: (id: string) => `/reports/${id}`,
-        approve: (id: string) => `/reports/${id}/approve`,
-        reject: (id: string) => `/reports/${id}/reject`,
-        export: (id: string) => `/reports/${id}/export`,
+        base: '/api/reports',
+        generate: '/api/reports/generate',
+        byId: (id: string) => `/api/reports/${id}`,
+        approve: (id: string) => `/api/reports/${id}/approve`,
+        reject: (id: string) => `/api/reports/${id}/reject`,
+        export: (id: string) => `/api/reports/${id}/export`,
     },
     dashboard: {
         summary: '/api/progress/dashboard',
     },
     chat: {
-        history: (sessionId: string) => `/chat/${sessionId}/history`,
-        send: '/chat/send',
+        history: (sessionId: string) => `/api/chat/${sessionId}/history`,
+        send: '/api/chat/send',
     },
 } as const;
