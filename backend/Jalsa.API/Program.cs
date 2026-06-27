@@ -35,6 +35,8 @@ builder.Services.Configure<JwtSettings>(
 );
 var JwtSettings= builder.Configuration.GetSection("Jwt")
                  .Get<JwtSettings>();
+if (string.IsNullOrEmpty(JwtSettings?.Key) || JwtSettings.Key == "REPLACE_WITH_ENV_VAR_OR_USER_SECRETS")
+    throw new InvalidOperationException("JWT Key is not configured. Set Jwt__Key environment variable or use dotnet user-secrets.");
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme=JwtBearerDefaults.AuthenticationScheme;
