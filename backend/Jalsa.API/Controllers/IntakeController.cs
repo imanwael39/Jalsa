@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Jalsa.API.Services.Interfaces.AI;
-using Jalsa.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
+using Jalsa.Application.Interfaces.Repositores;
+using Jalsa.Domain.Models.Patient;
 
 namespace Jalsa.API.Controllers;
 
@@ -12,24 +12,26 @@ namespace Jalsa.API.Controllers;
 public class IntakeController : ControllerBase
 {
     private readonly IOcrService _ocrService;
-    private readonly Galsa_DBDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public IntakeController(IOcrService ocrService, Galsa_DBDbContext context)
+    public IntakeController(IOcrService ocrService, IUnitOfWork unitOfWork)
     {
         _ocrService = ocrService;
-        _context = context;
+        _unitOfWork = unitOfWork;
     }
 
     [HttpPost("{intakeFormId}/ocr")]
     public async Task<IActionResult> RunOcr(Guid intakeFormId, [FromBody] OcrRequest request)
     {
-        var intakeForm = await _context.IntakeForms.FindAsync(intakeFormId);
+        var intakeFormRepo = _unitOfWork.Repository<IntakeForm>();
+        var intakeForm = await intakeFormRepo.GetByIdAsync(intakeFormId);
         if (intakeForm == null)
             return NotFound(new { error = "Intake form not found" });
 
         var result = await _ocrService.ExtractFromImageAsync(request.ImageUrl);
 
-        _context.IntakeFormOcrExtractions.Add(new Domain.Models.Patient.IntakeFormOcrExtraction
+        var extractionRepo = _unitOfWork.Repository<IntakeFormOcrExtraction>();
+        await extractionRepo.AddAsync(new IntakeFormOcrExtraction
         {
             Id = Guid.NewGuid(),
             IntakeFormId = intakeFormId,
@@ -41,7 +43,7 @@ public class IntakeController : ControllerBase
             UpdatedAt = DateTime.UtcNow
         });
 
-        await _context.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
 
         return Ok(result);
     }
