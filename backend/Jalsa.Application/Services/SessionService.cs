@@ -2,6 +2,7 @@ using Jalsa.Application.DTOs.Session;
 using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Application.Interfaces.Repositores;
 using Jalsa.Application.Interfaces.Services;
+using Jalsa.Domain.Models.Clinic;
 using Jalsa.Domain.Models.Session;
 
 namespace Jalsa.Application.Services;
@@ -156,12 +157,16 @@ public class SessionService : ISessionService
         return session;
     }
 
-    private async Task EnsurePatientBelongsToTherapist(Guid patientId, Guid therapistId)
+    private async Task EnsurePatientBelongsToTherapist(Guid patientId, Guid userId)
     {
+        var therapist = await _unitOfWork.Repository<Therapist>()
+            .FindSingleAsync(t => t.UserId == userId)
+            ?? throw new UnauthorizedAccessException("Therapist profile not found.");
+
         var patient = await _patientRepository.GetByIdAsync(patientId)
             ?? throw new KeyNotFoundException($"Patient with ID {patientId} not found.");
 
-        if (patient.TherapistId != therapistId)
+        if (patient.TherapistId != therapist.Id)
             throw new UnauthorizedAccessException("You do not have access to this patient's data.");
     }
 

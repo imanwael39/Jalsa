@@ -64,8 +64,9 @@ public class AuthService : IAuthService
             {
                 Id = Guid.NewGuid(),
                 UserId = user.Id,
-                FullName = dto.Email.Split('@')[0],
-                LicenseNumber = $"LIC-{Guid.NewGuid().ToString()[..8].ToUpper()}",
+                FullName = string.IsNullOrWhiteSpace(dto.FullName) ? dto.Email.Split('@')[0] : dto.FullName,
+                LicenseNumber = string.IsNullOrWhiteSpace(dto.LicenseNumber) ? $"LIC-{Guid.NewGuid().ToString()[..8].ToUpper()}" : dto.LicenseNumber,
+                Specialization = dto.Specialization,
                 CreatedAt = DateTime.UtcNow
             };
             _context.Therapists.Add(therapist);

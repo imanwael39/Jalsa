@@ -114,7 +114,7 @@ export class SessionList implements OnInit {
 
     formatDuration(minutes: number | null): string {
         if (!minutes) return '-';
-        return `${minutes} min`;
+        return `${minutes} دقيقة`;
     }
 
     trackBySessionId(index: number, session: Session): string {

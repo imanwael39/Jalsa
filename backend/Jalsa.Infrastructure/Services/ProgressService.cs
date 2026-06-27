@@ -1,3 +1,4 @@
+using System.Globalization;
 using Jalsa.Application.DTOs.Dashboard;
 using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Application.Interfaces.Repositores;
@@ -105,7 +106,7 @@ public class ProgressService : IProgressService
             {
                 Date = new DateTime(g.Key.Year, g.Key.Month, 1),
                 Value = Math.Round((double)g.Average(x => x.Score), 2),
-                Label = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM yyyy")
+                Label = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM yyyy", new CultureInfo("ar-EG"))
             })
             .OrderBy(t => t.Date)
             .ToList();
@@ -121,7 +122,7 @@ public class ProgressService : IProgressService
             {
                 Date = current,
                 Value = 0,
-                Label = current.ToString("MMM yyyy")
+                Label = current.ToString("MMM yyyy", new CultureInfo("ar-EG"))
             });
             current = current.AddMonths(1);
         }
@@ -167,7 +168,7 @@ public class ProgressService : IProgressService
             {
                 Date = currentWeekStart.ToDateTime(TimeOnly.MinValue),
                 Value = count,
-                Label = $"Week of {currentWeekStart:MMM dd}"
+                Label = $"أسبوع {currentWeekStart.ToString("dd MMM", new CultureInfo("ar-EG"))}"
             });
             currentWeekStart = currentWeekStart.AddDays(7);
         }
