@@ -40,7 +40,7 @@ export class SessionDetail implements OnInit, OnDestroy {
         if (id) {
             this.loadSession(id);
         } else {
-            this.error.set('Session ID not found');
+            this.error.set('معرف الجلسة غير موجود');
             this.loading.set(false);
         }
     }
@@ -105,17 +105,17 @@ export class SessionDetail implements OnInit, OnDestroy {
                 next: () => {
                     this.state.removeSession(s.id);
                     this.state.clearSelected();
-                    this.notification.success('Session deleted successfully');
+                    this.notification.success('تم حذف الجلسة بنجاح');
                     this.router.navigate(['/sessions/patient', s.patientId]);
                 },
                 error: err => {
-                    this.notification.error(err.message || 'Failed to delete session');
+                    this.notification.error(err.message || 'فشل حذف الجلسة');
                 },
             });
     }
 
     formatDate(date: string | null): string {
-        if (!date) return 'N/A';
+        if (!date) return 'غير متوفر';
         return new Date(date).toLocaleDateString();
     }
 }

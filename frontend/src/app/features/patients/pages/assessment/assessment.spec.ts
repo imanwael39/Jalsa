@@ -42,10 +42,7 @@ describe('Assessment', () => {
     let routerSpy: jasmine.SpyObj<Router>;
 
     const setup = (patientId: string | null = 'patient-123'): void => {
-        patientServiceSpy = jasmine.createSpyObj('PatientService', [
-            'getAssessments',
-            'addAssessment',
-        ]);
+        patientServiceSpy = jasmine.createSpyObj('PatientService', ['getAssessments', 'addAssessment']);
         notificationSpy = jasmine.createSpyObj('NotificationService', ['success', 'error']);
         routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
@@ -64,7 +61,7 @@ describe('Assessment', () => {
                     useValue: {
                         snapshot: {
                             paramMap: {
-                                get: (key: string): string | null => key === 'id' ? patientId : null,
+                                get: (key: string): string | null => (key === 'id' ? patientId : null),
                             },
                         },
                     },
@@ -90,7 +87,7 @@ describe('Assessment', () => {
     it('should set error when patient ID is missing', (): void => {
         setup(null);
         fixture.detectChanges();
-        expect(component.error()).toBe('Patient ID required');
+        expect(component.error()).toBe('معرف المريض مطلوب');
     });
 
     it('should load assessments on init', (): void => {

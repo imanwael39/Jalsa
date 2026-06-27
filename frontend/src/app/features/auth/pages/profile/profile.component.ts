@@ -32,11 +32,14 @@ export class ProfileComponent implements OnInit {
         email: ['', [Validators.required, Validators.email]],
     });
 
-    passwordForm = this.fb.group({
-        currentPassword: ['', [Validators.required]],
-        newPassword: ['', [Validators.required, Validators.minLength(6)]],
-        confirmPassword: ['', [Validators.required]],
-    }, { validators: passwordMatchValidator });
+    passwordForm = this.fb.group(
+        {
+            currentPassword: ['', [Validators.required]],
+            newPassword: ['', [Validators.required, Validators.minLength(6)]],
+            confirmPassword: ['', [Validators.required]],
+        },
+        { validators: passwordMatchValidator }
+    );
 
     ngOnInit(): void {
         this.loadProfile();
@@ -44,22 +47,23 @@ export class ProfileComponent implements OnInit {
 
     loadProfile(): void {
         this.loading.set(true);
-        this.authService.getProfile().pipe(
-            takeUntilDestroyed(this.destroyRef),
-        ).subscribe({
-            next: (user) => {
-                this.profileForm.patchValue({
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    email: user.email,
-                });
-                this.loading.set(false);
-            },
-            error: () => {
-                this.loading.set(false);
-                this.error.set('Failed to load profile. Please try again.');
-            },
-        });
+        this.authService
+            .getProfile()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: user => {
+                    this.profileForm.patchValue({
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                        email: user.email,
+                    });
+                    this.loading.set(false);
+                },
+                error: () => {
+                    this.loading.set(false);
+                    this.error.set('فشل تحميل الملف الشخصي. يرجى المحاولة مرة أخرى.');
+                },
+            });
     }
 
     getFirstNameError(): string {
@@ -68,10 +72,10 @@ export class ProfileComponent implements OnInit {
             return '';
         }
         if (control.errors['required']) {
-            return 'First name is required';
+            return 'الاسم الأول مطلوب';
         }
         if (control.errors['minlength']) {
-            return 'First name must be at least 2 characters';
+            return 'الاسم الأول يجب أن يكون حرفين على الأقل';
         }
         return '';
     }
@@ -82,10 +86,10 @@ export class ProfileComponent implements OnInit {
             return '';
         }
         if (control.errors['required']) {
-            return 'Last name is required';
+            return 'اسم العائلة مطلوب';
         }
         if (control.errors['minlength']) {
-            return 'Last name must be at least 2 characters';
+            return 'اسم العائلة يجب أن يكون حرفين على الأقل';
         }
         return '';
     }
@@ -96,10 +100,10 @@ export class ProfileComponent implements OnInit {
             return '';
         }
         if (control.errors['required']) {
-            return 'Email is required';
+            return 'البريد الإلكتروني مطلوب';
         }
         if (control.errors['email']) {
-            return 'Please enter a valid email address';
+            return 'يرجى إدخال بريد إلكتروني صحيح';
         }
         return '';
     }
@@ -110,7 +114,7 @@ export class ProfileComponent implements OnInit {
             return '';
         }
         if (control.errors['required']) {
-            return 'Current password is required';
+            return 'كلمة المرور الحالية مطلوبة';
         }
         return '';
     }
@@ -121,10 +125,10 @@ export class ProfileComponent implements OnInit {
             return '';
         }
         if (control.errors['required']) {
-            return 'New password is required';
+            return 'كلمة المرور الجديدة مطلوبة';
         }
         if (control.errors['minlength']) {
-            return 'Password must be at least 6 characters';
+            return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
         }
         return '';
     }
@@ -135,14 +139,14 @@ export class ProfileComponent implements OnInit {
             return '';
         }
         if (control.errors['required']) {
-            return 'Please confirm your password';
+            return 'يرجى تأكيد كلمة المرور';
         }
         return '';
     }
 
     getPasswordMismatchError(): string {
         if (this.passwordForm.errors?.['passwordMismatch'] && this.passwordForm.get('confirmPassword')?.touched) {
-            return 'Passwords do not match';
+            return 'كلمات المرور غير متطابقة';
         }
         return '';
     }
@@ -158,19 +162,20 @@ export class ProfileComponent implements OnInit {
 
         const { firstName, lastName, email } = this.profileForm.getRawValue();
 
-        this.authService.updateProfile({ firstName, lastName, email }).pipe(
-            takeUntilDestroyed(this.destroyRef),
-        ).subscribe({
-            next: () => {
-                this.updating.set(false);
-                this.success.set(true);
-                setTimeout(() => this.success.set(false), 3000);
-            },
-            error: (err) => {
-                this.updating.set(false);
-                this.error.set(err.error?.message || err.error?.error || 'Failed to update profile.');
-            },
-        });
+        this.authService
+            .updateProfile({ firstName, lastName, email })
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: () => {
+                    this.updating.set(false);
+                    this.success.set(true);
+                    setTimeout(() => this.success.set(false), 3000);
+                },
+                error: err => {
+                    this.updating.set(false);
+                    this.error.set(err.error?.message || err.error?.error || 'فشل تحديث الملف الشخصي.');
+                },
+            });
     }
 
     changePassword(): void {
@@ -184,19 +189,20 @@ export class ProfileComponent implements OnInit {
 
         const { currentPassword, newPassword } = this.passwordForm.getRawValue();
 
-        this.authService.changePassword({ currentPassword, newPassword }).pipe(
-            takeUntilDestroyed(this.destroyRef),
-        ).subscribe({
-            next: () => {
-                this.changingPassword.set(false);
-                this.passwordForm.reset();
-                this.success.set(true);
-                setTimeout(() => this.success.set(false), 3000);
-            },
-            error: (err) => {
-                this.changingPassword.set(false);
-                this.passwordError.set(err.error?.message || err.error?.error || 'Failed to change password.');
-            },
-        });
+        this.authService
+            .changePassword({ currentPassword, newPassword })
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: () => {
+                    this.changingPassword.set(false);
+                    this.passwordForm.reset();
+                    this.success.set(true);
+                    setTimeout(() => this.success.set(false), 3000);
+                },
+                error: err => {
+                    this.changingPassword.set(false);
+                    this.passwordError.set(err.error?.message || err.error?.error || 'فشل تغيير كلمة المرور.');
+                },
+            });
     }
 }

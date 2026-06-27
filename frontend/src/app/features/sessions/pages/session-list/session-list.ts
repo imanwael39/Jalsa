@@ -33,12 +33,12 @@ export class SessionList implements OnInit {
     error = this.state.error;
 
     columns: TableColumn[] = [
-        { key: 'sessionDate', label: 'Date', sortable: true },
-        { key: 'sessionNumber', label: 'Session #', sortable: true },
-        { key: 'sessionType', label: 'Type' },
-        { key: 'durationMinutes', label: 'Duration' },
-        { key: 'status', label: 'Status' },
-        { key: 'actions', label: 'Actions', align: 'center' },
+        { key: 'sessionDate', label: 'التاريخ', sortable: true },
+        { key: 'sessionNumber', label: 'رقم الجلسة', sortable: true },
+        { key: 'sessionType', label: 'النوع' },
+        { key: 'durationMinutes', label: 'المدة' },
+        { key: 'status', label: 'الحالة' },
+        { key: 'actions', label: 'الإجراءات', align: 'center' },
     ];
 
     ngOnInit(): void {
@@ -56,15 +56,16 @@ export class SessionList implements OnInit {
 
     loadSessions(): void {
         this.state.setLoading(true);
-        this.sessionService.getSessions(this.patientId)
+        this.sessionService
+            .getSessions(this.patientId)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
-                next: (data) => {
+                next: data => {
                     this.state.setSessions(data);
                     this.state.setLoading(false);
                 },
-                error: (err) => {
-                    this.state.setError(err.message || 'Failed to load sessions');
+                error: err => {
+                    this.state.setError(err.message || 'فشل تحميل الجلسات');
                     this.state.setLoading(false);
                 },
             });
@@ -90,16 +91,17 @@ export class SessionList implements OnInit {
     }
 
     deleteSession(id: string): void {
-        if (confirm('Are you sure you want to delete this session?')) {
-            this.sessionService.deleteSession(id)
+        if (confirm('هل أنت متأكد من حذف هذه الجلسة؟')) {
+            this.sessionService
+                .deleteSession(id)
                 .pipe(takeUntilDestroyed(this.destroyRef))
                 .subscribe({
                     next: () => {
                         this.state.removeSession(id);
-                        this.notification.success('Session deleted successfully');
+                        this.notification.success('تم حذف الجلسة بنجاح');
                     },
-                    error: (err) => {
-                        this.notification.error(err.message || 'Failed to delete session');
+                    error: err => {
+                        this.notification.error(err.message || 'فشل حذف الجلسة');
                     },
                 });
         }

@@ -76,7 +76,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
                     this.state.setLoading(false);
                 },
                 error: err => {
-                    this.state.setError(err.message || 'Failed to load dashboard data');
+                    this.state.setError(err.message || 'فشل تحميل بيانات لوحة التحكم');
                     this.state.setLoading(false);
                 },
             });

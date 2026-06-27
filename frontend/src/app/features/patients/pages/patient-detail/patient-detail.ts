@@ -57,7 +57,7 @@ export class PatientDetail implements OnInit, OnDestroy {
         if (id) {
             this.loadPatient(id);
         } else {
-            this.error.set('Patient ID not found');
+            this.error.set('معرف المريض غير موجود');
             this.loading.set(false);
         }
     }
@@ -74,7 +74,7 @@ export class PatientDetail implements OnInit, OnDestroy {
                     this.loading.set(false);
                 },
                 error: err => {
-                    this.error.set(err?.message || 'Failed to load patient');
+                    this.error.set(err?.message || 'فشل تحميل بيانات المريض');
                     this.loading.set(false);
                 },
             });
@@ -136,12 +136,12 @@ export class PatientDetail implements OnInit, OnDestroy {
             .subscribe({
                 next: () => {
                     this.state.updatePatient({ ...p, status: 'Archived' });
-                    this.notification.success('Patient archived successfully');
+                    this.notification.success('تم أرشفة المريض بنجاح');
                     this.closeArchiveModal();
                     this.actionLoading.set(false);
                 },
                 error: err => {
-                    this.notification.error(err?.message || 'Failed to archive patient');
+                    this.notification.error(err?.message || 'فشل أرشفة المريض');
                     this.actionLoading.set(false);
                 },
             });
@@ -158,12 +158,12 @@ export class PatientDetail implements OnInit, OnDestroy {
             .subscribe({
                 next: () => {
                     this.state.updatePatient({ ...p, status: 'Active' });
-                    this.notification.success('Patient restored successfully');
+                    this.notification.success('تم استعادة المريض بنجاح');
                     this.closeArchiveModal();
                     this.actionLoading.set(false);
                 },
                 error: err => {
-                    this.notification.error(err?.message || 'Failed to restore patient');
+                    this.notification.error(err?.message || 'فشل استعادة المريض');
                     this.actionLoading.set(false);
                 },
             });
@@ -181,12 +181,12 @@ export class PatientDetail implements OnInit, OnDestroy {
                 next: () => {
                     this.state.removePatient(p.id);
                     this.state.clearSelected();
-                    this.notification.success('Patient deleted successfully');
+                    this.notification.success('تم حذف المريض بنجاح');
                     this.closeDeleteModal();
                     this.router.navigate(['/patients']);
                 },
                 error: err => {
-                    this.notification.error(err?.message || 'Failed to delete patient');
+                    this.notification.error(err?.message || 'فشل حذف المريض');
                     this.actionLoading.set(false);
                 },
             });
@@ -197,7 +197,7 @@ export class PatientDetail implements OnInit, OnDestroy {
     }
 
     formatDate(date: string | null): string {
-        if (!date) return 'N/A';
+        if (!date) return 'غير متوفر';
         return new Date(date).toLocaleDateString();
     }
 

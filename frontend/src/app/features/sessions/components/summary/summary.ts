@@ -29,15 +29,16 @@ export class Summary implements OnInit {
 
     loadSummary(): void {
         this.loading.set(true);
-        this.sessionService.getSummary(this.sessionId())
+        this.sessionService
+            .getSummary(this.sessionId())
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
-                next: (result) => {
+                next: result => {
                     this.summary.set(result.summary);
                     this.loading.set(false);
                 },
-                error: (err) => {
-                    this.error.set(err.message || 'Failed to load summary');
+                error: err => {
+                    this.error.set(err.message || 'فشل تحميل الملخص');
                     this.loading.set(false);
                 },
             });

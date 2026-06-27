@@ -35,16 +35,8 @@ describe('PatientForm', () => {
     let routerSpy: jasmine.SpyObj<Router>;
 
     const setup = (patientId: string | null = null): void => {
-        patientServiceSpy = jasmine.createSpyObj('PatientService', [
-            'getPatient',
-            'createPatient',
-            'updatePatient',
-        ]);
-        stateServiceSpy = jasmine.createSpyObj('PatientStateService', [
-            'selectPatient',
-            'addPatient',
-            'updatePatient',
-        ]);
+        patientServiceSpy = jasmine.createSpyObj('PatientService', ['getPatient', 'createPatient', 'updatePatient']);
+        stateServiceSpy = jasmine.createSpyObj('PatientStateService', ['selectPatient', 'addPatient', 'updatePatient']);
         notificationSpy = jasmine.createSpyObj('NotificationService', ['success', 'error']);
         routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
@@ -65,7 +57,7 @@ describe('PatientForm', () => {
                     useValue: {
                         snapshot: {
                             paramMap: {
-                                get: (key: string): string | null => key === 'id' ? patientId : null,
+                                get: (key: string): string | null => (key === 'id' ? patientId : null),
                             },
                         },
                     },
@@ -151,7 +143,7 @@ describe('PatientForm', () => {
         component.onSubmit();
         expect(patientServiceSpy.createPatient).toHaveBeenCalled();
         expect(stateServiceSpy.addPatient).toHaveBeenCalledWith(mockPatient);
-        expect(notificationSpy.success).toHaveBeenCalledWith('Patient created successfully');
+        expect(notificationSpy.success).toHaveBeenCalledWith('تم إنشاء المريض بنجاح');
         expect(routerSpy.navigate).toHaveBeenCalledWith(['/patients', mockPatient.id]);
     });
 
@@ -164,7 +156,7 @@ describe('PatientForm', () => {
         component.onSubmit();
         expect(patientServiceSpy.updatePatient).toHaveBeenCalled();
         expect(stateServiceSpy.updatePatient).toHaveBeenCalledWith(mockPatient);
-        expect(notificationSpy.success).toHaveBeenCalledWith('Patient updated successfully');
+        expect(notificationSpy.success).toHaveBeenCalledWith('تم تحديث بيانات المريض بنجاح');
         expect(routerSpy.navigate).toHaveBeenCalledWith(['/patients', '123e4567-e89b-12d3-a456-426614174000']);
     });
 

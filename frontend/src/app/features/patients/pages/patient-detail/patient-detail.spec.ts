@@ -41,14 +41,13 @@ describe('PatientDetail', () => {
             'restorePatient',
             'deletePatient',
         ]);
-        stateServiceSpy = jasmine.createSpyObj('PatientStateService', [
-            'selectPatient',
-            'updatePatient',
-            'removePatient',
-            'clearSelected',
-        ], {
-            selectedPatient: signal(mockPatient),
-        });
+        stateServiceSpy = jasmine.createSpyObj(
+            'PatientStateService',
+            ['selectPatient', 'updatePatient', 'removePatient', 'clearSelected'],
+            {
+                selectedPatient: signal(mockPatient),
+            }
+        );
         notificationSpy = jasmine.createSpyObj('NotificationService', ['success', 'error']);
         routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
@@ -69,7 +68,7 @@ describe('PatientDetail', () => {
                     useValue: {
                         snapshot: {
                             paramMap: {
-                                get: (key: string): string | null => key === 'id' ? patientId : null,
+                                get: (key: string): string | null => (key === 'id' ? patientId : null),
                             },
                         },
                     },
@@ -96,7 +95,7 @@ describe('PatientDetail', () => {
     it('should set error when patient ID is not found', (): void => {
         setup(null);
         fixture.detectChanges();
-        expect(component.error()).toBe('Patient ID not found');
+        expect(component.error()).toBe('معرف المريض غير موجود');
         expect(component.loading()).toBeFalse();
     });
 
@@ -168,7 +167,7 @@ describe('PatientDetail', () => {
         component.archivePatient();
         expect(patientServiceSpy.archivePatient).toHaveBeenCalledWith(mockPatient.id);
         expect(stateServiceSpy.updatePatient).toHaveBeenCalledWith({ ...mockPatient, status: 'Archived' });
-        expect(notificationSpy.success).toHaveBeenCalledWith('Patient archived successfully');
+        expect(notificationSpy.success).toHaveBeenCalledWith('تم أرشفة المريض بنجاح');
         expect(component.showArchiveModal()).toBeFalse();
     });
 
@@ -193,7 +192,7 @@ describe('PatientDetail', () => {
         component.restorePatient();
         expect(patientServiceSpy.restorePatient).toHaveBeenCalledWith(mockPatient.id);
         expect(stateServiceSpy.updatePatient).toHaveBeenCalledWith({ ...mockPatient, status: 'Active' });
-        expect(notificationSpy.success).toHaveBeenCalledWith('Patient restored successfully');
+        expect(notificationSpy.success).toHaveBeenCalledWith('تم استعادة المريض بنجاح');
     });
 
     it('should handle restore error', (): void => {
@@ -219,7 +218,7 @@ describe('PatientDetail', () => {
         expect(patientServiceSpy.deletePatient).toHaveBeenCalledWith(mockPatient.id);
         expect(stateServiceSpy.removePatient).toHaveBeenCalledWith(mockPatient.id);
         expect(stateServiceSpy.clearSelected).toHaveBeenCalled();
-        expect(notificationSpy.success).toHaveBeenCalledWith('Patient deleted successfully');
+        expect(notificationSpy.success).toHaveBeenCalledWith('تم حذف المريض بنجاح');
         expect(routerSpy.navigate).toHaveBeenCalledWith(['/patients']);
     });
 
@@ -251,6 +250,6 @@ describe('PatientDetail', () => {
     it('should format date correctly', (): void => {
         setup();
         expect(component.formatDate('2024-01-15')).toBeTruthy();
-        expect(component.formatDate(null)).toBe('N/A');
+        expect(component.formatDate(null)).toBe('غير متوفر');
     });
 });

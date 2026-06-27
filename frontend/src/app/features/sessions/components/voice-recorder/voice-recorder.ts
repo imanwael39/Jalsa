@@ -37,18 +37,19 @@ export class VoiceRecorder {
         if (!file || !sid) return;
 
         this.uploading.set(true);
-        this.sessionService.uploadVoiceMemo(sid, file)
+        this.sessionService
+            .uploadVoiceMemo(sid, file)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
-                next: (voiceMemo) => {
+                next: voiceMemo => {
                     this.uploading.set(false);
-                    this.notification.success('Voice memo uploaded successfully');
+                    this.notification.success('تم رفع المذكرة الصوتية بنجاح');
                     this.uploaded.emit(voiceMemo.audioUrl || '');
                     this.selectedFile.set(null);
                 },
-                error: (err) => {
+                error: err => {
                     this.uploading.set(false);
-                    this.notification.error(err.message || 'Failed to upload voice memo');
+                    this.notification.error(err.message || 'فشل رفع المذكرة الصوتية');
                 },
             });
     }

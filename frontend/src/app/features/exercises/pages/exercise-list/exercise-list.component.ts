@@ -9,61 +9,62 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
 import { TruncatePipe } from '../../../../shared/pipes/truncate.pipe';
 
 @Component({
-  selector: 'app-exercise-list',
-  standalone: true,
-  imports: [TableComponent, ColumnCellDirective, ButtonComponent, TruncatePipe],
-  templateUrl: './exercise-list.component.html',
-  styleUrl: './exercise-list.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-exercise-list',
+    standalone: true,
+    imports: [TableComponent, ColumnCellDirective, ButtonComponent, TruncatePipe],
+    templateUrl: './exercise-list.component.html',
+    styleUrl: './exercise-list.component.css',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExerciseListComponent implements OnInit, OnDestroy {
-  private router = inject(Router);
-  private exerciseService = inject(ExerciseService);
-  private state = inject(ExerciseStateService);
-  private destroyRef = inject(DestroyRef);
+    private router = inject(Router);
+    private exerciseService = inject(ExerciseService);
+    private state = inject(ExerciseStateService);
+    private destroyRef = inject(DestroyRef);
 
-  exercises = this.state.exercises;
-  loading = this.state.loading;
-  error = this.state.error;
+    exercises = this.state.exercises;
+    loading = this.state.loading;
+    error = this.state.error;
 
-  columns: TableColumn[] = [
-    { key: 'description', label: 'Description' },
-    { key: 'frequency', label: 'Frequency' },
-    { key: 'status', label: 'Status' },
-    { key: 'dueDate', label: 'Due Date' },
-  ];
+    columns: TableColumn[] = [
+        { key: 'description', label: 'Description' },
+        { key: 'frequency', label: 'Frequency' },
+        { key: 'status', label: 'Status' },
+        { key: 'dueDate', label: 'Due Date' },
+    ];
 
-  ngOnInit(): void {
-    this.loadExercises();
-  }
+    ngOnInit(): void {
+        this.loadExercises();
+    }
 
-  ngOnDestroy(): void {
-    this.state.reset();
-  }
+    ngOnDestroy(): void {
+        this.state.reset();
+    }
 
-  loadExercises(): void {
-    this.state.setLoading(true);
-    this.state.setError(null);
-    this.exerciseService.getExercises()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (data) => {
-          this.state.setExercises(data);
-          this.state.setLoading(false);
-        },
-        error: (err) => {
-          this.state.setError(err.message || 'Failed to load exercises');
-          this.state.setLoading(false);
-        },
-      });
-  }
+    loadExercises(): void {
+        this.state.setLoading(true);
+        this.state.setError(null);
+        this.exerciseService
+            .getExercises()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: data => {
+                    this.state.setExercises(data);
+                    this.state.setLoading(false);
+                },
+                error: err => {
+                    this.state.setError(err.message || 'فشل تحميل التمارين');
+                    this.state.setLoading(false);
+                },
+            });
+    }
 
-  navigateToAssign(): void {
-    this.router.navigate(['/exercises/assign']);
-  }
+    navigateToAssign(): void {
+        this.router.navigate(['/exercises/assign']);
+    }
 
-  formatDate(date: string | null): string {
-    if (!date) return '-';
-    return new Date(date).toLocaleDateString();
-  }
+    formatDate(date: string | null): string {
+        if (!date) return '-';
+        return new Date(date).toLocaleDateString();
+    }
 }

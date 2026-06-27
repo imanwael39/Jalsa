@@ -38,13 +38,15 @@ describe('IntakeForm', () => {
 
         patientServiceSpy.getIntakeForm.and.returnValue(of(mockIntakeForm));
         patientServiceSpy.saveIntakeForm.and.returnValue(of(mockIntakeForm));
-        patientServiceSpy.uploadIntakeImage.and.returnValue(of({
-            imageUrl: 'http://example.com/image.jpg',
-            extractedData: {
-                presentingProblem: 'Extracted problem',
-                psychiatricHistory: 'Extracted history',
-            },
-        }));
+        patientServiceSpy.uploadIntakeImage.and.returnValue(
+            of({
+                imageUrl: 'http://example.com/image.jpg',
+                extractedData: {
+                    presentingProblem: 'Extracted problem',
+                    psychiatricHistory: 'Extracted history',
+                },
+            })
+        );
 
         TestBed.configureTestingModule({
             imports: [ReactiveFormsModule],
@@ -58,7 +60,7 @@ describe('IntakeForm', () => {
                     useValue: {
                         snapshot: {
                             paramMap: {
-                                get: (key: string): string | null => key === 'id' ? patientId : null,
+                                get: (key: string): string | null => (key === 'id' ? patientId : null),
                             },
                         },
                     },
@@ -84,7 +86,7 @@ describe('IntakeForm', () => {
     it('should set error when patient ID is missing', (): void => {
         setup(null);
         fixture.detectChanges();
-        expect(component.error()).toBe('Patient ID required');
+        expect(component.error()).toBe('معرف المريض مطلوب');
     });
 
     it('should load intake form on init', (): void => {

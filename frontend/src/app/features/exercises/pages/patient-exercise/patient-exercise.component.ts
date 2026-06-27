@@ -1,4 +1,13 @@
-import { Component, ChangeDetectionStrategy, inject, signal, input, OnInit, OnDestroy, DestroyRef } from '@angular/core';
+import {
+    Component,
+    ChangeDetectionStrategy,
+    inject,
+    signal,
+    input,
+    OnInit,
+    OnDestroy,
+    DestroyRef,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ExerciseService } from '../../../../core/services/exercise.service';
@@ -41,7 +50,7 @@ export class PatientExerciseComponent implements OnInit, OnDestroy {
             this.loadExercises();
             this.loadLogs();
         } else {
-            this.state.setError('Patient not logged in');
+            this.state.setError('المريض غير مسجل الدخول');
         }
     }
 
@@ -52,25 +61,27 @@ export class PatientExerciseComponent implements OnInit, OnDestroy {
     loadExercises(): void {
         this.state.setLoading(true);
         this.state.setError(null);
-        this.exerciseService.getExercisesByPatient(this.patientId)
+        this.exerciseService
+            .getExercisesByPatient(this.patientId)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
-                next: (data) => {
+                next: data => {
                     this.state.setExercises(data);
                     this.state.setLoading(false);
                 },
-                error: (err) => {
-                    this.state.setError(err.message || 'Failed to load exercises');
+                error: err => {
+                    this.state.setError(err.message || 'فشل تحميل التمارين');
                     this.state.setLoading(false);
                 },
             });
     }
 
     loadLogs(): void {
-        this.exerciseService.getMyLogs()
+        this.exerciseService
+            .getMyLogs()
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
-                next: (data) => {
+                next: data => {
                     this.state.setLogs(data);
                 },
                 error: () => {
@@ -85,19 +96,21 @@ export class PatientExerciseComponent implements OnInit, OnDestroy {
 
         this.loggingId.set(exercise.id);
 
-        this.exerciseService.logCompletion({
-            exerciseId: exercise.id,
-            patientId: this.patientId,
-            completionStatus: status,
-            reflectionNote: reflection,
-        }).pipe(takeUntilDestroyed(this.destroyRef))
+        this.exerciseService
+            .logCompletion({
+                exerciseId: exercise.id,
+                patientId: this.patientId,
+                completionStatus: status,
+                reflectionNote: reflection,
+            })
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
-                next: (log) => {
+                next: log => {
                     this.state.addLog(log);
                     this.loggingId.set(null);
                 },
-                error: (err) => {
-                    this.state.setError(err.message || 'Failed to log completion');
+                error: err => {
+                    this.state.setError(err.message || 'فشل تسجيل الإنجاز');
                     this.loggingId.set(null);
                 },
             });

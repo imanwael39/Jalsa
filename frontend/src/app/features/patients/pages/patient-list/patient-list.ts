@@ -15,13 +15,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
 @Component({
     selector: 'app-patient-list',
     standalone: true,
-    imports: [
-        FormsModule,
-        TableComponent,
-        ColumnCellDirective,
-        PaginationComponent,
-        ButtonComponent,
-    ],
+    imports: [FormsModule, TableComponent, ColumnCellDirective, PaginationComponent, ButtonComponent],
     templateUrl: './patient-list.html',
     styleUrl: './patient-list.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -46,27 +40,29 @@ export class PatientList implements OnInit {
     private searchSubject = new Subject<string>();
 
     columns: TableColumn[] = [
-        { key: 'fullName', label: 'Name', sortable: true },
-        { key: 'email', label: 'Email', sortable: true },
-        { key: 'phone', label: 'Phone' },
-        { key: 'dateOfBirth', label: 'DOB', sortable: true },
-        { key: 'gender', label: 'Gender' },
-        { key: 'status', label: 'Status' },
-        { key: 'actions', label: 'Actions', align: 'center' },
+        { key: 'fullName', label: 'الاسم', sortable: true },
+        { key: 'email', label: 'البريد الإلكتروني', sortable: true },
+        { key: 'phone', label: 'الهاتف' },
+        { key: 'dateOfBirth', label: 'تاريخ الميلاد', sortable: true },
+        { key: 'gender', label: 'الجنس' },
+        { key: 'status', label: 'الحالة' },
+        { key: 'actions', label: 'الإجراءات', align: 'center' },
     ];
 
     ngOnInit(): void {
         this.loadPatients();
 
-        this.searchSubject.pipe(
-            debounceTime(300),
-            distinctUntilChanged(),
-            takeUntilDestroyed(this.destroyRef),
-            switchMap(() => {
-                this.currentPage = 1;
-                return this.fetchPatients();
-            }),
-        ).subscribe();
+        this.searchSubject
+            .pipe(
+                debounceTime(300),
+                distinctUntilChanged(),
+                takeUntilDestroyed(this.destroyRef),
+                switchMap(() => {
+                    this.currentPage = 1;
+                    return this.fetchPatients();
+                })
+            )
+            .subscribe();
     }
 
     onSearch(term: string): void {
@@ -75,16 +71,12 @@ export class PatientList implements OnInit {
 
     onPageChange(page: number): void {
         this.currentPage = page;
-        this.fetchPatients().pipe(
-            takeUntilDestroyed(this.destroyRef),
-        ).subscribe();
+        this.fetchPatients().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
     }
 
     onToggleArchived(): void {
         this.currentPage = 1;
-        this.fetchPatients().pipe(
-            takeUntilDestroyed(this.destroyRef),
-        ).subscribe();
+        this.fetchPatients().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
     }
 
     private fetchPatients(): Observable<Patient[]> {
@@ -98,47 +90,49 @@ export class PatientList implements OnInit {
     }
 
     loadPatients(): void {
-        this.fetchPatients().pipe(
-            takeUntilDestroyed(this.destroyRef),
-        ).subscribe({
-            next: (result) => {
-                this.state.setPatients(result);
-                this.totalItems = result.length;
-                this.state.setLoading(false);
-            },
-            error: (err) => {
-                this.state.setError(err.message || 'Failed to load patients');
-                this.state.setLoading(false);
-            },
-        });
+        this.fetchPatients()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: result => {
+                    this.state.setPatients(result);
+                    this.totalItems = result.length;
+                    this.state.setLoading(false);
+                },
+                error: err => {
+                    this.state.setError(err.message || 'فشل تحميل قائمة المرضى');
+                    this.state.setLoading(false);
+                },
+            });
     }
 
     archivePatient(id: string): void {
-        this.patientService.archivePatient(id).pipe(
-            takeUntilDestroyed(this.destroyRef),
-        ).subscribe({
-            next: () => {
-                this.notification.success('Patient archived successfully');
-                this.loadPatients();
-            },
-            error: (err) => {
-                this.notification.error(err.message || 'Failed to archive patient');
-            },
-        });
+        this.patientService
+            .archivePatient(id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: () => {
+                    this.notification.success('تم أرشفة المريض بنجاح');
+                    this.loadPatients();
+                },
+                error: err => {
+                    this.notification.error(err.message || 'فشل أرشفة المريض');
+                },
+            });
     }
 
     restorePatient(id: string): void {
-        this.patientService.restorePatient(id).pipe(
-            takeUntilDestroyed(this.destroyRef),
-        ).subscribe({
-            next: () => {
-                this.notification.success('Patient restored successfully');
-                this.loadPatients();
-            },
-            error: (err) => {
-                this.notification.error(err.message || 'Failed to restore patient');
-            },
-        });
+        this.patientService
+            .restorePatient(id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: () => {
+                    this.notification.success('تم استعادة المريض بنجاح');
+                    this.loadPatients();
+                },
+                error: err => {
+                    this.notification.error(err.message || 'فشل استعادة المريض');
+                },
+            });
     }
 
     onRowClick(patient: Patient): void {

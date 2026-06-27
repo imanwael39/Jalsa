@@ -48,15 +48,16 @@ export class AssignExerciseComponent implements OnInit, OnDestroy {
 
     loadPatients(): void {
         this.loading.set(true);
-        this.patientService.getPatients({ page: 1, pageSize: 100 })
+        this.patientService
+            .getPatients({ page: 1, pageSize: 100 })
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
-                next: (data) => {
+                next: data => {
                     this.patients.set(data);
                     this.loading.set(false);
                 },
-                error: (err) => {
-                    this.error.set(err.message || 'Failed to load patients');
+                error: err => {
+                    this.error.set(err.message || 'فشل تحميل قائمة المرضى');
                     this.loading.set(false);
                 },
             });
@@ -80,16 +81,17 @@ export class AssignExerciseComponent implements OnInit, OnDestroy {
             dueDate: formValue.dueDate || undefined,
         };
 
-        this.exerciseService.createExercise(request)
+        this.exerciseService
+            .createExercise(request)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
-                next: (exercise) => {
+                next: exercise => {
                     this.state.setExercises([...this.state.exercises(), exercise]);
                     this.loading.set(false);
                     this.router.navigate(['/exercises']);
                 },
-                error: (err) => {
-                    this.error.set(err.message || 'Failed to create exercise');
+                error: err => {
+                    this.error.set(err.message || 'فشل إنشاء التمرين');
                     this.loading.set(false);
                 },
             });

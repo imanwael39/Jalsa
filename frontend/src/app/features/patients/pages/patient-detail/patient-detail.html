@@ -96,7 +96,7 @@
                         <dt>تاريخ الميلاد</dt>
                         <dd>{{ formatDate(p.dateOfBirth) }}</dd>
                         <dt>الجنس</dt>
-                        <dd>{{ p.gender || 'Not specified' }}</dd>
+                        <dd>{{ p.gender || 'غير محدد' }}</dd>
                         <dt>الحالة</dt>
                         <dd>
                             <span
@@ -113,20 +113,20 @@
                     <h3 class="section-title">معلومات الاتصال</h3>
                     <dl class="info-list">
                         <dt>البريد الإلكتروني</dt>
-                        <dd>{{ p.email || 'Not provided' }}</dd>
+                        <dd>{{ p.email || 'غير متوفر' }}</dd>
                         <dt>الهاتف</dt>
-                        <dd>{{ p.phone || 'Not provided' }}</dd>
+                        <dd>{{ p.phone || 'غير متوفر' }}</dd>
                         <dt>العنوان</dt>
-                        <dd>{{ p.address || 'Not provided' }}</dd>
+                        <dd>{{ p.address || 'غير متوفر' }}</dd>
                     </dl>
                 </div>
                 <div class="info-section">
                     <h3 class="section-title">المعلومات السريرية</h3>
                     <dl class="info-list">
                         <dt>مصدر الإحالة</dt>
-                        <dd>{{ p.referralSource || 'Not specified' }}</dd>
+                        <dd>{{ p.referralSource || 'غير محدد' }}</dd>
                         <dt>الشكوى الرئيسية</dt>
-                        <dd>{{ p.chiefComplaint || 'Not specified' }}</dd>
+                        <dd>{{ p.chiefComplaint || 'غير محدد' }}</dd>
                         <dt>تاريخ الإنشاء</dt>
                         <dd>{{ p.createdAt | date: 'medium' }}</dd>
                         <dt>آخر تحديث</dt>

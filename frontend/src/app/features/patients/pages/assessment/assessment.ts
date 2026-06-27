@@ -55,7 +55,7 @@ export class Assessment implements OnInit {
             this.patientId.set(id);
             this.loadAssessments();
         } else {
-            this.error.set('Patient ID required');
+            this.error.set('معرف المريض مطلوب');
         }
     }
 
@@ -71,7 +71,7 @@ export class Assessment implements OnInit {
                     this.loading.set(false);
                 },
                 error: err => {
-                    this.error.set(err?.message || 'Failed to load assessments');
+                    this.error.set(err?.message || 'فشل تحميل التقييمات');
                     this.loading.set(false);
                 },
             });
@@ -101,7 +101,7 @@ export class Assessment implements OnInit {
             .subscribe({
                 next: () => {
                     this.submitLoading.set(false);
-                    this.notification.success('Assessment added successfully');
+                    this.notification.success('تم إضافة التقييم بنجاح');
                     this.form.reset({
                         templateId: '',
                         title: '',
@@ -111,7 +111,7 @@ export class Assessment implements OnInit {
                     this.loadAssessments();
                 },
                 error: err => {
-                    this.error.set(err?.message || 'Failed to add assessment');
+                    this.error.set(err?.message || 'فشل إضافة التقييم');
                     this.submitLoading.set(false);
                 },
             });
@@ -131,20 +131,20 @@ export class Assessment implements OnInit {
         if (!field || !field.errors || !field.touched) return '';
 
         if (field.errors['required']) {
-            return `${this.getFieldLabel(fieldName)} is required`;
+            return `${this.getFieldLabel(fieldName)} مطلوب`;
         }
         if (field.errors['min']) {
-            return `${this.getFieldLabel(fieldName)} must be at least ${field.errors['min'].min}`;
+            return `${this.getFieldLabel(fieldName)} يجب أن يكون ${field.errors['min'].min} على الأقل`;
         }
         return '';
     }
 
     private getFieldLabel(fieldName: string): string {
         const labels: Record<string, string> = {
-            templateId: 'Assessment type',
-            title: 'Title',
-            totalScore: 'Score',
-            assessmentDate: 'Date',
+            templateId: 'نوع التقييم',
+            title: 'العنوان',
+            totalScore: 'الدرجة',
+            assessmentDate: 'التاريخ',
         };
         return labels[fieldName] || fieldName;
     }
