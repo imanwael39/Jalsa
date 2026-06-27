@@ -5,9 +5,25 @@
         </button>
         <span class="header-title">جلسة</span>
     </div>
+    <div class="header-center">
+        <div class="search-box">
+            <i class="bi bi-search search-icon"></i>
+            <input
+                type="search"
+                class="search-input"
+                placeholder="ابحث هنا..."
+                [value]="searchQuery()"
+                (input)="onSearch($any($event.target).value)"
+                aria-label="بحث"
+            />
+        </div>
+    </div>
     <div class="header-right">
         <div class="user-menu" (click)="toggleDropdown()" (keydown.enter)="toggleDropdown()" tabindex="0" role="button" [attr.aria-expanded]="isDropdownOpen" aria-haspopup="true">
-            <span class="user-name">{{ user()?.firstName }} {{ user()?.lastName }}</span>
+            <div class="user-details">
+                <span class="user-name">{{ user()?.firstName }} {{ user()?.lastName }}</span>
+                <span class="user-role">{{ getRoleLabel() }}</span>
+            </div>
             <i class="bi bi-person-circle"></i>
             <i class="bi bi-chevron-down" [class.rotated]="isDropdownOpen"></i>
         </div>

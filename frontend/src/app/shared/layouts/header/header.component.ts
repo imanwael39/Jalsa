@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Output, EventEmitter, inject, ChangeDetectionStrategy, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -17,6 +17,7 @@ export class HeaderComponent {
 
     user = this.authService.currentUser;
     isDropdownOpen = false;
+    searchQuery = signal('');
 
     toggleDropdown(): void {
         this.isDropdownOpen = !this.isDropdownOpen;
@@ -35,5 +36,19 @@ export class HeaderComponent {
     goToProfile(): void {
         this.router.navigate(['/auth/profile']);
         this.isDropdownOpen = false;
+    }
+
+    onSearch(value: string): void {
+        this.searchQuery.set(value);
+    }
+
+    getRoleLabel(): string {
+        const u = this.user();
+        if (!u?.roles || u.roles.length === 0) return '';
+        const role = u.roles[0];
+        if (role === 'Admin') return 'مدير النظام';
+        if (role === 'Therapist') return 'معالج';
+        if (role === 'Patient') return 'مريض';
+        return role;
     }
 }

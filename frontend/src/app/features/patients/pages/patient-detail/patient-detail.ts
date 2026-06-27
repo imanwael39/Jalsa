@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, DestroyRef, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PatientService } from '../../../../core/services/patient.service';
 import { PatientStateService } from '../../../../core/state/patient-state.service';
@@ -14,7 +14,7 @@ import { PatientExerciseComponent } from '../../../exercises/pages/patient-exerc
 @Component({
     selector: 'app-patient-detail',
     standalone: true,
-    imports: [ButtonComponent, SpinnerComponent, ModalComponent, DatePipe, SessionList, PatientExerciseComponent],
+    imports: [RouterLink, ButtonComponent, SpinnerComponent, ModalComponent, DatePipe, SessionList, PatientExerciseComponent],
     templateUrl: './patient-detail.html',
     styleUrl: './patient-detail.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -183,5 +183,17 @@ export class PatientDetail implements OnInit, OnDestroy {
     formatDate(date: string | null): string {
         if (!date) return 'N/A';
         return new Date(date).toLocaleDateString();
+    }
+
+    calculateAge(dateOfBirth: string | null): number {
+        if (!dateOfBirth) return 0;
+        const today = new Date();
+        const birth = new Date(dateOfBirth);
+        let age = today.getFullYear() - birth.getFullYear();
+        const monthDiff = today.getMonth() - birth.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+            age--;
+        }
+        return age;
     }
 }

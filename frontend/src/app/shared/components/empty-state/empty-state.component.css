@@ -5,23 +5,24 @@
 .empty-state {
     max-width: 400px;
     margin: 0 auto;
-    padding: 2rem 1rem;
+    padding: 3rem 1.5rem;
 }
 
 .empty-state-icon {
-    width: 80px;
-    height: 80px;
+    width: 88px;
+    height: 88px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto;
-    background-color: #f8f9fa;
+    background: linear-gradient(135deg, var(--gray-100), var(--gray-50));
     border-radius: 50%;
+    border: 2px dashed var(--gray-200);
 }
 
 .empty-state-icon i {
     font-size: 2.5rem;
-    color: #6c757d;
+    color: var(--gray-400);
 }
 
 .empty-state-image {
@@ -32,32 +33,29 @@
 
 .empty-state-title {
     font-size: 1.25rem;
-    font-weight: 600;
-    color: #212529;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
 }
 
 .empty-state-message {
     font-size: 0.9375rem;
-    line-height: 1.5;
-    max-width: 300px;
+    line-height: 1.6;
+    max-width: 320px;
     margin-left: auto;
     margin-right: auto;
-}
-
-/* RTL Support */
-[dir="rtl"] .empty-state-message {
-    /* No specific RTL adjustments needed for centered text */
+    color: var(--text-muted);
 }
 
 /* Responsive adjustments */
 @media (max-width: 575.98px) {
     .empty-state {
-        padding: 1.5rem 1rem;
+        padding: 2rem 1rem;
     }
 
     .empty-state-icon {
-        width: 64px;
-        height: 64px;
+        width: 72px;
+        height: 72px;
     }
 
     .empty-state-icon i {

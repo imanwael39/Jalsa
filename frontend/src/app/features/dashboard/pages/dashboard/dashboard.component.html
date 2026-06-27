@@ -1,8 +1,18 @@
 <div class="dashboard">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Dashboard</h2>
-        <button class="btn btn-outline-secondary btn-sm" (click)="loadDashboard()">
-            <i class="bi bi-arrow-clockwise"></i> Refresh
+    <!-- Welcome Banner -->
+    <div class="welcome-banner">
+        <div class="welcome-content">
+            <h2 class="welcome-title">
+                @if (user(); as u) {
+                    مرحباً بك {{ u.firstName }} 👋
+                } @else {
+                    مرحباً بك 👋
+                }
+            </h2>
+            <p class="welcome-subtitle">إليك نظرة عامة على نشاطات اليوم</p>
+        </div>
+        <button class="refresh-btn" (click)="loadDashboard()" [disabled]="loading()">
+            <i class="bi bi-arrow-clockwise" [class.spinning]="loading()"></i> تحديث
         </button>
     </div>
 
@@ -20,106 +30,82 @@
     }
 
     @if (!loading() && !error() && !summary()) {
-        <div class="text-center py-5">
-            <i class="bi bi-inbox display-1 text-muted"></i>
-            <p class="mt-3 text-muted">No dashboard data available. Click Refresh to load.</p>
+        <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <p>لا توجد بيانات لوحة التحكم متاحة. اضغط تحديث للتحميل.</p>
             <button class="btn btn-primary btn-sm" (click)="loadDashboard()">
-                <i class="bi bi-arrow-clockwise"></i> Load Dashboard
+                <i class="bi bi-arrow-clockwise"></i> تحميل لوحة التحكم
             </button>
         </div>
     }
 
     @if (!loading() && !error() && summary()) {
         <!-- Row 1: Primary KPI Stats Cards -->
-        <div class="row g-3 mb-4">
-            <div class="col-lg-3 col-md-6">
-                <app-stats-card
-                    label="Total Patients"
-                    [value]="summary()!.totalPatients"
-                    icon="bi-people-fill"
-                    color="primary">
-                </app-stats-card>
+        <div class="stats-grid">
+            <div class="stat-card stat-primary">
+                <div class="stat-icon">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-label">إجمالي المرضى</span>
+                    <span class="stat-value">{{ summary()!.totalPatients }}</span>
+                    <span class="stat-trend positive">+9 هذا الشهر</span>
+                </div>
             </div>
-            <div class="col-lg-3 col-md-6">
-                <app-stats-card
-                    label="Active Patients"
-                    [value]="summary()!.activePatients"
-                    icon="bi-person-check-fill"
-                    color="success">
-                </app-stats-card>
+            <div class="stat-card stat-success">
+                <div class="stat-icon">
+                    <i class="bi bi-person-check-fill"></i>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-label">الحاضرون هذا الشهر</span>
+                    <span class="stat-value">{{ summary()!.activePatients }}</span>
+                    <span class="stat-trend positive">+8 هذا الأسبوع</span>
+                </div>
             </div>
-            <div class="col-lg-3 col-md-6">
-                <app-stats-card
-                    label="Total Sessions"
-                    [value]="summary()!.totalSessions"
-                    icon="bi-calendar-check-fill"
-                    color="info">
-                </app-stats-card>
+            <div class="stat-card stat-info">
+                <div class="stat-icon">
+                    <i class="bi bi-clipboard-check-fill"></i>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-label">التمارين النشطة</span>
+                    <span class="stat-value">{{ summary()!.sessionsThisMonth }}</span>
+                    <span class="stat-trend positive">+5 هذا الأسبوع</span>
+                </div>
             </div>
-            <div class="col-lg-3 col-md-6">
-                <app-stats-card
-                    label="Sessions This Month"
-                    [value]="summary()!.sessionsThisMonth"
-                    icon="bi-calendar-date-fill"
-                    color="warning">
-                </app-stats-card>
-            </div>
-        </div>
-
-        <!-- Row 2: Secondary KPI Stats Cards -->
-        <div class="row g-3 mb-4">
-            <div class="col-lg-4 col-md-6">
-                <app-stats-card
-                    label="Exercise Completion Rate"
-                    [value]="summary()!.exerciseCompletionRate + '%'"
-                    icon="bi-clipboard-check-fill"
-                    color="success">
-                </app-stats-card>
-            </div>
-            <div class="col-lg-4 col-md-6">
-                <app-stats-card
-                    label="Average Assessment Score"
-                    [value]="summary()!.averageAssessmentScore"
-                    icon="bi-graph-up"
-                    color="danger">
-                </app-stats-card>
-            </div>
-            <div class="col-lg-4 col-md-6">
-                <app-stats-card
-                    label="Archived Patients"
-                    [value]="summary()!.archivedPatients"
-                    icon="bi-person-x-fill"
-                    color="warning">
-                </app-stats-card>
+            <div class="stat-card stat-warning">
+                <div class="stat-icon">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-label">معدل التأثير</span>
+                    <span class="stat-value">{{ summary()!.exerciseCompletionRate }}%</span>
+                    <span class="stat-trend positive">عميل نشط +6%</span>
+                </div>
             </div>
         </div>
 
-        <!-- Row 3: Charts -->
-        <div class="row g-3 mb-4">
-            <div class="col-lg-6">
+        <!-- Row 2: Charts -->
+        <div class="charts-row">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h6 class="chart-title">إحصائيات الجلسات</h6>
+                    <span class="chart-badge">آخر 30 يوم</span>
+                </div>
                 <app-line-chart
-                    title="Assessment Trend"
-                    [labels]="assessmentTrendLabels()"
-                    [datasets]="assessmentTrendData()"
-                    [loading]="loading()"
-                    height="280px">
-                </app-line-chart>
-            </div>
-            <div class="col-lg-6">
-                <app-line-chart
-                    title="Session Frequency"
+                    title=""
                     [labels]="sessionFrequencyLabels()"
                     [datasets]="sessionFrequencyData()"
                     [loading]="loading()"
                     height="280px">
                 </app-line-chart>
             </div>
-        </div>
-
-        <div class="row g-3 mb-4">
-            <div class="col-lg-6">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h6 class="chart-title">توزيع النشاطات</h6>
+                    <span class="chart-badge">معدل الإنجاز</span>
+                </div>
                 <app-bar-chart
-                    title="Exercise Completion Breakdown"
+                    title=""
                     [labels]="exerciseCompletionLabels()"
                     [datasets]="exerciseCompletionData()"
                     [loading]="loading()"
@@ -128,21 +114,50 @@
             </div>
         </div>
 
-        <!-- Row 4: Recent Alerts -->
-        @if (summary()!.recentAlerts.length > 0) {
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h6 class="mb-0"><i class="bi bi-bell-fill me-2"></i>Recent Alerts</h6>
+        <!-- Row 3: Notifications and Appointments -->
+        <div class="bottom-row">
+            <!-- Notifications -->
+            <div class="info-card">
+                <div class="info-card-header">
+                    <div class="info-card-title">
+                        <i class="bi bi-bell-fill"></i>
+                        <h6>الإشعارات</h6>
+                    </div>
                 </div>
-                <ul class="list-group list-group-flush">
-                    @for (alert of summary()!.recentAlerts; track alert) {
-                        <li class="list-group-item d-flex align-items-center">
-                            <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
-                            {{ alert }}
-                        </li>
+                <div class="info-card-body">
+                    @if (summary()!.recentAlerts.length > 0) {
+                        <ul class="notifications-list">
+                            @for (alert of summary()!.recentAlerts; track alert) {
+                                <li class="notification-item">
+                                    <i class="bi bi-exclamation-triangle-fill notification-icon"></i>
+                                    <span>{{ alert }}</span>
+                                </li>
+                            }
+                        </ul>
+                    } @else {
+                        <div class="empty-info">
+                            <i class="bi bi-bell-slash"></i>
+                            <p>لا توجد إشعارات جديدة</p>
+                        </div>
                     }
-                </ul>
+                </div>
             </div>
-        }
+
+            <!-- Upcoming Appointments -->
+            <div class="info-card">
+                <div class="info-card-header">
+                    <div class="info-card-title">
+                        <i class="bi bi-calendar-event-fill"></i>
+                        <h6>المواعيد القادمة</h6>
+                    </div>
+                </div>
+                <div class="info-card-body">
+                    <div class="empty-info">
+                        <i class="bi bi-calendar-x"></i>
+                        <p>لا توجد مواعيد قادمة</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     }
 </div>

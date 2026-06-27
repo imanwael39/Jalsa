@@ -1,6 +1,6 @@
 <div class="assign-exercise">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Assign Exercise to Patient</h2>
+    <div class="page-header">
+        <h2 class="page-title">تعيين تمرين للمريض</h2>
     </div>
 
     @if (error()) {
@@ -9,17 +9,17 @@
 
     @if (loading() && patients().length === 0) {
         <div class="text-center py-5">
-            <app-spinner size="lg" label="Loading patients..."></app-spinner>
+            <app-spinner size="lg" label="جاري تحميل المرضى..."></app-spinner>
         </div>
     } @else {
         @if (patients().length === 0) {
-            <div class="alert alert-info">No patients available. Please add patients first.</div>
+            <div class="alert alert-info">لا يوجد مرضى متاحون. يرجى إضافة المرضى أولاً.</div>
         }
 
         <form [formGroup]="form" (ngSubmit)="onSubmit()">
             <div class="form-group mb-3">
                 <label for="patientId" class="form-label">
-                    Patient <span class="text-danger">*</span>
+                    المريض <span class="text-danger">*</span>
                 </label>
                 <select
                     id="patientId"
@@ -28,41 +28,41 @@
                     [class.is-invalid]="f['patientId'].touched && f['patientId'].invalid"
                     aria-describedby="patientIdError"
                 >
-                    <option value="">Select Patient</option>
+                    <option value="">اختر المريض</option>
                     @for (patient of patients(); track patient.id) {
                         <option [value]="patient.id">{{ patient.fullName }}</option>
                     }
                 </select>
                 @if (f['patientId'].touched && f['patientId'].errors?.['required']) {
-                    <div class="invalid-feedback" id="patientIdError">Patient is required.</div>
+                    <div class="invalid-feedback" id="patientIdError">المريض مطلوب.</div>
                 }
             </div>
 
             <app-input
-                label="Description"
+                label="الوصف"
                 type="text"
                 formControlName="description"
                 [required]="true"
-                [error]="f['description'].touched && f['description'].errors?.['required'] ? 'Description is required.' : f['description'].errors?.['maxlength'] ? 'Description must not exceed 1000 characters.' : ''"
-                placeholder="Describe the exercise for the patient"
+                [error]="f['description'].touched && f['description'].errors?.['required'] ? 'الوصف مطلوب.' : f['description'].errors?.['maxlength'] ? 'الوصف يجب ألا يتجاوز 1000 حرف.' : ''"
+                placeholder="صف التمارين للمريض"
             ></app-input>
 
             <app-input
-                label="Frequency"
+                label="التكرار"
                 type="text"
                 formControlName="frequency"
-                placeholder="e.g., 3 times per week"
-                helpText="How often the patient should perform this exercise"
+                placeholder="مثال: 3 مرات في الأسبوع"
+                helpText="كم مرة يجب على المريض أداء هذا التمرين"
             ></app-input>
 
             <app-input
-                label="Start Date"
+                label="تاريخ البدء"
                 type="date"
                 formControlName="startDate"
             ></app-input>
 
             <app-input
-                label="Due Date"
+                label="تاريخ الاستحقاق"
                 type="date"
                 formControlName="dueDate"
             ></app-input>
@@ -73,18 +73,18 @@
                     variant="primary"
                     [loading]="loading()"
                     [disabled]="loading()"
-                    ariaLabel="Create and assign exercise"
+                    ariaLabel="إنشاء وتعيين التمرين"
                 >
-                    Assign Exercise
+                    تعيين التمرين
                 </app-button>
                 <app-button
                     type="button"
                     variant="secondary"
                     [disabled]="loading()"
                     (clicked)="navigateBack()"
-                    ariaLabel="Cancel and go back"
+                    ariaLabel="إلغاء والعودة"
                 >
-                    Cancel
+                    إلغاء
                 </app-button>
             </div>
         </form>

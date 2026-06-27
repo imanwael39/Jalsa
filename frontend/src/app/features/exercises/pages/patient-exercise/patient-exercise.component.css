@@ -1,20 +1,22 @@
 .patient-exercise {
-    padding: 1rem 0;
+    padding: 0.5rem 0;
 }
 
 .exercise-meta p {
-    font-size: 0.9rem;
-    color: #495057;
+    font-size: 0.9375rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
 }
 
 .log-section h6 {
     font-weight: 600;
     margin-bottom: 0.75rem;
+    color: var(--text-primary);
 }
 
 .log-entry {
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #f0f0f0;
+    padding: 0.625rem 0;
+    border-bottom: 1px solid var(--border-light);
 }
 
 .log-entry:last-child {
@@ -24,4 +26,5 @@
 .logs-section h6 {
     font-weight: 600;
     margin-bottom: 0.5rem;
+    color: var(--text-primary);
 }

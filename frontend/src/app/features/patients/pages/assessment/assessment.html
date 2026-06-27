@@ -1,16 +1,16 @@
 <div class="assessment">
     <div class="form-header">
         <div class="header-left">
-            <app-button variant="ghost" size="sm" (clicked)="goBack()" ariaLabel="Go back to patient detail">
-                <i class="bi bi-arrow-left" aria-hidden="true"></i> Back
+            <app-button variant="ghost" size="sm" (clicked)="goBack()" ariaLabel="العودة إلى تفاصيل المريض">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i> رجوع
             </app-button>
-            <h1 class="form-title">Psychological Assessments</h1>
+            <h1 class="form-title">التقييمات النفسية</h1>
         </div>
     </div>
 
     @if (loading()) {
         <div class="loading-container">
-            <app-spinner size="lg" label="Loading assessments..."></app-spinner>
+            <app-spinner size="lg" label="جاري تحميل التقييمات..."></app-spinner>
         </div>
     }
 
@@ -24,20 +24,20 @@
     <div class="add-assessment-section">
         <h2 class="section-title">
             <i class="bi bi-plus-circle" aria-hidden="true"></i>
-            Add New Assessment
+            إضافة تقييم جديد
         </h2>
 
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="assessment-form" novalidate>
             <div class="form-grid">
                 <div class="form-field">
-                    <label for="templateId" class="form-label">Assessment Type <span class="required">*</span></label>
+                    <label for="templateId" class="form-label">نوع التقييم <span class="required">*</span></label>
                     <select
                         id="templateId"
                         class="form-select"
                         formControlName="templateId"
                         name="templateId"
                         [class.is-invalid]="isFieldInvalid('templateId')">
-                        <option value="">Select type</option>
+                        <option value="">اختر النوع</option>
                         @for (type of assessmentTypes; track type.value) {
                             <option [value]="type.value">{{ type.label }}</option>
                         }
@@ -47,14 +47,14 @@
                     }
                 </div>
                 <div class="form-field">
-                    <label for="totalScore" class="form-label">Score <span class="required">*</span></label>
+                    <label for="totalScore" class="form-label">الدرجة <span class="required">*</span></label>
                     <input
                         type="number"
                         id="totalScore"
                         class="form-control"
                         formControlName="totalScore"
                         name="totalScore"
-                        placeholder="Enter score"
+                        placeholder="أدخل الدرجة"
                         min="0"
                         [class.is-invalid]="isFieldInvalid('totalScore')">
                     @if (isFieldInvalid('totalScore')) {
@@ -62,7 +62,7 @@
                     }
                 </div>
                 <div class="form-field">
-                    <label for="assessmentDate" class="form-label">Date <span class="required">*</span></label>
+                    <label for="assessmentDate" class="form-label">التاريخ <span class="required">*</span></label>
                     <input
                         type="date"
                         id="assessmentDate"
@@ -76,22 +76,22 @@
                 </div>
             </div>
             <div class="form-field full-width">
-                <label for="title" class="form-label">Title (Optional)</label>
+                <label for="title" class="form-label">العنوان (اختياري)</label>
                 <input
                     type="text"
                     id="title"
                     class="form-control"
                     formControlName="title"
                     name="title"
-                    placeholder="Custom title for this assessment">
+                    placeholder="عنوان مخصص لهذا التقييم">
             </div>
             <div class="form-actions">
                 <app-button
                     type="submit"
                     variant="primary"
                     [loading]="submitLoading()"
-                    ariaLabel="Add assessment">
-                    Add Assessment
+                    ariaLabel="إضافة تقييم">
+                    إضافة التقييم
                 </app-button>
             </div>
         </form>
@@ -100,14 +100,14 @@
     <div class="assessment-history-section">
         <h2 class="section-title">
             <i class="bi bi-clock-history" aria-hidden="true"></i>
-            Assessment History
+            سجل التقييمات
         </h2>
 
         @if (!loading() && assessments().length === 0) {
             <div class="empty-state">
                 <i class="bi bi-clipboard-check" aria-hidden="true"></i>
-                <p>No assessments recorded yet.</p>
-                <p class="empty-hint">Add an assessment using the form above.</p>
+                <p>لم يتم تسجيل أي تقييمات بعد.</p>
+                <p class="empty-hint">أضف تقييماً باستخدام النموذج أعلاه.</p>
             </div>
         }
 
@@ -116,10 +116,10 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th scope="col">Type</th>
-                            <th scope="col">Score</th>
-                            <th scope="col">Date</th>
-                            <th scope="col">Status</th>
+                            <th scope="col">النوع</th>
+                            <th scope="col">الدرجة</th>
+                            <th scope="col">التاريخ</th>
+                            <th scope="col">الحالة</th>
                         </tr>
                     </thead>
                     <tbody>

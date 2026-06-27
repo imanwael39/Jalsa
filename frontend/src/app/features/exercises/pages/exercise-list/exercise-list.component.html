@@ -1,8 +1,8 @@
 <div class="exercise-list">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Exercises</h2>
-    <app-button variant="primary" (clicked)="navigateToAssign()" ariaLabel="Assign new exercise">
-      <i class="bi bi-plus-lg" aria-hidden="true"></i> Assign Exercise
+  <div class="page-header">
+    <h2 class="page-title">التمارين</h2>
+    <app-button variant="primary" (clicked)="navigateToAssign()" ariaLabel="إضافة تمرين جديد">
+      <i class="bi bi-plus-lg" aria-hidden="true"></i> إضافة تمرين +
     </app-button>
   </div>
 
@@ -15,7 +15,7 @@
       [data]="exercises()"
       [columns]="columns"
       [loading]="loading()"
-      emptyMessage="No exercises found."
+      emptyMessage="لم يتم العثور على تمارين."
     >
       <ng-template appColumnCell="description" let-row>
         {{ row.description | truncate: 80 }}

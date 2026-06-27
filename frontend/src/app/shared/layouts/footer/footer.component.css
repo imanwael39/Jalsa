@@ -1,7 +1,7 @@
 .app-footer {
     background: var(--surface);
     border-top: 1px solid var(--border-color);
-    padding-block: 0.75rem;
+    padding-block: 0.875rem;
     padding-inline: 1.5rem;
     font-size: 0.875rem;
     color: var(--text-muted);
@@ -23,12 +23,13 @@
 .footer-links a {
     color: var(--text-muted);
     text-decoration: none;
-    transition: color 0.15s;
+    transition: color var(--transition-fast);
+    font-weight: 500;
 }
 
 .footer-links a:hover {
     color: var(--primary);
-    text-decoration: underline;
+    text-decoration: none;
 }
 
 @media (max-width: 768px) {

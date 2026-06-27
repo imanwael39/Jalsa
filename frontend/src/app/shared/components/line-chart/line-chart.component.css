@@ -3,21 +3,22 @@
 }
 
 .line-chart {
-    background: #fff;
-    border-radius: 8px;
-    padding: 1rem;
-    border: 1px solid #e5e7eb;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-card);
 }
 
 .chart-header {
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
 }
 
 .chart-title {
-    font-size: 0.9rem;
+    font-size: 0.9375rem;
     font-weight: 600;
     margin: 0;
-    color: #374151;
+    color: var(--text-primary);
 }
 
 .chart-container {
@@ -40,33 +41,18 @@
     justify-content: center;
     height: 100%;
     min-height: 150px;
-    color: #9ca3af;
-    gap: 0.5rem;
+    color: var(--gray-400);
+    gap: 0.75rem;
 }
 
 .chart-empty i {
-    font-size: 2rem;
+    font-size: 2.5rem;
+    opacity: 0.5;
 }
 
 /* RTL support */
 [dir="rtl"] .line-chart {
     direction: rtl;
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-    .line-chart {
-        background: #1f2937;
-        border-color: #374151;
-    }
-
-    .chart-title {
-        color: #f3f4f6;
-    }
-
-    .chart-empty {
-        color: #6b7280;
-    }
 }
 
 /* Reduced motion support */

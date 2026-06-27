@@ -1,10 +1,10 @@
 <div class="profile-container">
-    <h2 class="mb-4">Profile</h2>
+    <h2 class="mb-4">الملف الشخصي</h2>
 
     @if (loading()) {
         <div class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
+                <span class="visually-hidden">جاري التحميل...</span>
             </div>
         </div>
     }
@@ -12,31 +12,31 @@
     @if (!loading()) {
         @if (success()) {
             <div class="alert alert-success" role="alert">
-                Changes saved successfully!
+                تم حفظ التغييرات بنجاح!
             </div>
         }
 
         <div class="card mb-4">
             <div class="card-header">
-                <h5 class="mb-0">Personal Information</h5>
+                <h5 class="mb-0">المعلومات الشخصية</h5>
             </div>
             <div class="card-body">
                 <form [formGroup]="profileForm">
                     <div class="row">
                         <div class="col-md-6">
                             <app-input
-                                label="First Name"
+                                label="الاسم الأول"
                                 type="text"
-                                placeholder="Enter first name"
+                                placeholder="أدخل الاسم الأول"
                                 formControlName="firstName"
                                 [error]="getFirstNameError()"
                             ></app-input>
                         </div>
                         <div class="col-md-6">
                             <app-input
-                                label="Last Name"
+                                label="اسم العائلة"
                                 type="text"
-                                placeholder="Enter last name"
+                                placeholder="أدخل اسم العائلة"
                                 formControlName="lastName"
                                 [error]="getLastNameError()"
                             ></app-input>
@@ -44,9 +44,9 @@
                     </div>
 
                     <app-input
-                        label="Email Address"
+                        label="البريد الإلكتروني"
                         type="email"
-                        placeholder="Enter your email"
+                        placeholder="أدخل بريدك الإلكتروني"
                         formControlName="email"
                         [error]="getEmailError()"
                     ></app-input>
@@ -63,7 +63,7 @@
                             variant="primary"
                             [loading]="updating()"
                             (click)="updateProfile()"
-                        >Update Profile</app-button>
+                        >تحديث الملف الشخصي</app-button>
                     </div>
                 </form>
             </div>
@@ -71,30 +71,30 @@
 
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">Change Password</h5>
+                <h5 class="mb-0">تغيير كلمة المرور</h5>
             </div>
             <div class="card-body">
                 <form [formGroup]="passwordForm">
                     <app-input
-                        label="Current Password"
+                        label="كلمة المرور الحالية"
                         type="password"
-                        placeholder="Enter current password"
+                        placeholder="أدخل كلمة المرور الحالية"
                         formControlName="currentPassword"
                         [error]="getCurrentPasswordError()"
                     ></app-input>
 
                     <app-input
-                        label="New Password"
+                        label="كلمة المرور الجديدة"
                         type="password"
-                        placeholder="Enter new password"
+                        placeholder="أدخل كلمة المرور الجديدة"
                         formControlName="newPassword"
                         [error]="getNewPasswordError()"
                     ></app-input>
 
                     <app-input
-                        label="Confirm New Password"
+                        label="تأكيد كلمة المرور الجديدة"
                         type="password"
-                        placeholder="Confirm new password"
+                        placeholder="أعد إدخال كلمة المرور الجديدة"
                         formControlName="confirmPassword"
                         [error]="getConfirmPasswordError() || getPasswordMismatchError()"
                     ></app-input>
@@ -111,7 +111,7 @@
                             variant="danger"
                             [loading]="changingPassword()"
                             (click)="changePassword()"
-                        >Change Password</app-button>
+                        >تغيير كلمة المرور</app-button>
                     </div>
                 </form>
             </div>

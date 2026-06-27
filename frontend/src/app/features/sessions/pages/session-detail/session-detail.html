@@ -7,13 +7,13 @@
         <div class="alert alert-danger" role="alert">{{ error() }}</div>
     } @else if (session()) {
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2>Session Details</h2>
+            <h2>تفاصيل الجلسة</h2>
             <div class="d-flex gap-2">
-                <app-button variant="primary" (clicked)="navigateToEdit()" ariaLabel="Edit session">
-                    <i class="bi bi-pencil" aria-hidden="true"></i> Edit
+                <app-button variant="primary" (clicked)="navigateToEdit()" ariaLabel="تعديل الجلسة">
+                    <i class="bi bi-pencil" aria-hidden="true"></i> تعديل
                 </app-button>
-                <app-button variant="danger" (clicked)="deleteSession()" ariaLabel="Delete session">
-                    <i class="bi bi-trash" aria-hidden="true"></i> Delete
+                <app-button variant="danger" (clicked)="deleteSession()" ariaLabel="حذف الجلسة">
+                    <i class="bi bi-trash" aria-hidden="true"></i> حذف
                 </app-button>
             </div>
         </div>
@@ -22,27 +22,27 @@
             <div class="card-body">
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <strong>Session Date:</strong>
+                        <strong>تاريخ الجلسة:</strong>
                         <span>{{ formatDate(session()!.sessionDate) }}</span>
                     </div>
                     <div class="col-md-6">
-                        <strong>Session #:</strong>
+                        <strong>رقم الجلسة #:</strong>
                         <span>{{ session()!.sessionNumber }}</span>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <strong>Type:</strong>
+                        <strong>النوع:</strong>
                         <span>{{ session()!.sessionType || 'N/A' }}</span>
                     </div>
                     <div class="col-md-6">
-                        <strong>Duration:</strong>
-                        <span>{{ session()!.durationMinutes ? (session()!.durationMinutes + ' minutes') : 'N/A' }}</span>
+                        <strong>المدة:</strong>
+                        <span>{{ session()!.durationMinutes ? (session()!.durationMinutes + ' دقيقة') : 'N/A' }}</span>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <strong>Status:</strong>
+                        <strong>الحالة:</strong>
                         <span class="badge"
                             [class.bg-secondary]="session()!.status === 'Draft'"
                             [class.bg-success]="session()!.status === 'Completed'"
@@ -51,7 +51,7 @@
                         </span>
                     </div>
                     <div class="col-md-6">
-                        <strong>Created:</strong>
+                        <strong>تاريخ الإنشاء:</strong>
                         <span>{{ formatDate(session()!.createdAt) }}</span>
                     </div>
                 </div>
@@ -61,8 +61,8 @@
         <app-summary [sessionId]="session()!.id"></app-summary>
 
         <div class="mt-3">
-            <app-button variant="secondary" (clicked)="navigateBack()" ariaLabel="Back to sessions list">
-                <i class="bi bi-arrow-left" aria-hidden="true"></i> Back to Sessions
+            <app-button variant="secondary" (clicked)="navigateBack()" ariaLabel="العودة إلى قائمة الجلسات">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i> رجوع إلى الجلسات
             </app-button>
         </div>
     }

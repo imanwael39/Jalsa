@@ -1,16 +1,16 @@
 <div class="patient-form">
     <div class="form-header">
         <div class="header-left">
-            <app-button variant="ghost" size="sm" (clicked)="goBack()" ariaLabel="Go back to patients list">
-                <i class="bi bi-arrow-left" aria-hidden="true"></i> Back
+            <app-button variant="ghost" size="sm" (clicked)="goBack()" ariaLabel="العودة إلى قائمة المرضى">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i> رجوع
             </app-button>
-            <h1 class="form-title">{{ isEdit() ? 'Edit Patient' : 'Add New Patient' }}</h1>
+            <h1 class="form-title">{{ isEdit() ? 'تعديل المريض' : 'إضافة مريض جديد' }}</h1>
         </div>
     </div>
 
     @if (loading() && !isEdit()) {
         <div class="loading-container">
-            <app-spinner size="lg" label="Loading patient data..."></app-spinner>
+            <app-spinner size="lg" label="جاري تحميل بيانات المريض..."></app-spinner>
         </div>
     }
 
@@ -24,13 +24,13 @@
     @if (!loading() || isEdit()) {
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-content" novalidate>
             <div class="form-section">
-                <h2 class="section-title">Personal Information</h2>
+                <h2 class="section-title">المعلومات الشخصية</h2>
                 <div class="form-grid">
                     <div class="form-field">
                         <app-input
-                            label="Full Name"
+                            label="الاسم الكامل"
                             type="text"
-                            placeholder="Enter full name"
+                            placeholder="أدخل الاسم الكامل"
                             formControlName="fullName"
                             [required]="true"
                             [error]="isFieldInvalid('fullName') ? getFieldError('fullName') : ''"
@@ -41,9 +41,9 @@
                     </div>
                     <div class="form-field">
                         <app-input
-                            label="Email Address"
+                            label="البريد الإلكتروني"
                             type="email"
-                            placeholder="Enter email address"
+                            placeholder="أدخل البريد الإلكتروني"
                             formControlName="email"
                             [error]="isFieldInvalid('email') ? getFieldError('email') : ''"
                             id="email"
@@ -53,9 +53,9 @@
                     </div>
                     <div class="form-field">
                         <app-input
-                            label="Phone Number"
+                            label="رقم الهاتف"
                             type="tel"
-                            placeholder="Enter phone number"
+                            placeholder="أدخل رقم الهاتف"
                             formControlName="phone"
                             [error]="isFieldInvalid('phone') ? getFieldError('phone') : ''"
                             id="phone"
@@ -64,7 +64,7 @@
                         </app-input>
                     </div>
                     <div class="form-field">
-                        <label for="dateOfBirth" class="form-label">Date of Birth</label>
+                        <label for="dateOfBirth" class="form-label">تاريخ الميلاد</label>
                         <input
                             type="date"
                             id="dateOfBirth"
@@ -74,29 +74,29 @@
                             autocomplete="bday">
                     </div>
                     <div class="form-field">
-                        <label for="gender" class="form-label">Gender</label>
+                        <label for="gender" class="form-label">الجنس</label>
                         <select
                             id="gender"
                             class="form-select"
                             formControlName="gender"
                             name="gender">
-                            <option value="">Select gender</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other</option>
+                            <option value="">اختر الجنس</option>
+                            <option value="Male">ذكر</option>
+                            <option value="Female">أنثى</option>
+                            <option value="Other">آخر</option>
                         </select>
                     </div>
                 </div>
             </div>
 
             <div class="form-section">
-                <h2 class="section-title">Additional Information</h2>
+                <h2 class="section-title">معلومات إضافية</h2>
                 <div class="form-grid">
                     <div class="form-field full-width">
                         <app-input
-                            label="Address"
+                            label="العنوان"
                             type="text"
-                            placeholder="Enter address"
+                            placeholder="أدخل العنوان"
                             formControlName="address"
                             [error]="isFieldInvalid('address') ? getFieldError('address') : ''"
                             id="address"
@@ -106,9 +106,9 @@
                     </div>
                     <div class="form-field">
                         <app-input
-                            label="Referral Source"
+                            label="مصدر الإحالة"
                             type="text"
-                            placeholder="How did they find us?"
+                            placeholder="كيف عثر علينا المريض؟"
                             formControlName="referralSource"
                             [error]="isFieldInvalid('referralSource') ? getFieldError('referralSource') : ''"
                             id="referralSource"
@@ -116,14 +116,14 @@
                         </app-input>
                     </div>
                     <div class="form-field full-width">
-                        <label for="chiefComplaint" class="form-label">Chief Complaint</label>
+                        <label for="chiefComplaint" class="form-label">الشكوى الرئيسية</label>
                         <textarea
                             id="chiefComplaint"
                             class="form-control"
                             formControlName="chiefComplaint"
                             name="chiefComplaint"
                             rows="3"
-                            placeholder="Describe the main reason for the visit"
+                            placeholder="صف السبب الرئيسي للزيارة"
                             [class.is-invalid]="isFieldInvalid('chiefComplaint')"></textarea>
                         @if (isFieldInvalid('chiefComplaint')) {
                             <div class="invalid-feedback">{{ getFieldError('chiefComplaint') }}</div>
@@ -137,16 +137,16 @@
                     type="submit"
                     variant="primary"
                     [loading]="loading()"
-                    ariaLabel="Save patient">
-                    {{ isEdit() ? 'Update Patient' : 'Create Patient' }}
+                    ariaLabel="حفظ بيانات المريض">
+                    {{ isEdit() ? 'تحديث المريض' : 'إنشاء مريض' }}
                 </app-button>
                 <app-button
                     type="button"
                     variant="secondary"
                     (clicked)="goBack()"
                     [disabled]="loading()"
-                    ariaLabel="Cancel and go back">
-                    Cancel
+                    ariaLabel="العودة للقائمة">
+إلغاء
                 </app-button>
             </div>
         </form>
