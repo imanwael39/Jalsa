@@ -43,22 +43,23 @@ backend/
 └── Jalsa.Tests/        # xUnit tests
 ```
 
-## Current Status (2026-06-27)
+## Current Status (2026-06-28)
 
 | Module | Frontend | Backend | Overall |
 |--------|----------|---------|---------|
-| Auth | 75% | 75% | 75% |
-| Patients | 65% | 65% | 65% |
-| Sessions | UI wired | API done | 65% |
-| Exercises | 70% | 70% | 70% |
-| Dashboard | UI wired | API done | 65% |
-| AI Reports | UI wired | API done | 65% |
-| Chatbot | Routes empty | Hub only, NO controller | 25% BLOCKED |
+| Auth | Done (login, register, profile, forgot/reset pwd) | Done (9 endpoints + JWT) | 95% |
+| Patients | Done (list, CRUD, detail, intake, assessments) | Done (CRUD + intake + assessments) | 90% |
+| Sessions | Done (list, CRUD, detail + notes) | Done (CRUD + notes) | 90% |
+| Exercises | Done (list, assign, my-exercises) | Done (CRUD + logs + extend) | 90% |
+| Dashboard | Done (charts, stats, auto-refresh) | Done (ProgressController) | 90% |
+| AI Reports | Done (list, generate, detail) | Done (generate, CRUD, approve) | 85% |
+| Chatbot | Routes empty, no pages | Hub only, NO controller | 25% BLOCKED — Post-MVP |
+| Tests | — | 29 tests (5 files) passing | 70% |
 
 ### Build Status
 
-- **Backend**: Builds clean (0 warnings, 0 errors)
-- **Frontend**: Builds clean (after `npm install`)
+- **Backend**: Builds clean (0 warnings, 0 errors), 29 tests passing
+- **Frontend**: Builds clean
 
 ## Bugs Fixed
 
@@ -69,14 +70,35 @@ backend/
 5. ~~**Session API URL mismatch**~~ — Fixed: All frontend endpoints now use `/api/` prefix
 6. ~~**ExerciseController info leak**~~ — Fixed: Removed try-catch, uses global handler
 7. ~~**JWT key hardcoded**~~ — Fixed: Moved to appsettings.Development.json + startup validation
-8. ~~**IntakeController violates Clean Architecture**~~ — Fixed: Uses IUnitOfWork
+8. ~~**IntakeController violates Clean Architecture**~~ — Fixed: Uses IUnitOfWork + IntakeService
+9. ~~**No IntakeController CRUD**~~ — Fixed: GET/POST /api/patient/{id}/intake + submit
+10. ~~**No AssessmentController**~~ — Fixed: GET/POST /api/patient/{id}/assessments with template auto-resolution
+11. ~~**No Profile endpoints**~~ — Fixed: GET/PUT /api/auth/profile bridging User + Therapist.FullName
+12. ~~**Dashboard chart labels in English**~~ — Fixed: All labels translated to Arabic
+13. ~~**Reports frontend routes empty**~~ — Fixed: list, generate, detail pages wired
 
 ## Remaining Issues (Post-MVP)
 
 1. **No ChatController** — REST endpoints missing for chat history (post-MVP per scope)
-2. **`Galsa_DBDbContext` misspelled** — Should be `Jalsa` (risky migration rename, defer)
-3. **`PatientService` misplaced** — Lives in API layer instead of Application layer (high churn, defer)
-4. **Reports and Chatbot frontend routes are empty arrays** — No pages wired
+2. **Chatbot frontend routes empty** — No pages, no components (post-MVP)
+3. **`Galsa_DBDbContext` misspelled** — Should be `Jalsa` (risky migration rename, defer)
+4. **`PatientService` misplaced** — Lives in API layer instead of Application layer (high churn, defer)
+
+## Next Steps (Priority Order)
+
+### MVP Polish (Ship-Ready)
+1. **End-to-end smoke test** — Run backend + frontend together, test login → patient CRUD → session → report flow manually
+2. **Frontend error handling polish** — Ensure all API error responses show Arabic user-friendly messages
+3. **Loading states & empty states** — Verify all pages handle loading/empty/error states gracefully
+4. **Form validation messages in Arabic** — Some assessment/profile forms still show English validation text
+
+### Post-MVP Enhancements
+5. **Chatbot module** — ChatController REST endpoints + frontend chat UI (currently blocked/deferred)
+6. **PDF export** — Report PDF generation and download
+7. **Frontend tests** — Vitest unit tests for critical components (currently 0)
+8. **`PatientService` refactor** — Move from API layer to Application layer
+9. **`Galsa_DBDbContext` rename** — Fix misspelling (requires migration coordination)
+10. **CI/CD pipeline** — GitHub Actions for build + test on PR
 
 ## Branch Convention
 
@@ -126,9 +148,24 @@ Conventional Commits: `feat:`, `fix:`, `docs:`, `style:`, `refactor:`, `perf:`, 
 ## API Patterns
 
 - Backend routes: `/api/[controller]` (e.g., `/api/patients`, `/api/auth`)
+- Nested routes: `/api/patient/{id}/intake`, `/api/patient/{id}/assessments`
 - Frontend endpoint constants: `core/api/api-endpoints.ts`
 - Auth: JWT in `localStorage`, `Authorization: Bearer <token>` header via `authInterceptor`
 - Error handling: Global `errorInterceptor`, redirect to login on 401
+
+### Controllers (9 total)
+
+| Controller | Route | Key Endpoints |
+|-----------|-------|---------------|
+| AuthController | `/api/auth` | register, login, refresh, revoke, forgot-password, reset-password, profile (GET/PUT) |
+| PatientController | `/api/patients` | CRUD + archive/restore |
+| SessionController | `/api/sessions` | CRUD + save-note/get-note |
+| ExerciseController | `/api/exercises` | CRUD + extend-due-date, my-exercises, log-completion |
+| ReportController | `/api/reports` | generate, CRUD, approve |
+| AssessmentController | `/api/patient/{id}/assessments` | list, create (template auto-resolution) |
+| IntakeController | `/api/patient/{id}/intake` | get, save, submit, OCR |
+| AiController | `/api/ai` | summarize-patient, generate-report-draft |
+| ProgressController | `/api/progress` | dashboard summary |
 
 ## Mock Data
 
