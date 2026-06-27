@@ -4,7 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SessionService } from '../../../../core/services/session.service';
 import { SessionStateService } from '../../../../core/state/session-state.service';
 import { NotificationService } from '../../../../core/services/notification.service';
-import { Session } from '../../../../core/models';
+import { SessionNote } from '../../../../core/models';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { Summary } from '../../components/summary/summary';
@@ -26,6 +26,8 @@ export class SessionDetail implements OnInit, OnDestroy {
     private destroyRef = inject(DestroyRef);
 
     session = this.state.selectedSession;
+    note = signal<SessionNote | null>(null);
+    noteLoading = signal(false);
     loading = signal(true);
     error = signal<string | null>(null);
 
@@ -46,16 +48,34 @@ export class SessionDetail implements OnInit, OnDestroy {
     loadSession(id: string): void {
         this.loading.set(true);
         this.error.set(null);
-        this.sessionService.getSession(id)
+        this.sessionService
+            .getSession(id)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
-                next: (session) => {
+                next: session => {
                     this.state.selectSession(session);
                     this.loading.set(false);
+                    this.loadNote(id);
                 },
-                error: (err) => {
-                    this.error.set(err.message || 'Failed to load session');
+                error: err => {
+                    this.error.set(err.message || 'فشل في تحميل الجلسة');
                     this.loading.set(false);
+                },
+            });
+    }
+
+    private loadNote(sessionId: string): void {
+        this.noteLoading.set(true);
+        this.sessionService
+            .getSessionNote(sessionId)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: note => {
+                    this.note.set(note);
+                    this.noteLoading.set(false);
+                },
+                error: () => {
+                    this.noteLoading.set(false);
                 },
             });
     }
@@ -78,7 +98,8 @@ export class SessionDetail implements OnInit, OnDestroy {
         const s = this.session();
         if (!s) return;
 
-        this.sessionService.deleteSession(s.id)
+        this.sessionService
+            .deleteSession(s.id)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: () => {
@@ -87,7 +108,7 @@ export class SessionDetail implements OnInit, OnDestroy {
                     this.notification.success('Session deleted successfully');
                     this.router.navigate(['/sessions/patient', s.patientId]);
                 },
-                error: (err) => {
+                error: err => {
                     this.notification.error(err.message || 'Failed to delete session');
                 },
             });

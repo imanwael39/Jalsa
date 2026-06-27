@@ -37,16 +37,18 @@
                     </div>
                     <div class="col-md-6">
                         <strong>المدة:</strong>
-                        <span>{{ session()!.durationMinutes ? (session()!.durationMinutes + ' دقيقة') : 'N/A' }}</span>
+                        <span>{{ session()!.durationMinutes ? session()!.durationMinutes + ' دقيقة' : 'N/A' }}</span>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <strong>الحالة:</strong>
-                        <span class="badge"
+                        <span
+                            class="badge"
                             [class.bg-secondary]="session()!.status === 'Draft'"
                             [class.bg-success]="session()!.status === 'Completed'"
-                            [class.bg-warning]="session()!.status === 'Archived'">
+                            [class.bg-warning]="session()!.status === 'Archived'"
+                        >
                             {{ session()!.status }}
                         </span>
                     </div>
@@ -55,6 +57,55 @@
                         <span>{{ formatDate(session()!.createdAt) }}</span>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title mb-3"><i class="bi bi-journal-text" aria-hidden="true"></i> ملاحظات الجلسة</h5>
+                @if (noteLoading()) {
+                    <div class="text-center py-3">
+                        <app-spinner size="md"></app-spinner>
+                    </div>
+                } @else if (note(); as n) {
+                    @if (n.observations) {
+                        <div class="note-section mb-3">
+                            <strong>الملاحظات:</strong>
+                            <div class="note-content mt-1" [innerHTML]="n.observations"></div>
+                        </div>
+                    }
+                    @if (n.interventions) {
+                        <div class="note-section mb-3">
+                            <strong>التدخلات:</strong>
+                            <div class="note-content mt-1" [innerHTML]="n.interventions"></div>
+                        </div>
+                    }
+                    @if (n.patientResponse) {
+                        <div class="note-section mb-3">
+                            <strong>استجابة المريض:</strong>
+                            <div class="note-content mt-1" [innerHTML]="n.patientResponse"></div>
+                        </div>
+                    }
+                    @if (n.homeworkAssigned) {
+                        <div class="note-section mb-3">
+                            <strong>الواجب المنزلي:</strong>
+                            <div class="note-content mt-1" [innerHTML]="n.homeworkAssigned"></div>
+                        </div>
+                    }
+                    @if (n.nextGoals) {
+                        <div class="note-section mb-3">
+                            <strong>الأهداف القادمة:</strong>
+                            <div class="note-content mt-1" [innerHTML]="n.nextGoals"></div>
+                        </div>
+                    }
+                    @if (
+                        !n.observations && !n.interventions && !n.patientResponse && !n.homeworkAssigned && !n.nextGoals
+                    ) {
+                        <p class="text-muted">لا توجد ملاحظات مسجلة لهذه الجلسة.</p>
+                    }
+                } @else {
+                    <p class="text-muted">لا توجد ملاحظات مسجلة لهذه الجلسة.</p>
+                }
             </div>
         </div>
 
