@@ -231,9 +231,9 @@
                         role="tabpanel"
                         aria-labelledby="tab-btn-assessments"
                     >
-                        <div class="tab-placeholder">
-                            <p class="text-muted">قائمة التقييمات ستكون متاحة هنا.</p>
-                        </div>
+                        @if (patient(); as p) {
+                            <app-assessment [patientIdInput]="p.id"></app-assessment>
+                        }
                     </div>
                 }
             </div>

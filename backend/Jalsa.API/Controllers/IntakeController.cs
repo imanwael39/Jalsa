@@ -1,26 +1,55 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Jalsa.API.Exceptions;
 using Jalsa.API.Services.Interfaces.AI;
+using Jalsa.Application.DTOs.Intake;
 using Jalsa.Application.Interfaces.Repositores;
+using Jalsa.Application.Interfaces.Services;
 using Jalsa.Domain.Models.Patient;
 
 namespace Jalsa.API.Controllers;
 
 [ApiController]
-[Route("api/intake")]
 [Authorize(Roles = "Therapist")]
 public class IntakeController : ControllerBase
 {
     private readonly IOcrService _ocrService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IIntakeService _intakeService;
 
-    public IntakeController(IOcrService ocrService, IUnitOfWork unitOfWork)
+    public IntakeController(IOcrService ocrService, IUnitOfWork unitOfWork, IIntakeService intakeService)
     {
         _ocrService = ocrService;
         _unitOfWork = unitOfWork;
+        _intakeService = intakeService;
     }
 
-    [HttpPost("{intakeFormId}/ocr")]
+    [HttpGet("api/patient/{patientId:guid}/intake")]
+    public async Task<IActionResult> GetByPatientId(Guid patientId)
+    {
+        var therapistId = GetCurrentUserId();
+        var result = await _intakeService.GetByPatientIdAsync(patientId, therapistId);
+        return Ok(result);
+    }
+
+    [HttpPost("api/patient/{patientId:guid}/intake")]
+    public async Task<IActionResult> Save(Guid patientId, [FromBody] IntakeFormSaveDto dto)
+    {
+        var therapistId = GetCurrentUserId();
+        var result = await _intakeService.SaveAsync(patientId, dto, therapistId);
+        return Ok(result);
+    }
+
+    [HttpPost("api/patient/{patientId:guid}/intake/submit")]
+    public async Task<IActionResult> Submit(Guid patientId)
+    {
+        var therapistId = GetCurrentUserId();
+        var result = await _intakeService.SubmitAsync(patientId, therapistId);
+        return Ok(result);
+    }
+
+    [HttpPost("api/intake/{intakeFormId:guid}/ocr")]
     public async Task<IActionResult> RunOcr(Guid intakeFormId, [FromBody] OcrRequest request)
     {
         var intakeFormRepo = _unitOfWork.Repository<IntakeForm>();
@@ -46,6 +75,17 @@ public class IntakeController : ControllerBase
         await _unitOfWork.SaveChangesAsync();
 
         return Ok(result);
+    }
+
+    private Guid GetCurrentUserId()
+    {
+        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? User.FindFirstValue("sub");
+
+        if (string.IsNullOrEmpty(claim) || !Guid.TryParse(claim, out var userId))
+            throw new ApiException(401, "Invalid authentication token");
+
+        return userId;
     }
 }
 

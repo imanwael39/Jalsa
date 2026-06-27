@@ -1,6 +1,12 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Jalsa.API.DTOs.Auth;
+using Jalsa.API.Exceptions;
 using Jalsa.API.Services.Interfaces;
+using Jalsa.Application.Interfaces.Repositores;
+using Jalsa.Domain.Models.Clinic;
+using Jalsa.Domain.Models.Identity;
 
 namespace Jalsa.API.Controllers;
 
@@ -9,9 +15,12 @@ namespace Jalsa.API.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
-    public AuthController(IAuthService authService)
+    private readonly IUnitOfWork _unitOfWork;
+
+    public AuthController(IAuthService authService, IUnitOfWork unitOfWork)
     {
-        _authService=authService;
+        _authService = authService;
+        _unitOfWork = unitOfWork;
     }
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto dto)
@@ -53,5 +62,93 @@ public class AuthController : ControllerBase
     {
         await _authService.ResetPasswordAsync(dto);
         return Ok(new { message = "Password has been reset successfully." });
+    }
+
+    [HttpGet("profile")]
+    [Authorize]
+    public async Task<IActionResult> GetProfile()
+    {
+        var userId = GetCurrentUserId();
+        var userRepo = _unitOfWork.Repository<User>();
+        var user = await userRepo.GetByIdAsync(userId)
+            ?? throw new ApiException(404, "User not found");
+
+        var therapistRepo = _unitOfWork.Repository<Therapist>();
+        var therapist = await therapistRepo.FindSingleAsync(t => t.UserId == userId);
+
+        var roleRepo = _unitOfWork.Repository<UserRole>();
+        var userRoles = await roleRepo.FindAsync(ur => ur.UserId == userId);
+        var roleIdRepo = _unitOfWork.Repository<Role>();
+        var allRoles = await roleIdRepo.GetAllAsync();
+        var roleNames = userRoles
+            .Join(allRoles, ur => ur.RoleId, r => r.Id, (_, r) => r.Name)
+            .ToList();
+
+        var (firstName, lastName) = SplitFullName(therapist?.FullName);
+
+        return Ok(new ProfileViewDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            FirstName = firstName,
+            LastName = lastName,
+            Roles = roleNames,
+            IsActive = user.IsActive,
+            LastLoginAt = user.LastLoginAt,
+            CreatedAt = user.CreatedAt,
+            UpdatedAt = user.UpdatedAt,
+        });
+    }
+
+    [HttpPut("profile")]
+    [Authorize]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)
+    {
+        var userId = GetCurrentUserId();
+        var userRepo = _unitOfWork.Repository<User>();
+        var user = await userRepo.GetByIdAsync(userId)
+            ?? throw new ApiException(404, "User not found");
+
+        if (!string.IsNullOrWhiteSpace(dto.Email))
+            user.Email = dto.Email;
+
+        user.UpdatedAt = DateTime.UtcNow;
+        userRepo.Update(user);
+
+        var therapistRepo = _unitOfWork.Repository<Therapist>();
+        var therapist = await therapistRepo.FindSingleAsync(t => t.UserId == userId);
+        if (therapist != null)
+        {
+            var first = dto.FirstName ?? "";
+            var last = dto.LastName ?? "";
+            var fullName = $"{first} {last}".Trim();
+            if (!string.IsNullOrEmpty(fullName))
+                therapist.FullName = fullName;
+            therapistRepo.Update(therapist);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return await GetProfile();
+    }
+
+    private Guid GetCurrentUserId()
+    {
+        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? User.FindFirstValue("sub");
+
+        if (string.IsNullOrEmpty(claim) || !Guid.TryParse(claim, out var userId))
+            throw new ApiException(401, "Invalid authentication token");
+
+        return userId;
+    }
+
+    private static (string firstName, string lastName) SplitFullName(string? fullName)
+    {
+        if (string.IsNullOrWhiteSpace(fullName))
+            return ("", "");
+
+        var parts = fullName.Trim().Split(' ', 2);
+        return (parts[0], parts.Length > 1 ? parts[1] : "");
     }
 }

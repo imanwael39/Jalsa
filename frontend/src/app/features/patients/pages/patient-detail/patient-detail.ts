@@ -11,6 +11,7 @@ import { DatePipe } from '@angular/common';
 import { SessionList } from '../../../sessions/pages/session-list/session-list';
 import { PatientExerciseComponent } from '../../../exercises/pages/patient-exercise/patient-exercise.component';
 import { ReportList } from '../../../reports/pages/report-list/report-list';
+import { Assessment } from '../assessment/assessment';
 
 @Component({
     selector: 'app-patient-detail',
@@ -24,6 +25,7 @@ import { ReportList } from '../../../reports/pages/report-list/report-list';
         SessionList,
         PatientExerciseComponent,
         ReportList,
+        Assessment,
     ],
     templateUrl: './patient-detail.html',
     styleUrl: './patient-detail.css',
