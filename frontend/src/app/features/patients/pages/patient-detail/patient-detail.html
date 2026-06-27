@@ -74,9 +74,7 @@
         <div class="alert alert-danger" role="alert">
             <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
             {{ error() }}
-            <app-button variant="ghost" size="sm" (clicked)="goBack()" class="ms-2">
-                رجوع
-            </app-button>
+            <app-button variant="ghost" size="sm" (clicked)="goBack()" class="ms-2"> رجوع </app-button>
         </div>
     }
 
@@ -101,7 +99,11 @@
                         <dd>{{ p.gender || 'Not specified' }}</dd>
                         <dt>الحالة</dt>
                         <dd>
-                            <span class="badge" [class.bg-success]="p.status === 'Active'" [class.bg-danger]="p.status === 'Archived'">
+                            <span
+                                class="badge"
+                                [class.bg-success]="p.status === 'Active'"
+                                [class.bg-danger]="p.status === 'Archived'"
+                            >
                                 {{ p.status }}
                             </span>
                         </dd>
@@ -126,9 +128,9 @@
                         <dt>الشكوى الرئيسية</dt>
                         <dd>{{ p.chiefComplaint || 'Not specified' }}</dd>
                         <dt>تاريخ الإنشاء</dt>
-                        <dd>{{ p.createdAt | date:'medium' }}</dd>
+                        <dd>{{ p.createdAt | date: 'medium' }}</dd>
                         <dt>آخر تحديث</dt>
-                        <dd>{{ p.updatedAt | date:'medium' }}</dd>
+                        <dd>{{ p.updatedAt | date: 'medium' }}</dd>
                     </dl>
                 </div>
             </div>
@@ -136,29 +138,59 @@
 
         <div class="tabs-section">
             <nav class="nav-tabs" role="tablist" aria-label="تفاصيل المريض">
-                <button id="tab-btn-overview" class="nav-link" [class.active]="activeTab() === 'overview'"
-                        (click)="setTab('overview')" role="tab"
-                        [attr.aria-selected]="activeTab() === 'overview'" aria-controls="tab-overview">
+                <button
+                    id="tab-btn-overview"
+                    class="nav-link"
+                    [class.active]="activeTab() === 'overview'"
+                    (click)="setTab('overview')"
+                    role="tab"
+                    [attr.aria-selected]="activeTab() === 'overview'"
+                    aria-controls="tab-overview"
+                >
                     <i class="bi bi-person" aria-hidden="true"></i> نظرة عامة
                 </button>
-                <button id="tab-btn-sessions" class="nav-link" [class.active]="activeTab() === 'sessions'"
-                        (click)="setTab('sessions')" role="tab"
-                        [attr.aria-selected]="activeTab() === 'sessions'" aria-controls="tab-sessions">
+                <button
+                    id="tab-btn-sessions"
+                    class="nav-link"
+                    [class.active]="activeTab() === 'sessions'"
+                    (click)="setTab('sessions')"
+                    role="tab"
+                    [attr.aria-selected]="activeTab() === 'sessions'"
+                    aria-controls="tab-sessions"
+                >
                     <i class="bi bi-calendar-event" aria-hidden="true"></i> الجلسات
                 </button>
-                <button id="tab-btn-exercises" class="nav-link" [class.active]="activeTab() === 'exercises'"
-                        (click)="setTab('exercises')" role="tab"
-                        [attr.aria-selected]="activeTab() === 'exercises'" aria-controls="tab-exercises">
+                <button
+                    id="tab-btn-exercises"
+                    class="nav-link"
+                    [class.active]="activeTab() === 'exercises'"
+                    (click)="setTab('exercises')"
+                    role="tab"
+                    [attr.aria-selected]="activeTab() === 'exercises'"
+                    aria-controls="tab-exercises"
+                >
                     <i class="bi bi-journal-check" aria-hidden="true"></i> التمارين
                 </button>
-                <button id="tab-btn-reports" class="nav-link" [class.active]="activeTab() === 'reports'"
-                        (click)="setTab('reports')" role="tab"
-                        [attr.aria-selected]="activeTab() === 'reports'" aria-controls="tab-reports">
+                <button
+                    id="tab-btn-reports"
+                    class="nav-link"
+                    [class.active]="activeTab() === 'reports'"
+                    (click)="setTab('reports')"
+                    role="tab"
+                    [attr.aria-selected]="activeTab() === 'reports'"
+                    aria-controls="tab-reports"
+                >
                     <i class="bi bi-file-earmark-text" aria-hidden="true"></i> التقارير
                 </button>
-                <button id="tab-btn-assessments" class="nav-link" [class.active]="activeTab() === 'assessments'"
-                        (click)="setTab('assessments')" role="tab"
-                        [attr.aria-selected]="activeTab() === 'assessments'" aria-controls="tab-assessments">
+                <button
+                    id="tab-btn-assessments"
+                    class="nav-link"
+                    [class.active]="activeTab() === 'assessments'"
+                    (click)="setTab('assessments')"
+                    role="tab"
+                    [attr.aria-selected]="activeTab() === 'assessments'"
+                    aria-controls="tab-assessments"
+                >
                     <i class="bi bi-clipboard-check" aria-hidden="true"></i> التقييمات
                 </button>
             </nav>
@@ -187,13 +219,18 @@
                 }
                 @if (activeTab() === 'reports') {
                     <div id="tab-reports" class="tab-pane active" role="tabpanel" aria-labelledby="tab-btn-reports">
-                        <div class="tab-placeholder">
-                            <p class="text-muted">قائمة التقارير ستكون متاحة هنا.</p>
-                        </div>
+                        @if (patient(); as p) {
+                            <app-report-list [patientIdInput]="p.id"></app-report-list>
+                        }
                     </div>
                 }
                 @if (activeTab() === 'assessments') {
-                    <div id="tab-assessments" class="tab-pane active" role="tabpanel" aria-labelledby="tab-btn-assessments">
+                    <div
+                        id="tab-assessments"
+                        class="tab-pane active"
+                        role="tabpanel"
+                        aria-labelledby="tab-btn-assessments"
+                    >
                         <div class="tab-placeholder">
                             <p class="text-muted">قائمة التقييمات ستكون متاحة هنا.</p>
                         </div>
@@ -203,14 +240,24 @@
         </div>
     }
 
-    <app-modal [showModal]="showArchiveModal()" (showModalChange)="showArchiveModal.set($event)"
-               [title]="isArchived() ? 'استعادة المريض' : 'أرشفة المريض'" size="sm">
+    <app-modal
+        [showModal]="showArchiveModal()"
+        (showModalChange)="showArchiveModal.set($event)"
+        [title]="isArchived() ? 'استعادة المريض' : 'أرشفة المريض'"
+        size="sm"
+    >
         <div modal-body>
             @if (isArchived()) {
-                <p>هل أنت متأكد من استعادة <strong>{{ patient()?.fullName }}</strong>?</p>
+                <p>
+                    هل أنت متأكد من استعادة <strong>{{ patient()?.fullName }}</strong
+                    >?
+                </p>
                 <p class="text-muted">سيصبح المريض نشطاً مرة أخرى ويظهر في قائمة المرضى.</p>
             } @else {
-                <p>هل أنت متأكد من أرشفة <strong>{{ patient()?.fullName }}</strong>?</p>
+                <p>
+                    هل أنت متأكد من أرشفة <strong>{{ patient()?.fullName }}</strong
+                    >?
+                </p>
                 <p class="text-muted">سيتم إخفاء المريض من القائمة الرئيسية ولكن يمكن استعادته لاحقاً.</p>
             }
         </div>
@@ -230,16 +277,24 @@
         </div>
     </app-modal>
 
-    <app-modal [showModal]="showDeleteModal()" (showModalChange)="showDeleteModal.set($event)"
-               title="حذف المريض" size="sm">
+    <app-modal
+        [showModal]="showDeleteModal()"
+        (showModalChange)="showDeleteModal.set($event)"
+        title="حذف المريض"
+        size="sm"
+    >
         <div modal-body>
-            <p>هل أنت متأكد من الحذف بشكل دائم <strong>{{ patient()?.fullName }}</strong>?</p>
-            <p class="text-danger"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> لا يمكن التراجع عن هذا الإجراء. سيتم حذف جميع بيانات المريض بشكل دائم.</p>
+            <p>
+                هل أنت متأكد من الحذف بشكل دائم <strong>{{ patient()?.fullName }}</strong
+                >?
+            </p>
+            <p class="text-danger">
+                <i class="bi bi-exclamation-triangle" aria-hidden="true"></i> لا يمكن التراجع عن هذا الإجراء. سيتم حذف
+                جميع بيانات المريض بشكل دائم.
+            </p>
         </div>
         <div modal-footer>
-            <app-button variant="ghost" (clicked)="closeDeleteModal()" [disabled]="actionLoading()">
-                إلغاء
-            </app-button>
+            <app-button variant="ghost" (clicked)="closeDeleteModal()" [disabled]="actionLoading()"> إلغاء </app-button>
             <app-button variant="danger" (clicked)="deletePatient()" [loading]="actionLoading()">
                 حذف المريض
             </app-button>

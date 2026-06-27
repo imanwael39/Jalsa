@@ -10,11 +10,21 @@ import { ModalComponent } from '../../../../shared/components/modal/modal.compon
 import { DatePipe } from '@angular/common';
 import { SessionList } from '../../../sessions/pages/session-list/session-list';
 import { PatientExerciseComponent } from '../../../exercises/pages/patient-exercise/patient-exercise.component';
+import { ReportList } from '../../../reports/pages/report-list/report-list';
 
 @Component({
     selector: 'app-patient-detail',
     standalone: true,
-    imports: [RouterLink, ButtonComponent, SpinnerComponent, ModalComponent, DatePipe, SessionList, PatientExerciseComponent],
+    imports: [
+        RouterLink,
+        ButtonComponent,
+        SpinnerComponent,
+        ModalComponent,
+        DatePipe,
+        SessionList,
+        PatientExerciseComponent,
+        ReportList,
+    ],
     templateUrl: './patient-detail.html',
     styleUrl: './patient-detail.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -53,14 +63,15 @@ export class PatientDetail implements OnInit, OnDestroy {
     loadPatient(id: string): void {
         this.loading.set(true);
         this.error.set(null);
-        this.patientService.getPatient(id)
+        this.patientService
+            .getPatient(id)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
-                next: (patient) => {
+                next: patient => {
                     this.state.selectPatient(patient);
                     this.loading.set(false);
                 },
-                error: (err) => {
+                error: err => {
                     this.error.set(err?.message || 'Failed to load patient');
                     this.loading.set(false);
                 },
@@ -117,7 +128,8 @@ export class PatientDetail implements OnInit, OnDestroy {
         if (!p) return;
 
         this.actionLoading.set(true);
-        this.patientService.archivePatient(p.id)
+        this.patientService
+            .archivePatient(p.id)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: () => {
@@ -126,7 +138,7 @@ export class PatientDetail implements OnInit, OnDestroy {
                     this.closeArchiveModal();
                     this.actionLoading.set(false);
                 },
-                error: (err) => {
+                error: err => {
                     this.notification.error(err?.message || 'Failed to archive patient');
                     this.actionLoading.set(false);
                 },
@@ -138,7 +150,8 @@ export class PatientDetail implements OnInit, OnDestroy {
         if (!p) return;
 
         this.actionLoading.set(true);
-        this.patientService.restorePatient(p.id)
+        this.patientService
+            .restorePatient(p.id)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: () => {
@@ -147,7 +160,7 @@ export class PatientDetail implements OnInit, OnDestroy {
                     this.closeArchiveModal();
                     this.actionLoading.set(false);
                 },
-                error: (err) => {
+                error: err => {
                     this.notification.error(err?.message || 'Failed to restore patient');
                     this.actionLoading.set(false);
                 },
@@ -159,7 +172,8 @@ export class PatientDetail implements OnInit, OnDestroy {
         if (!p) return;
 
         this.actionLoading.set(true);
-        this.patientService.deletePatient(p.id)
+        this.patientService
+            .deletePatient(p.id)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: () => {
@@ -169,7 +183,7 @@ export class PatientDetail implements OnInit, OnDestroy {
                     this.closeDeleteModal();
                     this.router.navigate(['/patients']);
                 },
-                error: (err) => {
+                error: err => {
                     this.notification.error(err?.message || 'Failed to delete patient');
                     this.actionLoading.set(false);
                 },
