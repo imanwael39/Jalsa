@@ -1,0 +1,18 @@
+.report-generate {
+    padding: 1.5rem;
+    max-width: 700px;
+}
+
+.report-generate h2 {
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.generating-state {
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}

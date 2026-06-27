@@ -1,0 +1,59 @@
+<div class="report-list">
+    <div class="page-header">
+        <h2 class="page-title">التقارير</h2>
+        <app-button variant="primary" (clicked)="navigateToGenerate()" ariaLabel="إنشاء تقرير جديد">
+            <i class="bi bi-file-earmark-plus" aria-hidden="true"></i> إنشاء تقرير بالذكاء الاصطناعي
+        </app-button>
+    </div>
+
+    @if (error()) {
+        <div class="alert alert-danger" role="alert">{{ error() }}</div>
+    }
+
+    <div class="table-responsive">
+        <app-table
+            [data]="reports()"
+            [columns]="columns"
+            [loading]="loading()"
+            emptyMessage="لا توجد تقارير لهذا المريض بعد."
+            (rowClick)="onRowClick($event)"
+        >
+            <ng-template appColumnCell="createdAt" let-row>
+                {{ formatDate(row.createdAt) }}
+            </ng-template>
+            <ng-template appColumnCell="status" let-row>
+                <span
+                    class="badge"
+                    [class.bg-secondary]="row.status === 'Draft'"
+                    [class.bg-success]="row.status === 'Approved'"
+                >
+                    @if (row.status === 'Draft') {
+                        مسودة
+                    } @else if (row.status === 'Approved') {
+                        معتمد
+                    } @else {
+                        {{ row.status }}
+                    }
+                </span>
+            </ng-template>
+            <ng-template appColumnCell="versionCount" let-row>
+                {{ getVersionCount(row) }}
+            </ng-template>
+            <ng-template appColumnCell="actions" let-row>
+                <div class="d-flex gap-1 justify-content-center">
+                    <app-button
+                        variant="secondary"
+                        size="sm"
+                        (clicked)="navigateToView(row.id)"
+                        ariaLabel="عرض التقرير"
+                    >
+                        <i class="bi bi-eye" aria-hidden="true"></i>
+                    </app-button>
+                    <app-button variant="danger" size="sm" (clicked)="deleteReport(row.id)" ariaLabel="حذف التقرير">
+                        <i class="bi bi-trash" aria-hidden="true"></i>
+                    </app-button>
+                </div>
+            </ng-template>
+        </app-table>
+    </div>
+</div>

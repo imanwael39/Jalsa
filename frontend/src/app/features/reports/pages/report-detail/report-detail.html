@@ -1,0 +1,109 @@
+<div class="report-detail">
+    @if (loading()) {
+        <div class="text-center py-5">
+            <app-spinner size="lg"></app-spinner>
+        </div>
+    } @else if (error()) {
+        <div class="alert alert-danger" role="alert">{{ error() }}</div>
+    } @else if (report()) {
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>تفاصيل التقرير</h2>
+            <div class="d-flex gap-2">
+                @if (report()!.status === 'Draft') {
+                    <app-button
+                        variant="primary"
+                        (clicked)="approveReport()"
+                        [disabled]="approving()"
+                        ariaLabel="اعتماد التقرير"
+                    >
+                        <i class="bi bi-check-circle" aria-hidden="true"></i> اعتماد
+                    </app-button>
+                }
+                <app-button variant="danger" (clicked)="deleteReport()" ariaLabel="حذف التقرير">
+                    <i class="bi bi-trash" aria-hidden="true"></i> حذف
+                </app-button>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>الحالة:</strong>
+                        <span
+                            class="badge ms-2"
+                            [class.bg-secondary]="report()!.status === 'Draft'"
+                            [class.bg-success]="report()!.status === 'Approved'"
+                        >
+                            @if (report()!.status === 'Draft') {
+                                مسودة
+                            } @else if (report()!.status === 'Approved') {
+                                معتمد
+                            } @else {
+                                {{ report()!.status }}
+                            }
+                        </span>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>تاريخ الإنشاء:</strong>
+                        <span>{{ formatDateTime(report()!.createdAt) }}</span>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>عدد الإصدارات:</strong>
+                        <span>{{ report()!.versions?.length || 0 }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (report()!.currentVersion) {
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">محتوى التقرير (الإصدار {{ report()!.currentVersion!.versionNumber }})</h5>
+                    @if (report()!.currentVersion!.approvedAt) {
+                        <span class="badge bg-success"
+                            >معتمد {{ formatDate(report()!.currentVersion!.approvedAt) }}</span
+                        >
+                    }
+                </div>
+                <div class="card-body">
+                    <div class="report-content" [innerHTML]="report()!.currentVersion!.content"></div>
+                </div>
+            </div>
+        }
+
+        @if (report()!.versions && report()!.versions.length > 1) {
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">سجل الإصدارات</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        @for (version of report()!.versions; track version.id) {
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>الإصدار {{ version.versionNumber }}</strong>
+                                        <span class="text-muted ms-2">{{ formatDateTime(version.createdAt) }}</span>
+                                    </div>
+                                    @if (version.approvedAt) {
+                                        <span class="badge bg-success">معتمد</span>
+                                    }
+                                </div>
+                                @if (version.changeNote) {
+                                    <p class="text-muted mb-0 mt-1">{{ version.changeNote }}</p>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="mt-3">
+            <app-button variant="secondary" (clicked)="navigateBack()" ariaLabel="العودة إلى قائمة التقارير">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i> رجوع إلى التقارير
+            </app-button>
+        </div>
+    }
+</div>
