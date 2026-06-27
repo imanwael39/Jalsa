@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jalsa – Phase 6: Layout System – Expanded Implementation Handbook</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+            padding: 30px 20px;
+            line-height: 1.7;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            padding: 40px 45px;
+        }
+        h1 {
+            font-size: 2.4rem;
+            color: #0f172a;
+            border-bottom: 4px solid #3b82f6;
+            padding-bottom: 18px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        h1 small {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #64748b;
+            margin-left: auto;
+        }
+        .phase-banner {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 20px 28px;
+            margin-bottom: 32px;
+            border-left: 8px solid #3b82f6;
+        }
+        .phase-banner h2 {
+            margin: 0 0 8px 0;
+            font-size: 1.6rem;
+            color: #0f172a;
+            background: none;
+            padding: 0;
+            border-left: none;
+        }
+        .phase-banner p {
+            margin: 0;
+            color: #475569;
+        }
+        .phase-banner .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px 40px;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+        .phase-banner .meta span {
+            font-weight: 500;
+            color: #0f172a;
+        }
+
+        .task-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+        .task-header {
+            background: #f8fafc;
+            padding: 16px 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.15s;
+            user-select: none;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .task-header:hover {
+            background: #f1f5f9;
+        }
+        .task-header .task-id {
+            font-weight: 700;
+            color: #3b82f6;
+            margin-right: 12px;
+            font-size: 1.05rem;
+        }
+        .task-header .task-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .task-header .task-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .task-header .task-badges .tag {
+            font-size: 0.7rem;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+        .task-header .chevron {
+            transition: transform 0.25s;
+            font-size: 1.3rem;
+            color: #94a3b8;
+            margin-left: 12px;
+        }
+        .task-header.open .chevron {
+            transform: rotate(180deg);
+        }
+
+        .task-body {
+            padding: 0 24px 24px;
+            display: none;
+            overflow: hidden;
+        }
+        .task-body.open {
+            display: block;
+        }
+
+        .task-body h3 {
+            font-size: 1.15rem;
+            margin-top: 22px;
+            margin-bottom: 8px;
+            color: #0f172a;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 4px;
+        }
+        .task-body h4 {
+            font-size: 1rem;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            color: #334155;
+        }
+        .task-body p {
+            margin-bottom: 8px;
+        }
+        .task-body ul,
+        .task-body ol {
+            padding-left: 24px;
+            margin-bottom: 10px;
+        }
+        .task-body li {
+            margin-bottom: 3px;
+        }
+        .task-body .field-label {
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+        .checklist li {
+            padding: 3px 0 3px 30px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') left center no-repeat;
+            background-size: 18px;
+        }
+
+        .pitfall-box {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .tip-box {
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .arch-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #e2e8f0;
+            padding: 1px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-right: 4px;
+        }
+        .tag-blue {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .tag-green {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .tag-amber {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .tag-red {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .tag-purple {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+        .tag-slate {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        .tag-indigo {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .flow-diagram {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin: 8px 0 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .flow-diagram .arrow {
+            color: #94a3b8;
+            margin: 0 6px;
+        }
+        .flow-diagram .step {
+            color: #0f172a;
+            font-weight: 500;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            margin: 10px 0 16px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            background: #fff;
+        }
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+            text-align: left;
+            padding: 8px 14px;
+            border-bottom: 2px solid #e2e8f0;
+            color: #0f172a;
+        }
+        td {
+            padding: 8px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .hr {
+            border: none;
+            border-top: 2px dashed #e2e8f0;
+            margin: 32px 0;
+        }
+
+        .code-block {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin: 6px 0 12px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .code-block .comment {
+            color: #94a3b8;
+        }
+        .code-block .keyword {
+            color: #f472b6;
+        }
+        .code-block .string {
+            color: #34d399;
+        }
+        .code-block .func {
+            color: #60a5fa;
+        }
+
+        .subtask {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 12px 18px;
+            margin: 10px 0;
+            border-left: 4px solid #3b82f6;
+        }
+        .subtask strong {
+            color: #0f172a;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 16px;
+            }
+            h1 {
+                font-size: 1.8rem;
+                flex-wrap: wrap;
+            }
+            .task-header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .task-body {
+                padding: 0 16px 16px;
+            }
+            .phase-banner {
+                padding: 16px;
+            }
+            .phase-banner .meta {
+                flex-direction: column;
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <h1>
+            📐 Jalsa – Phase 6: Layout System
+            <small>Expanded Implementation Handbook · 6 Tasks · 30+ Subtasks</small>
+        </h1>
+
+        <!-- ====== PHASE BANNER ====== -->
+        <div class="phase-banner">
+            <h2>📐 Phase 6 – Layout System</h2>
+            <p><strong>Purpose:</strong> Build the main application layout that wraps all authenticated pages. This includes the sidebar, header, and footer components, along with role‑based navigation, responsive design, and RTL support. The layout system provides a consistent shell for the entire application.</p>
+            <div class="meta">
+                <span>📋 Tasks: 6</span>
+                <span>⏱️ Total Effort: ~20 hours</span>
+                <span>👤 Owners: M3 (Frontend Lead), M4 (Frontend Developer)</span>
+                <span>🔗 Dependencies: Phase 4 (Shared Components), Phase 5 (Authentication)</span>
+                <span>🎯 Deliverable: Complete main layout with sidebar, header, footer, and navigation service</span>
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 1: MAIN LAYOUT COMPONENT SETUP                                   -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-LAYOUT-001</span><span class="task-name">Main Layout Component Setup</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">3h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-LAYOUT-001</li>
+                    <li><strong>Task Name:</strong> Main Layout Component Setup</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-SHARED-001 (Shared setup), FE-AUTH-001 (Auth routes)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 3 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create the main layout component that serves as the shell for all authenticated (protected) pages. It will contain the sidebar, header, footer, and a main content area where routed components are rendered using <code>&lt;router-outlet&gt;</code>.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Every authenticated page shares the same layout (sidebar, header, footer). A single layout component ensures consistency and reduces code duplication.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Build a Standalone component that uses <code>&lt;router-outlet&gt;</code> to display feature components. The layout will be used as the parent route for all protected routes.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular routing with nested routes.</li>
+                    <li>Knowledge of Bootstrap grid and layout utilities.</li>
+                    <li>Basic understanding of RTL and responsive design.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-SHARED-001:</strong> Shared library is available.</li>
+                    <li><strong>FE-AUTH-001:</strong> Auth routes are defined; we'll protect them with guards.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Design mockups for the layout.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>shared/layouts/main-layout/main-layout.component.ts</code></li>
+                    <li><code>main-layout.component.html</code></li>
+                    <li><code>main-layout.component.scss</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Generate Main Layout Component</h4>
+                <div class="code-block">
+                    ng g c shared/layouts/main-layout --standalone --skip-tests
+                </div>
+
+                <h4>Step 2: Define the Layout Structure</h4>
+                <p>Create a template with a sidebar, header, and content area.</p>
+
+                <div class="code-block">
+                    <span class="comment">// main-layout.component.html</span>
+                    &lt;div class="app-layout" [class.sidebar-collapsed]="sidebarCollapsed()"&gt;
+                        &lt;app-sidebar [collapsed]="sidebarCollapsed()" (toggle)="toggleSidebar()"&gt;&lt;/app-sidebar&gt;
+                        &lt;div class="app-main"&gt;
+                            &lt;app-header (toggleSidebar)="toggleSidebar()"&gt;&lt;/app-header&gt;
+                            &lt;main class="app-content"&gt;
+                                &lt;router-outlet&gt;&lt;/router-outlet&gt;
+                            &lt;/main&gt;
+                            &lt;app-footer&gt;&lt;/app-footer&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                </div>
+
+                <h4>Step 3: Implement Logic in Component</h4>
+
+                <div class="code-block">
+                    <span class="comment">// main-layout.component.ts</span>
+                    <span class="keyword">import</span> { Component, inject } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { RouterOutlet } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+                    <span class="keyword">import</span> { AppStateService } <span class="keyword">from</span> <span class="string">'../../../core/services/app-state.service'</span>;
+                    <span class="keyword">import</span> { SidebarComponent } <span class="keyword">from</span> <span class="string">'../sidebar/sidebar.component'</span>;
+                    <span class="keyword">import</span> { HeaderComponent } <span class="keyword">from</span> <span class="string">'../header/header.component'</span>;
+                    <span class="keyword">import</span> { FooterComponent } <span class="keyword">from</span> <span class="string">'../footer/footer.component'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-main-layout',
+                        standalone: true,
+                        imports: [RouterOutlet, SidebarComponent, HeaderComponent, FooterComponent],
+                        templateUrl: './main-layout.component.html',
+                        styleUrls: ['./main-layout.component.scss'],
+                    })
+                    export <span class="keyword">class</span> MainLayoutComponent {
+                        private appState = inject(AppStateService);
+
+                        sidebarCollapsed = this.appState.sidebarCollapsed;
+
+                        toggleSidebar() {
+                            this.appState.toggleSidebar();
+                        }
+                    }
+                </div>
+
+                <h4>Step 4: Add Styles</h4>
+
+                <div class="code-block">
+                    <span class="comment">// main-layout.component.scss</span>
+                    .app-layout {
+                        display: flex;
+                        min-height: 100vh;
+                        width: 100%;
+                    }
+
+                    .app-main {
+                        flex: 1;
+                        display: flex;
+                        flex-direction: column;
+                        min-height: 100vh;
+                    }
+
+                    .app-content {
+                        flex: 1;
+                        padding: 1.5rem;
+                        background-color: $body-bg; <span class="comment">// from variables</span>
+                    }
+
+                    <span class="comment">// Sidebar collapsed state</span>
+                    .sidebar-collapsed .app-content {
+                        margin-left: 0; <span class="comment">// will be adjusted in RTL</span>
+                    }
+                    [dir="rtl"] .sidebar-collapsed .app-content {
+                        margin-right: 0;
+                    }
+                </div>
+
+                <h4>Step 5: Update Route Configuration</h4>
+                <p>Use the main layout as a parent route for all protected features.</p>
+
+                <div class="code-block">
+                    <span class="comment">// app.routes.ts</span>
+                    {
+                        path: '',
+                        component: MainLayoutComponent,
+                        canActivate: [authGuard], <span class="comment">// from Phase 2</span>
+                        children: [
+                            {
+                                path: 'dashboard',
+                                loadChildren: () => import('./features/dashboard/dashboard.routes').then(m => m.DASHBOARD_ROUTES),
+                            },
+                            {
+                                path: 'patients',
+                                loadChildren: () => import('./features/patients/patients.routes').then(m => m.PATIENTS_ROUTES),
+                            },
+                            <span class="comment">// ... other features</span>
+                            {
+                                path: '',
+                                redirectTo: 'dashboard',
+                                pathMatch: 'full',
+                            },
+                        ],
+                    },
+                    <span class="comment">// Auth routes are outside the main layout</span>
+                    {
+                        path: 'auth',
+                        loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES),
+                    },
+                    {
+                        path: '**',
+                        redirectTo: 'dashboard',
+                    },
+                </div>
+
+                <h4>Step 6: Create Placeholder Sidebar, Header, Footer</h4>
+                <p>Generate placeholder components (they will be implemented in later tasks).</p>
+
+                <div class="code-block">
+                    ng g c shared/layouts/sidebar --standalone --skip-tests
+                    ng g c shared/layouts/header --standalone --skip-tests
+                    ng g c shared/layouts/footer --standalone --skip-tests
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>shared/layouts/main-layout/main-layout.component.ts</code></li>
+                    <li><code>main-layout.component.html</code></li>
+                    <li><code>main-layout.component.scss</code></li>
+                    <li>Placeholder sidebar, header, footer components.</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g c shared/layouts/main-layout --standalone --skip-tests
+                    ng g c shared/layouts/sidebar --standalone --skip-tests
+                    ng g c shared/layouts/header --standalone --skip-tests
+                    ng g c shared/layouts/footer --standalone --skip-tests
+                </div>
+
+                <h3>Code Flow</h3>
+                <div class="flow-diagram">
+                    <span class="step">App Routes</span> <span class="arrow">→</span>
+                    <span class="step">MainLayoutComponent (with authGuard)</span> <span class="arrow">→</span>
+                    <span class="step">Child routes (dashboard, patients, etc.)</span> <span class="arrow">→</span>
+                    <span class="step">Sidebar, Header, Footer visible</span>
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Nested routes with <code>&lt;router-outlet&gt;</code></li>
+                    <li>Component communication via services (AppStateService)</li>
+                    <li>Flexbox layout</li>
+                    <li>RTL support</li>
+                </ul>
+
+                <h3>Tools/Libraries Required</h3>
+                <ul>
+                    <li>Angular Router</li>
+                    <li>Bootstrap (for utilities)</li>
+                </ul>
+
+                <h3>Angular Concepts Required</h3>
+                <ul>
+                    <li>Standalone components</li>
+                    <li><code>@Input</code> and <code>@Output</code></li>
+                    <li>Dependency injection</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Navigate to a protected route and verify the layout renders with sidebar, header, footer.</li>
+                    <li>Verify the sidebar toggle works (via AppStateService).</li>
+                    <li>Test RTL direction: set <code>dir="rtl"</code> and check layout.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Main layout component with sidebar, header, footer placeholders.</li>
+                    <li>Updated route configuration.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not using <code>&lt;router-outlet&gt;</code> in the layout template.
+                    <br /><strong>Fix:</strong> Add <code>&lt;router-outlet&gt;</code> in the content area.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 2:</strong> Forgetting to import the layout components into the main layout.
+                    <br /><strong>Fix:</strong> Add SidebarComponent, HeaderComponent, FooterComponent to the imports array.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>When the sidebar is collapsed, the content should expand to fill the width.</li>
+                    <li>In RTL, the sidebar should be on the right side.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Main layout component exists and renders with placeholders.</li>
+                    <li>Protected routes are wrapped by the layout.</li>
+                </ul>
+
+                <h3>Frontend Architecture Notes</h3>
+                <ul>
+                    <li>The main layout is a Standalone component.</li>
+                    <li>Sidebar state is managed globally via AppStateService.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> All authenticated pages will use this layout.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 2: SIDEBAR COMPONENT                                             -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-LAYOUT-002</span><span class="task-name">Sidebar Component</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">5h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-LAYOUT-002</li>
+                    <li><strong>Task Name:</strong> Sidebar Component</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-LAYOUT-001, FE-AUTH-002 (AuthService), FE-CORE-003 (AppStateService)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 5 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Build the sidebar navigation component with collapsible functionality, role‑based menu items, active route highlighting, and support for RTL.</p>
+
+                <h3>Business Purpose</h3>
+                <p>The sidebar is the primary navigation tool for users. It must be intuitive, responsive, and reflect the user's permissions.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Create a reusable sidebar component that receives menu items from a navigation service (or defines them internally), uses <code>routerLinkActive</code> for highlighting, and toggles via AppStateService.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular Router and <code>routerLink</code>.</li>
+                    <li>Knowledge of structural directives (<code>*ngIf</code>, <code>*ngFor</code>).</li>
+                    <li>Bootstrap classes for styling.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-LAYOUT-001:</strong> Main layout uses sidebar.</li>
+                    <li><strong>FE-AUTH-002:</strong> AuthService for role checking.</li>
+                    <li><strong>FE-CORE-003:</strong> AppStateService for sidebar collapsed state.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li><code>collapsed</code> – boolean from parent (main layout).</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>toggle</code> – event emitted when toggle button is clicked.</li>
+                </ul>
+
+                <h3>Outputs (Files)</h3>
+                <ul>
+                    <li><code>shared/layouts/sidebar/sidebar.component.ts</code></li>
+                    <li><code>sidebar.component.html</code></li>
+                    <li><code>sidebar.component.scss</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Define Navigation Menu Items</h4>
+                <p>Create a data structure for menu items, including label, icon, route, and required roles.</p>
+
+                <div class="code-block">
+                    <span class="comment">// sidebar.component.ts (part)</span>
+                    <span class="keyword">import</span> { Component, Input, Output, EventEmitter, inject } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { RouterLink, RouterLinkActive } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+                    <span class="keyword">import</span> { AuthService } <span class="keyword">from</span> <span class="string">'../../../core/services/auth.service'</span>;
+                    <span class="keyword">import</span> { AppStateService } <span class="keyword">from</span> <span class="string">'../../../core/services/app-state.service'</span>;
+                    <span class="keyword">import</span> { NgClass } <span class="keyword">from</span> <span class="string">'@angular/common'</span>;
+
+                    export interface NavItem {
+                        label: string;
+                        icon: string; <span class="comment">// Bootstrap icon class</span>
+                        route: string;
+                        roles?: string[]; <span class="comment">// if not provided, visible to all authenticated</span>
+                        children?: NavItem[];
+                    }
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-sidebar',
+                        standalone: true,
+                        imports: [RouterLink, RouterLinkActive, NgClass],
+                        templateUrl: './sidebar.component.html',
+                        styleUrls: ['./sidebar.component.scss'],
+                    })
+                    export <span class="keyword">class</span> SidebarComponent {
+                        private authService = inject(AuthService);
+                        private appState = inject(AppStateService);
+
+                        @Input() collapsed = false;
+                        @Output() toggle = new EventEmitter&lt;void&gt;();
+
+                        menuItems: NavItem[] = [
+                            { label: 'Dashboard', icon: 'bi-grid', route: '/dashboard' },
+                            { label: 'Patients', icon: 'bi-people', route: '/patients', roles: ['Therapist', 'Admin'] },
+                            { label: 'Sessions', icon: 'bi-calendar', route: '/sessions', roles: ['Therapist', 'Admin'] },
+                            { label: 'Exercises', icon: 'bi-clipboard', route: '/exercises', roles: ['Therapist', 'Admin'] },
+                            { label: 'Reports', icon: 'bi-file-text', route: '/reports', roles: ['Therapist', 'Admin'] },
+                            { label: 'Chat', icon: 'bi-chat', route: '/chatbot', roles: ['Patient'] },
+                        ];
+
+                        get filteredMenu(): NavItem[] {
+                            return this.menuItems.filter(item => {
+                                if (!item.roles) return true;
+                                return this.authService.hasAnyRole(item.roles);
+                            });
+                        }
+
+                        toggleSidebar() {
+                            this.toggle.emit();
+                        }
+                    }
+                </div>
+
+                <h4>Step 2: Create Template</h4>
+
+                <div class="code-block">
+                    <span class="comment">// sidebar.component.html</span>
+                    &lt;aside class="sidebar" [class.collapsed]="collapsed"&gt;
+                        &lt;div class="sidebar-header"&gt;
+                            &lt;div class="sidebar-brand"&gt;
+                                &lt;span *<span class="keyword">if</span>="!collapsed"&gt;Jalsa&lt;/span&gt;
+                                &lt;span *<span class="keyword">if</span>="collapsed"&gt;J&lt;/span&gt;
+                            &lt;/div&gt;
+                            &lt;button class="btn btn-ghost toggle-btn" (click)="toggleSidebar()"&gt;
+                                &lt;i class="bi bi-chevron-{{ collapsed ? 'right' : 'left' }}"&gt;&lt;/i&gt;
+                            &lt;/button&gt;
+                        &lt;/div&gt;
+                        &lt;nav class="sidebar-nav"&gt;
+                            &lt;ul class="nav flex-column"&gt;
+                                &lt;li *<span class="keyword">for</span>="let item of filteredMenu" class="nav-item"&gt;
+                                    &lt;a class="nav-link"
+                                       [routerLink]="item.route"
+                                       routerLinkActive="active"
+                                       [routerLinkActiveOptions]="{ exact: false }"&gt;
+                                        &lt;i class="bi {{ item.icon }}"&gt;&lt;/i&gt;
+                                        &lt;span *<span class="keyword">if</span>="!collapsed"&gt;{{ item.label }}&lt;/span&gt;
+                                    &lt;/a&gt;
+                                &lt;/li&gt;
+                            &lt;/ul&gt;
+                        &lt;/nav&gt;
+                    &lt;/aside&gt;
+                </div>
+
+                <h4>Step 3: Add Styles</h4>
+
+                <div class="code-block">
+                    <span class="comment">// sidebar.component.scss</span>
+                    .sidebar {
+                        width: 260px;
+                        min-height: 100vh;
+                        background-color: $primary;
+                        color: #fff;
+                        transition: width 0.3s ease;
+                        display: flex;
+                        flex-direction: column;
+                        flex-shrink: 0;
+                        overflow: hidden;
+                    }
+
+                    .sidebar.collapsed {
+                        width: 64px;
+                    }
+
+                    .sidebar-header {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        padding: 1rem;
+                        border-bottom: 1px solid rgba(255,255,255,0.1);
+                    }
+
+                    .sidebar-brand {
+                        font-size: 1.2rem;
+                        font-weight: 700;
+                        white-space: nowrap;
+                    }
+
+                    .toggle-btn {
+                        color: #fff;
+                        background: transparent;
+                        border: none;
+                        cursor: pointer;
+                        padding: 0.25rem;
+                    }
+
+                    .sidebar-nav {
+                        flex: 1;
+                        padding: 0.5rem 0;
+                    }
+
+                    .nav-link {
+                        color: rgba(255,255,255,0.7);
+                        padding: 0.75rem 1rem;
+                        display: flex;
+                        align-items: center;
+                        gap: 0.75rem;
+                        text-decoration: none;
+                        transition: background 0.15s;
+                        white-space: nowrap;
+                    }
+
+                    .nav-link:hover {
+                        background: rgba(255,255,255,0.1);
+                        color: #fff;
+                    }
+
+                    .nav-link.active {
+                        background: rgba(255,255,255,0.2);
+                        color: #fff;
+                        font-weight: 500;
+                    }
+
+                    .nav-link i {
+                        font-size: 1.2rem;
+                        min-width: 1.5rem;
+                        text-align: center;
+                    }
+
+                    .sidebar.collapsed .nav-link span {
+                        display: none;
+                    }
+                    .sidebar.collapsed .sidebar-brand span {
+                        display: none;
+                    }
+                </div>
+
+                <h4>Step 4: RTL Adjustments</h4>
+                <p>Ensure the sidebar is on the right in RTL mode.</p>
+
+                <div class="code-block">
+                    <span class="comment">// In main-layout.component.scss or global</span>
+                    [dir="rtl"] .sidebar {
+                        order: 2;
+                    }
+                    [dir="rtl"] .app-main {
+                        order: 1;
+                    }
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>shared/layouts/sidebar/sidebar.component.ts</code></li>
+                    <li><code>sidebar.component.html</code></li>
+                    <li><code>sidebar.component.scss</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g c shared/layouts/sidebar --standalone --skip-tests
+                </div>
+
+                <h3>Code Flow</h3>
+                <div class="flow-diagram">
+                    <span class="step">SidebarComponent</span> <span class="arrow">→</span>
+                    <span class="step">AuthService.hasAnyRole()</span> <span class="arrow">→</span>
+                    <span class="step">Filtered menu</span> <span class="arrow">→</span>
+                    <span class="step">Render nav items with routerLink</span>
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>RouterLink and RouterLinkActive</li>
+                    <li>Structural directives (<code>*ngIf</code>, <code>*ngFor</code>)</li>
+                    <li>Component inputs and outputs</li>
+                    <li>Bootstrap icons</li>
+                </ul>
+
+                <h3>Tools/Libraries Required</h3>
+                <ul>
+                    <li>Bootstrap Icons</li>
+                    <li>Angular Router</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test that menu items are filtered based on user roles.</li>
+                    <li>Test that clicking a menu item navigates to the correct route.</li>
+                    <li>Test that the active route is highlighted.</li>
+                    <li>Test collapsing/expanding the sidebar.</li>
+                    <li>Test RTL layout.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Sidebar component with dynamic, role‑based navigation.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not using <code>routerLinkActive</code> correctly – missing <code>routerLinkActiveOptions</code>.
+                    <br /><strong>Fix:</strong> Set <code>[routerLinkActiveOptions]="{ exact: false }"</code> for nested routes.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 2:</strong> Not handling RTL properly – sidebar should be on the right.
+                    <br /><strong>Fix:</strong> Use CSS flex order or margin adjustments.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>User has no roles → only items without roles are shown.</li>
+                    <li>Sidebar collapsed state should be persisted (via AppStateService).</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Sidebar renders with correct menu items.</li>
+                    <li>Navigation works and active route is highlighted.</li>
+                    <li>Toggle collapses/expands the sidebar.</li>
+                    <li>RTL works.</li>
+                </ul>
+
+                <h3>Frontend Architecture Notes</h3>
+                <ul>
+                    <li>Menu items are defined in the component; could be moved to a service later.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> The sidebar is the primary navigation; ensure new routes are added to the menu.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 3: HEADER COMPONENT                                              -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-LAYOUT-003</span><span class="task-name">Header Component</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-LAYOUT-003</li>
+                    <li><strong>Task Name:</strong> Header Component</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-LAYOUT-001, FE-AUTH-002 (AuthService), FE-SHARED-002 (Button)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Build the header component that displays the application title, user avatar/name, logout button, and a hamburger menu toggle for mobile.</p>
+
+                <h3>Business Purpose</h3>
+                <p>The header provides essential navigation controls and user context.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Create a Standalone component that uses AuthService for user info and logout, emits toggleSidebar event to parent, and adapts for mobile.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of AuthService and Signals.</li>
+                    <li>Bootstrap grid and dropdown components.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-LAYOUT-001:</strong> Main layout uses header.</li>
+                    <li><strong>FE-AUTH-002:</strong> AuthService for currentUser and logout.</li>
+                    <li><strong>FE-SHARED-002:</strong> Button component (optional).</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>None (uses AuthService).</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>toggleSidebar</code> – emitted when hamburger menu is clicked.</li>
+                </ul>
+
+                <h3>Outputs (Files)</h3>
+                <ul>
+                    <li><code>shared/layouts/header/header.component.ts</code></li>
+                    <li><code>header.component.html</code></li>
+                    <li><code>header.component.scss</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Generate Header Component</h4>
+                <div class="code-block">
+                    ng g c shared/layouts/header --standalone --skip-tests
+                </div>
+
+                <h4>Step 2: Implement Header Component</h4>
+
+                <div class="code-block">
+                    <span class="comment">// header.component.ts</span>
+                    <span class="keyword">import</span> { Component, Output, EventEmitter, inject } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { AuthService } <span class="keyword">from</span> <span class="string">'../../../core/services/auth.service'</span>;
+                    <span class="keyword">import</span> { Router } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+                    <span class="keyword">import</span> { NgClass } <span class="keyword">from</span> <span class="string">'@angular/common'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-header',
+                        standalone: true,
+                        imports: [NgClass],
+                        templateUrl: './header.component.html',
+                        styleUrls: ['./header.component.scss'],
+                    })
+                    export <span class="keyword">class</span> HeaderComponent {
+                        private authService = inject(AuthService);
+                        private router = inject(Router);
+
+                        @Output() toggleSidebar = new EventEmitter&lt;void&gt;();
+
+                        user = this.authService.currentUser;
+                        isDropdownOpen = false;
+
+                        toggleDropdown() {
+                            this.isDropdownOpen = !this.isDropdownOpen;
+                        }
+
+                        logout() {
+                            this.authService.logout();
+                            this.router.navigate(['/auth/login']);
+                        }
+
+                        goToProfile() {
+                            this.router.navigate(['/auth/profile']);
+                            this.isDropdownOpen = false;
+                        }
+                    }
+                </div>
+
+                <h4>Step 3: Create Template</h4>
+
+                <div class="code-block">
+                    <span class="comment">// header.component.html</span>
+                    &lt;header class="app-header"&gt;
+                        &lt;div class="header-left"&gt;
+                            &lt;button class="btn btn-ghost mobile-toggle" (click)="toggleSidebar.emit()"&gt;
+                                &lt;i class="bi bi-list"&gt;&lt;/i&gt;
+                            &lt;/button&gt;
+                            &lt;span class="header-title"&gt;Jalsa&lt;/span&gt;
+                        &lt;/div&gt;
+                        &lt;div class="header-right"&gt;
+                            &lt;div class="user-menu" (click)="toggleDropdown()"&gt;
+                                &lt;span class="user-name"&gt;{{ user()?.firstName }} {{ user()?.lastName }}&lt;/span&gt;
+                                &lt;i class="bi bi-person-circle"&gt;&lt;/i&gt;
+                                &lt;i class="bi bi-chevron-down" [class.rotated]="isDropdownOpen"&gt;&lt;/i&gt;
+                            &lt;/div&gt;
+                            &lt;div class="dropdown-menu" *<span class="keyword">if</span>="isDropdownOpen"&gt;
+                                &lt;a (click)="goToProfile()"&gt;Profile&lt;/a&gt;
+                                &lt;hr&gt;
+                                &lt;a (click)="logout()" class="text-danger"&gt;Logout&lt;/a&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                    &lt;/header&gt;
+                </div>
+
+                <h4>Step 4: Add Styles</h4>
+
+                <div class="code-block">
+                    <span class="comment">// header.component.scss</span>
+                    .app-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        padding: 0.75rem 1.5rem;
+                        background: #fff;
+                        border-bottom: 1px solid $border-color;
+                        height: 64px;
+                        position: sticky;
+                        top: 0;
+                        z-index: 1000;
+                    }
+
+                    .header-left {
+                        display: flex;
+                        align-items: center;
+                        gap: 1rem;
+                    }
+
+                    .mobile-toggle {
+                        display: none;
+                        background: transparent;
+                        border: none;
+                        font-size: 1.5rem;
+                    }
+
+                    .header-title {
+                        font-size: 1.2rem;
+                        font-weight: 600;
+                    }
+
+                    .header-right {
+                        display: flex;
+                        align-items: center;
+                        position: relative;
+                    }
+
+                    .user-menu {
+                        display: flex;
+                        align-items: center;
+                        gap: 0.5rem;
+                        cursor: pointer;
+                        padding: 0.25rem 0.5rem;
+                        border-radius: 4px;
+                        transition: background 0.15s;
+                    }
+
+                    .user-menu:hover {
+                        background: #f1f5f9;
+                    }
+
+                    .user-name {
+                        font-weight: 500;
+                    }
+
+                    .dropdown-menu {
+                        position: absolute;
+                        top: calc(100% + 8px);
+                        right: 0;
+                        background: #fff;
+                        border: 1px solid $border-color;
+                        border-radius: 8px;
+                        box-shadow: $box-shadow-lg;
+                        min-width: 160px;
+                        padding: 0.5rem 0;
+                        z-index: 1001;
+                    }
+
+                    .dropdown-menu a {
+                        display: block;
+                        padding: 0.5rem 1rem;
+                        cursor: pointer;
+                        text-decoration: none;
+                        color: $text-primary;
+                    }
+
+                    .dropdown-menu a:hover {
+                        background: #f1f5f9;
+                    }
+
+                    .dropdown-menu hr {
+                        margin: 0.25rem 0;
+                        border-color: $border-color;
+                    }
+
+                    .rotated {
+                        transform: rotate(180deg);
+                    }
+
+                    @media (max-width: 768px) {
+                        .mobile-toggle {
+                            display: block;
+                        }
+                        .header-title {
+                            font-size: 1rem;
+                        }
+                        .user-name {
+                            display: none;
+                        }
+                    }
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>shared/layouts/header/header.component.ts</code></li>
+                    <li><code>header.component.html</code></li>
+                    <li><code>header.component.scss</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g c shared/layouts/header --standalone --skip-tests
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>EventEmitter for parent communication</li>
+                    <li>Dropdown handling</li>
+                    <li>Responsive design with media queries</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Verify user name and avatar display correctly.</li>
+                    <li>Test dropdown menu opens/closes.</li>
+                    <li>Test logout redirects to login.</li>
+                    <li>Test profile navigation.</li>
+                    <li>Test mobile toggle button.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Header component with user info and actions.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not closing the dropdown when clicking outside.
+                    <br /><strong>Fix:</strong> Use ClickOutsideDirective (from shared) to close dropdown.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>User is null – show default or placeholder.</li>
+                    <li>Mobile view – hide user name and show toggle.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Header displays user info and logout works.</li>
+                    <li>Responsive behavior is correct.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Header is consistent across all pages.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 4: FOOTER COMPONENT                                              -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-LAYOUT-004</span><span class="task-name">Footer Component</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Low</span>
+                    <span class="tag">1h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-LAYOUT-004</li>
+                    <li><strong>Task Name:</strong> Footer Component</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-LAYOUT-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Low</span></li>
+                    <li><strong>Estimated Effort:</strong> 1 hour</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">Low</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create a simple footer component that displays copyright information and any links (e.g., privacy policy).</p>
+
+                <h3>Business Purpose</h3>
+                <p>Provide legal and copyright information in a consistent location.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>A Standalone component with static content, can be extended later.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Basic Angular component knowledge.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-LAYOUT-001:</strong> Main layout uses footer.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>None.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>shared/layouts/footer/footer.component.ts</code></li>
+                    <li><code>footer.component.html</code></li>
+                    <li><code>footer.component.scss</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Generate Footer Component</h4>
+                <div class="code-block">
+                    ng g c shared/layouts/footer --standalone --skip-tests
+                </div>
+
+                <h4>Step 2: Implement Template</h4>
+
+                <div class="code-block">
+                    <span class="comment">// footer.component.html</span>
+                    &lt;footer class="app-footer"&gt;
+                        &lt;div class="footer-content"&gt;
+                            &lt;span&gt;&copy; {{ currentYear }} Jalsa. All rights reserved.&lt;/span&gt;
+                            &lt;div class="footer-links"&gt;
+                                &lt;a href="#"&gt;Privacy Policy&lt;/a&gt;
+                                &lt;a href="#"&gt;Terms of Service&lt;/a&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                    &lt;/footer&gt;
+                </div>
+
+                <h4>Step 3: Add Logic</h4>
+
+                <div class="code-block">
+                    <span class="comment">// footer.component.ts</span>
+                    <span class="keyword">import</span> { Component } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-footer',
+                        standalone: true,
+                        templateUrl: './footer.component.html',
+                        styleUrls: ['./footer.component.scss'],
+                    })
+                    export <span class="keyword">class</span> FooterComponent {
+                        currentYear = new Date().getFullYear();
+                    }
+                </div>
+
+                <h4>Step 4: Add Styles</h4>
+
+                <div class="code-block">
+                    <span class="comment">// footer.component.scss</span>
+                    .app-footer {
+                        background: #fff;
+                        border-top: 1px solid $border-color;
+                        padding: 0.75rem 1.5rem;
+                        font-size: 0.875rem;
+                        color: $text-muted;
+                    }
+
+                    .footer-content {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        flex-wrap: wrap;
+                        gap: 0.5rem;
+                    }
+
+                    .footer-links {
+                        display: flex;
+                        gap: 1.5rem;
+                    }
+
+                    .footer-links a {
+                        color: $text-muted;
+                        text-decoration: none;
+                    }
+
+                    .footer-links a:hover {
+                        color: $primary;
+                        text-decoration: underline;
+                    }
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>shared/layouts/footer/footer.component.ts</code></li>
+                    <li><code>footer.component.html</code></li>
+                    <li><code>footer.component.scss</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g c shared/layouts/footer --standalone --skip-tests
+                </div>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Verify footer renders at the bottom of the page.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Footer component.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Footer is visible and contains copyright.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Footer is static; can be updated later.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 5: NAVIGATION SERVICE & ROLE-BASED MENU                         -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-LAYOUT-005</span><span class="task-name">Navigation Service &amp; Role‑Based Menu</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">3h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-LAYOUT-005</li>
+                    <li><strong>Task Name:</strong> Navigation Service &amp; Role‑Based Menu</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-AUTH-002 (AuthService), FE-LAYOUT-002 (Sidebar)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 3 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create a navigation service that provides menu items based on user roles, so the sidebar can consume a dynamic menu from a central source.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Centralises menu definition, making it easy to update navigation across the app. Also ensures consistency between sidebar and any other navigation elements.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Define a <code>NavigationService</code> that returns an array of <code>NavItem</code> objects, filtered by roles. The sidebar will inject this service.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular services and dependency injection.</li>
+                    <li>Knowledge of RxJS or Signals (we'll use Signals for reactivity).</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-AUTH-002:</strong> AuthService for role checking.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>None.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>core/services/navigation.service.ts</code></li>
+                    <li>Updated SidebarComponent to use the service.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Generate Navigation Service</h4>
+                <div class="code-block">
+                    ng g s core/services/navigation --skip-tests
+                </div>
+
+                <h4>Step 2: Implement Navigation Service</h4>
+
+                <div class="code-block">
+                    <span class="comment">// core/services/navigation.service.ts</span>
+                    <span class="keyword">import</span> { Injectable, inject, computed, signal, effect } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { AuthService } <span class="keyword">from</span> <span class="string">'./auth.service'</span>;
+
+                    export interface NavItem {
+                        label: string;
+                        icon: string;
+                        route: string;
+                        roles?: string[];
+                        children?: NavItem[];
+                    }
+
+                    <span class="keyword">@Injectable</span>({
+                        providedIn: <span class="string">'root'</span>,
+                    })
+                    export <span class="keyword">class</span> NavigationService {
+                        private authService = inject(AuthService);
+
+                        <span class="comment">// Define all menu items</span>
+                        private allItems: NavItem[] = [
+                            { label: 'Dashboard', icon: 'bi-grid', route: '/dashboard' },
+                            { label: 'Patients', icon: 'bi-people', route: '/patients', roles: ['Therapist', 'Admin'] },
+                            { label: 'Sessions', icon: 'bi-calendar', route: '/sessions', roles: ['Therapist', 'Admin'] },
+                            { label: 'Exercises', icon: 'bi-clipboard', route: '/exercises', roles: ['Therapist', 'Admin'] },
+                            { label: 'Reports', icon: 'bi-file-text', route: '/reports', roles: ['Therapist', 'Admin'] },
+                            { label: 'Chat', icon: 'bi-chat', route: '/chatbot', roles: ['Patient'] },
+                        ];
+
+                        <span class="comment">// Computed signal for filtered menu</span>
+                        readonly menuItems = computed(() => {
+                            <span class="keyword">return</span> this.allItems.filter(item => {
+                                if (!item.roles) return true;
+                                <span class="keyword">return</span> this.authService.hasAnyRole(item.roles);
+                            });
+                        });
+
+                        <span class="comment">// Optionally, an effect to log changes</span>
+                        constructor() {
+                            effect(() => {
+                                console.log('Menu updated:', this.menuItems());
+                            });
+                        }
+                    }
+                </div>
+
+                <h4>Step 3: Update Sidebar to Use NavigationService</h4>
+
+                <div class="code-block">
+                    <span class="comment">// sidebar.component.ts (updated)</span>
+                    <span class="keyword">import</span> { NavigationService } <span class="keyword">from</span> <span class="string">'../../../core/services/navigation.service'</span>;
+
+                    export <span class="keyword">class</span> SidebarComponent {
+                        private navService = inject(NavigationService);
+                        // ...
+                        menuItems = this.navService.menuItems;
+                        // remove local menuItems definition
+                    }
+                </div>
+
+                <h4>Step 4: Update Template to Use the Signal</h4>
+                <p>In sidebar template, change <code>filteredMenu</code> to <code>menuItems()</code>.</p>
+
+                <div class="code-block">
+                    <span class="comment">// sidebar.component.html</span>
+                    &lt;li *<span class="keyword">for</span>="let item of menuItems()" ...&gt;
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>core/services/navigation.service.ts</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g s core/services/navigation --skip-tests
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Angular Signals (<code>computed</code>, <code>effect</code>)</li>
+                    <li>Dependency injection</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test that menu items update when user roles change.</li>
+                    <li>Test that the sidebar reflects the filtered menu.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Navigation service with role‑based filtering.</li>
+                    <li>Sidebar updated to use the service.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not using <code>computed</code> to react to AuthService changes.
+                    <br /><strong>Fix:</strong> Use <code>computed</code> to ensure reactivity.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Navigation service provides filtered menu.</li>
+                    <li>Sidebar uses the service.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Add new nav items to NavigationService only.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 6: RTL AND RESPONSIVE LAYOUT INTEGRATION                        -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-LAYOUT-006</span><span class="task-name">RTL and Responsive Layout Integration</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-LAYOUT-006</li>
+                    <li><strong>Task Name:</strong> RTL and Responsive Layout Integration</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-LAYOUT-001, FE-LAYOUT-002, FE-LAYOUT-003, FE-RTL-004</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Ensure the entire layout system works correctly in RTL mode and is fully responsive across all device sizes (mobile, tablet, desktop).</p>
+
+                <h3>Business Purpose</h3>
+                <p>Jalsa serves Arabic‑speaking users; RTL support is non‑negotiable. Responsive design ensures a good experience on all devices.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Apply CSS logical properties, use Bootstrap's RTL utilities, add media queries for responsiveness, and test thoroughly.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of CSS logical properties (e.g., <code>margin-inline-start</code>).</li>
+                    <li>Knowledge of Bootstrap's RTL classes.</li>
+                    <li>Media queries and responsive design.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-LAYOUT-001:</strong> Main layout.</li>
+                    <li><strong>FE-LAYOUT-002:</strong> Sidebar.</li>
+                    <li><strong>FE-RTL-004:</strong> RTL validation (already done in Phase 3).</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Current layout components.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Updated styles for all layout components to support RTL and responsiveness.</li>
+                    <li>Media query adjustments.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Apply Logical Properties</h4>
+                <p>Replace <code>margin-left</code>, <code>margin-right</code>, <code>padding-left</code>, <code>padding-right</code> with <code>margin-inline-start</code>, <code>margin-inline-end</code>, etc. Or use Bootstrap's RTL‑aware classes.</p>
+
+                <p>For example, in sidebar:</p>
+                <div class="code-block">
+                    <span class="comment">// Instead of margin-left: 0; use margin-inline-start: 0;</span>
+                    .sidebar {
+                        margin-inline-start: 0;
+                    }
+                </div>
+
+                <p>In main layout:</p>
+                <div class="code-block">
+                    .app-content {
+                        padding-inline: 1.5rem;
+                    }
+                </div>
+
+                <h4>Step 2: Use Bootstrap RTL Utilities</h4>
+                <p>Bootstrap provides classes like <code>.text-start</code>, <code>.text-end</code>, <code>.me-</code>, <code>.ms-</code> that automatically flip in RTL. Use these in templates.</p>
+
+                <h4>Step 3: Adjust Sidebar Position in RTL</h4>
+                <p>In RTL, the sidebar should be on the right. Use CSS order or flex direction.</p>
+
+                <div class="code-block">
+                    [dir="rtl"] .app-layout {
+                        flex-direction: row-reverse; <span class="comment">// or use order</span>
+                    }
+                    [dir="rtl"] .sidebar {
+                        order: 2;
+                    }
+                    [dir="rtl"] .app-main {
+                        order: 1;
+                    }
+                </div>
+
+                <h4>Step 4: Responsive Design</h4>
+                <p>Add media queries for mobile: sidebar collapses, header changes.</p>
+
+                <div class="code-block">
+                    @media (max-width: 768px) {
+                        .sidebar {
+                            position: fixed;
+                            top: 0;
+                            left: 0;
+                            bottom: 0;
+                            z-index: 1050;
+                            transform: translateX(-100%);
+                            transition: transform 0.3s ease;
+                            width: 260px;
+                        }
+                        .sidebar.open {
+                            transform: translateX(0);
+                        }
+                        .app-main {
+                            margin-left: 0;
+                            width: 100%;
+                        }
+                        [dir="rtl"] .sidebar {
+                            left: auto;
+                            right: 0;
+                            transform: translateX(100%);
+                        }
+                        [dir="rtl"] .sidebar.open {
+                            transform: translateX(0);
+                        }
+                        .mobile-toggle {
+                            display: block;
+                        }
+                    }
+                </div>
+
+                <h4>Step 5: Update Sidebar Toggle for Mobile</h4>
+                <p>On mobile, the sidebar should overlay the content, not push it. Use a backdrop overlay.</p>
+
+                <p>Add an overlay element in main layout when sidebar is open on mobile.</p>
+
+                <h4>Step 6: Test Thoroughly</h4>
+                <p>Test on Chrome, Firefox, Safari, with RTL and LTR, and on various screen sizes.</p>
+
+                <h3>Files To Modify</h3>
+                <ul>
+                    <li><code>shared/layouts/main-layout/main-layout.component.scss</code></li>
+                    <li><code>shared/layouts/sidebar/sidebar.component.scss</code></li>
+                    <li><code>shared/layouts/header/header.component.scss</code></li>
+                    <li><code>shared/layouts/footer/footer.component.scss</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <p>No CLI commands; manual editing.</p>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>CSS logical properties</li>
+                    <li>RTL layout</li>
+                    <li>Responsive design</li>
+                    <li>Flexbox</li>
+                </ul>
+
+                <h3>Tools/Libraries Required</h3>
+                <ul>
+                    <li>Bootstrap RTL</li>
+                    <li>Browser dev tools for testing</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Set <code>dir="rtl"</code> on <code>html</code> element and verify layout mirrors.</li>
+                    <li>Test on mobile (320px width) – sidebar should be hidden and toggleable.</li>
+                    <li>Test on tablet (768px) and desktop (1024px+).</li>
+                    <li>Test dropdowns, navigation, and content rendering.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Layout fully RTL‑compatible.</li>
+                    <li>Fully responsive layout.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Using <code>left</code> and <code>right</code> instead of <code>inset-inline-start</code> etc.
+                    <br /><strong>Fix:</strong> Use logical properties or Bootstrap utilities.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 2:</strong> Not testing on actual Arabic text (which might have different lengths).
+                    <br /><strong>Fix:</strong> Test with Arabic content.</div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>Sidebar overlay on mobile should close when clicking outside.</li>
+                    <li>Mixed content (English numbers) in RTL should still look correct.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>All layout components work flawlessly in RTL.</li>
+                    <li>Responsive breakpoints are correct.</li>
+                    <li>Mobile sidebar toggle works.</li>
+                </ul>
+
+                <h3>Frontend Architecture Notes</h3>
+                <ul>
+                    <li>We use Bootstrap's built‑in RTL support and logical CSS for maximum compatibility.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> When adding new components, test in RTL and on mobile.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- PHASE COMPLETION CRITERIA                                             -->
+        <!-- ===================================================================== -->
+        <hr class="hr" />
+
+        <h2 style="background: #f0fdf4; border-left-color: #22c55e; padding:12px 20px; border-left:6px solid #22c55e; border-radius:8px;">✅ Phase Completion Criteria</h2>
+        <ul class="checklist">
+            <li>All 6 layout tasks are complete (FE-LAYOUT-001 to FE-LAYOUT-006).</li>
+            <li>Main layout component wraps all authenticated routes.</li>
+            <li>Sidebar displays role‑based navigation items and collapses.</li>
+            <li>Header shows user info, logout, and mobile toggle.</li>
+            <li>Footer is present.</li>
+            <li>Navigation service centralizes menu items.</li>
+            <li>Layout is fully responsive and works on mobile, tablet, desktop.</li>
+            <li>RTL support is complete and tested.</li>
+            <li>All components are Standalone.</li>
+            <li>All changes are committed.</li>
+        </ul>
+
+        <h2 style="background: #f0f9ff; border-left-color: #3b82f6; padding:12px 20px; border-left:6px solid #3b82f6; border-radius:8px; margin-top:24px;">📋 Code Review Checklist</h2>
+        <ul class="checklist">
+            <li>Main layout uses <code>&lt;router-outlet&gt;</code> correctly.</li>
+            <li>Sidebar menu items are filtered by roles.</li>
+            <li>Header logout clears session and redirects.</li>
+            <li>Navigation service uses Signals and reactivity.</li>
+            <li>RTL styles are applied via logical properties or Bootstrap classes.</li>
+            <li>Responsive breakpoints work as expected.</li>
+        </ul>
+
+        <h2 style="background: #fefce8; border-left-color: #f59e0b; padding:12px 20px; border-left:6px solid #f59e0b; border-radius:8px; margin-top:24px;">🚀 Pull Request Checklist</h2>
+        <ul class="checklist">
+            <li>Branch is up‑to‑date with main.</li>
+            <li>All tests pass.</li>
+            <li>Code review completed.</li>
+            <li>RTL and responsive tested manually.</li>
+        </ul>
+
+        <h2 style="background: #fef2f2; border-left-color: #ef4444; padding:12px 20px; border-left:6px solid #ef4444; border-radius:8px; margin-top:24px;">🧪 Deployment Readiness Checklist</h2>
+        <ul class="checklist">
+            <li>Layout works for all user roles.</li>
+            <li>Navigation is correct based on permissions.</li>
+            <li>RTL and responsive are verified.</li>
+        </ul>
+
+        <hr class="hr" />
+        <div style="text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 20px 0 0;">
+            Jalsa – Phase 6: Layout System – Expanded Implementation Handbook &bull; v1.0 &bull; For development team
+        </div>
+    </div>
+
+    <script>
+        function toggleTask(header) {
+            const body = header.nextElementSibling;
+            const isOpen = body.classList.contains('open');
+            body.classList.toggle('open');
+            header.classList.toggle('open');
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstHeader = document.querySelector('.task-header');
+            if (firstHeader) firstHeader.click();
+        });
+    </script>
+</body>
+</html>

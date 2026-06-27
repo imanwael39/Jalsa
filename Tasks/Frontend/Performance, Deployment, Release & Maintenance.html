@@ -1,0 +1,2762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jalsa – Phases 17–20: Performance, Deployment, Release & Maintenance – Expanded Handbook</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+            padding: 30px 20px;
+            line-height: 1.7;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            padding: 40px 45px;
+        }
+        h1 {
+            font-size: 2.4rem;
+            color: #0f172a;
+            border-bottom: 4px solid #3b82f6;
+            padding-bottom: 18px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        h1 small {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #64748b;
+            margin-left: auto;
+        }
+        .phase-banner {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 20px 28px;
+            margin-bottom: 32px;
+            border-left: 8px solid #3b82f6;
+        }
+        .phase-banner h2 {
+            margin: 0 0 8px 0;
+            font-size: 1.6rem;
+            color: #0f172a;
+            background: none;
+            padding: 0;
+            border-left: none;
+        }
+        .phase-banner p {
+            margin: 0;
+            color: #475569;
+        }
+        .phase-banner .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px 40px;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+        .phase-banner .meta span {
+            font-weight: 500;
+            color: #0f172a;
+        }
+
+        .task-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+        .task-header {
+            background: #f8fafc;
+            padding: 16px 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.15s;
+            user-select: none;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .task-header:hover {
+            background: #f1f5f9;
+        }
+        .task-header .task-id {
+            font-weight: 700;
+            color: #3b82f6;
+            margin-right: 12px;
+            font-size: 1.05rem;
+        }
+        .task-header .task-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .task-header .task-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .task-header .task-badges .tag {
+            font-size: 0.7rem;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+        .task-header .chevron {
+            transition: transform 0.25s;
+            font-size: 1.3rem;
+            color: #94a3b8;
+            margin-left: 12px;
+        }
+        .task-header.open .chevron {
+            transform: rotate(180deg);
+        }
+
+        .task-body {
+            padding: 0 24px 24px;
+            display: none;
+            overflow: hidden;
+        }
+        .task-body.open {
+            display: block;
+        }
+
+        .task-body h3 {
+            font-size: 1.15rem;
+            margin-top: 22px;
+            margin-bottom: 8px;
+            color: #0f172a;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 4px;
+        }
+        .task-body h4 {
+            font-size: 1rem;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            color: #334155;
+        }
+        .task-body p {
+            margin-bottom: 8px;
+        }
+        .task-body ul,
+        .task-body ol {
+            padding-left: 24px;
+            margin-bottom: 10px;
+        }
+        .task-body li {
+            margin-bottom: 3px;
+        }
+        .task-body .field-label {
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+        .checklist li {
+            padding: 3px 0 3px 30px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') left center no-repeat;
+            background-size: 18px;
+        }
+
+        .pitfall-box {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .tip-box {
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .arch-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #e2e8f0;
+            padding: 1px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-right: 4px;
+        }
+        .tag-blue {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .tag-green {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .tag-amber {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .tag-red {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .tag-purple {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+        .tag-slate {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        .tag-indigo {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .flow-diagram {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin: 8px 0 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .flow-diagram .arrow {
+            color: #94a3b8;
+            margin: 0 6px;
+        }
+        .flow-diagram .step {
+            color: #0f172a;
+            font-weight: 500;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            margin: 10px 0 16px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            background: #fff;
+        }
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+            text-align: left;
+            padding: 8px 14px;
+            border-bottom: 2px solid #e2e8f0;
+            color: #0f172a;
+        }
+        td {
+            padding: 8px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .hr {
+            border: none;
+            border-top: 2px dashed #e2e8f0;
+            margin: 32px 0;
+        }
+
+        .code-block {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin: 6px 0 12px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .code-block .comment {
+            color: #94a3b8;
+        }
+        .code-block .keyword {
+            color: #f472b6;
+        }
+        .code-block .string {
+            color: #34d399;
+        }
+        .code-block .func {
+            color: #60a5fa;
+        }
+
+        .subtask {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 12px 18px;
+            margin: 10px 0;
+            border-left: 4px solid #3b82f6;
+        }
+        .subtask strong {
+            color: #0f172a;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 16px;
+            }
+            h1 {
+                font-size: 1.8rem;
+                flex-wrap: wrap;
+            }
+            .task-header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .task-body {
+                padding: 0 16px 16px;
+            }
+            .phase-banner {
+                padding: 16px;
+            }
+            .phase-banner .meta {
+                flex-direction: column;
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <h1>
+            🚀 Jalsa – Phases 17–20: Performance, Deployment, Release &amp; Maintenance
+            <small>Expanded Implementation Handbook · 16 Tasks · 80+ Subtasks</small>
+        </h1>
+
+        <!-- ===================================================================== -->
+        <!-- PHASE 17 – PERFORMANCE OPTIMIZATION                                  -->
+        <!-- ===================================================================== -->
+        <div class="phase-banner" style="border-left-color: #8b5cf6;">
+            <h2>⚡ Phase 17 – Performance Optimization</h2>
+            <p><strong>Purpose:</strong> Optimize the application for speed, bundle size, and runtime performance. This phase covers performance auditing, bundle analysis, lazy loading optimization, change detection tuning, image optimization, and progressive web app (PWA) readiness.</p>
+            <div class="meta">
+                <span>📋 Tasks: 5</span>
+                <span>⏱️ Total Effort: ~18 hours</span>
+                <span>👤 Owners: M3 (Frontend Lead), M4 (Frontend Developer)</span>
+                <span>🎯 Deliverable: Optimized app with Lighthouse scores ≥ 90</span>
+            </div>
+        </div>
+
+        <!-- FE-PERF-001 -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-PERF-001</span><span class="task-name">Performance Audit &amp; Baseline</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">3h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-PERF-001</li>
+                    <li><strong>Task Name:</strong> Performance Audit &amp; Baseline</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> All features complete</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 3 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Run a comprehensive performance audit using Lighthouse, Chrome DevTools, and WebPageTest to establish a baseline for key metrics: First Contentful Paint (FCP), Largest Contentful Paint (LCP), Time to Interactive (TTI), Total Blocking Time (TBT), Cumulative Layout Shift (CLS), and bundle size.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Measuring performance before optimization allows us to quantify improvements and ensure we meet the target Lighthouse score of ≥ 90.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use Lighthouse CLI and Chrome DevTools to capture performance metrics, identify bottlenecks, and create a report that will be used to track progress.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Application is deployed to a staging environment or running locally with production build.</li>
+                    <li>Chrome browser with DevTools.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>All features:</strong> The application must be feature‑complete.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Production build of the application.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>/docs/performance/baseline-report.md</code> – Baseline metrics report.</li>
+                    <li><code>/docs/performance/optimization-plan.md</code> – Prioritized optimization tasks.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Build Production Version</h4>
+                <p><strong>What to do:</strong> Run a production build with source maps enabled for debugging.</p>
+                <div class="code-block">
+                    ng build --configuration=production --source-map
+                </div>
+                <p><strong>Why it is required:</strong> Production builds have optimizations (minification, tree‑shaking) that reflect real performance.</p>
+
+                <h4>Step 2: Serve the Build Locally or Deploy to Staging</h4>
+                <p>Use a local server (e.g., <code>serve -s dist</code>) or deploy to staging.</p>
+                <div class="code-block">
+                    npm install -g serve
+                    serve -s dist/jalsa-frontend
+                </div>
+
+                <h4>Step 3: Run Lighthouse Audit</h4>
+                <ul>
+                    <li>Open Chrome DevTools → Lighthouse tab.</li>
+                    <li>Select categories: Performance, Accessibility, Best Practices, SEO.</li>
+                    <li>Run the audit and capture metrics.</li>
+                </ul>
+                <p>Alternatively, use Lighthouse CLI:</p>
+                <div class="code-block">
+                    npm install -g lighthouse
+                    lighthouse http://localhost:4200 --view --output=html --output-path=./lighthouse-report.html
+                </div>
+
+                <h4>Step 4: Analyze Web Vitals</h4>
+                <p>Use Chrome DevTools → Performance tab to record a page load and analyze:</p>
+                <ul>
+                    <li><strong>Main thread activity:</strong> Long tasks, JavaScript execution time.</li>
+                    <li><strong>Network requests:</strong> Waterfall chart, number of requests, total size.</li>
+                    <li><strong>Render blocking resources:</strong> CSS/JS that delays rendering.</li>
+                </ul>
+
+                <h4>Step 5: Generate Bundle Report</h4>
+                <p>Use <code>ng build --stats-json</code> to generate a <code>stats.json</code> file, then analyze with <code>webpack-bundle-analyzer</code>.</p>
+                <div class="code-block">
+                    ng build --configuration=production --stats-json
+                    npx webpack-bundle-analyzer dist/jalsa-frontend/stats.json
+                </div>
+
+                <h4>Step 6: Create Baseline Report</h4>
+                <p>Document all metrics with screenshots and notes. Identify the top three performance bottlenecks.</p>
+
+                <div class="subtask">
+                    <strong>Common Bottlenecks to Look For:</strong>
+                    <ul>
+                        <li>Large vendor bundle (node_modules).</li>
+                        <li>Unused CSS/JS.</li>
+                        <li>Unoptimized images.</li>
+                        <li>Render blocking resources.</li>
+                        <li>Too many HTTP requests.</li>
+                        <li>Inefficient change detection.</li>
+                    </ul>
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>/docs/performance/baseline-report.md</code></li>
+                    <li><code>/docs/performance/optimization-plan.md</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng build --configuration=production --source-map
+                    ng build --configuration=production --stats-json
+                    npx webpack-bundle-analyzer dist/jalsa-frontend/stats.json
+                    lighthouse http://localhost:4200 --view
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Core Web Vitals</li>
+                    <li>Lighthouse metrics</li>
+                    <li>Bundle analysis</li>
+                    <li>Performance profiling</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Run the audit three times and average the results.</li>
+                    <li>Document all metrics.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Baseline performance report.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Running Lighthouse on a development build (which lacks optimizations).<br />
+                    <strong>Fix:</strong> Always use production builds.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Baseline report is created and approved.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> The baseline report guides optimization efforts.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- FE-PERF-002 -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-PERF-002</span><span class="task-name">Optimize Bundle Size &amp; Lazy Loading</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-PERF-002</li>
+                    <li><strong>Task Name:</strong> Optimize Bundle Size &amp; Lazy Loading</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-PERF-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Reduce the bundle size and improve lazy loading by analyzing dependencies, removing unused packages, implementing code splitting, and optimizing Angular build configurations.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Smaller bundles load faster, reducing Time to Interactive and improving user experience, especially on slower networks.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use <code>webpack-bundle-analyzer</code> to identify large dependencies, enable <code>buildOptimizer</code>, use <code>ngx-quicklink</code> for preloading, and implement route‑level code splitting.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular build optimization flags.</li>
+                    <li>Knowledge of dynamic imports.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-PERF-001:</strong> Baseline report identifying large bundles.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Bundle analysis report.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Updated <code>angular.json</code> with optimization settings.</li>
+                    <li>Updated routes with lazy loading (already done, but verify).</li>
+                    <li>Removed unused dependencies from <code>package.json</code>.</li>
+                    <li>Preloading strategy configured.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Analyze Bundle Composition</h4>
+                <p>Run <code>webpack-bundle-analyzer</code> and identify large modules:</p>
+                <ul>
+                    <li><strong>Check if large libraries can be replaced:</strong> e.g., moment.js → date-fns, lodash → native or <code>lodash-es</code>.</li>
+                    <li><strong>Identify duplicate dependencies:</strong> Use <code>npm dedupe</code> or <code>yarn deduplicate</code>.</li>
+                </ul>
+
+                <h4>Step 2: Enable Build Optimizations</h4>
+                <p>Update <code>angular.json</code> production configuration:</p>
+                <div class="code-block">
+                    <span class="comment">// angular.json – production configuration</span>
+                    "optimization": {
+                        "scripts": true,
+                        "styles": true,
+                        "fonts": true
+                    },
+                    "buildOptimizer": true,
+                    "vendorChunk": false,  <span class="comment">// Disable to avoid large vendor chunk</span>
+                    "sourceMap": false      <span class="comment">// Disable in production</span>
+                </div>
+
+                <h4>Step 3: Implement Route Preloading</h4>
+                <p>Use <code>PreloadAllModules</code> for critical routes, but consider <code>preloadStrategy</code> with <code>QuicklinkStrategy</code>.</p>
+                <div class="code-block">
+                    <span class="comment">// app.routes.ts</span>
+                    <span class="keyword">import</span> { PreloadAllModules } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+
+                    RouterModule.forRoot(routes, {
+                        preloadingStrategy: PreloadAllModules,  <span class="comment">// Or QuicklinkStrategy</span>
+                    });
+                </div>
+                <p>Install <code>ngx-quicklink</code> for smarter preloading:</p>
+                <div class="code-block">
+                    npm install ngx-quicklink
+                </div>
+
+                <h4>Step 4: Remove Unused Dependencies</h4>
+                <p>Use <code>npm ls --depth=0</code> to list dependencies. Remove any that are not used.</p>
+
+                <h4>Step 5: Optimize Third‑Party Libraries</h4>
+                <ul>
+                    <li>Use <code>ngx-quill</code> with dynamic import to reduce bundle size.</li>
+                    <li>Use <code>chart.js</code> tree‑shakable imports: <code>import { Chart } from 'chart.js/auto'</code>.</li>
+                </ul>
+
+                <h4>Step 6: Verify Improvements</h4>
+                <p>Rebuild and re‑run <code>webpack-bundle-analyzer</code> to confirm bundle size reduction.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li>Updated <code>angular.json</code></li>
+                    <li>Updated <code>app.routes.ts</code></li>
+                    <li>Updated <code>package.json</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    npm install ngx-quicklink
+                    npm dedupe
+                    npm ls --depth=0
+                    ng build --configuration=production --stats-json
+                    npx webpack-bundle-analyzer dist/jalsa-frontend/stats.json
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Tree shaking</li>
+                    <li>Code splitting</li>
+                    <li>Lazy loading</li>
+                    <li>Preloading strategies</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Rebuild the application.</li>
+                    <li>Verify that the bundle size has decreased.</li>
+                    <li>Test all routes to ensure lazy loading works.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Reduced bundle size.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Removing dependencies that are still used indirectly.<br />
+                    <strong>Fix:</strong> Use <code>npm-check</code> to verify dependency usage.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Bundle size reduced by at least 20% from baseline.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Lazy loading is critical for performance.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- FE-PERF-003 -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-PERF-003</span><span class="task-name">Optimize Change Detection &amp; Rendering</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-PERF-003</li>
+                    <li><strong>Task Name:</strong> Optimize Change Detection &amp; Rendering</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-PERF-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Optimize change detection performance by implementing <code>OnPush</code> strategy, using <code>trackBy</code> in loops, optimizing Signals usage, and reducing unnecessary re‑renders.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Faster rendering improves perceived performance and reduces CPU usage, especially on lower‑end devices.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use <code>ChangeDetectionStrategy.OnPush</code> on all components, implement <code>trackBy</code> for <code>*ngFor</code>, use <code>signal()</code> for fine‑grained reactivity, and avoid heavy computations in templates.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular change detection.</li>
+                    <li>Knowledge of Signals and the <code>OnPush</code> strategy.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-PERF-001:</strong> Baseline report.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>All components.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Updated components with <code>ChangeDetectionStrategy.OnPush</code>.</li>
+                    <li>Updated templates with <code>trackBy</code>.</li>
+                    <li>Optimized Signals usage.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Apply OnPush Strategy</h4>
+                <p>For all components, add <code>changeDetection: ChangeDetectionStrategy.OnPush</code>.</p>
+                <div class="code-block">
+                    <span class="comment">// In each component</span>
+                    <span class="keyword">import</span> { ChangeDetectionStrategy, Component } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        // ...
+                        changeDetection: ChangeDetectionStrategy.OnPush,
+                    })
+                </div>
+                <p><strong>Why it is required:</strong> OnPush reduces change detection checks to only when inputs change or events occur.</p>
+
+                <h4>Step 2: Add trackBy to ngFor</h4>
+                <p>Add <code>trackBy</code> to every <code>*ngFor</code> to avoid re‑rendering entire lists.</p>
+                <div class="code-block">
+                    &lt;div *ngFor="let item of items; trackBy: trackById"&gt;{{ item.name }}&lt;/div&gt;
+                </div>
+                <p>In the component:</p>
+                <div class="code-block">
+                    trackById(index: number, item: any) { return item.id; }
+                </div>
+
+                <h4>Step 3: Optimize Signals</h4>
+                <ul>
+                    <li>Use <code>computed()</code> for derived state to avoid unnecessary recalculations.</li>
+                    <li>Use <code>effect()</code> sparingly; prefer <code>computed</code> or <code>tap</code> in services.</li>
+                    <li>Ensure signals are only updated when values actually change.</li>
+                </ul>
+
+                <h4>Step 4: Avoid Heavy Computations in Templates</h4>
+                <p>Move complex calculations to the component class or use pipes with <code>pure: true</code>.</p>
+
+                <h4>Step 5: Use Async Pipe for Observables</h4>
+                <p>Always use <code>async</code> pipe for observables to let Angular handle subscription and change detection.</p>
+
+                <h4>Step 6: Verify Performance</h4>
+                <p>Re‑run Lighthouse and Chrome DevTools to measure rendering improvements.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li>Updated component files.</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <p>No specific CLI commands; manual edits.</p>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>ChangeDetectionStrategy.OnPush</li>
+                    <li>trackBy</li>
+                    <li>Angular Signals optimization</li>
+                    <li>Async pipe</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Verify all components use OnPush.</li>
+                    <li>Test that the UI updates correctly.</li>
+                    <li>Re‑run Lighthouse to check for improvements.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Optimized change detection across the app.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Using OnPush but mutating objects, preventing change detection.<br />
+                    <strong>Fix:</strong> Always create new object references (immutable updates).
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>All components use OnPush, trackBy is used in lists, and Lighthouse rendering metrics improve.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use OnPush and immutable data for performance.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- FE-PERF-004 -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-PERF-004</span><span class="task-name">Optimize API Calls &amp; Data Fetching</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">3h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-PERF-004</li>
+                    <li><strong>Task Name:</strong> Optimize API Calls &amp; Data Fetching</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-PERF-001, FE-API-002</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 3 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Optimize data fetching by implementing request caching, reducing duplicate requests, using debounce for search inputs, and enabling HTTP/2 multiplexing.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Reducing API calls improves load times and reduces backend load.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use <code>shareReplay</code> for caching, <code>debounceTime</code> for search inputs, and ensure the HttpClientService uses appropriate caching strategies.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of RxJS caching operators.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-API-002:</strong> HttpClientService with caching support.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Existing API calls.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Updated services with caching.</li>
+                    <li>Debounced search inputs.</li>
+                    <li>Optimized data fetching patterns.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Implement Caching in State Services</h4>
+                <p>Use <code>shareReplay(1)</code> for API calls that are reused (e.g., dashboard stats).</p>
+                <div class="code-block">
+                    <span class="comment">// In state service</span>
+                    this.http.get(API.dashboard.stats).pipe(
+                        shareReplay(1)  <span class="comment">// Cache the result</span>
+                    ).subscribe(...);
+                </div>
+
+                <h4>Step 2: Debounce Search Inputs</h4>
+                <p>Use <code>debounceTime</code> and <code>distinctUntilChanged</code> for search fields.</p>
+                <div class="code-block">
+                    this.searchSubject.pipe(
+                        debounceTime(300),
+                        distinctUntilChanged(),
+                        switchMap(term => this.patientService.search(term))
+                    ).subscribe(...);
+                </div>
+
+                <h4>Step 3: Avoid Duplicate Requests</h4>
+                <p>Use <code>switchMap</code> to cancel pending requests when new input arrives.</p>
+
+                <h4>Step 4: Use HTTP Interceptors for Caching (Optional)</h4>
+                <p>Implement a caching interceptor for GET requests.</p>
+
+                <h4>Step 5: Optimize Pagination</h4>
+                <p>Ensure pagination uses server‑side pagination and only fetches the current page.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li>Updated state services.</li>
+                    <li>Updated components with search debouncing.</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <p>No new commands.</p>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>shareReplay</li>
+                    <li>debounceTime / distinctUntilChanged</li>
+                    <li>switchMap</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Verify that repeated API calls are cached.</li>
+                    <li>Test search debouncing in patient list.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Reduced duplicate API calls.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Caching data that changes frequently (e.g., patient list).<br />
+                    <strong>Fix:</strong> Use cache with proper invalidation or only for static data.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>API calls are optimized with caching and debouncing.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Cache aggressively, invalidate appropriately.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- FE-PERF-005 -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-PERF-005</span><span class="task-name">Image &amp; Asset Optimization</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">3h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-PERF-005</li>
+                    <li><strong>Task Name:</strong> Image &amp; Asset Optimization</li>
+                    <li><strong>Owner:</strong> M4 (Frontend Developer)</li>
+                    <li><strong>Dependencies:</strong> FE-PERF-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 3 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Optimize images and assets used in the application: compress images, use modern formats (WebP, AVIF), implement lazy loading, and optimize font loading.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Images are often the largest resource on a page; optimizing them significantly improves LCP and overall performance.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use <code>ngx-image-cropper</code> or <code>sharp</code> to compress images, convert to WebP/AVIF, implement <code>loading="lazy"</code>, and use preconnect for fonts.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of image formats and optimization tools.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-PERF-001:</strong> Baseline report identifies large images.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Image assets in <code>src/assets/images/</code>.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Optimized images (WebP/AVIF).</li>
+                    <li>Updated HTML templates with lazy loading.</li>
+                    <li>Updated <code>index.html</code> with preconnect/preload hints.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Compress Images</h4>
+                <p>Use <code>sharp</code> or <code>imagemin</code> to compress images.</p>
+                <div class="code-block">
+                    npm install --save-dev sharp
+                </div>
+                <p>Create a script to convert images:</p>
+                <div class="code-block">
+                    <span class="comment">// scripts/optimize-images.js</span>
+                    <span class="keyword">const</span> sharp = require('sharp');
+                    const fs = require('fs');
+                    const path = require('path');
+
+                    const inputDir = './src/assets/images';
+                    const outputDir = './src/assets/images/optimized';
+
+                    if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+
+                    fs.readdirSync(inputDir).forEach(file => {
+                        if (file.match(/\.(png|jpg|jpeg)$/i)) {
+                            sharp(path.join(inputDir, file))
+                                .resize(1200, 800, { fit: 'inside' })
+                                .webp({ quality: 80 })
+                                .toFile(path.join(outputDir, file.replace(/\.[^.]+$/, '.webp')));
+                        }
+                    });
+                </div>
+
+                <h4>Step 2: Add Lazy Loading to Images</h4>
+                <p>Add <code>loading="lazy"</code> to all images.</p>
+                <div class="code-block">
+                    &lt;img src="..." loading="lazy" alt="..." /&gt;
+                </div>
+
+                <h4>Step 3: Use Responsive Images</h4>
+                <p>Use <code>srcset</code> and <code>sizes</code> for responsive images.</p>
+
+                <h4>Step 4: Optimize Font Loading</h4>
+                <p>Use <code>preconnect</code> and <code>preload</code> for fonts.</p>
+                <div class="code-block">
+                    &lt;link rel="preconnect" href="https://fonts.googleapis.com" /&gt;
+                    &lt;link rel="preload" as="font" href="/assets/fonts/cairo.woff2" crossorigin /&gt;
+                </div>
+
+                <h4>Step 5: Verify Improvements</h4>
+                <p>Re‑run Lighthouse and check the LCP and image metrics.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>scripts/optimize-images.js</code></li>
+                    <li>Optimized images.</li>
+                    <li>Updated <code>index.html</code>.</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    npm install --save-dev sharp
+                    node scripts/optimize-images.js
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Image compression</li>
+                    <li>WebP/AVIF formats</li>
+                    <li>Lazy loading</li>
+                    <li>Preconnect/preload</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Verify images load correctly.</li>
+                    <li>Check Lighthouse LCP score improvement.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Optimized images and assets.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Over‑compressing images, causing visual quality loss.<br />
+                    <strong>Fix:</strong> Balance quality and size; test visually.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>All images optimized, LCP improved.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Always optimize images before committing.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- PHASE 18 – DEPLOYMENT PREPARATION                                   -->
+        <!-- ===================================================================== -->
+        <div class="phase-banner" style="border-left-color: #f59e0b;">
+            <h2>🚀 Phase 18 – Deployment Preparation</h2>
+            <p><strong>Purpose:</strong> Prepare the application for production deployment, including build optimization, environment configuration, CI/CD pipeline setup, security hardening, and deployment documentation.</p>
+            <div class="meta">
+                <span>📋 Tasks: 4</span>
+                <span>⏱️ Total Effort: ~14 hours</span>
+                <span>👤 Owners: M3 (Frontend Lead), M4 (Frontend Developer)</span>
+                <span>🎯 Deliverable: Production‑ready application with CI/CD pipeline</span>
+            </div>
+        </div>
+
+        <!-- FE-DEPLOY-001 -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-DEPLOY-001</span><span class="task-name">Build Optimization &amp; Configuration</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">3h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-DEPLOY-001</li>
+                    <li><strong>Task Name:</strong> Build Optimization &amp; Configuration</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-PERF-002 (bundle optimization already done)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 3 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Finalize the production build configuration, including environment‑specific settings, build scripts, and deployment artifacts.</p>
+
+                <h3>Business Purpose</h3>
+                <p>A consistent and repeatable build process ensures reliable deployments.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Configure <code>angular.json</code> for production, staging, and development builds. Create environment files and ensure all variables are correctly set.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>All features complete.</li>
+                    <li>Performance optimizations applied.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-PERF-002:</strong> Build optimizations.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Environment variables (API URLs, feature flags).</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Updated <code>angular.json</code> with all build configurations.</li>
+                    <li>Environment files: <code>environment.ts</code>, <code>environment.staging.ts</code>, <code>environment.prod.ts</code>.</li>
+                    <li>Build scripts in <code>package.json</code>.</li>
+                    <li>Deployment artifact (dist folder).</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Review Environment Files</h4>
+                <p>Ensure all environment‑specific variables are defined.</p>
+                <div class="code-block">
+                    <span class="comment">// environments/environment.prod.ts</span>
+                    export const environment = {
+                        production: true,
+                        apiUrl: 'https://api.jalsa.com/api',
+                        signalRHubUrl: 'https://api.jalsa.com/chatHub',
+                        aiServiceUrl: 'https://ai.jalsa.com',
+                        appName: 'Jalsa',
+                        enableMockApi: false,
+                        logLevel: 'error',
+                        sentryDsn: 'https://...@sentry.io/...',
+                    };
+                </div>
+
+                <h4>Step 2: Update angular.json Build Configurations</h4>
+                <p>Ensure production build uses correct file replacements and optimization flags.</p>
+
+                <h4>Step 3: Create Build Scripts</h4>
+                <div class="code-block">
+                    <span class="comment">// package.json</span>
+                    "scripts": {
+                        "build": "ng build",
+                        "build:prod": "ng build --configuration=production",
+                        "build:staging": "ng build --configuration=staging",
+                        "build:analyze": "ng build --configuration=production --stats-json"
+                    }
+                </div>
+
+                <h4>Step 4: Verify Build Output</h4>
+                <p>Build the application and inspect the <code>dist/</code> folder. Ensure all files are present.</p>
+
+                <h4>Step 5: Test the Build</h4>
+                <p>Serve the build locally and test all features.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li>Updated <code>angular.json</code></li>
+                    <li>Updated <code>package.json</code></li>
+                    <li>Updated environment files.</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng build --configuration=production
+                    ng build --configuration=staging
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Environment configuration</li>
+                    <li>Angular build process</li>
+                    <li>File replacement</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Build for production and verify the output.</li>
+                    <li>Test the built application locally.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Production‑ready build artifact.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Forgetting to update environment variables for production.<br />
+                    <strong>Fix:</strong> Double‑check all API URLs and keys.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Production build is successful and tested.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> DevOps / Deployment team.</li>
+                    <li><strong>Key Takeaways:</strong> The build artifact is ready for deployment.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- FE-DEPLOY-002 -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-DEPLOY-002</span><span class="task-name">CI/CD Pipeline Setup</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-DEPLOY-002</li>
+                    <li><strong>Task Name:</strong> CI/CD Pipeline Setup</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-DEPLOY-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Set up a CI/CD pipeline using GitHub Actions, GitLab CI, or similar to automatically build, test, and deploy the application to staging and production environments.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Automation reduces human error, speeds up delivery, and ensures that only tested code is deployed.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Create pipeline configuration files for building, testing, and deploying. Include linting, unit tests, integration tests, and E2E tests.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Repository hosted on GitHub, GitLab, or similar.</li>
+                    <li>Access to deployment environments (staging, production).</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-DEPLOY-001:</strong> Build configuration.</li>
+                    <li><strong>Phase 16:</strong> Testing configuration.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Repository with source code.</li>
+                    <li>Environment secrets (API keys, deploy tokens).</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>.github/workflows/ci.yml</code> or similar.</li>
+                    <li>Deployment scripts.</li>
+                    <li>Environment configuration for CI.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Choose CI/CD Platform</h4>
+                <p>GitHub Actions (recommended), GitLab CI, or Jenkins.</p>
+
+                <h4>Step 2: Create CI Pipeline</h4>
+                <p>Define steps: checkout, install dependencies, lint, test, build.</p>
+                <div class="code-block">
+                    <span class="comment">// .github/workflows/ci.yml</span>
+                    name: CI
+
+                    on:
+                      push:
+                        branches: [ main, develop ]
+                      pull_request:
+                        branches: [ main ]
+
+                    jobs:
+                      build:
+                        runs-on: ubuntu-latest
+
+                        steps:
+                          - uses: actions/checkout@v3
+                          - name: Use Node.js 18
+                            uses: actions/setup-node@v3
+                            with:
+                              node-version: 18
+                              cache: 'npm'
+                          - run: npm ci
+                          - run: npm run lint
+                          - run: npm run test:ci
+                          - run: npm run build:prod
+                          - name: Upload artifact
+                            uses: actions/upload-artifact@v3
+                            with:
+                              name: dist
+                              path: dist/
+                </div>
+
+                <h4>Step 3: Create CD Pipeline</h4>
+                <p>Deploy to staging on develop branch, to production on main branch.</p>
+                <div class="code-block">
+                    <span class="comment">// .github/workflows/deploy-staging.yml</span>
+                    name: Deploy to Staging
+
+                    on:
+                      push:
+                        branches: [ develop ]
+
+                    jobs:
+                      deploy:
+                        runs-on: ubuntu-latest
+                        steps:
+                          - uses: actions/checkout@v3
+                          - name: Deploy to Netlify / Vercel / AWS
+                            run: npm run deploy:staging
+                </div>
+
+                <h4>Step 4: Add Secrets</h4>
+                <p>Store deployment tokens, API keys as GitHub Secrets.</p>
+
+                <h4>Step 5: Test the Pipeline</h4>
+                <p>Push a change to trigger the pipeline and verify it works.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>.github/workflows/ci.yml</code></li>
+                    <li><code>.github/workflows/deploy-staging.yml</code></li>
+                    <li><code>.github/workflows/deploy-production.yml</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <p>No CLI commands for pipeline setup.</p>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>GitHub Actions / GitLab CI</li>
+                    <li>CI/CD best practices</li>
+                    <li>Environment secrets</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Trigger the pipeline via a pull request.</li>
+                    <li>Verify build and test steps pass.</li>
+                    <li>Verify deployment to staging.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Working CI/CD pipeline.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Hardcoding secrets in the pipeline file.<br />
+                    <strong>Fix:</strong> Always use repository secrets.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>CI/CD pipeline is functional and tested.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> DevOps / Deployment team.</li>
+                    <li><strong>Key Takeaways:</strong> Pipeline automates build and deployment.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- FE-DEPLOY-003 -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-DEPLOY-003</span><span class="task-name">Security &amp; SEO Preparation</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">3h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-DEPLOY-003</li>
+                    <li><strong>Task Name:</strong> Security &amp; SEO Preparation</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-DEPLOY-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 3 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Secure the application by implementing CSP headers, ensuring HTTPS, enabling HSTS, and protecting against XSS and CSRF. Also implement SEO best practices: meta tags, Open Graph, sitemap, and robots.txt.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Security protects user data and prevents attacks. SEO improves discoverability and search engine ranking.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Set security headers in the server configuration (nginx, Netlify, etc.), add meta tags for SEO, generate a sitemap, and ensure proper indexing.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Access to server configuration (or deployment platform).</li>
+                    <li>Understanding of security headers and SEO tags.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-DEPLOY-001:</strong> Build configuration.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Application metadata (title, description, keywords).</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>src/index.html</code> with meta tags.</li>
+                    <li><code>robots.txt</code></li>
+                    <li><code>sitemap.xml</code></li>
+                    <li>Security header configurations.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Add Meta Tags to index.html</h4>
+                <div class="code-block">
+                    &lt;title&gt;Jalsa – Mental Health Platform&lt;/title&gt;
+                    &lt;meta name="description" content="Jalsa is a comprehensive mental health platform for therapists and patients." /&gt;
+                    &lt;meta name="keywords" content="mental health, therapy, healthcare" /&gt;
+                    &lt;meta property="og:title" content="Jalsa" /&gt;
+                    &lt;meta property="og:description" content="Mental health platform" /&gt;
+                    &lt;meta property="og:image" content="/assets/og-image.png" /&gt;
+                    &lt;meta property="og:url" content="https://jalsa.com" /&gt;
+                    &lt;meta name="twitter:card" content="summary_large_image" /&gt;
+                </div>
+
+                <h4>Step 2: Generate sitemap.xml</h4>
+                <p>Use a tool like <code>sitemap-generator</code> or generate manually.</p>
+                <div class="code-block">
+                    npm install --save-dev sitemap-generator
+                    npx sitemap-generator https://jalsa.com --filepath ./public/sitemap.xml
+                </div>
+
+                <h4>Step 3: Create robots.txt</h4>
+                <div class="code-block">
+                    User-agent: *
+                    Allow: /
+                    Sitemap: https://jalsa.com/sitemap.xml
+                </div>
+
+                <h4>Step 4: Configure Security Headers</h4>
+                <p>In server configuration (nginx, Netlify _headers, etc.):</p>
+                <div class="code-block">
+                    <span class="comment">// Netlify _headers file</span>
+                    /*
+                        X-Frame-Options: DENY
+                        X-Content-Type-Options: nosniff
+                        Referrer-Policy: strict-origin-when-cross-origin
+                        Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://api.jalsa.com https://ai.jalsa.com;
+                        Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+                </div>
+
+                <h4>Step 5: Verify with Security Scanners</h4>
+                <p>Use OWASP ZAP or Mozilla Observatory to test security headers.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li>Updated <code>src/index.html</code></li>
+                    <li><code>public/robots.txt</code></li>
+                    <li><code>public/sitemap.xml</code></li>
+                    <li><code>public/_headers</code> (for Netlify) or server config.</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    npm install --save-dev sitemap-generator
+                    npx sitemap-generator https://jalsa.com --filepath ./public/sitemap.xml
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>SEO meta tags</li>
+                    <li>Security headers</li>
+                    <li>Content Security Policy</li>
+                    <li>Sitemap and robots.txt</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Open the application and check meta tags.</li>
+                    <li>Test security headers using browser DevTools.</li>
+                    <li>Submit sitemap to Google Search Console.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Secure and SEO‑ready application.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Overly restrictive CSP causing features to break.<br />
+                    <strong>Fix:</strong> Test CSP thoroughly and add necessary exceptions.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Security headers implemented, SEO tags added.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> DevOps / Marketing.</li>
+                    <li><strong>Key Takeaways:</strong> Security and SEO are critical for production readiness.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- FE-DEPLOY-004 -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-DEPLOY-004</span><span class="task-name">Deployment Documentation &amp; Runbook</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">2h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-DEPLOY-004</li>
+                    <li><strong>Task Name:</strong> Deployment Documentation &amp; Runbook</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-DEPLOY-001, FE-DEPLOY-002</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 2 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create comprehensive deployment documentation and a runbook that covers build commands, environment setup, deployment steps, rollback procedures, and troubleshooting guides.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Documentation ensures that any team member can perform a deployment or troubleshoot issues, reducing dependency on specific individuals.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Provide clear, step‑by‑step instructions for deploying the application to staging and production, along with a rollback strategy.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>All deployment steps are defined.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-DEPLOY-001:</strong> Build configuration.</li>
+                    <li><strong>FE-DEPLOY-002:</strong> CI/CD pipeline.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Deployment process.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>/docs/deployment/README.md</code></li>
+                    <li><code>/docs/deployment/runbook.md</code></li>
+                    <li><code>/docs/deployment/rollback.md</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Document Build Process</h4>
+                <ul>
+                    <li>Commands for development, staging, and production builds.</li>
+                    <li>Environment variables and their values.</li>
+                </ul>
+
+                <h4>Step 2: Document Deployment Process</h4>
+                <ul>
+                    <li>Steps for deploying to staging and production.</li>
+                    <li>How to trigger the CI/CD pipeline.</li>
+                    <li>How to verify the deployment.</li>
+                </ul>
+
+                <h4>Step 3: Document Rollback Procedure</h4>
+                <ul>
+                    <li>How to rollback to a previous version.</li>
+                    <li>What to check after rollback.</li>
+                </ul>
+
+                <h4>Step 4: Document Troubleshooting</h4>
+                <ul>
+                    <li>Common issues and their solutions.</li>
+                    <li>Logs and monitoring tools.</li>
+                </ul>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>/docs/deployment/README.md</code></li>
+                    <li><code>/docs/deployment/runbook.md</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <p>No CLI commands.</p>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Technical documentation</li>
+                    <li>Runbook creation</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Have a team member follow the documentation to perform a deployment.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Deployment documentation and runbook.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Writing documentation that is out‑of‑date.<br />
+                    <strong>Fix:</strong> Keep documentation updated with every change.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Documentation is complete and tested.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers and DevOps.</li>
+                    <li><strong>Key Takeaways:</strong> Use the runbook for all deployments.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- PHASE 19 – PRODUCTION RELEASE                                        -->
+        <!-- ===================================================================== -->
+        <div class="phase-banner" style="border-left-color: #22c55e;">
+            <h2>🎉 Phase 19 – Production Release</h2>
+            <p><strong>Purpose:</strong> Execute the production release, including final build, deployment, smoke testing, monitoring setup, and communication to stakeholders.</p>
+            <div class="meta">
+                <span>📋 Tasks: 3</span>
+                <span>⏱️ Total Effort: ~8 hours</span>
+                <span>👤 Owners: M3 (Frontend Lead), M4 (Frontend Developer)</span>
+                <span>🎯 Deliverable: Successful production deployment</span>
+            </div>
+        </div>
+
+        <!-- FE-RELEASE-001 -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-RELEASE-001</span><span class="task-name">Production Build &amp; Deployment</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">3h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-RELEASE-001</li>
+                    <li><strong>Task Name:</strong> Production Build &amp; Deployment</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-DEPLOY-001, FE-DEPLOY-002</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 3 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Build the final production version of the application and deploy it to the production environment.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Deliver the application to end‑users.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Execute the production build, verify the artifact, and deploy using the CI/CD pipeline or manual process.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>All code is merged to the main branch.</li>
+                    <li>All tests pass.</li>
+                    <li>Deployment documentation is ready.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-DEPLOY-001:</strong> Build configuration.</li>
+                    <li><strong>FE-DEPLOY-002:</strong> CI/CD pipeline.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Main branch source code.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Deployed application on production.</li>
+                    <li>Deployment verification.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Create Release Branch/Tag</h4>
+                <p>Tag the main branch with a version number.</p>
+                <div class="code-block">
+                    git tag -a v1.0.0 -m "Production release v1.0.0"
+                    git push origin v1.0.0
+                </div>
+
+                <h4>Step 2: Trigger Production Deployment</h4>
+                <p>If using CI/CD, the deployment should be triggered automatically on tag push. Otherwise, manually deploy.</p>
+                <div class="code-block">
+                    npm run build:prod
+                    <span class="comment"># Deploy the dist/ folder to production server</span>
+                </div>
+
+                <h4>Step 3: Verify Deployment</h4>
+                <p>Open the production URL and verify the application loads.</p>
+
+                <h4>Step 4: Monitor Post‑Deployment</h4>
+                <p>Check logs and error monitoring for any issues.</p>
+
+                <h3>Files To Create</h3>
+                <p>No new files; deployment is executed.</p>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    npm run build:prod
+                    git tag -a v1.0.0 -m "Production release"
+                    git push origin v1.0.0
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Release management</li>
+                    <li>Production deployment</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Verify the application loads on production.</li>
+                    <li>Test critical user flows (login, patient CRUD, etc.).</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Live production application.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Forgetting to update environment variables for production.<br />
+                    <strong>Fix:</strong> Double‑check environment.prod.ts.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Application is deployed and accessible.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> Stakeholders, QA, Support.</li>
+                    <li><strong>Key Takeaways:</strong> Production is live; monitor closely.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- FE-RELEASE-002 -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-RELEASE-002</span><span class="task-name">Smoke Testing &amp; Validation</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">3h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-RELEASE-002</li>
+                    <li><strong>Task Name:</strong> Smoke Testing &amp; Validation</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-RELEASE-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 3 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Perform smoke testing on the production deployment to ensure that the most critical features are working correctly. Validate that the deployment was successful and there are no major regressions.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Catch critical issues before users encounter them, reducing the impact of any deployment failures.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Run a predefined smoke test suite covering authentication, patient management, session creation, and dashboard functionality.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Production deployment is live.</li>
+                    <li>Smoke test checklist prepared.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-RELEASE-001:</strong> Deployment.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Production URL.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Smoke test report (<code>/docs/release/smoke-test-report.md</code>).</li>
+                    <li>List of any issues found.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Create Smoke Test Checklist</h4>
+                <ul>
+                    <li>Login with valid credentials.</li>
+                    <li>Navigate to the dashboard and verify stats load.</li>
+                    <li>View patient list.</li>
+                    <li>Create a new patient.</li>
+                    <li>Create a session for the patient.</li>
+                    <li>Assign an exercise.</li>
+                    <li>Generate a report.</li>
+                    <li>Logout.</li>
+                </ul>
+
+                <h4>Step 2: Execute Smoke Tests</h4>
+                <p>Manually perform each test or run automated E2E smoke tests.</p>
+
+                <h4>Step 3: Record Results</h4>
+                <p>Document the results, including any failures or issues.</p>
+
+                <h4>Step 4: Address Issues</h4>
+                <p>If critical issues are found, initiate a rollback or hotfix.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>/docs/release/smoke-test-report.md</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    <span class="comment"># Run E2E smoke tests</span>
+                    npx playwright test --grep="@smoke"
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Smoke testing</li>
+                    <li>Test reporting</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Execute the smoke test checklist.</li>
+                    <li>Record pass/fail for each item.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Smoke test report.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not testing all critical paths.<br />
+                    <strong>Fix:</strong> Prioritize high‑impact user flows.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>All smoke tests pass or issues are documented.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> QA and Support.</li>
+                    <li><strong>Key Takeaways:</strong> Production passes smoke tests.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- FE-RELEASE-003 -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-RELEASE-003</span><span class="task-name">Release Communication &amp; Rollback Plan</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">2h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-RELEASE-003</li>
+                    <li><strong>Task Name:</strong> Release Communication &amp; Rollback Plan</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-RELEASE-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 2 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Communicate the production release to all stakeholders and ensure the rollback plan is ready in case of critical issues.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Keep stakeholders informed and ensure business continuity by being prepared for rollback.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Document the rollback procedure and execute it if necessary.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Production deployment is complete.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-RELEASE-001:</strong> Deployment.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Release notes.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Release notes document.</li>
+                    <li>Updated rollback plan.</li>
+                    <li>Stakeholder communication.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Create Release Notes</h4>
+                <p>Document key features, bug fixes, and known issues.</p>
+                <div class="code-block">
+                    <span class="comment">// /docs/release/RELEASE-NOTES-v1.0.0.md</span>
+                    # Release v1.0.0
+
+                    ## New Features
+                    - Patient management system
+                    - Session management with voice recording
+                    - AI‑powered report generation
+                    - Chatbot with SignalR
+
+                    ## Bug Fixes
+                    - Fixed RTL layout issues
+                    - Fixed pagination in patient list
+
+                    ## Known Issues
+                    - Minor performance issues on large lists (to be fixed in v1.0.1)
+                </div>
+
+                <h4>Step 2: Communicate to Stakeholders</h4>
+                <p>Send an email or Slack message with the release notes and deployment details.</p>
+
+                <h4>Step 3: Review Rollback Plan</h4>
+                <p>Ensure the rollback procedure is ready and tested.</p>
+                <div class="code-block">
+                    <span class="comment">// /docs/deployment/rollback.md</span>
+                    # Rollback Procedure
+
+                    1. Identify the previous stable version tag (e.g., v0.9.0).
+                    2. Revert to that tag:
+                        git checkout v0.9.0
+                    3. Build and deploy the previous version.
+                    4. Verify the rollback is successful.
+                    5. Inform stakeholders.
+                </div>
+
+                <h4>Step 4: Monitor for Issues</h4>
+                <p>Keep an eye on error logs and user feedback during the first hour post‑release.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>/docs/release/RELEASE-NOTES-v1.0.0.md</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <p>No CLI commands.</p>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Release management</li>
+                    <li>Stakeholder communication</li>
+                    <li>Rollback strategy</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Have the team review release notes.</li>
+                    <li>Test the rollback procedure in a staging environment.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Release notes and communication.</li>
+                    <li>Verified rollback plan.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not notifying stakeholders about the release.<br />
+                    <strong>Fix:</strong> Send communication in advance and after release.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Release notes are published and stakeholders are informed.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All stakeholders, Support, DevOps.</li>
+                    <li><strong>Key Takeaways:</strong> Release is live; rollback plan is ready.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- PHASE 20 – MAINTENANCE & MONITORING                                 -->
+        <!-- ===================================================================== -->
+        <div class="phase-banner" style="border-left-color: #8b5cf6;">
+            <h2>🔧 Phase 20 – Maintenance &amp; Monitoring</h2>
+            <p><strong>Purpose:</strong> Establish ongoing maintenance and monitoring to ensure the application remains healthy, secure, and performant. This phase covers error monitoring, performance monitoring, dependency management, user feedback collection, and regular health checks.</p>
+            <div class="meta">
+                <span>📋 Tasks: 4</span>
+                <span>⏱️ Total Effort: Ongoing</span>
+                <span>👤 Owners: M3 (Frontend Lead), M4 (Frontend Developer)</span>
+                <span>🎯 Deliverable: Monitoring system and maintenance processes</span>
+            </div>
+        </div>
+
+        <!-- FE-MAINT-001 -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-MAINT-001</span><span class="task-name">Error &amp; Performance Monitoring</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-MAINT-001</li>
+                    <li><strong>Task Name:</strong> Error &amp; Performance Monitoring</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-RELEASE-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Set up error monitoring (Sentry, LogRocket) and performance monitoring (Lighthouse CI, Web Vitals) to track the health of the application in production.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Proactive monitoring allows the team to identify and fix issues before they impact users.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Integrate Sentry for error tracking and Google Analytics for performance metrics. Set up alerts for critical errors and performance degradations.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Sentry account with a project set up.</li>
+                    <li>Google Analytics or similar tool.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-RELEASE-001:</strong> Production deployment.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Sentry DSN, GA tracking ID.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Updated <code>environment.prod.ts</code> with monitoring keys.</li>
+                    <li>Sentry integration in <code>main.ts</code> or <code>app.config.ts</code>.</li>
+                    <li>Performance monitoring setup.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Integrate Sentry</h4>
+                <div class="code-block">
+                    npm install @sentry/angular @sentry/browser
+                </div>
+                <div class="code-block">
+                    <span class="comment">// app.config.ts</span>
+                    <span class="keyword">import</span> { BrowserTracing } <span class="keyword">from</span> <span class="string">'@sentry/browser'</span>;
+                    <span class="keyword">import</span> * <span class="keyword">as</span> Sentry <span class="keyword">from</span> <span class="string">'@sentry/angular'</span>;
+
+                    Sentry.init({
+                        dsn: environment.sentryDsn,
+                        environment: environment.production ? 'production' : 'development',
+                        integrations: [new BrowserTracing()],
+                        tracesSampleRate: 1.0,
+                    });
+                </div>
+
+                <h4>Step 2: Add Sentry Error Handler</h4>
+                <p>Extend the GlobalErrorHandler to send errors to Sentry.</p>
+
+                <h4>Step 3: Set Up Web Vitals</h4>
+                <p>Use <code>web-vitals</code> to report metrics to Google Analytics or a custom endpoint.</p>
+                <div class="code-block">
+                    npm install web-vitals
+                </div>
+                <div class="code-block">
+                    <span class="comment">// In main.ts or app.component</span>
+                    <span class="keyword">import</span> { getCLS, getFID, getLCP } <span class="keyword">from</span> <span class="string">'web-vitals'</span>;
+
+                    getCLS(console.log);
+                    getFID(console.log);
+                    getLCP(console.log);
+                </div>
+
+                <h4>Step 4: Set Up Alerts</h4>
+                <p>Configure Sentry alerts for critical errors and performance issues.</p>
+
+                <h4>Step 5: Test Monitoring</h4>
+                <p>Trigger a test error and verify it appears in Sentry.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li>Updated <code>environment.prod.ts</code>.</li>
+                    <li>Updated <code>app.config.ts</code>.</li>
+                    <li>Updated GlobalErrorHandler.</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    npm install @sentry/angular @sentry/browser web-vitals
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Error monitoring</li>
+                    <li>Performance monitoring</li>
+                    <li>Sentry integration</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Throw a test error and verify it appears in Sentry.</li>
+                    <li>Check that Web Vitals are being collected.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Monitoring system in place.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not setting the correct environment in Sentry.<br />
+                    <strong>Fix:</strong> Use <code>environment.production</code> to set the environment.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Error and performance monitoring is active.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Monitor Sentry and performance dashboards regularly.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- FE-MAINT-002 -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-MAINT-002</span><span class="task-name">Dependency Management &amp; Updates</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">2h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-MAINT-002</li>
+                    <li><strong>Task Name:</strong> Dependency Management &amp; Updates</li>
+                    <li><strong>Owner:</strong> M4 (Frontend Developer)</li>
+                    <li><strong>Dependencies:</strong> None</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 2 hours monthly</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Set up a process for managing and updating dependencies to keep the application secure and up‑to‑date with the latest libraries.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Regular updates prevent security vulnerabilities and keep the application compatible with modern browsers.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use <code>npm audit</code>, Dependabot (GitHub), or Renovate to automate dependency updates. Establish a process for testing updates before merging.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Access to repository.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li>None.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li><code>package.json</code>.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Dependabot configuration (<code>.github/dependabot.yml</code>).</li>
+                    <li>Update process documentation.</li>
+                    <li>Updated dependencies.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Configure Dependabot</h4>
+                <div class="code-block">
+                    <span class="comment">// .github/dependabot.yml</span>
+                    version: 2
+                    updates:
+                      - package-ecosystem: "npm"
+                        directory: "/"
+                        schedule:
+                          interval: "weekly"
+                        open-pull-requests-limit: 10
+                        reviewers:
+                          - "frontend-team"
+                </div>
+
+                <h4>Step 2: Set Up npm Audit in CI</h4>
+                <p>Add <code>npm audit</code> to the CI pipeline to fail on high‑severity vulnerabilities.</p>
+
+                <h4>Step 3: Create Update Process Document</h4>
+                <p>Document how to review and test dependency updates.</p>
+
+                <h4>Step 4: Schedule Regular Dependency Reviews</h4>
+                <p>Set a recurring calendar reminder to review and merge Dependabot PRs.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>.github/dependabot.yml</code></li>
+                    <li><code>/docs/maintenance/dependency-updates.md</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    npm audit
+                    npm outdated
+                    npm update
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Dependency management</li>
+                    <li>Security scanning</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test the Dependabot configuration by merging a minor update.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Automated dependency update process.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Merging major updates without testing.<br />
+                    <strong>Fix:</strong> Always test major updates thoroughly.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Dependency management process is in place.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Review Dependabot PRs weekly.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- FE-MAINT-003 -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-MAINT-003</span><span class="task-name">User Feedback &amp; Continuous Improvement</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">2h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-MAINT-003</li>
+                    <li><strong>Task Name:</strong> User Feedback &amp; Continuous Improvement</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> None</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 2 hours monthly</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Establish a process for collecting and acting on user feedback to continuously improve the application. This includes feedback forms, user surveys, and analytics‑driven insights.</p>
+
+                <h3>Business Purpose</h3>
+                <p>User feedback drives product improvements and increases user satisfaction.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Integrate a feedback widget or survey tool, and set up analytics to track user behavior and identify pain points.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Analytics tool (Google Analytics, Mixpanel).</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-MAINT-001:</strong> Analytics setup.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>User feedback data.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Feedback collection process.</li>
+                    <li>Feedback review process.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Add Feedback Widget</h4>
+                <p>Use a simple feedback form component or a third‑party tool like Hotjar.</p>
+
+                <h4>Step 2: Set Up Analytics Event Tracking</h4>
+                <p>Track key user actions: login, patient creation, session creation, etc.</p>
+
+                <h4>Step 3: Create Feedback Review Process</h4>
+                <p>Define how often to review feedback and how to prioritize it.</p>
+
+                <h4>Step 4: Implement Actionable Improvements</h4>
+                <p>Turn feedback into tasks and track them in the backlog.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>/docs/feedback/feedback-process.md</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <p>No CLI commands.</p>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>User feedback</li>
+                    <li>Product analytics</li>
+                    <li>Continuous improvement</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Submit a test feedback entry to verify the flow.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Feedback collection and review process.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Collecting feedback but not acting on it.<br />
+                    <strong>Fix:</strong> Schedule regular feedback review meetings.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Feedback process is established.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> Product, Support, Development.</li>
+                    <li><strong>Key Takeaways:</strong> Feedback drives the roadmap.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- FE-MAINT-004 -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-MAINT-004</span><span class="task-name">Health Checks &amp; Regular Maintenance</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">2h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-MAINT-004</li>
+                    <li><strong>Task Name:</strong> Health Checks &amp; Regular Maintenance</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-MAINT-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 2 hours weekly</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Establish regular health checks and maintenance tasks to ensure the application remains stable and performant.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Proactive maintenance prevents downtime and performance issues.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Define health check endpoints, monitor server status, and run regular maintenance tasks (cache clearing, database cleanup, etc.).</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Uptime monitoring tool (Pingdom, UptimeRobot).</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-MAINT-001:</strong> Monitoring setup.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Application health endpoint.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Health check endpoint in the application.</li>
+                    <li>Uptime monitoring configuration.</li>
+                    <li>Maintenance schedule document.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Create Health Check Endpoint</h4>
+                <p>Add a route <code>/health</code> that returns a simple status.</p>
+                <div class="code-block">
+                    <span class="comment">// In a new component or route</span>
+                    {
+                        path: 'health',
+                        component: HealthCheckComponent,
+                    }
+                </div>
+
+                <h4>Step 2: Set Up Uptime Monitoring</h4>
+                <p>Use UptimeRobot or Pingdom to monitor <code>https://jalsa.com/health</code>.</p>
+
+                <h4>Step 3: Define Maintenance Tasks</h4>
+                <ul>
+                    <li>Weekly: Review error logs, check performance metrics.</li>
+                    <li>Monthly: Review dependency updates, review user feedback.</li>
+                    <li>Quarterly: Full security review, performance audit.</li>
+                </ul>
+
+                <h4>Step 4: Create Maintenance Schedule Document</h4>
+                <p>Document all recurring tasks and owners.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>/docs/maintenance/maintenance-schedule.md</code></li>
+                    <li><code>/docs/maintenance/health-check.md</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <p>No CLI commands.</p>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Uptime monitoring</li>
+                    <li>Health checks</li>
+                    <li>Maintenance planning</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Access the health endpoint and verify it returns a 200 status.</li>
+                    <li>Test uptime monitoring by temporarily taking the endpoint down.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Health check endpoint and monitoring.</li>
+                    <li>Maintenance schedule.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not monitoring the health endpoint after deployment.<br />
+                    <strong>Fix:</strong> Set up alerting for when the health check fails.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Health checks and maintenance schedule are in place.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> DevOps, All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Regular maintenance prevents issues.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- OVERALL COMPLETION CRITERIA                                          -->
+        <!-- ===================================================================== -->
+        <hr class="hr" />
+
+        <h2 style="background: #f0fdf4; border-left-color: #22c55e; padding:12px 20px; border-left:6px solid #22c55e; border-radius:8px;">✅ Overall Completion Criteria (Phases 17–20)</h2>
+        <ul class="checklist">
+            <li>All 16 tasks across Phases 17–20 are complete.</li>
+            <li>Lighthouse scores ≥ 90 for Performance, Accessibility, Best Practices, SEO.</li>
+            <li>Bundle size reduced by at least 20% from baseline.</li>
+            <li>CI/CD pipeline is fully functional and deploys to staging and production.</li>
+            <li>Security headers and SEO tags are implemented.</li>
+            <li>Deployment documentation and runbook are complete.</li>
+            <li>Production release is deployed, smoke tested, and communicated.</li>
+            <li>Sentry and performance monitoring are active.</li>
+            <li>Dependency update process is automated with Dependabot.</li>
+            <li>User feedback collection and review process is established.</li>
+            <li>Health checks and maintenance schedule are in place.</li>
+            <li>All changes are committed and tagged.</li>
+        </ul>
+
+        <h2 style="background: #f0f9ff; border-left-color: #3b82f6; padding:12px 20px; border-left:6px solid #3b82f6; border-radius:8px; margin-top:24px;">📋 Code Review Checklist</h2>
+        <ul class="checklist">
+            <li>Performance optimizations are applied consistently.</li>
+            <li>Build configuration is correct for all environments.</li>
+            <li>CI/CD pipeline includes linting, testing, and deployment steps.</li>
+            <li>Security headers and CSP are configured correctly.</li>
+            <li>Error monitoring is integrated and tested.</li>
+            <li>Dependency updates are automated.</li>
+        </ul>
+
+        <h2 style="background: #fefce8; border-left-color: #f59e0b; padding:12px 20px; border-left:6px solid #f59e0b; border-radius:8px; margin-top:24px;">🚀 Pull Request Checklist</h2>
+        <ul class="checklist">
+            <li>Branch is up‑to‑date with main.</li>
+            <li>All tests pass.</li>
+            <li>Code review completed.</li>
+            <li>Documentation updated.</li>
+        </ul>
+
+        <h2 style="background: #fef2f2; border-left-color: #ef4444; padding:12px 20px; border-left:6px solid #ef4444; border-radius:8px; margin-top:24px;">🧪 Deployment Readiness Checklist</h2>
+        <ul class="checklist">
+            <li>Production build is successful.</li>
+            <li>Smoke tests pass.</li>
+            <li>Monitoring is active.</li>
+            <li>Rollback plan is tested.</li>
+        </ul>
+
+        <hr class="hr" />
+        <div style="text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 20px 0 0;">
+            Jalsa – Phases 17–20: Performance, Deployment, Release &amp; Maintenance – Expanded Implementation Handbook &bull; v1.0 &bull; For development team
+        </div>
+    </div>
+
+    <script>
+        function toggleTask(header) {
+            const body = header.nextElementSibling;
+            const isOpen = body.classList.contains('open');
+            body.classList.toggle('open');
+            header.classList.toggle('open');
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstHeader = document.querySelector('.task-header');
+            if (firstHeader) firstHeader.click();
+        });
+    </script>
+</body>
+</html>

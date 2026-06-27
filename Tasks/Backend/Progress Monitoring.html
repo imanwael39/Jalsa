@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jalsa – Progress Monitoring Phase Implementation Playbook</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+            padding: 30px 20px;
+            line-height: 1.7;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+            padding: 40px 45px;
+        }
+        h1 {
+            font-size: 2.4rem;
+            color: #0f172a;
+            border-bottom: 4px solid #3b82f6;
+            padding-bottom: 18px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        h1 small { font-size:1rem; font-weight:400; color:#64748b; margin-left:auto; }
+        .phase-banner {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 20px 28px;
+            margin-bottom: 32px;
+            border-left: 8px solid #3b82f6;
+        }
+        .phase-banner h2 { margin:0 0 8px 0; font-size:1.6rem; color:#0f172a; background:none; padding:0; border-left:none; }
+        .phase-banner p { margin:0; color:#475569; }
+        .phase-banner .meta { display:flex; flex-wrap:wrap; gap:20px 40px; margin-top:10px; font-size:0.95rem; }
+        .phase-banner .meta span { font-weight:500; color:#0f172a; }
+
+        .task-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            overflow: hidden;
+        }
+        .task-header {
+            background: #f8fafc;
+            padding: 16px 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.15s;
+            user-select: none;
+        }
+        .task-header:hover { background: #f1f5f9; }
+        .task-header .task-id { font-weight:700; color:#3b82f6; margin-right:12px; font-size:1.05rem; }
+        .task-header .task-name { font-weight:600; font-size:1.05rem; }
+        .task-header .task-badges { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+        .task-header .task-badges .tag { font-size:0.7rem; padding:2px 12px; border-radius:30px; font-weight:600; }
+        .task-header .chevron { transition:transform 0.25s; font-size:1.3rem; color:#94a3b8; margin-left:12px; }
+        .task-header.open .chevron { transform:rotate(180deg); }
+
+        .task-body { padding:0 24px 24px; display:none; overflow:hidden; }
+        .task-body.open { display:block; }
+
+        .task-body h3 { font-size:1.15rem; margin-top:22px; margin-bottom:8px; color:#0f172a; border-bottom:2px solid #e2e8f0; padding-bottom:4px; }
+        .task-body h4 { font-size:1rem; margin-top:16px; margin-bottom:6px; color:#334155; }
+        .task-body p { margin-bottom:8px; }
+        .task-body ul, .task-body ol { padding-left:24px; margin-bottom:10px; }
+        .task-body li { margin-bottom:3px; }
+
+        .checklist { list-style:none; padding-left:0; }
+        .checklist li { padding:3px 0 3px 30px; background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') left center no-repeat; background-size:18px; }
+
+        .pitfall-box { background:#fef2f2; border-left:4px solid #ef4444; padding:10px 16px; border-radius:8px; margin:8px 0; }
+        .tip-box { background:#f0fdf4; border-left:4px solid #22c55e; padding:10px 16px; border-radius:8px; margin:8px 0; }
+        .arch-box { background:#f0f9ff; border-left:4px solid #3b82f6; padding:10px 16px; border-radius:8px; margin:8px 0; }
+
+        .tag { display:inline-block; background:#e2e8f0; padding:1px 12px; border-radius:30px; font-size:0.7rem; font-weight:600; color:#1e293b; margin-right:4px; }
+        .tag-blue { background:#dbeafe; color:#1d4ed8; }
+        .tag-green { background:#dcfce7; color:#15803d; }
+        .tag-amber { background:#fef3c7; color:#b45309; }
+        .tag-red { background:#fee2e2; color:#b91c1c; }
+        .tag-purple { background:#ede9fe; color:#6d28d9; }
+
+        .flow-diagram {
+            background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:14px 18px; margin:8px 0 12px;
+            font-family:'Courier New', monospace; font-size:0.9rem; overflow-x:auto; white-space:nowrap;
+        }
+        .flow-diagram .arrow { color:#94a3b8; margin:0 6px; }
+        .flow-diagram .step { color:#0f172a; font-weight:500; }
+
+        .table-wrap { overflow-x:auto; margin:10px 0 16px; border-radius:10px; border:1px solid #e2e8f0; }
+        table { width:100%; border-collapse:collapse; font-size:0.9rem; background:#fff; }
+        th { background:#f1f5f9; font-weight:600; text-align:left; padding:8px 14px; border-bottom:2px solid #e2e8f0; color:#0f172a; }
+        td { padding:8px 14px; border-bottom:1px solid #f1f5f9; vertical-align:top; }
+        tr:last-child td { border-bottom:none; }
+
+        .hr { border:none; border-top:2px dashed #e2e8f0; margin:32px 0; }
+
+        @media (max-width:768px) {
+            .container { padding:20px 16px; }
+            h1 { font-size:1.8rem; flex-wrap:wrap; }
+            .task-header { flex-wrap:wrap; gap:8px; }
+            .task-header .task-badges { margin-left:0; }
+            .task-body { padding:0 16px 16px; }
+            .phase-banner { padding:16px; }
+            .phase-banner .meta { flex-direction:column; gap:6px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <h1>
+        📈 Jalsa – Progress Monitoring Phase Implementation Playbook
+        <small>Phase 8 · 7 Tasks · Analytics</small>
+    </h1>
+
+    <div class="phase-banner">
+        <h2>📈 Progress Monitoring – Phase 8</h2>
+        <p><strong>Purpose:</strong> Provide therapists with dashboards and analytics to monitor patient progress – assessment trends, exercise completion rates, session statistics, and overall patient summaries. This phase builds the backend aggregation logic and frontend visualisation.</p>
+        <div class="meta">
+            <span>📋 Tasks: 7 (4 backend + 3 frontend)</span>
+            <span>⏱️ Total Effort: ~32 hours</span>
+            <span>👤 Owners: M2 (Backend), M3 (Frontend Lead)</span>
+            <span>🔗 Dependencies: Phase 3 (Patient), Phase 4 (Session), Phase 5 (Exercise), Phase 6 (AI)</span>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- BACKEND TASKS (BE-PRO-001 .. BE-PRO-004)                             -->
+    <!-- ===================================================================== -->
+
+    <!-- BE-PRO-001 -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">BE-PRO-001</span><span class="task-name">Dashboard DTOs</span></span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-green">Low</span>
+                <span class="tag">3h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> BE-PRO-001</li>
+                <li><strong>Task Name:</strong> Dashboard DTOs</li>
+                <li><strong>Owner:</strong> M2 (Backend)</li>
+                <li><strong>Dependencies:</strong> None (standalone)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-green">Low</span></li>
+                <li><strong>Estimated Effort:</strong> 3 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Create DTOs for dashboard data: <code>DashboardSummaryDto</code>, <code>TrendDto</code>, <code>AnalyticsDto</code>.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Define the structure of data returned to the frontend for dashboard visualisation.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Provide type‑safe contracts for the dashboard API.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li><strong>DTO pattern:</strong> Understand role in Clean Architecture.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>None.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>DashboardSummaryDto</code> – TotalPatients, ActivePatients, ArchivedPatients, TotalSessions, SessionsThisMonth, ExerciseCompletionRate, AverageAssessmentScore, RecentAlerts.</li>
+                <li><code>TrendDto</code> – Date, Value, Label.</li>
+                <li><code>AnalyticsDto</code> – AssessmentTrend (List of TrendDto), ExerciseCompletion (pie chart data), SessionFrequency (List of TrendDto).</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>Create DTO classes in <code>Jalsa.Application/DTOs/Dashboard/</code>.</li>
+                <li>Include properties for all dashboard metrics.</li>
+                <li>Add validation where needed (e.g., date ranges).</li>
+            </ol>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Three DTO classes.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>Properties typed correctly.</li>
+                <li>Nested objects defined.</li>
+            </ul>
+
+            <h3>Testing Strategy</h3>
+            <p><em>Unit Tests:</em> Not applicable – simple DTOs.</p>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>DTOs created.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- BE-PRO-002 -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">BE-PRO-002</span><span class="task-name">Progress Service</span></span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-red">High</span>
+                <span class="tag">8h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> BE-PRO-002</li>
+                <li><strong>Task Name:</strong> Progress Service</li>
+                <li><strong>Owner:</strong> M2 (Backend)</li>
+                <li><strong>Dependencies:</strong> BE-PRO-001 (DTOs), Patient, Session, Exercise, Assessment repositories, AI summary service</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                <li><strong>Estimated Effort:</strong> 8 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Implement the progress service that aggregates data from multiple sources to build the therapist dashboard.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Provide therapists with a holistic view of patient progress to inform clinical decisions.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Query and aggregate data from Patient, Session, Exercise, Assessment, and AI summarization services. Use efficient LINQ queries to avoid performance issues.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li><strong>LINQ aggregation:</strong> GroupBy, Count, Average, Sum.</li>
+                <li><strong>EF Core performance:</strong> Use AsNoTracking, projection.</li>
+                <li><strong>Repository pattern:</strong> Access to data.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>PatientRepository, SessionRepository, ExerciseRepository, AssessmentRepository, ISummarizationService.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>IProgressService</code> interface.</li>
+                <li><code>ProgressService</code> implementation.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>Create <code>IProgressService</code> with method <code>GetDashboardAsync()</code>.</li>
+                <li>Implement <code>GetDashboardAsync</code>:
+                    <ul>
+                        <li>Get total patient count, active (not archived), archived.</li>
+                        <li>Get total sessions, sessions in last 30 days.</li>
+                        <li>Get exercise completion rate (Complete / total assigned).</li>
+                        <li>Get average assessment score across all assessments (group by type).</li>
+                        <li>Get recent crisis alerts.</li>
+                        <li>Build assessment trend: group assessments by month, average score.</li>
+                        <li>Build exercise completion pie: Complete, Partial, Skipped.</li>
+                        <li>Build session frequency: sessions per week over last 8 weeks.</li>
+                    </ul>
+                </li>
+                <li>Use <code>AsNoTracking()</code> for read‑only queries.</li>
+                <li>Return aggregated <code>DashboardSummaryDto</code>.</li>
+            </ol>
+
+            <h3>Data Flow</h3>
+            <div class="flow-diagram">
+                <span class="step">Controller</span> <span class="arrow">→</span>
+                <span class="step">IProgressService</span> <span class="arrow">→</span>
+                <span class="step">Repositories</span> <span class="arrow">→</span>
+                <span class="step">Database</span> <span class="arrow">→</span>
+                <span class="step">Aggregation</span> <span class="arrow">→</span>
+                <span class="step">DTO</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Service interface and implementation.</li>
+                <li>DI registration.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>Counts and percentages are correct.</li>
+                <li>Date ranges work (e.g., last 30 days).</li>
+                <li>Empty data handled gracefully.</li>
+                <li>Performance is acceptable (use AsNoTracking).</li>
+            </ul>
+
+            <h3>Testing Strategy</h3>
+            <p><em>Unit Tests:</em> Mock repositories, test aggregation logic.</p>
+            <p><em>Integration Tests:</em> Use seeded database to verify queries.</p>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Querying large datasets without filtering – always use date ranges and pagination.
+            </div>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Not using <code>AsNoTracking()</code> – can cause memory bloat.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Service implemented and tested.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <p><strong>Must Know:</strong> LINQ aggregation, EF Core performance.</p>
+        </div>
+    </div>
+
+    <!-- BE-PRO-003 -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">BE-PRO-003</span><span class="task-name">Progress Controller</span></span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">4h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> BE-PRO-003</li>
+                <li><strong>Task Name:</strong> Progress Controller</li>
+                <li><strong>Owner:</strong> M2 (Backend)</li>
+                <li><strong>Dependencies:</strong> BE-PRO-002 (ProgressService)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 4 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Create the API endpoint for the therapist dashboard.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Expose aggregated progress data to the frontend.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Map HTTP GET request to service method, return DashboardSummaryDto.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>ASP.NET Core controllers.</li>
+                <li>Authorization (Therapist).</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>IProgressService.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>ProgressController</code> with endpoint.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>Create <code>ProgressController</code> with route <code>[Route("api/progress")]</code>.</li>
+                <li>Inject IProgressService.</li>
+                <li>Implement <code>GET /dashboard</code> – returns DashboardSummaryDto.</li>
+                <li>Apply <code>[Authorize(Roles = "Therapist")]</code>.</li>
+            </ol>
+
+            <h3>API Design</h3>
+            <table>
+                <thead><tr><th>Route</th><th>Method</th><th>Request</th><th>Response</th></tr></thead>
+                <tbody>
+                    <tr><td>/api/progress/dashboard</td><td>GET</td><td>None</td><td>DashboardSummaryDto</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Data Flow</h3>
+            <div class="flow-diagram">
+                <span class="step">Client</span> <span class="arrow">→</span>
+                <span class="step">ProgressController</span> <span class="arrow">→</span>
+                <span class="step">ProgressService</span> <span class="arrow">→</span>
+                <span class="step">Aggregation</span> <span class="arrow">→</span>
+                <span class="step">Response</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>ProgressController with endpoint.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>Endpoint returns valid data.</li>
+                <li>Authorization works.</li>
+                <li>Error handling.</li>
+            </ul>
+
+            <h3>Testing Strategy</h3>
+            <p><em>Integration Tests:</em> Test endpoint with seeded data.</p>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Controller implemented and tested.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- BE-PRO-004 -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">BE-PRO-004</span><span class="task-name">Progress Unit Tests</span></span>
+            <span class="task-badges">
+                <span class="tag tag-green">P2</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">5h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> BE-PRO-004</li>
+                <li><strong>Task Name:</strong> Progress Unit Tests</li>
+                <li><strong>Owner:</strong> M2 (Backend)</li>
+                <li><strong>Dependencies:</strong> BE-PRO-002, BE-PRO-003</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 5 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Write unit tests for ProgressService and ProgressController.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Ensure dashboard calculations are correct.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Test aggregation logic and controller response.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>xUnit, Moq, FluentAssertions.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Mock repositories.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Test classes.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>Create ProgressServiceTests – mock repositories, test aggregation methods.</li>
+                <li>Test edge cases: no data, one patient, many patients.</li>
+                <li>Create ProgressControllerTests – mock service, test endpoint returns correct status.</li>
+            </ol>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Passing unit tests.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>All tests pass.</li>
+                <li>Coverage > 80%.</li>
+            </ul>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Unit tests pass.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- FRONTEND TASKS (FE-PRO-001 .. FE-PRO-003)                            -->
+    <!-- ===================================================================== -->
+
+    <!-- FE-PRO-001 -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">FE-PRO-001</span><span class="task-name">Dashboard Module</span></span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">3h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> FE-PRO-001</li>
+                <li><strong>Task Name:</strong> Dashboard Module</li>
+                <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                <li><strong>Dependencies:</strong> FE-AUTH-001 (AuthModule)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 3 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Create the DashboardModule with routing, lazy loading, and role guard (Therapist).</p>
+
+            <h3>Business Purpose</h3>
+            <p>Group dashboard features.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Set up route for the dashboard component.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Angular CLI, routing.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>None.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>DashboardModule</code> with routing.</li>
+            </ul>
+
+            <h3>Detailed Frontend Workflow</h3>
+            <ol>
+                <li>Generate module: <code>ng g module dashboard --routing</code>.</li>
+                <li>Define route: '' (empty) for dashboard component.</li>
+                <li>Apply AuthGuard and RoleGuard (Therapist).</li>
+                <li>Lazy‑load in AppRoutingModule.</li>
+            </ol>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li><code>dashboard.module.ts</code>, <code>dashboard-routing.module.ts</code>.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>Module lazy‑loaded.</li>
+                <li>Route protected.</li>
+            </ul>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Module created.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- FE-PRO-002 -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">FE-PRO-002</span><span class="task-name">Dashboard Service</span></span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">4h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> FE-PRO-002</li>
+                <li><strong>Task Name:</strong> Dashboard Service</li>
+                <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                <li><strong>Dependencies:</strong> FE-PRO-001</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 4 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Create a service to fetch dashboard data from the backend.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Provide dashboard data to the component.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Use HttpClient to call <code>/api/progress/dashboard</code>.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>HttpClient, DTO interfaces.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Backend dashboard endpoint.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>DashboardService</code> with method <code>getDashboardData()</code>.</li>
+            </ul>
+
+            <h3>Detailed Frontend Workflow</h3>
+            <ol>
+                <li>Generate service: <code>ng g service dashboard/dashboard</code>.</li>
+                <li>Define interface for DashboardSummaryDto.</li>
+                <li>Implement <code>getDashboardData()</code> using HttpClient.</li>
+            </ol>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li><code>dashboard.service.ts</code> and interface.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>Service calls correct endpoint.</li>
+                <li>Error handling.</li>
+            </ul>
+
+            <h3>Testing Strategy</h3>
+            <p><em>Unit Tests:</em> Mock HttpClient, test method.</p>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Service implemented.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- FE-PRO-003 -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span><span class="task-id">FE-PRO-003</span><span class="task-name">Dashboard Component</span></span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">8h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> FE-PRO-003</li>
+                <li><strong>Task Name:</strong> Dashboard Component</li>
+                <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                <li><strong>Dependencies:</strong> FE-PRO-002</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 8 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Create the dashboard component with charts for assessment trends, exercise completion, and session statistics.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Visualise patient progress data for therapists.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Use Chart.js or ngx‑charts to render line charts, bar charts, and pie charts from dashboard data.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Charting library (Chart.js / ngx‑charts).</li>
+                <li>DashboardService.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Dashboard data from service.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>DashboardComponent</code> with template and charts.</li>
+            </ul>
+
+            <h3>Detailed Frontend Workflow</h3>
+            <ol>
+                <li>Generate component: <code>ng g c dashboard/dashboard</code>.</li>
+                <li>On init, load dashboard data.</li>
+                <li>Show loading spinner.</li>
+                <li>Display summary cards: Total Patients, Active Patients, Sessions This Month, Exercise Completion Rate.</li>
+                <li>Render assessment trend line chart (scores over time).</li>
+                <li>Render exercise completion pie chart (Complete/Partial/Skipped).</li>
+                <li>Render session frequency bar chart (sessions per week).</li>
+                <li>Display recent crisis alerts list.</li>
+            </ol>
+
+            <h3>Data Flow</h3>
+            <div class="flow-diagram">
+                <span class="step">Component</span> <span class="arrow">→</span>
+                <span class="step">DashboardService</span> <span class="arrow">→</span>
+                <span class="step">API</span> <span class="arrow">→</span>
+                <span class="step">Data</span> <span class="arrow">→</span>
+                <span class="step">Charts</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Dashboard component with charts.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>Data loads.</li>
+                <li>Cards display correct numbers.</li>
+                <li>Charts render with data.</li>
+                <li>Loading and error states handled.</li>
+                <li>Responsive design.</li>
+            </ul>
+
+            <h3>Testing Strategy</h3>
+            <p><em>Unit Tests:</em> Test component with mock data.</p>
+            <p><em>E2E Tests:</em> Verify dashboard renders.</p>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Not handling empty data – charts should show "no data" message.
+            </div>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Chart library not properly configured – ensure correct imports and options.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Dashboard component functional and charts render.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <p><strong>Must Know:</strong> Chart.js / ngx‑charts integration.</p>
+            <p><strong>Nice To Know:</strong> Angular animations for charts.</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- PHASE COMPLETION CRITERIA                                             -->
+    <!-- ===================================================================== -->
+    <hr class="hr" />
+
+    <h2 style="background: #f0fdf4; border-left-color: #22c55e;">✅ Phase Completion Criteria</h2>
+    <ul class="checklist">
+        <li>All 7 tasks (BE-PRO-001..004, FE-PRO-001..003) are completed and committed.</li>
+        <li>Dashboard DTOs, service, controller implemented and tested.</li>
+        <li>Progress service aggregates data correctly.</li>
+        <li>Dashboard endpoint returns valid data.</li>
+        <li>Unit tests for service and controller pass.</li>
+        <li>Frontend module, service, and component implemented.</li>
+        <li>Dashboard displays summary cards and charts.</li>
+        <li>Charts render with real data.</li>
+        <li>Integration tests pass.</li>
+    </ul>
+
+    <h2 style="background: #f0f9ff; border-left-color: #3b82f6;">📋 Code Review Checklist</h2>
+    <ul class="checklist">
+        <li>Aggregation queries are efficient (use AsNoTracking).</li>
+        <li>Empty data is handled gracefully.</li>
+        <li>DTOs match frontend requirements.</li>
+        <li>Authorization applied.</li>
+        <li>Frontend chart configuration is correct.</li>
+        <li>Error handling in service and component.</li>
+    </ul>
+
+    <h2 style="background: #fefce8; border-left-color: #f59e0b;">🚀 Pull Request Checklist</h2>
+    <ul class="checklist">
+        <li>Branch up‑to‑date with <code>develop</code>.</li>
+        <li>CI pipeline passes.</li>
+        <li>Code review approved.</li>
+        <li>Manual testing done – dashboard loads.</li>
+    </ul>
+
+    <h2 style="background: #fef2f2; border-left-color: #ef4444;">🧪 Deployment Readiness Checklist</h2>
+    <ul class="checklist">
+        <li>All Phase 8 tasks complete and merged.</li>
+        <li>Dashboard endpoint works in staging.</li>
+        <li>Frontend dashboard renders charts.</li>
+        <li>Integration tests pass.</li>
+    </ul>
+
+    <hr class="hr" />
+    <div style="text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 20px 0 0;">
+        Jalsa – Progress Monitoring Implementation Playbook &bull; v1.0 &bull; For development team
+    </div>
+</div>
+
+<script>
+    function toggleTask(header) {
+        const body = header.nextElementSibling;
+        const isOpen = body.classList.contains('open');
+        body.classList.toggle('open');
+        header.classList.toggle('open');
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        const firstHeader = document.querySelector('.task-header');
+        if (firstHeader) firstHeader.click();
+    });
+</script>
+</body>
+</html>

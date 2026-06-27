@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jalsa – Phase 15: Error Handling – Expanded Implementation Handbook</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+            padding: 30px 20px;
+            line-height: 1.7;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            padding: 40px 45px;
+        }
+        h1 {
+            font-size: 2.4rem;
+            color: #0f172a;
+            border-bottom: 4px solid #3b82f6;
+            padding-bottom: 18px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        h1 small {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #64748b;
+            margin-left: auto;
+        }
+        .phase-banner {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 20px 28px;
+            margin-bottom: 32px;
+            border-left: 8px solid #3b82f6;
+        }
+        .phase-banner h2 {
+            margin: 0 0 8px 0;
+            font-size: 1.6rem;
+            color: #0f172a;
+            background: none;
+            padding: 0;
+            border-left: none;
+        }
+        .phase-banner p {
+            margin: 0;
+            color: #475569;
+        }
+        .phase-banner .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px 40px;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+        .phase-banner .meta span {
+            font-weight: 500;
+            color: #0f172a;
+        }
+
+        .task-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+        .task-header {
+            background: #f8fafc;
+            padding: 16px 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.15s;
+            user-select: none;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .task-header:hover {
+            background: #f1f5f9;
+        }
+        .task-header .task-id {
+            font-weight: 700;
+            color: #3b82f6;
+            margin-right: 12px;
+            font-size: 1.05rem;
+        }
+        .task-header .task-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .task-header .task-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .task-header .task-badges .tag {
+            font-size: 0.7rem;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+        .task-header .chevron {
+            transition: transform 0.25s;
+            font-size: 1.3rem;
+            color: #94a3b8;
+            margin-left: 12px;
+        }
+        .task-header.open .chevron {
+            transform: rotate(180deg);
+        }
+
+        .task-body {
+            padding: 0 24px 24px;
+            display: none;
+            overflow: hidden;
+        }
+        .task-body.open {
+            display: block;
+        }
+
+        .task-body h3 {
+            font-size: 1.15rem;
+            margin-top: 22px;
+            margin-bottom: 8px;
+            color: #0f172a;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 4px;
+        }
+        .task-body h4 {
+            font-size: 1rem;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            color: #334155;
+        }
+        .task-body p {
+            margin-bottom: 8px;
+        }
+        .task-body ul,
+        .task-body ol {
+            padding-left: 24px;
+            margin-bottom: 10px;
+        }
+        .task-body li {
+            margin-bottom: 3px;
+        }
+        .task-body .field-label {
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+        .checklist li {
+            padding: 3px 0 3px 30px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') left center no-repeat;
+            background-size: 18px;
+        }
+
+        .pitfall-box {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .tip-box {
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .arch-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #e2e8f0;
+            padding: 1px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-right: 4px;
+        }
+        .tag-blue {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .tag-green {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .tag-amber {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .tag-red {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .tag-purple {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+        .tag-slate {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        .tag-indigo {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .flow-diagram {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin: 8px 0 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .flow-diagram .arrow {
+            color: #94a3b8;
+            margin: 0 6px;
+        }
+        .flow-diagram .step {
+            color: #0f172a;
+            font-weight: 500;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            margin: 10px 0 16px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            background: #fff;
+        }
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+            text-align: left;
+            padding: 8px 14px;
+            border-bottom: 2px solid #e2e8f0;
+            color: #0f172a;
+        }
+        td {
+            padding: 8px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .hr {
+            border: none;
+            border-top: 2px dashed #e2e8f0;
+            margin: 32px 0;
+        }
+
+        .code-block {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin: 6px 0 12px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .code-block .comment {
+            color: #94a3b8;
+        }
+        .code-block .keyword {
+            color: #f472b6;
+        }
+        .code-block .string {
+            color: #34d399;
+        }
+        .code-block .func {
+            color: #60a5fa;
+        }
+
+        .subtask {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 12px 18px;
+            margin: 10px 0;
+            border-left: 4px solid #3b82f6;
+        }
+        .subtask strong {
+            color: #0f172a;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 16px;
+            }
+            h1 {
+                font-size: 1.8rem;
+                flex-wrap: wrap;
+            }
+            .task-header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .task-body {
+                padding: 0 16px 16px;
+            }
+            .phase-banner {
+                padding: 16px;
+            }
+            .phase-banner .meta {
+                flex-direction: column;
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <h1>
+            🛡️ Jalsa – Phase 15: Error Handling
+            <small>Expanded Implementation Handbook · 5 Tasks · 35+ Subtasks</small>
+        </h1>
+
+        <!-- ====== PHASE BANNER ====== -->
+        <div class="phase-banner">
+            <h2>🛡️ Phase 15 – Error Handling</h2>
+            <p><strong>Purpose:</strong> Build a comprehensive error handling system that captures, logs, and displays errors gracefully. This phase covers global error handling for uncaught exceptions, error logging, offline detection, user‑friendly fallback UI, and testing. It ensures that the application fails gracefully and provides a smooth user experience even in error scenarios.</p>
+            <div class="meta">
+                <span>📋 Tasks: 5</span>
+                <span>⏱️ Total Effort: ~14 hours</span>
+                <span>👤 Owners: M3 (Frontend Lead), M4 (Frontend Developer)</span>
+                <span>🔗 Dependencies: Phase 14 (API Integration Layer), Phase 13 (State Management)</span>
+                <span>🎯 Deliverable: Complete error handling system with global error handler, logging, fallback UI, and offline detection</span>
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 1: GLOBAL ERROR HANDLER (ANGULAR ERRORHANDLER)                  -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-ERR-001</span><span class="task-name">Global Error Handler</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">3h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-ERR-001</li>
+                    <li><strong>Task Name:</strong> Global Error Handler</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-STATE-003 (AppStateService), FE-ERR-002 (Error Logging Service – will be created)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 3 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Implement a global error handler that catches all uncaught exceptions in the Angular application, logs them, displays a user‑friendly error message, and prevents the application from crashing.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Users should never see a blank screen or cryptic error messages. Instead, they should see a friendly error page or notification, and the application should recover gracefully.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Extend Angular's <code>ErrorHandler</code> class to capture errors, send them to a logging service, and use AppStateService to show a notification or navigate to an error page.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular's <code>ErrorHandler</code>.</li>
+                    <li>Knowledge of <code>AppStateService</code> for notifications.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-STATE-003:</strong> AppStateService.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>None.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>core/services/global-error-handler.service.ts</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Create GlobalErrorHandler Service</h4>
+                <div class="code-block">
+                    <span class="comment">// core/services/global-error-handler.service.ts</span>
+                    <span class="keyword">import</span> { ErrorHandler, Injectable, inject } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { AppStateService } <span class="keyword">from</span> <span class="string">'../state/app-state.service'</span>;
+
+                    <span class="keyword">@Injectable</span>({
+                        providedIn: <span class="string">'root'</span>,
+                    })
+                    export <span class="keyword">class</span> GlobalErrorHandler implements ErrorHandler {
+                        private appState = inject(AppStateService);
+
+                        handleError(error: any): void {
+                            // Log the error to console
+                            console.error('Global error caught:', error);
+
+                            // Notify user
+                            let message = 'An unexpected error occurred. Please try again.';
+                            if (error?.message) {
+                                message = error.message;
+                            }
+                            this.appState.addNotification(message, 'error');
+
+                            // Optionally, log to a remote service (if ErrorLoggingService is available)
+                            // You can inject ErrorLoggingService here later.
+                        }
+                    }
+                </div>
+
+                <h4>Step 2: Register the GlobalErrorHandler in <code>app.config.ts</code></h4>
+                <div class="code-block">
+                    <span class="comment">// app.config.ts</span>
+                    <span class="keyword">import</span> { ErrorHandler } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { GlobalErrorHandler } <span class="keyword">from</span> <span class="string">'./core/services/global-error-handler.service'</span>;
+
+                    export <span class="keyword">const</span> appConfig: ApplicationConfig = {
+                        providers: [
+                            // ... other providers
+                            { provide: ErrorHandler, useClass: GlobalErrorHandler },
+                        ],
+                    };
+                </div>
+
+                <h4>Step 3: Test with a Sample Error</h4>
+                <p>In any component, throw an error to test:</p>
+                <div class="code-block">
+                    <span class="keyword">throw</span> new Error('Test error');
+                </div>
+                <p>Verify that a notification appears and the error is logged.</p>
+
+                <h4>Step 4: Handle Specific Error Types</h4>
+                <p>Enhance the handler to differentiate between error types (e.g., network errors, authentication errors).</p>
+
+                <div class="code-block">
+                    <span class="comment">// Enhanced handleError</span>
+                    handleError(error: any): void {
+                        console.error('Global error caught:', error);
+
+                        let message = 'An unexpected error occurred.';
+                        if (error instanceof Error) {
+                            message = error.message;
+                        } else if (typeof error === 'string') {
+                            message = error;
+                        } else if (error?.message) {
+                            message = error.message;
+                        }
+
+                        this.appState.addNotification(message, 'error');
+
+                        // If it's a fatal error, navigate to an error page
+                        if (error?.isFatal) {
+                            // this.router.navigate(['/error']);
+                        }
+                    }
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>core/services/global-error-handler.service.ts</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g s core/services/global-error-handler --skip-tests
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Angular ErrorHandler</li>
+                    <li>Dependency injection</li>
+                    <li>ApplicationConfig providers</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Throw an error in a component and verify the global handler catches it.</li>
+                    <li>Check that a notification appears.</li>
+                    <li>Check that the error is logged to the console.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>GlobalErrorHandler service registered and functional.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Forgetting to register the handler in <code>app.config.ts</code>.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 2:</strong> Not handling the case where <code>AppStateService</code> may not be available (circular dependency).</div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>Errors that occur during the initialization of the application (before <code>AppStateService</code> is fully ready). Use a fallback notification.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>GlobalErrorHandler is registered and works.</li>
+                </ul>
+
+                <h3>Frontend Architecture Notes</h3>
+                <ul>
+                    <li>The GlobalErrorHandler should be the last line of defense for errors that escape other handling layers.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> The global handler catches all uncaught errors; always use it for final error handling.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 2: ERROR LOGGING SERVICE                                        -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-ERR-002</span><span class="task-name">Error Logging Service</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">3h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-ERR-002</li>
+                    <li><strong>Task Name:</strong> Error Logging Service</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> FE-CORE-001 (HttpClientService)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 3 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create an error logging service that logs errors to the console in development and optionally sends them to a remote logging service (e.g., Sentry, LogRocket) in production, while also storing errors locally for debugging.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Collecting error data helps developers identify and fix issues proactively, improving application stability and user satisfaction.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Provide a centralized logging service with different log levels (debug, info, warn, error). In development, log to console; in production, send to a remote endpoint or monitoring service.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of logging levels.</li>
+                    <li>Environment variables to differentiate dev/prod.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-CORE-001:</strong> HttpClientService for sending logs to a server.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Environment configuration (log level, remote logging URL).</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>core/services/error-logging.service.ts</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Create ErrorLoggingService</h4>
+                <div class="code-block">
+                    <span class="comment">// core/services/error-logging.service.ts</span>
+                    <span class="keyword">import</span> { Injectable, inject } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { environment } <span class="keyword">from</span> <span class="string">'../../../environments/environment'</span>;
+                    <span class="keyword">import</span> { HttpClientService } <span class="keyword">from</span> <span class="string">'../api/http-client.service'</span>;
+
+                    <span class="keyword">export type</span> LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
+                    <span class="keyword">export interface</span> LogEntry {
+                        timestamp: string;
+                        level: LogLevel;
+                        message: string;
+                        context?: any;
+                        stack?: string;
+                        userId?: string;
+                        sessionId?: string;
+                        url?: string;
+                    }
+
+                    <span class="keyword">@Injectable</span>({
+                        providedIn: <span class="string">'root'</span>,
+                    })
+                    export <span class="keyword">class</span> ErrorLoggingService {
+                        private http = inject(HttpClientService);
+                        private logLevel: LogLevel = environment.logLevel || 'info';
+                        private remoteLoggingUrl = environment.remoteLoggingUrl;
+
+                        log(level: LogLevel, message: string, context?: any) {
+                            const entry: LogEntry = {
+                                timestamp: new Date().toISOString(),
+                                level,
+                                message,
+                                context,
+                                stack: context instanceof Error ? context.stack : undefined,
+                                url: window.location.href,
+                            };
+
+                            // Always log to console in development or if level is 'debug'
+                            if (!environment.production || level === 'debug') {
+                                console.log(`[${level}]`, message, context);
+                            }
+
+                            // Send to remote logging in production for error level
+                            if (environment.production && level === 'error' && this.remoteLoggingUrl) {
+                                this.sendToRemote(entry);
+                            }
+
+                            // Optionally store locally (e.g., localStorage or IndexedDB)
+                        }
+
+                        debug(message: string, context?: any) {
+                            if (this.shouldLog('debug')) {
+                                this.log('debug', message, context);
+                            }
+                        }
+
+                        info(message: string, context?: any) {
+                            if (this.shouldLog('info')) {
+                                this.log('info', message, context);
+                            }
+                        }
+
+                        warn(message: string, context?: any) {
+                            if (this.shouldLog('warn')) {
+                                this.log('warn', message, context);
+                            }
+                        }
+
+                        error(message: string, context?: any) {
+                            if (this.shouldLog('error')) {
+                                this.log('error', message, context);
+                            }
+                        }
+
+                        private shouldLog(level: LogLevel): boolean {
+                            const levels: LogLevel[] = ['debug', 'info', 'warn', 'error'];
+                            return levels.indexOf(level) >= levels.indexOf(this.logLevel);
+                        }
+
+                        private sendToRemote(entry: LogEntry) {
+                            // Send to remote logging endpoint (e.g., /api/log)
+                            this.http.post({ path: this.remoteLoggingUrl, method: 'POST' }, entry)
+                                .subscribe({
+                                    next: () => {},
+                                    error: (err) => console.error('Failed to send log to remote', err),
+                                });
+                        }
+                    }
+                </div>
+
+                <h4>Step 2: Add Remote Logging URL to Environment</h4>
+                <div class="code-block">
+                    <span class="comment">// environments/environment.ts</span>
+                    export const environment = {
+                        // ...
+                        logLevel: 'debug',
+                        remoteLoggingUrl: 'http://localhost:5000/api/log',
+                    };
+
+                    <span class="comment">// environments/environment.prod.ts</span>
+                    export const environment = {
+                        // ...
+                        logLevel: 'error',
+                        remoteLoggingUrl: 'https://api.jalsa.com/api/log',
+                    };
+                </div>
+
+                <h4>Step 3: Integrate with GlobalErrorHandler</h4>
+                <p>Inject ErrorLoggingService into GlobalErrorHandler and use it to log errors.</p>
+
+                <div class="code-block">
+                    <span class="comment">// In GlobalErrorHandler</span>
+                    private errorLog = inject(ErrorLoggingService);
+
+                    handleError(error: any): void {
+                        this.errorLog.error('Uncaught error', error);
+                        // ... rest
+                    }
+                </div>
+
+                <h4>Step 4: Use in Components</h4>
+                <p>Inject ErrorLoggingService and use it to log application events.</p>
+
+                <div class="code-block">
+                    this.errorLog.info('User navigated to dashboard', { userId: user.id });
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>core/services/error-logging.service.ts</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g s core/services/error-logging --skip-tests
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Logging levels</li>
+                    <li>Environment configuration</li>
+                    <li>Remote logging patterns</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Test logging in development: verify console logs.</li>
+                    <li>Simulate production and verify remote logging.</li>
+                    <li>Test different log levels.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>ErrorLoggingService ready.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not handling remote logging failures gracefully.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>Remote logging endpoint is unreachable – log locally as fallback.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>ErrorLoggingService works and is integrated.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use ErrorLoggingService for all logging needs.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 3: FALLBACK UI COMPONENTS (ERROR PAGE, ERROR BOUNDARY)          -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-ERR-003</span><span class="task-name">Fallback UI Components (Error Page, Error Boundary)</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">3h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-ERR-003</li>
+                    <li><strong>Task Name:</strong> Fallback UI Components (Error Page, Error Boundary)</li>
+                    <li><strong>Owner:</strong> M4 (Frontend Developer)</li>
+                    <li><strong>Dependencies:</strong> FE-SHARED-001 (Shared components), FE-ERR-001</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 3 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create fallback UI components: an error page for fatal errors (e.g., route errors) and an error boundary component that can be placed around sections of the application to catch errors and display a fallback UI without crashing the whole app.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Provide a polished, branded error experience when something goes wrong, keeping users informed and guiding them to recover.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Implement an error page component (accessible via route /error) and an error boundary directive that uses Angular's <code>ngTemplateOutlet</code> or a custom structural directive to catch errors within its view and render a fallback template.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular structural directives.</li>
+                    <li>Knowledge of <code>ErrorHandler</code> and error propagation.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-SHARED-001:</strong> Shared components (Button, etc.).</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>None.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>features/error/pages/error-page/error-page.component.ts</code> (Standalone)</li>
+                    <li><code>shared/directives/error-boundary.directive.ts</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Create Error Page Component</h4>
+                <p>Generate a standalone component for the error page.</p>
+                <div class="code-block">
+                    ng g c features/error/pages/error-page --standalone --skip-tests
+                </div>
+
+                <div class="code-block">
+                    <span class="comment">// error-page.component.ts</span>
+                    <span class="keyword">import</span> { Component, inject, signal, OnInit } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { Router, RouterLink, ActivatedRoute } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+                    <span class="keyword">import</span> { ButtonComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/button/button.component'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-error-page',
+                        standalone: true,
+                        imports: [RouterLink, ButtonComponent],
+                        templateUrl: './error-page.component.html',
+                        styleUrls: ['./error-page.component.scss'],
+                    })
+                    export <span class="keyword">class</span> ErrorPageComponent implements OnInit {
+                        private router = inject(Router);
+                        private route = inject(ActivatedRoute);
+
+                        errorMessage = signal('Something went wrong.');
+                        errorCode = signal(500);
+
+                        ngOnInit(): void {
+                            this.errorCode.set(this.route.snapshot.queryParams['code'] || 500);
+                            this.errorMessage.set(this.route.snapshot.queryParams['message'] || 'An unexpected error occurred.');
+                        }
+
+                        goHome() {
+                            this.router.navigate(['/dashboard']);
+                        }
+
+                        reload() {
+                            window.location.reload();
+                        }
+                    }
+                </div>
+
+                <p>Template:</p>
+                <div class="code-block">
+                    &lt;div class="error-page text-center py-5"&gt;
+                        &lt;div class="error-icon"&gt;
+                            &lt;i class="bi bi-exclamation-triangle"&gt;&lt;/i&gt;
+                        &lt;/div&gt;
+                        &lt;h1 class="display-1 fw-bold"&gt;{{ errorCode() }}&lt;/h1&gt;
+                        &lt;h2 class="mb-4"&gt;{{ errorMessage() }}&lt;/h2&gt;
+                        &lt;p class="text-muted mb-4"&gt;Please try refreshing the page or return to the dashboard.&lt;/p&gt;
+                        &lt;div class="d-flex gap-2 justify-content-center"&gt;
+                            &lt;app-button variant="primary" (click)="goHome()"&gt;Go to Dashboard&lt;/app-button&gt;
+                            &lt;app-button variant="secondary" (click)="reload()"&gt;Reload&lt;/app-button&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                </div>
+
+                <p>Add route to <code>app.routes.ts</code>:</p>
+                <div class="code-block">
+                    {
+                        path: 'error',
+                        loadComponent: () => import('./features/error/pages/error-page/error-page.component').then(m => m.ErrorPageComponent),
+                    },
+                </div>
+
+                <h4>Step 2: Create Error Boundary Directive</h4>
+                <p>Create a structural directive that catches errors in its view.</p>
+                <div class="code-block">
+                    <span class="comment">// shared/directives/error-boundary.directive.ts</span>
+                    <span class="keyword">import</span> { Directive, Input, TemplateRef, ViewContainerRef, OnDestroy } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+
+                    <span class="keyword">@Directive</span>({
+                        selector: '[appErrorBoundary]',
+                        standalone: true,
+                    })
+                    export <span class="keyword">class</span> ErrorBoundaryDirective implements OnDestroy {
+                        @Input() set appErrorBoundary(condition: boolean) {
+                            if (condition) {
+                                // Show error template
+                                this.viewContainer.clear();
+                                this.viewContainer.createEmbeddedView(this.fallbackTemplate);
+                            } else {
+                                // Show normal content
+                                this.viewContainer.clear();
+                                this.viewContainer.createEmbeddedView(this.templateRef);
+                            }
+                        }
+
+                        @Input() fallbackTemplate!: TemplateRef&lt;any&gt;;
+
+                        constructor(
+                            private templateRef: TemplateRef&lt;any&gt;,
+                            private viewContainer: ViewContainerRef,
+                        ) {}
+
+                        ngOnDestroy() {
+                            this.viewContainer.clear();
+                        }
+                    }
+                </div>
+
+                <p>Usage in a component:</p>
+                <div class="code-block">
+                    &lt;ng-template #normal&gt;
+                        &lt;div&gt;This is the normal content.&lt;/div&gt;
+                    &lt;/ng-template&gt;
+                    &lt;ng-template #errorFallback&gt;
+                        &lt;div class="alert alert-danger"&gt;Something went wrong in this section.&lt;/div&gt;
+                    &lt;/ng-template&gt;
+
+                    &lt;div *appErrorBoundary="hasError; fallbackTemplate: errorFallback"&gt;
+                        &lt;ng-container *ngTemplateOutlet="normal"&gt;&lt;/ng-container&gt;
+                    &lt;/div&gt;
+                </div>
+
+                <p>However, catching errors in templates is tricky. A better approach is to use a component that wraps content and handles errors via <code>ngOnInit</code> and <code>ErrorHandler</code>. We can create an <code>ErrorBoundaryComponent</code> that uses <code>ng-content</code> and catches errors in its children using <code>@Output</code> or by subscribing to error events. But for simplicity, we'll implement a directive that toggles based on a boolean (manual error handling).</p>
+
+                <p>For automatic error catching, we can use Angular's <code>ErrorHandler</code> at the component level by overriding it for specific components, but that's not straightforward. We'll provide a component-based approach:</p>
+
+                <div class="code-block">
+                    <span class="comment">// shared/components/error-boundary/error-boundary.component.ts</span>
+                    <span class="keyword">import</span> { Component, Input, ContentChild, TemplateRef, signal } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-error-boundary',
+                        standalone: true,
+                        templateUrl: './error-boundary.component.html',
+                        styleUrls: ['./error-boundary.component.scss'],
+                    })
+                    export <span class="keyword">class</span> ErrorBoundaryComponent {
+                        @Input() fallbackTemplate!: TemplateRef&lt;any&gt;;
+                        @ContentChild('content') contentTemplate!: TemplateRef&lt;any&gt;;
+
+                        error = signal&lt;any | null&gt;(<span class="keyword">null</span>);
+
+                        catchError(error: any) {
+                            this.error.set(error);
+                        }
+
+                        retry() {
+                            this.error.set(null);
+                        }
+                    }
+                </div>
+
+                <p>Template:</p>
+                <div class="code-block">
+                    &lt;ng-container *<span class="keyword">if</span>="!error()"&gt;
+                        &lt;ng-container *ngTemplateOutlet="contentTemplate"&gt;&lt;/ng-container&gt;
+                    &lt;/ng-container&gt;
+                    &lt;ng-container *<span class="keyword">if</span>="error()"&gt;
+                        &lt;ng-container *ngTemplateOutlet="fallbackTemplate; context: { error: error(), retry: retry }"&gt;&lt;/ng-container&gt;
+                    &lt;/ng-container&gt;
+                </div>
+
+                <p>But this requires manually forwarding errors. To auto‑catch, we can use a service that notifies the boundary when an error occurs in its context. This is complex. For now, we'll implement a directive that toggles on a boolean.</p>
+
+                <p>Given time, we'll implement an error boundary as a component that wraps content and can be used with <code>@Output</code> to catch errors from child components if they emit errors. But this is beyond the scope; we'll document that the developer can use the directive approach.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>features/error/pages/error-page/</code> components.</li>
+                    <li><code>shared/directives/error-boundary.directive.ts</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g c features/error/pages/error-page --standalone --skip-tests
+                    ng g d shared/directives/error-boundary --standalone --skip-tests
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Structural directives</li>
+                    <li>TemplateRef and ViewContainerRef</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Navigate to /error and verify the page renders.</li>
+                    <li>Simulate an error and use the directive to show fallback.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Error page component and error boundary directive.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not handling the error template context correctly.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>Error page should be accessible even if the app crashes; use a separate route.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Error page and boundary are implemented.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use error boundary to isolate errors in specific sections.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 4: OFFLINE DETECTION AND RECOVERY                              -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-ERR-004</span><span class="task-name">Offline Detection and Recovery</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">3h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-ERR-004</li>
+                    <li><strong>Task Name:</strong> Offline Detection and Recovery</li>
+                    <li><strong>Owner:</strong> M4 (Frontend Developer)</li>
+                    <li><strong>Dependencies:</strong> FE-STATE-003 (AppStateService), FE-ERR-002 (ErrorLoggingService)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 3 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Implement offline detection using the browser's <code>navigator.onLine</code> API and the <code>online</code>/<code>offline</code> events. Notify the user when they go offline, and automatically retry failed requests when they come back online.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Users should be aware of connectivity issues and not be left confused. Offline detection allows the app to inform users and even queue requests for retry later.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Create a service that listens to network status changes, stores the state in AppStateService, and provides methods to check online status. Also, implement a request queue that retries failed requests when the connection is restored.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of <code>navigator.onLine</code> and browser events.</li>
+                    <li>RxJS for observable streams.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-STATE-003:</strong> AppStateService.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>None.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>core/services/online-status.service.ts</code></li>
+                    <li><code>core/services/offline-queue.service.ts</code> (optional)</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Create OnlineStatusService</h4>
+                <div class="code-block">
+                    <span class="comment">// core/services/online-status.service.ts</span>
+                    <span class="keyword">import</span> { Injectable, inject, signal, effect } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { AppStateService } <span class="keyword">from</span> <span class="string">'../state/app-state.service'</span>;
+
+                    <span class="keyword">@Injectable</span>({
+                        providedIn: <span class="string">'root'</span>,
+                    })
+                    export <span class="keyword">class</span> OnlineStatusService {
+                        private appState = inject(AppStateService);
+                        private isOnlineSignal = signal(navigator.onLine);
+                        readonly isOnline = this.isOnlineSignal.asReadonly();
+
+                        constructor() {
+                            // Listen to online/offline events
+                            window.addEventListener('online', () => this.handleOnline());
+                            window.addEventListener('offline', () => this.handleOffline());
+
+                            // Update app state
+                            effect(() => {
+                                if (!this.isOnline()) {
+                                    this.appState.addNotification('You are offline. Some features may be unavailable.', 'warning', 0);
+                                } else {
+                                    // Optionally clear notification
+                                    // this.appState.clearNotifications();
+                                }
+                            });
+                        }
+
+                        private handleOnline() {
+                            this.isOnlineSignal.set(true);
+                            // Notify user
+                            this.appState.addNotification('You are back online.', 'success');
+                            // Trigger retry of queued requests
+                        }
+
+                        private handleOffline() {
+                            this.isOnlineSignal.set(false);
+                            this.appState.addNotification('You are offline. Please check your internet connection.', 'warning', 0);
+                        }
+
+                        checkOnline(): boolean {
+                            return this.isOnline();
+                        }
+                    }
+                </div>
+
+                <h4>Step 2: Integrate with HttpClientService</h4>
+                <p>In the request method, check online status and if offline, either fail immediately or queue the request.</p>
+
+                <h4>Step 3: Create OfflineQueueService (Optional)</h4>
+                <p>Store failed requests in localStorage or IndexedDB and retry when online.</p>
+
+                <div class="code-block">
+                    <span class="comment">// core/services/offline-queue.service.ts</span>
+                    <span class="keyword">import</span> { Injectable, inject } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { OnlineStatusService } <span class="keyword">from</span> <span class="string">'./online-status.service'</span>;
+                    <span class="keyword">import</span> { HttpClientService } <span class="keyword">from</span> <span class="string">'../api/http-client.service'</span>;
+
+                    <span class="keyword">@Injectable</span>({
+                        providedIn: <span class="string">'root'</span>,
+                    })
+                    export <span class="keyword">class</span> OfflineQueueService {
+                        private onlineService = inject(OnlineStatusService);
+                        private http = inject(HttpClientService);
+                        private queue: any[] = [];
+
+                        constructor() {
+                            this.onlineService.isOnline.subscribe((online) => {
+                                if (online && this.queue.length > 0) {
+                                    this.processQueue();
+                                }
+                            });
+                        }
+
+                        addToQueue(request: any) {
+                            this.queue.push(request);
+                            // Persist to localStorage
+                            localStorage.setItem('offlineQueue', JSON.stringify(this.queue));
+                        }
+
+                        processQueue() {
+                            // Process queue items
+                            // ... retry each request
+                            this.queue = [];
+                            localStorage.removeItem('offlineQueue');
+                        }
+                    }
+                </div>
+
+                <h4>Step 4: Test Offline Scenarios</h4>
+                <p>Disable network and verify notifications appear. Re‑enable network and verify retry.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>core/services/online-status.service.ts</code></li>
+                    <li><code>core/services/offline-queue.service.ts</code> (optional)</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g s core/services/online-status --skip-tests
+                    ng g s core/services/offline-queue --skip-tests
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Browser events</li>
+                    <li>Signals and effects</li>
+                    <li>IndexedDB or localStorage</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Turn off Wi-Fi and verify notification.</li>
+                    <li>Turn on Wi-Fi and verify notification and retry.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Online status service and offline queue.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not clearing notifications when back online.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>Offline for a long time: queue might grow; consider limiting queue size.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Offline detection and recovery work.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> The app informs users about connectivity changes.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 5: TESTING AND VALIDATION                                      -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-ERR-005</span><span class="task-name">Testing and Validation</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-blue">P0</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">2h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-ERR-005</li>
+                    <li><strong>Task Name:</strong> Testing and Validation</li>
+                    <li><strong>Owner:</strong> M3 (Frontend Lead)</li>
+                    <li><strong>Dependencies:</strong> All previous error handling tasks</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 2 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-blue">Critical</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Write comprehensive unit and integration tests for the error handling system, including the global error handler, logging service, fallback UI, and offline detection.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Ensure that the error handling system works correctly in all scenarios, providing a robust safety net for the application.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Test error handling components and services in isolation and integration, covering success and failure paths.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Jasmine/Karma setup.</li>
+                    <li>Testing utilities for Angular.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li>All previous tasks.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Error handling code.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Unit test files for each service and component.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Test GlobalErrorHandler</h4>
+                <p>Mock AppStateService and verify that handleError calls addNotification.</p>
+
+                <h4>Step 2: Test ErrorLoggingService</h4>
+                <p>Test each log level, environment detection, and remote logging.</p>
+
+                <h4>Step 3: Test Error Page Component</h4>
+                <p>Test that it displays the correct error code and message from query params.</p>
+
+                <h4>Step 4: Test Error Boundary Directive</h4>
+                <p>Test that it toggles between content and fallback based on condition.</p>
+
+                <h4>Step 5: Test OnlineStatusService</h4>
+                <p>Mock navigator.onLine and events, verify signals update and notifications appear.</p>
+
+                <h4>Step 6: Run Tests and Check Coverage</h4>
+                <p>Aim for > 80% coverage.</p>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>core/services/global-error-handler.service.spec.ts</code></li>
+                    <li><code>core/services/error-logging.service.spec.ts</code></li>
+                    <li><code>features/error/pages/error-page/error-page.component.spec.ts</code></li>
+                    <li><code>shared/directives/error-boundary.directive.spec.ts</code></li>
+                    <li><code>core/services/online-status.service.spec.ts</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng test --code-coverage
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Angular unit testing</li>
+                    <li>Mocking services</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Run all tests.</li>
+                    <li>Verify coverage.</li>
+                    <li>Fix any failures.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>All tests pass with coverage ≥ 80%.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not mocking window events in tests.
+                </div>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>All tests pass.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Error handling system is now fully tested.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- PHASE COMPLETION CRITERIA                                             -->
+        <!-- ===================================================================== -->
+        <hr class="hr" />
+
+        <h2 style="background: #f0fdf4; border-left-color: #22c55e; padding:12px 20px; border-left:6px solid #22c55e; border-radius:8px;">✅ Phase Completion Criteria</h2>
+        <ul class="checklist">
+            <li>All 5 error handling tasks are complete.</li>
+            <li>GlobalErrorHandler is registered and catches all uncaught errors.</li>
+            <li>ErrorLoggingService logs errors to console and remote.</li>
+            <li>Error page component exists and is routable.</li>
+            <li>Error boundary directive isolates errors in sections.</li>
+            <li>OnlineStatusService detects offline/online and notifies.</li>
+            <li>Offline queue (optional) retries requests.</li>
+            <li>All tests pass with ≥ 80% coverage.</li>
+            <li>All changes are committed.</li>
+        </ul>
+
+        <h2 style="background: #f0f9ff; border-left-color: #3b82f6; padding:12px 20px; border-left:6px solid #3b82f6; border-radius:8px; margin-top:24px;">📋 Code Review Checklist</h2>
+        <ul class="checklist">
+            <li>GlobalErrorHandler uses ErrorLoggingService.</li>
+            <li>ErrorLoggingService respects environment configuration.</li>
+            <li>Error page displays correct message.</li>
+            <li>Error boundary toggles correctly.</li>
+            <li>Online status service uses events.</li>
+        </ul>
+
+        <h2 style="background: #fefce8; border-left-color: #f59e0b; padding:12px 20px; border-left:6px solid #f59e0b; border-radius:8px; margin-top:24px;">🚀 Pull Request Checklist</h2>
+        <ul class="checklist">
+            <li>Branch up‑to‑date with main.</li>
+            <li>All tests pass.</li>
+            <li>Code review completed.</li>
+            <li>Documentation updated.</li>
+        </ul>
+
+        <h2 style="background: #fef2f2; border-left-color: #ef4444; padding:12px 20px; border-left:6px solid #ef4444; border-radius:8px; margin-top:24px;">🧪 Deployment Readiness Checklist</h2>
+        <ul class="checklist">
+            <li>Error handling works end‑to‑end.</li>
+            <li>Offline detection works.</li>
+            <li>Error page is accessible.</li>
+        </ul>
+
+        <hr class="hr" />
+        <div style="text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 20px 0 0;">
+            Jalsa – Phase 15: Error Handling – Expanded Implementation Handbook &bull; v1.0 &bull; For development team
+        </div>
+    </div>
+
+    <script>
+        function toggleTask(header) {
+            const body = header.nextElementSibling;
+            const isOpen = body.classList.contains('open');
+            body.classList.toggle('open');
+            header.classList.toggle('open');
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstHeader = document.querySelector('.task-header');
+            if (firstHeader) firstHeader.click();
+        });
+    </script>
+</body>
+</html>

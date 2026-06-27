@@ -1,0 +1,2030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jalsa – Phase 11: AI Reports – Expanded Implementation Handbook</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+            padding: 30px 20px;
+            line-height: 1.7;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            padding: 40px 45px;
+        }
+        h1 {
+            font-size: 2.4rem;
+            color: #0f172a;
+            border-bottom: 4px solid #3b82f6;
+            padding-bottom: 18px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        h1 small {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #64748b;
+            margin-left: auto;
+        }
+        .phase-banner {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 20px 28px;
+            margin-bottom: 32px;
+            border-left: 8px solid #3b82f6;
+        }
+        .phase-banner h2 {
+            margin: 0 0 8px 0;
+            font-size: 1.6rem;
+            color: #0f172a;
+            background: none;
+            padding: 0;
+            border-left: none;
+        }
+        .phase-banner p {
+            margin: 0;
+            color: #475569;
+        }
+        .phase-banner .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px 40px;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+        .phase-banner .meta span {
+            font-weight: 500;
+            color: #0f172a;
+        }
+
+        .task-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+        .task-header {
+            background: #f8fafc;
+            padding: 16px 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.15s;
+            user-select: none;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .task-header:hover {
+            background: #f1f5f9;
+        }
+        .task-header .task-id {
+            font-weight: 700;
+            color: #3b82f6;
+            margin-right: 12px;
+            font-size: 1.05rem;
+        }
+        .task-header .task-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .task-header .task-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .task-header .task-badges .tag {
+            font-size: 0.7rem;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+        .task-header .chevron {
+            transition: transform 0.25s;
+            font-size: 1.3rem;
+            color: #94a3b8;
+            margin-left: 12px;
+        }
+        .task-header.open .chevron {
+            transform: rotate(180deg);
+        }
+
+        .task-body {
+            padding: 0 24px 24px;
+            display: none;
+            overflow: hidden;
+        }
+        .task-body.open {
+            display: block;
+        }
+
+        .task-body h3 {
+            font-size: 1.15rem;
+            margin-top: 22px;
+            margin-bottom: 8px;
+            color: #0f172a;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 4px;
+        }
+        .task-body h4 {
+            font-size: 1rem;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            color: #334155;
+        }
+        .task-body p {
+            margin-bottom: 8px;
+        }
+        .task-body ul,
+        .task-body ol {
+            padding-left: 24px;
+            margin-bottom: 10px;
+        }
+        .task-body li {
+            margin-bottom: 3px;
+        }
+        .task-body .field-label {
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+        .checklist li {
+            padding: 3px 0 3px 30px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') left center no-repeat;
+            background-size: 18px;
+        }
+
+        .pitfall-box {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .tip-box {
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .arch-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #e2e8f0;
+            padding: 1px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-right: 4px;
+        }
+        .tag-blue {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .tag-green {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .tag-amber {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .tag-red {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .tag-purple {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+        .tag-slate {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        .tag-indigo {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .flow-diagram {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin: 8px 0 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .flow-diagram .arrow {
+            color: #94a3b8;
+            margin: 0 6px;
+        }
+        .flow-diagram .step {
+            color: #0f172a;
+            font-weight: 500;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            margin: 10px 0 16px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            background: #fff;
+        }
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+            text-align: left;
+            padding: 8px 14px;
+            border-bottom: 2px solid #e2e8f0;
+            color: #0f172a;
+        }
+        td {
+            padding: 8px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .hr {
+            border: none;
+            border-top: 2px dashed #e2e8f0;
+            margin: 32px 0;
+        }
+
+        .code-block {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin: 6px 0 12px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .code-block .comment {
+            color: #94a3b8;
+        }
+        .code-block .keyword {
+            color: #f472b6;
+        }
+        .code-block .string {
+            color: #34d399;
+        }
+        .code-block .func {
+            color: #60a5fa;
+        }
+
+        .subtask {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 12px 18px;
+            margin: 10px 0;
+            border-left: 4px solid #3b82f6;
+        }
+        .subtask strong {
+            color: #0f172a;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 16px;
+            }
+            h1 {
+                font-size: 1.8rem;
+                flex-wrap: wrap;
+            }
+            .task-header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .task-body {
+                padding: 0 16px 16px;
+            }
+            .phase-banner {
+                padding: 16px;
+            }
+            .phase-banner .meta {
+                flex-direction: column;
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <h1>
+            📄 Jalsa – Phase 11: AI Reports
+            <small>Expanded Implementation Handbook · 5 Tasks · 30+ Subtasks</small>
+        </h1>
+
+        <!-- ====== PHASE BANNER ====== -->
+        <div class="phase-banner">
+            <h2>📄 Phase 11 – AI Reports</h2>
+            <p><strong>Purpose:</strong> Build the complete AI-powered referral report system. This phase enables therapists to generate AI‑drafted referral reports, review and edit them, approve or reject, and export as PDF. Reports are based on patient data, session notes, and assessments.</p>
+            <div class="meta">
+                <span>📋 Tasks: 5</span>
+                <span>⏱️ Total Effort: ~28 hours</span>
+                <span>👤 Owners: M4 (Frontend Developer), M3 (Frontend Lead)</span>
+                <span>🔗 Dependencies: Phase 7 (Patient Management), Phase 8 (Session Management), Phase 10 (Dashboard)</span>
+                <span>🎯 Deliverable: Complete AI report generation, review, approval, and PDF export system</span>
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 1: REPORT MODULE SETUP (ROUTES, SERVICE, STATE)                 -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-REP-001</span><span class="task-name">Report Module Setup (Routes, Service, State)</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">5h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-REP-001</li>
+                    <li><strong>Task Name:</strong> Report Module Setup (Routes, Service, State)</li>
+                    <li><strong>Owner:</strong> M4 (Frontend Developer)</li>
+                    <li><strong>Dependencies:</strong> FE-CORE-001 (HttpClientService), FE-CORE-002 (Models), FE-AUTH-002 (AuthService), FE-PAT-001 (PatientService), FE-LAYOUT-001 (Main layout)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 5 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Create the report feature with lazy‑loaded routes, a ReportService for API communication, and a ReportStateService for managing report data using Signals. This provides the foundation for report generation, review, and approval.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Enable therapists to generate AI‑drafted referral reports for patients, reducing documentation time and improving quality.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Set up lazy‑loaded routes under the main layout, create a service that uses HttpClientService for report endpoints (generate, get, update, approve, reject, export), and create a state service with Signals for reactive data management.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Understanding of Angular lazy loading with Standalone components.</li>
+                    <li>Knowledge of Signals and services.</li>
+                    <li>API contract for report endpoints.</li>
+                    <li>Understanding of PDF export (Blob handling).</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-CORE-001:</strong> HttpClientService for API calls.</li>
+                    <li><strong>FE-CORE-002:</strong> Report model interfaces.</li>
+                    <li><strong>FE-AUTH-002:</strong> AuthService for guards.</li>
+                    <li><strong>FE-PAT-001:</strong> PatientService for patient list.</li>
+                    <li><strong>FE-LAYOUT-001:</strong> Main layout as parent route.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>API endpoints from <code>api-endpoints.ts</code>.</li>
+                    <li>Report model interfaces.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>features/reports/reports.routes.ts</code> – Lazy‑loaded routes.</li>
+                    <li><code>core/services/report.service.ts</code> – Report API service.</li>
+                    <li><code>core/state/report-state.service.ts</code> – Report state management with Signals.</li>
+                    <li>Updated <code>core/models/report.model.ts</code> with full interfaces.</li>
+                    <li>Placeholder components (list, generate, edit).</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Create Routes File</h4>
+                <div class="code-block">
+                    <span class="comment">// features/reports/reports.routes.ts</span>
+                    <span class="keyword">import</span> { Routes } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+                    <span class="keyword">import</span> { authGuard, roleGuard } <span class="keyword">from</span> <span class="string">'../../core/guards'</span>;
+
+                    export <span class="keyword">const</span> REPORTS_ROUTES: Routes = [
+                        {
+                            path: '',
+                            canActivate: [authGuard, roleGuard(['Therapist', 'Admin'])],
+                            children: [
+                                {
+                                    path: '',
+                                    loadComponent: () => import('./pages/report-list/report-list.component').then(m => m.ReportListComponent),
+                                },
+                                {
+                                    path: 'generate',
+                                    loadComponent: () => import('./pages/generate-report/generate-report.component').then(m => m.GenerateReportComponent),
+                                },
+                                {
+                                    path: ':id',
+                                    loadComponent: () => import('./pages/report-edit/report-edit.component').then(m => m.ReportEditComponent),
+                                },
+                                {
+                                    path: ':id/edit',
+                                    loadComponent: () => import('./pages/report-edit/report-edit.component').then(m => m.ReportEditComponent),
+                                },
+                            ],
+                        },
+                    ];
+                </div>
+
+                <h4>Step 2: Register Routes in App Routes</h4>
+                <p>Add lazy loading in <code>app.routes.ts</code> under the main layout.</p>
+
+                <div class="code-block">
+                    <span class="comment">// app.routes.ts (inside the main layout children)</span>
+                    {
+                        path: 'reports',
+                        loadChildren: () => import('./features/reports/reports.routes').then(m => m.REPORTS_ROUTES),
+                    },
+                </div>
+
+                <h4>Step 3: Define Report Models</h4>
+                <p>Ensure <code>core/models/report.model.ts</code> has all necessary interfaces.</p>
+
+                <div class="code-block">
+                    <span class="comment">// core/models/report.model.ts</span>
+                    export interface Report {
+                        id: string;
+                        patientId: string;
+                        patientName?: string;
+                        title: string;
+                        content: string; // rich text
+                        status: 'Draft' | 'PendingReview' | 'Approved' | 'Rejected';
+                        generatedBy: string;
+                        generatedByName?: string;
+                        reviewedBy: string | null;
+                        reviewedByName?: string | null;
+                        createdAt: string;
+                        updatedAt: string;
+                    }
+
+                    export interface GenerateReportRequest {
+                        patientId: string;
+                    }
+
+                    export interface UpdateReportRequest {
+                        title?: string;
+                        content?: string;
+                        status?: 'Draft' | 'PendingReview' | 'Approved' | 'Rejected';
+                    }
+
+                    export interface ReportListResponse {
+                        items: Report[];
+                        totalCount: number;
+                    }
+                </div>
+
+                <h4>Step 4: Create Report Service</h4>
+                <div class="code-block">
+                    <span class="comment">// core/services/report.service.ts</span>
+                    <span class="keyword">import</span> { Injectable, inject } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { Observable } <span class="keyword">from</span> <span class="string">'rxjs'</span>;
+                    <span class="keyword">import</span> { HttpClientService } <span class="keyword">from</span> <span class="string">'../api/http-client.service'</span>;
+                    <span class="keyword">import</span> { API } <span class="keyword">from</span> <span class="string">'../api/api-endpoints'</span>;
+                    <span class="keyword">import</span> { Report, GenerateReportRequest, UpdateReportRequest, ReportListResponse } <span class="keyword">from</span> <span class="string">'../models'</span>;
+
+                    <span class="keyword">@Injectable</span>({
+                        providedIn: <span class="string">'root'</span>,
+                    })
+                    export <span class="keyword">class</span> ReportService {
+                        private http = inject(HttpClientService);
+
+                        getReports(params: { patientId?: string; status?: string; page?: number; size?: number }): Observable&lt;ReportListResponse&gt; {
+                            return this.http.get&lt;ReportListResponse&gt;(API.reports.base, { params });
+                        }
+
+                        getReport(id: string): Observable&lt;Report&gt; {
+                            return this.http.get&lt;Report&gt;(API.reports.byId(id));
+                        }
+
+                        generateReport(data: GenerateReportRequest): Observable&lt;Report&gt; {
+                            return this.http.post&lt;Report&gt;(API.reports.generate, data);
+                        }
+
+                        updateReport(id: string, data: UpdateReportRequest): Observable&lt;Report&gt; {
+                            return this.http.put&lt;Report&gt;(API.reports.byId(id), data);
+                        }
+
+                        approveReport(id: string): Observable&lt;void&gt; {
+                            return this.http.post&lt;void&gt;(API.reports.approve(id), null);
+                        }
+
+                        rejectReport(id: string): Observable&lt;void&gt; {
+                            return this.http.post&lt;void&gt;(API.reports.reject(id), null);
+                        }
+
+                        exportPDF(id: string): Observable&lt;Blob&gt; {
+                            return this.http.get&lt;Blob&gt;(API.reports.export(id), { responseType: 'blob' });
+                        }
+                    }
+                </div>
+
+                <h4>Step 5: Create Report State Service</h4>
+                <div class="code-block">
+                    <span class="comment">// core/state/report-state.service.ts</span>
+                    <span class="keyword">import</span> { Injectable, signal } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { Report } <span class="keyword">from</span> <span class="string">'../models'</span>;
+
+                    <span class="keyword">@Injectable</span>({
+                        providedIn: <span class="string">'root'</span>,
+                    })
+                    export <span class="keyword">class</span> ReportStateService {
+                        private reportsSignal = signal&lt;Report[]&gt;([]);
+                        private selectedReportSignal = signal&lt;Report | null&gt;(<span class="keyword">null</span>);
+                        private totalCountSignal = signal(0);
+                        private loadingSignal = signal(false);
+                        private generatingSignal = signal(false);
+                        private errorSignal = signal&lt;string | null&gt;(<span class="keyword">null</span>);
+
+                        readonly reports = this.reportsSignal.asReadonly();
+                        readonly selectedReport = this.selectedReportSignal.asReadonly();
+                        readonly totalCount = this.totalCountSignal.asReadonly();
+                        readonly loading = this.loadingSignal.asReadonly();
+                        readonly generating = this.generatingSignal.asReadonly();
+                        readonly error = this.errorSignal.asReadonly();
+
+                        setReports(reports: Report[], totalCount: number) {
+                            this.reportsSignal.set(reports);
+                            this.totalCountSignal.set(totalCount);
+                            this.errorSignal.set(null);
+                        }
+
+                        addReport(report: Report) {
+                            this.reportsSignal.update(list => [report, ...list]);
+                            this.totalCountSignal.update(count => count + 1);
+                        }
+
+                        updateReport(updated: Report) {
+                            this.reportsSignal.update(list => list.map(r => r.id === updated.id ? updated : r));
+                            if (this.selectedReportSignal()?.id === updated.id) {
+                                this.selectedReportSignal.set(updated);
+                            }
+                        }
+
+                        removeReport(id: string) {
+                            this.reportsSignal.update(list => list.filter(r => r.id !== id));
+                            this.totalCountSignal.update(count => count - 1);
+                        }
+
+                        selectReport(report: Report) {
+                            this.selectedReportSignal.set(report);
+                        }
+
+                        clearSelected() {
+                            this.selectedReportSignal.set(null);
+                        }
+
+                        setLoading(loading: boolean) {
+                            this.loadingSignal.set(loading);
+                        }
+
+                        setGenerating(generating: boolean) {
+                            this.generatingSignal.set(generating);
+                        }
+
+                        setError(error: string | null) {
+                            this.errorSignal.set(error);
+                        }
+
+                        reset() {
+                            this.reportsSignal.set([]);
+                            this.selectedReportSignal.set(null);
+                            this.totalCountSignal.set(0);
+                            this.loadingSignal.set(false);
+                            this.generatingSignal.set(false);
+                            this.errorSignal.set(null);
+                        }
+                    }
+                </div>
+
+                <h4>Step 6: Generate Placeholder Components</h4>
+                <div class="code-block">
+                    ng g c features/reports/pages/report-list --standalone --skip-tests
+                    ng g c features/reports/pages/generate-report --standalone --skip-tests
+                    ng g c features/reports/pages/report-edit --standalone --skip-tests
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>features/reports/reports.routes.ts</code></li>
+                    <li><code>core/services/report.service.ts</code></li>
+                    <li><code>core/state/report-state.service.ts</code></li>
+                    <li>Update <code>core/models/report.model.ts</code></li>
+                    <li>Placeholder components.</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    ng g s core/services/report --skip-tests
+                    ng g s core/state/report-state --skip-tests
+                    ng g c features/reports/pages/report-list --standalone --skip-tests
+                    ng g c features/reports/pages/generate-report --standalone --skip-tests
+                    ng g c features/reports/pages/report-edit --standalone --skip-tests
+                </div>
+
+                <h3>Code Flow</h3>
+                <div class="flow-diagram">
+                    <span class="step">User navigates to /reports</span> <span class="arrow">→</span>
+                    <span class="step">ReportListComponent loads</span> <span class="arrow">→</span>
+                    <span class="step">Calls ReportService.getReports()</span> <span class="arrow">→</span>
+                    <span class="step">Updates ReportStateService</span> <span class="arrow">→</span>
+                    <span class="step">Renders list</span>
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Lazy loading with loadChildren</li>
+                    <li>Standalone components</li>
+                    <li>Angular Signals for state</li>
+                </ul>
+
+                <h3>Tools/Libraries Required</h3>
+                <ul>
+                    <li>Angular Router</li>
+                    <li>HttpClientService</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Verify routes are lazy‑loaded (network tab).</li>
+                    <li>Test ReportService methods with mock data.</li>
+                    <li>Test ReportStateService signals update correctly.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Report routes, service, and state service ready.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not applying guards to report routes.
+                    <br /><strong>Fix:</strong> Add <code>canActivate: [authGuard, roleGuard(['Therapist'])]</code>.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 2:</strong> Not defining all model properties for Report.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>User without Therapist role should not access report routes.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Routes, service, and state service are implemented.</li>
+                </ul>
+
+                <h3>Frontend Architecture Notes</h3>
+                <ul>
+                    <li>ReportStateService is the single source of truth for report data.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Use ReportService for API and ReportStateService for state.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 2: REPORT LIST COMPONENT                                         -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-REP-002</span><span class="task-name">Report List Component</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-REP-002</li>
+                    <li><strong>Task Name:</strong> Report List Component</li>
+                    <li><strong>Owner:</strong> M4 (Frontend Developer)</li>
+                    <li><strong>Dependencies:</strong> FE-REP-001, FE-SHARED-005 (Table), FE-SHARED-006 (Pagination), FE-PAT-001 (PatientService)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Build the report list page showing all generated reports with filters by patient and status. Provides navigation to view, edit, and generate new reports.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Therapists need to see all reports they've generated and track their status (Draft, PendingReview, Approved, Rejected).</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use shared Table and Pagination components, integrate with ReportService and ReportStateService, and provide filtering by patient and status.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Shared Table and Pagination components.</li>
+                    <li>PatientService for patient dropdown filter.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-REP-001:</strong> ReportService and StateService.</li>
+                    <li><strong>FE-SHARED-005:</strong> Table component.</li>
+                    <li><strong>FE-SHARED-006:</strong> Pagination component.</li>
+                    <li><strong>FE-PAT-001:</strong> PatientService for patient list.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Optional patientId from route or filter.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>report-list.component.ts</code></li>
+                    <li><code>report-list.component.html</code></li>
+                    <li><code>report-list.component.scss</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Implement Component</h4>
+
+                <div class="code-block">
+                    <span class="comment">// report-list.component.ts</span>
+                    <span class="keyword">import</span> { Component, inject, signal, OnInit } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { Router, RouterLink } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+                    <span class="keyword">import</span> { ReportService } <span class="keyword">from</span> <span class="string">'../../../../core/services/report.service'</span>;
+                    <span class="keyword">import</span> { ReportStateService } <span class="keyword">from</span> <span class="string">'../../../../core/state/report-state.service'</span>;
+                    <span class="keyword">import</span> { PatientService } <span class="keyword">from</span> <span class="string">'../../../../core/services/patient.service'</span>;
+                    <span class="keyword">import</span> { TableComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/table/table.component'</span>;
+                    <span class="keyword">import</span> { PaginationComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/pagination/pagination.component'</span>;
+                    <span class="keyword">import</span> { ButtonComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/button/button.component'</span>;
+                    <span class="keyword">import</span> { FormsModule } <span class="keyword">from</span> <span class="string">'@angular/forms'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-report-list',
+                        standalone: true,
+                        imports: [TableComponent, PaginationComponent, ButtonComponent, RouterLink, FormsModule],
+                        templateUrl: './report-list.component.html',
+                        styleUrls: ['./report-list.component.scss'],
+                    })
+                    export <span class="keyword">class</span> ReportListComponent implements OnInit {
+                        private reportService = inject(ReportService);
+                        private state = inject(ReportStateService);
+                        private patientService = inject(PatientService);
+
+                        reports = this.state.reports;
+                        totalCount = this.state.totalCount;
+                        loading = this.state.loading;
+                        error = this.state.error;
+
+                        patients = signal&lt;any[]&gt;([]);
+                        currentPage = 1;
+                        pageSize = 10;
+                        selectedPatientId = '';
+                        selectedStatus = '';
+
+                        statusOptions = ['', 'Draft', 'PendingReview', 'Approved', 'Rejected'];
+
+                        ngOnInit(): void {
+                            this.loadPatients();
+                            this.loadReports();
+                        }
+
+                        loadPatients() {
+                            this.patientService.getPatients({ page: 1, size: 100 }).subscribe({
+                                next: (result) => {
+                                    this.patients.set(result.items);
+                                },
+                            });
+                        }
+
+                        loadReports() {
+                            this.state.setLoading(true);
+                            this.reportService.getReports({
+                                patientId: this.selectedPatientId || undefined,
+                                status: this.selectedStatus || undefined,
+                                page: this.currentPage,
+                                size: this.pageSize,
+                            }).subscribe({
+                                next: (result) => {
+                                    this.state.setReports(result.items, result.totalCount);
+                                    this.state.setLoading(false);
+                                },
+                                error: (err) => {
+                                    this.state.setError(err.message || 'Failed to load reports');
+                                    this.state.setLoading(false);
+                                },
+                            });
+                        }
+
+                        onFilterChange() {
+                            this.currentPage = 1;
+                            this.loadReports();
+                        }
+
+                        onPageChange(page: number) {
+                            this.currentPage = page;
+                            this.loadReports();
+                        }
+
+                        deleteReport(id: string) {
+                            if (confirm('Are you sure you want to delete this report?')) {
+                                this.reportService.updateReport(id, { status: 'Draft' }).subscribe({
+                                    next: () => {
+                                        this.loadReports();
+                                    },
+                                    error: (err) => {
+                                        console.error('Delete failed', err);
+                                    },
+                                });
+                            }
+                        }
+
+                        getStatusBadgeClass(status: string): string {
+                            const map: Record<string, string> = {
+                                'Draft': 'bg-secondary',
+                                'PendingReview': 'bg-warning text-dark',
+                                'Approved': 'bg-success',
+                                'Rejected': 'bg-danger',
+                            };
+                            return map[status] || 'bg-secondary';
+                        }
+                    }
+                </div>
+
+                <h4>Step 2: Create Template</h4>
+
+                <div class="code-block">
+                    <span class="comment">// report-list.component.html</span>
+                    &lt;div class="report-list"&gt;
+                        &lt;div class="d-flex justify-content-between align-items-center mb-3"&gt;
+                            &lt;h2&gt;Reports&lt;/h2&gt;
+                            &lt;app-button variant="primary" routerLink="/reports/generate"&gt;Generate New Report&lt;/app-button&gt;
+                        &lt;/div&gt;
+
+                        &lt;div class="filters d-flex flex-wrap gap-2 mb-3"&gt;
+                            &lt;div class="form-group" style="min-width: 200px;"&gt;
+                                &lt;label class="form-label"&gt;Patient&lt;/label&gt;
+                                &lt;select class="form-select" [(ngModel)]="selectedPatientId" (ngModelChange)="onFilterChange()"&gt;
+                                    &lt;option value=""&gt;All Patients&lt;/option&gt;
+                                    &lt;option *<span class="keyword">for</span>="let patient of patients()" [value]="patient.id"&gt;
+                                        {{ patient.firstName }} {{ patient.lastName }}
+                                    &lt;/option&gt;
+                                &lt;/select&gt;
+                            &lt;/div&gt;
+                            &lt;div class="form-group" style="min-width: 150px;"&gt;
+                                &lt;label class="form-label"&gt;Status&lt;/label&gt;
+                                &lt;select class="form-select" [(ngModel)]="selectedStatus" (ngModelChange)="onFilterChange()"&gt;
+                                    &lt;option *<span class="keyword">for</span>="let status of statusOptions" [value]="status"&gt;
+                                        {{ status || 'All Statuses' }}
+                                    &lt;/option&gt;
+                                &lt;/select&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+
+                        &lt;div class="table-responsive"&gt;
+                            &lt;app-table
+                                [data]="reports()"
+                                [columns]="[
+                                    { key: 'title', label: 'Title' },
+                                    { key: 'patientName', label: 'Patient' },
+                                    { key: 'status', label: 'Status' },
+                                    { key: 'createdAt', label: 'Created' }
+                                ]"
+                                [loading]="loading()"
+                                emptyMessage="No reports found"
+                            &gt;
+                                &lt;ng-template #cell let-row let-col="col"&gt;
+                                    &lt;ng-container *<span class="keyword">if</span>="col.key === 'status'"&gt;
+                                        &lt;span class="badge {{ getStatusBadgeClass(row.status) }}"&gt;{{ row.status }}&lt;/span&gt;
+                                    &lt;/ng-container&gt;
+                                    &lt;ng-container *<span class="keyword">if</span>="col.key === 'createdAt'"&gt;
+                                        {{ row.createdAt | date:'short' }}
+                                    &lt;/ng-container&gt;
+                                    &lt;ng-container *<span class="keyword">if</span>="col.key === 'patientName'"&gt;
+                                        {{ row.patientName || row.patientId }}
+                                    &lt;/ng-container&gt;
+                                &lt;/ng-template&gt;
+                                &lt;ng-template #actions let-row&gt;
+                                    &lt;app-button variant="secondary" size="sm" [routerLink]="['/reports', row.id]"&gt;View&lt;/app-button&gt;
+                                    &lt;app-button variant="primary" size="sm" [routerLink]="['/reports', row.id, 'edit']"&gt;Edit&lt;/app-button&gt;
+                                    &lt;app-button variant="danger" size="sm" (click)="deleteReport(row.id)" *<span class="keyword">if</span>="row.status === 'Draft'"&gt;Delete&lt;/app-button&gt;
+                                &lt;/ng-template&gt;
+                            &lt;/app-table&gt;
+                        &lt;/div&gt;
+
+                        &lt;div class="mt-3"&gt;
+                            &lt;app-pagination
+                                [totalItems]="totalCount()"
+                                [pageSize]="pageSize"
+                                [currentPage]="currentPage"
+                                (pageChange)="onPageChange($event)"
+                            &gt;&lt;/app-pagination&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                </div>
+
+                <h4>Step 3: Add Styles</h4>
+
+                <div class="code-block">
+                    <span class="comment">// report-list.component.scss</span>
+                    .report-list {
+                        padding: 1rem 0;
+                    }
+                    .filters .form-group {
+                        margin-bottom: 0;
+                    }
+                    .filters .form-label {
+                        font-size: 0.8rem;
+                        margin-bottom: 2px;
+                        font-weight: 600;
+                    }
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>report-list.component.ts</code></li>
+                    <li><code>report-list.component.html</code></li>
+                    <li><code>report-list.component.scss</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    <span class="comment"># Already generated</span>
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Shared Table component</li>
+                    <li>Filtering with dropdowns</li>
+                    <li>Pagination</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Navigate to /reports.</li>
+                    <li>Verify reports load.</li>
+                    <li>Test patient filter.</li>
+                    <li>Test status filter.</li>
+                    <li>Test pagination.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Report list component ready.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not updating state after delete/update.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>No reports → empty state.</li>
+                    <li>Patient has no reports → empty list.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Report list works with filters and pagination.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Report list is the entry point for managing reports.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 3: GENERATE REPORT COMPONENT (AI DRAFT)                         -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-REP-003</span><span class="task-name">Generate Report Component (AI Draft)</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">6h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-REP-003</li>
+                    <li><strong>Task Name:</strong> Generate Report Component (AI Draft)</li>
+                    <li><strong>Owner:</strong> M4 (Frontend Developer)</li>
+                    <li><strong>Dependencies:</strong> FE-REP-001, FE-PAT-001 (PatientService), FE-SHARED-003 (Input), FE-SHARED-002 (Button)</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 6 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Build the report generation page where therapists select a patient, click generate, and receive an AI‑drafted report. The draft is displayed in a rich text editor for review before saving.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Enable therapists to quickly generate AI‑drafted referral reports based on patient data, session notes, and assessments.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Use ReportService.generateReport() to trigger AI generation, display the draft in a Quill editor (or similar), and allow saving.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Quill rich text editor (already installed for sessions).</li>
+                    <li>PatientService to fetch patient list.</li>
+                    <li>ReportService for generation.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-REP-001:</strong> ReportService and StateService.</li>
+                    <li><strong>FE-PAT-001:</strong> PatientService.</li>
+                    <li><strong>FE-SHARED-003:</strong> Input components.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Optional pre‑selected patient ID via query param.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>generate-report.component.ts</code></li>
+                    <li><code>generate-report.component.html</code></li>
+                    <li><code>generate-report.component.scss</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Implement Component</h4>
+
+                <div class="code-block">
+                    <span class="comment">// generate-report.component.ts</span>
+                    <span class="keyword">import</span> { Component, inject, signal, OnInit } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { FormBuilder, ReactiveFormsModule, Validators } <span class="keyword">from</span> <span class="string">'@angular/forms'</span>;
+                    <span class="keyword">import</span> { Router, ActivatedRoute } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+                    <span class="keyword">import</span> { ReportService } <span class="keyword">from</span> <span class="string">'../../../../core/services/report.service'</span>;
+                    <span class="keyword">import</span> { ReportStateService } <span class="keyword">from</span> <span class="string">'../../../../core/state/report-state.service'</span>;
+                    <span class="keyword">import</span> { PatientService } <span class="keyword">from</span> <span class="string">'../../../../core/services/patient.service'</span>;
+                    <span class="keyword">import</span> { InputComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/input/input.component'</span>;
+                    <span class="keyword">import</span> { ButtonComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/button/button.component'</span>;
+                    <span class="keyword">import</span> { QuillModule } <span class="keyword">from</span> <span class="string">'ngx-quill'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-generate-report',
+                        standalone: true,
+                        imports: [ReactiveFormsModule, InputComponent, ButtonComponent, QuillModule],
+                        templateUrl: './generate-report.component.html',
+                        styleUrls: ['./generate-report.component.scss'],
+                    })
+                    export <span class="keyword">class</span> GenerateReportComponent implements OnInit {
+                        private fb = inject(FormBuilder);
+                        private reportService = inject(ReportService);
+                        private state = inject(ReportStateService);
+                        private patientService = inject(PatientService);
+                        private router = inject(Router);
+                        private route = inject(ActivatedRoute);
+
+                        patients = signal&lt;any[]&gt;([]);
+                        loading = signal(false);
+                        generating = signal(false);
+                        generatedReport = signal&lt;any | null&gt;(<span class="keyword">null</span>);
+                        error = signal&lt;string | null&gt;(<span class="keyword">null</span>);
+
+                        form = this.fb.group({
+                            patientId: ['', [Validators.required]],
+                        });
+
+                        quillConfig = {
+                            toolbar: [
+                                ['bold', 'italic', 'underline'],
+                                ['blockquote', 'code-block'],
+                                [{ list: 'ordered' }, { list: 'bullet' }],
+                                [{ size: ['small', false, 'large', 'huge'] }],
+                                [{ color: [] }, { background: [] }],
+                                ['link', 'image'],
+                                ['clean'],
+                            ],
+                            readOnly: false,
+                        };
+
+                        ngOnInit(): void {
+                            this.loadPatients();
+                            const patientId = this.route.snapshot.queryParams['patientId'];
+                            if (patientId) {
+                                this.form.patchValue({ patientId });
+                            }
+                        }
+
+                        loadPatients() {
+                            this.loading.set(true);
+                            this.patientService.getPatients({ page: 1, size: 100 }).subscribe({
+                                next: (result) => {
+                                    this.patients.set(result.items);
+                                    this.loading.set(false);
+                                },
+                                error: () => {
+                                    this.loading.set(false);
+                                    this.error.set('Failed to load patients');
+                                },
+                            });
+                        }
+
+                        generateReport() {
+                            if (this.form.invalid) {
+                                this.form.markAllAsTouched();
+                                return;
+                            }
+
+                            this.generating.set(true);
+                            this.error.set(null);
+                            this.generatedReport.set(null);
+
+                            const patientId = this.form.value.patientId!;
+
+                            this.reportService.generateReport({ patientId }).subscribe({
+                                next: (report) => {
+                                    this.generatedReport.set(report);
+                                    this.generating.set(false);
+                                    this.state.addReport(report);
+                                    this.error.set(null);
+                                },
+                                error: (err) => {
+                                    this.generating.set(false);
+                                    this.error.set(err.message || 'Failed to generate report. Please try again.');
+                                },
+                            });
+                        }
+
+                        saveReport() {
+                            if (!this.generatedReport()) return;
+
+                            const report = this.generatedReport();
+                            this.reportService.updateReport(report.id, {
+                                title: report.title,
+                                content: report.content,
+                                status: 'Draft',
+                            }).subscribe({
+                                next: (updated) => {
+                                    this.state.updateReport(updated);
+                                    this.router.navigate(['/reports', updated.id]);
+                                },
+                                error: (err) => {
+                                    this.error.set(err.message || 'Failed to save report');
+                                },
+                            });
+                        }
+
+                        cancel() {
+                            this.router.navigate(['/reports']);
+                        }
+
+                        regenerate() {
+                            this.generatedReport.set(null);
+                            this.generateReport();
+                        }
+
+                        onContentChange(content: string) {
+                            if (this.generatedReport()) {
+                                this.generatedReport.set({ ...this.generatedReport(), content });
+                            }
+                        }
+                    }
+                </div>
+
+                <h4>Step 2: Create Template</h4>
+
+                <div class="code-block">
+                    <span class="comment">// generate-report.component.html</span>
+                    &lt;div class="generate-report"&gt;
+                        &lt;h2&gt;Generate AI Report&lt;/h2&gt;
+
+                        &lt;div *<span class="keyword">if</span>="!generatedReport()"&gt;
+                            &lt;div class="card mb-4"&gt;
+                                &lt;div class="card-body"&gt;
+                                    &lt;h5 class="card-title"&gt;Select Patient&lt;/h5&gt;
+                                    &lt;form [formGroup]="form" (ngSubmit)="generateReport()"&gt;
+                                        &lt;div class="form-group"&gt;
+                                            &lt;label&gt;Patient&lt;/label&gt;
+                                            &lt;select class="form-select" formControlName="patientId"&gt;
+                                                &lt;option value=""&gt;Select a patient&lt;/option&gt;
+                                                &lt;option *<span class="keyword">for</span>="let patient of patients()" [value]="patient.id"&gt;
+                                                    {{ patient.firstName }} {{ patient.lastName }}
+                                                &lt;/option&gt;
+                                            &lt;/select&gt;
+                                            &lt;div *<span class="keyword">if</span>="form.get('patientId')?.invalid && form.get('patientId')?.touched" class="invalid-feedback"&gt;
+                                                Please select a patient
+                                            &lt;/div&gt;
+                                        &lt;/div&gt;
+                                        &lt;div class="mt-3"&gt;
+                                            &lt;app-button type="submit" variant="primary" [loading]="generating()" [disabled]="form.invalid"&gt;
+                                                Generate AI Report
+                                            &lt;/app-button&gt;
+                                            &lt;app-button type="button" variant="secondary" class="ms-2" (click)="cancel()"&gt;Cancel&lt;/app-button&gt;
+                                        &lt;/div&gt;
+                                    &lt;/form&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+
+                        &lt;div *<span class="keyword">if</span>="error()" class="alert alert-danger"&gt;{{ error() }}&lt;/div&gt;
+
+                        &lt;div *<span class="keyword">if</span>="generatedReport()" class="card"&gt;
+                            &lt;div class="card-header d-flex justify-content-between align-items-center"&gt;
+                                &lt;h5 class="mb-0"&gt;Generated Report Draft&lt;/h5&gt;
+                                &lt;div&gt;
+                                    &lt;app-button variant="outline-secondary" size="sm" (click)="regenerate()"&gt;Regenerate&lt;/app-button&gt;
+                                    &lt;app-button variant="success" size="sm" class="ms-2" (click)="saveReport()"&gt;Save Report&lt;/app-button&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                            &lt;div class="card-body"&gt;
+                                &lt;div class="form-group"&gt;
+                                    &lt;label&gt;Title&lt;/label&gt;
+                                    &lt;input class="form-control" [(ngModel)]="generatedReport().title" placeholder="Enter report title" /&gt;
+                                &lt;/div&gt;
+                                &lt;div class="form-group mt-3"&gt;
+                                    &lt;label&gt;Content (Rich Text)&lt;/label&gt;
+                                    &lt;quill-editor
+                                        [ngModel]="generatedReport().content"
+                                        (ngModelChange)="onContentChange($event)"
+                                        [modules]="quillConfig"
+                                        placeholder="Report content will appear here..."
+                                    &gt;&lt;/quill-editor&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                </div>
+
+                <h4>Step 3: Add Styles</h4>
+
+                <div class="code-block">
+                    <span class="comment">// generate-report.component.scss</span>
+                    .generate-report {
+                        padding: 1rem 0;
+                        max-width: 900px;
+                    }
+                    quill-editor {
+                        min-height: 300px;
+                    }
+                    .ql-container {
+                        min-height: 250px;
+                    }
+                    .card-header .btn {
+                        font-size: 0.85rem;
+                    }
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>generate-report.component.ts</code></li>
+                    <li><code>generate-report.component.html</code></li>
+                    <li><code>generate-report.component.scss</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    <span class="comment"># Already generated</span>
+                </div>
+
+                <h3>AI Interaction Flow</h3>
+                <div class="flow-diagram">
+                    <span class="step">User selects patient</span> <span class="arrow">→</span>
+                    <span class="step">Clicks Generate</span> <span class="arrow">→</span>
+                    <span class="step">ReportService.generateReport()</span> <span class="arrow">→</span>
+                    <span class="step">Backend AI Service</span> <span class="arrow">→</span>
+                    <span class="step">OpenAI/LLM processes patient data</span> <span class="arrow">→</span>
+                    <span class="step">Report generated</span> <span class="arrow">→</span>
+                    <span class="step">Display draft in editor</span>
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Quill rich text editor</li>
+                    <li>AI generation flow</li>
+                    <li>Async data fetching with loading states</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Select a patient and generate a report.</li>
+                    <li>Verify draft appears in editor.</li>
+                    <li>Edit content and save.</li>
+                    <li>Test regenerate.</li>
+                    <li>Test error handling (invalid patient, API failure).</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Generate report component ready.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not handling long generation times (show spinner with timeout).
+                    <br /><strong>Fix:</strong> Use a timeout or polling mechanism if needed.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 2:</strong> Not displaying errors from AI generation.</div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>Patient has no session data → AI may generate a minimal report.</li>
+                    <li>Generation takes too long → show a timeout message.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Generate report works with AI draft.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> AI draft can be edited before saving.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 4: REPORT REVIEW/EDIT COMPONENT                                 -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-REP-004</span><span class="task-name">Report Review/Edit Component</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-red">High</span>
+                    <span class="tag">6h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-REP-004</li>
+                    <li><strong>Task Name:</strong> Report Review/Edit Component</li>
+                    <li><strong>Owner:</strong> M4 (Frontend Developer)</li>
+                    <li><strong>Dependencies:</strong> FE-REP-001, FE-SHARED-003 (Input), FE-SHARED-002 (Button), ngx-quill</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                    <li><strong>Estimated Effort:</strong> 6 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Build the report review and edit page where therapists can view a report, edit its content, update status, approve/reject, and export as PDF.</p>
+
+                <h3>Business Purpose</h3>
+                <p>Enable therapists to finalise AI‑drafted reports, review them, and approve or reject them before sharing with referring practitioners.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Fetch the report, display it in a Quill editor for editing, provide status update buttons (approve, reject), and PDF export.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Quill rich text editor.</li>
+                    <li>ReportService for get, update, approve, reject, export.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><strong>FE-REP-001:</strong> ReportService and StateService.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Report ID from route.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li><code>report-edit.component.ts</code></li>
+                    <li><code>report-edit.component.html</code></li>
+                    <li><code>report-edit.component.scss</code></li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Implement Component</h4>
+
+                <div class="code-block">
+                    <span class="comment">// report-edit.component.ts</span>
+                    <span class="keyword">import</span> { Component, inject, signal, OnInit } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                    <span class="keyword">import</span> { FormBuilder, ReactiveFormsModule, Validators } <span class="keyword">from</span> <span class="string">'@angular/forms'</span>;
+                    <span class="keyword">import</span> { ActivatedRoute, Router } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+                    <span class="keyword">import</span> { ReportService } <span class="keyword">from</span> <span class="string">'../../../../core/services/report.service'</span>;
+                    <span class="keyword">import</span> { ReportStateService } <span class="keyword">from</span> <span class="string">'../../../../core/state/report-state.service'</span>;
+                    <span class="keyword">import</span> { InputComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/input/input.component'</span>;
+                    <span class="keyword">import</span> { ButtonComponent } <span class="keyword">from</span> <span class="string">'../../../../shared/components/button/button.component'</span>;
+                    <span class="keyword">import</span> { QuillModule } <span class="keyword">from</span> <span class="string">'ngx-quill'</span>;
+
+                    <span class="keyword">@Component</span>({
+                        selector: 'app-report-edit',
+                        standalone: true,
+                        imports: [ReactiveFormsModule, InputComponent, ButtonComponent, QuillModule],
+                        templateUrl: './report-edit.component.html',
+                        styleUrls: ['./report-edit.component.scss'],
+                    })
+                    export <span class="keyword">class</span> ReportEditComponent implements OnInit {
+                        private route = inject(ActivatedRoute);
+                        private router = inject(Router);
+                        private reportService = inject(ReportService);
+                        private state = inject(ReportStateService);
+
+                        report = this.state.selectedReport;
+                        loading = signal(true);
+                        saving = signal(false);
+                        error = signal&lt;string | null&gt;(<span class="keyword">null</span>);
+
+                        quillConfig = {
+                            toolbar: [
+                                ['bold', 'italic', 'underline'],
+                                ['blockquote', 'code-block'],
+                                [{ list: 'ordered' }, { list: 'bullet' }],
+                                [{ size: ['small', false, 'large', 'huge'] }],
+                                [{ color: [] }, { background: [] }],
+                                ['link', 'image'],
+                                ['clean'],
+                            ],
+                            readOnly: false,
+                        };
+
+                        ngOnInit(): void {
+                            const id = this.route.snapshot.paramMap.get('id');
+                            if (id) {
+                                this.loadReport(id);
+                            } else {
+                                this.error.set('Report ID not found');
+                                this.loading.set(false);
+                            }
+                        }
+
+                        loadReport(id: string) {
+                            this.loading.set(true);
+                            this.reportService.getReport(id).subscribe({
+                                next: (report) => {
+                                    this.state.selectReport(report);
+                                    this.loading.set(false);
+                                },
+                                error: (err) => {
+                                    this.error.set(err.message || 'Failed to load report');
+                                    this.loading.set(false);
+                                },
+                            });
+                        }
+
+                        updateReport() {
+                            if (!this.report()) return;
+
+                            this.saving.set(true);
+                            this.error.set(null);
+
+                            this.reportService.updateReport(this.report()!.id, {
+                                title: this.report()!.title,
+                                content: this.report()!.content,
+                                status: this.report()!.status,
+                            }).subscribe({
+                                next: (updated) => {
+                                    this.state.updateReport(updated);
+                                    this.saving.set(false);
+                                },
+                                error: (err) => {
+                                    this.error.set(err.message || 'Failed to update report');
+                                    this.saving.set(false);
+                                },
+                            });
+                        }
+
+                        approveReport() {
+                            if (!this.report()) return;
+                            this.saving.set(true);
+                            this.reportService.approveReport(this.report()!.id).subscribe({
+                                next: () => {
+                                    const updated = { ...this.report()!, status: 'Approved' as const };
+                                    this.state.updateReport(updated);
+                                    this.saving.set(false);
+                                    this.router.navigate(['/reports']);
+                                },
+                                error: (err) => {
+                                    this.error.set(err.message || 'Failed to approve report');
+                                    this.saving.set(false);
+                                },
+                            });
+                        }
+
+                        rejectReport() {
+                            if (!this.report()) return;
+                            this.saving.set(true);
+                            this.reportService.rejectReport(this.report()!.id).subscribe({
+                                next: () => {
+                                    const updated = { ...this.report()!, status: 'Rejected' as const };
+                                    this.state.updateReport(updated);
+                                    this.saving.set(false);
+                                    this.router.navigate(['/reports']);
+                                },
+                                error: (err) => {
+                                    this.error.set(err.message || 'Failed to reject report');
+                                    this.saving.set(false);
+                                },
+                            });
+                        }
+
+                        exportPDF() {
+                            if (!this.report()) return;
+                            this.saving.set(true);
+                            this.reportService.exportPDF(this.report()!.id).subscribe({
+                                next: (blob) => {
+                                    const url = window.URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = `Report_${this.report()!.title.replace(/\s+/g, '_')}.pdf`;
+                                    a.click();
+                                    window.URL.revokeObjectURL(url);
+                                    this.saving.set(false);
+                                },
+                                error: (err) => {
+                                    this.error.set(err.message || 'Failed to export PDF');
+                                    this.saving.set(false);
+                                },
+                            });
+                        }
+
+                        goBack() {
+                            this.router.navigate(['/reports']);
+                        }
+
+                        onContentChange(content: string) {
+                            if (this.report()) {
+                                this.state.selectReport({ ...this.report()!, content });
+                            }
+                        }
+
+                        onTitleChange(title: string) {
+                            if (this.report()) {
+                                this.state.selectReport({ ...this.report()!, title });
+                            }
+                        }
+
+                        isEditable(): boolean {
+                            return this.report()?.status !== 'Approved' && this.report()?.status !== 'Rejected';
+                        }
+
+                        canApprove(): boolean {
+                            return this.report()?.status === 'Draft' || this.report()?.status === 'PendingReview';
+                        }
+
+                        canReject(): boolean {
+                            return this.report()?.status === 'Draft' || this.report()?.status === 'PendingReview';
+                        }
+
+                        getStatusBadgeClass(): string {
+                            const map: Record<string, string> = {
+                                'Draft': 'bg-secondary',
+                                'PendingReview': 'bg-warning text-dark',
+                                'Approved': 'bg-success',
+                                'Rejected': 'bg-danger',
+                            };
+                            return map[this.report()?.status || ''] || 'bg-secondary';
+                        }
+                    }
+                </div>
+
+                <h4>Step 2: Create Template</h4>
+
+                <div class="code-block">
+                    <span class="comment">// report-edit.component.html</span>
+                    &lt;div class="report-edit"&gt;
+                        &lt;div class="d-flex justify-content-between align-items-start mb-3"&gt;
+                            &lt;div&gt;
+                                &lt;button class="btn btn-link p-0" (click)="goBack()"&gt;
+                                    &lt;i class="bi bi-arrow-left"&gt;&lt;/i&gt; Back to Reports
+                                &lt;/button&gt;
+                            &lt;/div&gt;
+                            &lt;div class="d-flex gap-2"&gt;
+                                &lt;button class="btn btn-outline-primary btn-sm" (click)="exportPDF()" [disabled]="saving()"&gt;
+                                    &lt;i class="bi bi-file-pdf"&gt;&lt;/i&gt; Export PDF
+                                &lt;/button&gt;
+                                &lt;button class="btn btn-success btn-sm" (click)="approveReport()" [disabled]="!canApprove() || saving()"&gt;
+                                    Approve
+                                &lt;/button&gt;
+                                &lt;button class="btn btn-danger btn-sm" (click)="rejectReport()" [disabled]="!canReject() || saving()"&gt;
+                                    Reject
+                                &lt;/button&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+
+                        &lt;div *<span class="keyword">if</span>="loading()" class="text-center py-5"&gt;
+                            &lt;app-spinner size="lg"&gt;&lt;/app-spinner&gt;
+                        &lt;/div&gt;
+
+                        &lt;div *<span class="keyword">if</span>="error()" class="alert alert-danger"&gt;{{ error() }}&lt;/div&gt;
+
+                        &lt;div *<span class="keyword">if</span>="report() &amp;&amp; !loading()" class="card"&gt;
+                            &lt;div class="card-header d-flex justify-content-between align-items-center"&gt;
+                                &lt;span&gt;Status: &lt;span class="badge {{ getStatusBadgeClass() }}"&gt;{{ report()?.status }}&lt;/span&gt;&lt;/span&gt;
+                                &lt;span class="text-muted" style="font-size: 0.85rem;"&gt;
+                                    Created: {{ report()?.createdAt | date:'short' }}
+                                &lt;/span&gt;
+                            &lt;/div&gt;
+                            &lt;div class="card-body"&gt;
+                                &lt;div class="form-group"&gt;
+                                    &lt;label&gt;Title&lt;/label&gt;
+                                    &lt;input class="form-control" [value]="report()?.title"
+                                           (input)="onTitleChange($any($event.target).value)"
+                                           [disabled]="!isEditable()" /&gt;
+                                &lt;/div&gt;
+                                &lt;div class="form-group mt-3"&gt;
+                                    &lt;label&gt;Content&lt;/label&gt;
+                                    &lt;quill-editor
+                                        [ngModel]="report()?.content"
+                                        (ngModelChange)="onContentChange($event)"
+                                        [modules]="quillConfig"
+                                        [readOnly]="!isEditable()"
+                                        placeholder="No content..."
+                                    &gt;&lt;/quill-editor&gt;
+                                &lt;/div&gt;
+
+                                &lt;div class="mt-3"&gt;
+                                    &lt;app-button variant="primary" (click)="updateReport()" [loading]="saving()" [disabled]="!isEditable()"&gt;
+                                        Save Changes
+                                    &lt;/app-button&gt;
+                                &lt;/div&gt;
+
+                                &lt;div *<span class="keyword">if</span>="report()?.patientName" class="mt-3 text-muted"&gt;
+                                    Patient: {{ report()?.patientName }}
+                                &lt;/div&gt;
+                                &lt;div *<span class="keyword">if</span>="report()?.generatedByName" class="text-muted" style="font-size: 0.85rem;"&gt;
+                                    Generated by: {{ report()?.generatedByName }}
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                </div>
+
+                <h4>Step 3: Add Styles</h4>
+
+                <div class="code-block">
+                    <span class="comment">// report-edit.component.scss</span>
+                    .report-edit {
+                        padding: 1rem 0;
+                        max-width: 1000px;
+                    }
+                    quill-editor {
+                        min-height: 300px;
+                    }
+                    .ql-container {
+                        min-height: 250px;
+                    }
+                    .card-header .badge {
+                        font-size: 0.8rem;
+                    }
+                </div>
+
+                <h3>Files To Create</h3>
+                <ul>
+                    <li><code>report-edit.component.ts</code></li>
+                    <li><code>report-edit.component.html</code></li>
+                    <li><code>report-edit.component.scss</code></li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <div class="code-block">
+                    <span class="comment"># Already generated</span>
+                </div>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>Quill rich text editor with read‑only mode</li>
+                    <li>PDF export with Blob</li>
+                    <li>Status management and permissions</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Load a report and verify content.</li>
+                    <li>Edit and save changes.</li>
+                    <li>Approve a report → redirect to list.</li>
+                    <li>Reject a report → redirect to list.</li>
+                    <li>Export PDF → download file.</li>
+                    <li>Verify read‑only mode for approved/rejected reports.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Report edit component ready.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not handling PDF export errors (network issues).
+                    <br /><strong>Fix:</strong> Show error and allow retry.
+                </div>
+                <div class="pitfall-box">
+                    <strong>Mistake 2:</strong> Not disabling edit controls for approved/rejected reports.</div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>Report not found → show error and redirect.</li>
+                    <li>PDF export fails → show error.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>Report edit component works with all features.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> Reports can be edited, approved, rejected, and exported.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TASK 5: STATE MANAGEMENT AND INTEGRATION                             -->
+        <!-- ===================================================================== -->
+        <div class="task-card">
+            <div class="task-header" onclick="toggleTask(this)">
+                <span><span class="task-id">FE-REP-005</span><span class="task-name">State Management and Integration</span></span>
+                <span class="task-badges">
+                    <span class="tag tag-amber">P1</span>
+                    <span class="tag tag-amber">Medium</span>
+                    <span class="tag">4h</span>
+                    <span class="chevron">▾</span>
+                </span>
+            </div>
+            <div class="task-body">
+
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Task ID:</strong> FE-REP-005</li>
+                    <li><strong>Task Name:</strong> State Management and Integration</li>
+                    <li><strong>Owner:</strong> M4 (Frontend Developer)</li>
+                    <li><strong>Dependencies:</strong> All previous report tasks</li>
+                    <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                    <li><strong>Estimated Effort:</strong> 4 hours</li>
+                    <li><strong>Priority:</strong> <span class="tag tag-amber">High</span></li>
+                </ul>
+
+                <h3>Objective</h3>
+                <p>Ensure all report components use the ReportStateService consistently, add caching and error handling, and integrate with the patient module (display reports in patient detail).</p>
+
+                <h3>Business Purpose</h3>
+                <p>Unified state management reduces bugs and ensures data consistency across the report feature.</p>
+
+                <h3>Technical Purpose</h3>
+                <p>Refactor components to use the state service, add methods for clearing state, and integrate with PatientDetailComponent.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>All report components implemented.</li>
+                </ul>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li>All FE-REP tasks.</li>
+                </ul>
+
+                <h3>Inputs</h3>
+                <ul>
+                    <li>Existing components.</li>
+                </ul>
+
+                <h3>Outputs</h3>
+                <ul>
+                    <li>Updated components using state service consistently.</li>
+                    <li>Integration with PatientDetailComponent.</li>
+                    <li>Error handling improvements.</li>
+                </ul>
+
+                <h3>Detailed Workflow</h3>
+
+                <h4>Step 1: Refactor Components to Use State Service</h4>
+                <p>Ensure ReportListComponent, GenerateReportComponent, and ReportEditComponent use <code>ReportStateService</code> for data and loading states.</p>
+
+                <h4>Step 2: Add Clear State on Navigation</h4>
+                <p>When navigating away from report edit, clear selected report.</p>
+
+                <div class="code-block">
+                    <span class="comment">// In report-edit.component.ts</span>
+                    ngOnDestroy() {
+                        this.state.clearSelected();
+                    }
+                </div>
+
+                <h4>Step 3: Integrate with Patient Detail</h4>
+                <p>In PatientDetailComponent, add a tab for reports using <code>&lt;app-report-list [patientId]="patient()?.id"&gt;&lt;/app-report-list&gt;</code>. We'll need to modify ReportListComponent to accept an optional patientId input and filter accordingly.</p>
+
+                <div class="code-block">
+                    <span class="comment">// Add to report-list.component.ts</span>
+                    @Input() patientIdOverride?: string;
+
+                    ngOnInit(): void {
+                        this.loadPatients();
+                        if (this.patientIdOverride) {
+                            this.selectedPatientId = this.patientIdOverride;
+                        }
+                        this.loadReports();
+                    }
+                </div>
+
+                <p>Then in PatientDetailComponent, add:</p>
+                <div class="code-block">
+                    <app-report-list [patientIdOverride]="patient()?.id"></app-report-list>
+                </div>
+
+                <h4>Step 4: Add Error Handling for All API Calls</h4>
+                <p>Ensure every API call in ReportService has error handling and updates the state error signal.</p>
+
+                <h4>Step 5: Add Unit Tests for State Service</h4>
+                <p>Test that state updates correctly.</p>
+
+                <h4>Step 6: Performance Considerations</h4>
+                <p>For large report lists, consider virtual scrolling or infinite scroll (optional).</p>
+
+                <h3>Files To Modify</h3>
+                <ul>
+                    <li>All report components.</li>
+                    <li>PatientDetailComponent (add report tab).</li>
+                    <li>ReportListComponent (add @Input).</li>
+                    <li>ReportStateService (add clear methods if not present).</li>
+                </ul>
+
+                <h3>CLI Commands</h3>
+                <p>No new commands.</p>
+
+                <h3>Concepts Required</h3>
+                <ul>
+                    <li>State management best practices</li>
+                    <li>Component reusability with inputs</li>
+                    <li>Lifecycle hooks (ngOnDestroy)</li>
+                </ul>
+
+                <h3>Testing Steps</h3>
+                <ol>
+                    <li>Verify state persists correctly between components.</li>
+                    <li>Test that PatientDetail shows report list.</li>
+                    <li>Test navigation clearing state.</li>
+                </ol>
+
+                <h3>Expected Deliverables</h3>
+                <ul>
+                    <li>Report management fully integrated.</li>
+                </ul>
+
+                <h3>Common Mistakes</h3>
+                <div class="pitfall-box">
+                    <strong>Mistake 1:</strong> Not clearing state on destroy, causing stale data.
+                </div>
+
+                <h3>Edge Cases</h3>
+                <ul>
+                    <li>Patient has no reports → empty state in patient detail.</li>
+                </ul>
+
+                <h3>Definition of Done</h3>
+                <ul>
+                    <li>All components use state service and integrate with patient module.</li>
+                </ul>
+
+                <h3>Team Handoff Notes</h3>
+                <ul>
+                    <li><strong>To:</strong> All developers.</li>
+                    <li><strong>Key Takeaways:</strong> ReportStateService is the source of truth for report data.</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- PHASE COMPLETION CRITERIA                                             -->
+        <!-- ===================================================================== -->
+        <hr class="hr" />
+
+        <h2 style="background: #f0fdf4; border-left-color: #22c55e; padding:12px 20px; border-left:6px solid #22c55e; border-radius:8px;">✅ Phase Completion Criteria</h2>
+        <ul class="checklist">
+            <li>All 5 report tasks are complete (FE-REP-001 to FE-REP-005).</li>
+            <li>Report routes are lazy‑loaded and guarded.</li>
+            <li>ReportService and ReportStateService are implemented.</li>
+            <li>Report List shows all reports with patient and status filters.</li>
+            <li>Generate Report uses AI to draft reports with patient data.</li>
+            <li>Report Edit allows review, editing, approval, rejection, and PDF export.</li>
+            <li>All components use the state service.</li>
+            <li>Integration with PatientDetailComponent works.</li>
+            <li>All tests pass.</li>
+            <li>All changes are committed.</li>
+        </ul>
+
+        <h2 style="background: #f0f9ff; border-left-color: #3b82f6; padding:12px 20px; border-left:6px solid #3b82f6; border-radius:8px; margin-top:24px;">📋 Code Review Checklist</h2>
+        <ul class="checklist">
+            <li>ReportService methods are typed and handle errors.</li>
+            <li>State service uses Signals correctly.</li>
+            <li>Generate report shows loading and error states.</li>
+            <li>AI generation handles failures gracefully.</li>
+            <li>PDF export works with Blob handling.</li>
+            <li>Status transitions (Draft → PendingReview → Approved/Rejected) are enforced.</li>
+            <li>Integration with patient detail is seamless.</li>
+        </ul>
+
+        <h2 style="background: #fefce8; border-left-color: #f59e0b; padding:12px 20px; border-left:6px solid #f59e0b; border-radius:8px; margin-top:24px;">🚀 Pull Request Checklist</h2>
+        <ul class="checklist">
+            <li>Branch up‑to‑date with main.</li>
+            <li>All tests pass.</li>
+            <li>Code review completed.</li>
+            <li>Documentation updated.</li>
+        </ul>
+
+        <h2 style="background: #fef2f2; border-left-color: #ef4444; padding:12px 20px; border-left:6px solid #ef4444; border-radius:8px; margin-top:24px;">🧪 Deployment Readiness Checklist</h2>
+        <ul class="checklist">
+            <li>Report generation works with AI.</li>
+            <li>Reports can be edited, approved, and rejected.</li>
+            <li>PDF export downloads correctly.</li>
+            <li>Integration with patient detail works.</li>
+        </ul>
+
+        <hr class="hr" />
+        <div style="text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 20px 0 0;">
+            Jalsa – Phase 11: AI Reports – Expanded Implementation Handbook &bull; v1.0 &bull; For development team
+        </div>
+    </div>
+
+    <script>
+        function toggleTask(header) {
+            const body = header.nextElementSibling;
+            const isOpen = body.classList.contains('open');
+            body.classList.toggle('open');
+            header.classList.toggle('open');
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstHeader = document.querySelector('.task-header');
+            if (firstHeader) firstHeader.click();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jalsa – Database &amp; Core Infra Implementation Playbook</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+            padding: 30px 20px;
+            line-height: 1.7;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            padding: 40px 45px;
+        }
+        h1 {
+            font-size: 2.4rem;
+            color: #0f172a;
+            border-bottom: 4px solid #3b82f6;
+            padding-bottom: 18px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        h1 small {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #64748b;
+            margin-left: auto;
+        }
+        .phase-banner {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 20px 28px;
+            margin-bottom: 32px;
+            border-left: 8px solid #3b82f6;
+        }
+        .phase-banner h2 {
+            margin: 0 0 8px 0;
+            font-size: 1.6rem;
+            color: #0f172a;
+            background: none;
+            padding: 0;
+            border-left: none;
+        }
+        .phase-banner p {
+            margin: 0;
+            color: #475569;
+        }
+        .phase-banner .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px 40px;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+        .phase-banner .meta span { font-weight: 500; color: #0f172a; }
+
+        .task-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            overflow: hidden;
+        }
+        .task-header {
+            background: #f8fafc;
+            padding: 16px 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.15s;
+            user-select: none;
+        }
+        .task-header:hover {
+            background: #f1f5f9;
+        }
+        .task-header .task-id {
+            font-weight: 700;
+            color: #3b82f6;
+            margin-right: 12px;
+            font-size: 1.05rem;
+        }
+        .task-header .task-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .task-header .task-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .task-header .task-badges .tag {
+            font-size: 0.7rem;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+        .task-header .chevron {
+            transition: transform 0.25s;
+            font-size: 1.3rem;
+            color: #94a3b8;
+            margin-left: 12px;
+        }
+        .task-header.open .chevron {
+            transform: rotate(180deg);
+        }
+
+        .task-body {
+            padding: 0 24px 24px;
+            display: none;
+            overflow: hidden;
+        }
+        .task-body.open {
+            display: block;
+        }
+
+        .task-body h3 {
+            font-size: 1.15rem;
+            margin-top: 22px;
+            margin-bottom: 8px;
+            color: #0f172a;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 4px;
+        }
+        .task-body h4 {
+            font-size: 1rem;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            color: #334155;
+        }
+        .task-body p {
+            margin-bottom: 8px;
+        }
+        .task-body ul, .task-body ol {
+            padding-left: 24px;
+            margin-bottom: 10px;
+        }
+        .task-body li {
+            margin-bottom: 3px;
+        }
+        .task-body .field-label {
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+        .checklist li {
+            padding: 3px 0 3px 30px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') left center no-repeat;
+            background-size: 18px;
+        }
+
+        .pitfall-box {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .tip-box {
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .arch-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #e2e8f0;
+            padding: 1px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-right: 4px;
+        }
+        .tag-blue { background: #dbeafe; color: #1d4ed8; }
+        .tag-green { background: #dcfce7; color: #15803d; }
+        .tag-amber { background: #fef3c7; color: #b45309; }
+        .tag-red { background: #fee2e2; color: #b91c1c; }
+        .tag-purple { background: #ede9fe; color: #6d28d9; }
+        .tag-slate { background: #e2e8f0; color: #475569; }
+
+        .flow-diagram {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin: 8px 0 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .flow-diagram .arrow { color: #94a3b8; margin: 0 6px; }
+        .flow-diagram .step { color: #0f172a; font-weight: 500; }
+
+        .table-wrap {
+            overflow-x: auto;
+            margin: 10px 0 16px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            background: #fff;
+        }
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+            text-align: left;
+            padding: 8px 14px;
+            border-bottom: 2px solid #e2e8f0;
+            color: #0f172a;
+        }
+        td {
+            padding: 8px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+        tr:last-child td { border-bottom: none; }
+
+        .hr { border: none; border-top: 2px dashed #e2e8f0; margin: 32px 0; }
+
+        @media (max-width: 768px) {
+            .container { padding: 20px 16px; }
+            h1 { font-size: 1.8rem; flex-wrap: wrap; }
+            .task-header { flex-wrap: wrap; gap: 8px; }
+            .task-header .task-badges { margin-left: 0; }
+            .task-body { padding: 0 16px 16px; }
+            .phase-banner { padding: 16px; }
+            .phase-banner .meta { flex-direction: column; gap: 6px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <h1>
+        🗄️ Jalsa – Database &amp; Core Infra Implementation Playbook
+        <small>Phase 1 · 14 Tasks · Foundation</small>
+    </h1>
+
+    <!-- ====== PHASE BANNER ====== -->
+    <div class="phase-banner">
+        <h2>📦 Phase 1 – Database &amp; Core Infrastructure</h2>
+        <p><strong>Purpose:</strong> Design and implement the database schema using EF Core Code First, configure repositories, set up the vector store, and establish the data access layer. This phase lays the foundation for all data persistence and retrieval.</p>
+        <div class="meta">
+            <span>📋 Tasks: 14</span>
+            <span>⏱️ Total Effort: ~60 hours</span>
+            <span>👤 Owners: M1 (Backend Lead) + M2 (Backend)</span>
+            <span>🔗 Dependencies: Phase 0 (Foundation) must be complete</span>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DB-001                                                           -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">DB-001</span>
+                <span class="task-name">Domain Entities – Core</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-blue">P0</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">4h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DB-001</li>
+                <li><strong>Task Name:</strong> Domain Entities – Core</li>
+                <li><strong>Owner:</strong> M1 (Backend Lead)</li>
+                <li><strong>Dependencies:</strong> Phase 0 (Foundation) – solution structure exists</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 4 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Create the core domain entity classes: <code>User</code>, <code>Role</code>, and <code>Permission</code> (if used). These form the authentication and authorisation base.</p>
+
+            <h3>Business Purpose</h3>
+            <p>All users (therapists and patients) need to be stored and authenticated. The <code>User</code> entity holds credentials and profile information. <code>Role</code> defines the type of user (Therapist, Patient).</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Establish the foundation for JWT authentication and role‑based authorization. These entities are referenced by many other entities (e.g., <code>PatientProfile</code> references <code>User</code>, <code>SessionNote</code> references <code>User</code> as therapist).</p>
+
+            <h3>Prerequisites</h3>
+            <h4>Backend</h4>
+            <ul>
+                <li><strong>Entity Framework Core:</strong> Understanding of entities, properties, and navigation properties.</li>
+                <li><strong>Clean Architecture:</strong> Domain layer should contain only plain C# classes with no external dependencies.</li>
+                <li><strong>Why needed:</strong> To correctly model the entities.</li>
+                <li><strong>Usage:</strong> These entities will be used in all layers.</li>
+            </ul>
+            <h4>Frontend</h4>
+            <ul>
+                <li>None – this is backend data model.</li>
+            </ul>
+            <h4>Database</h4>
+            <ul>
+                <li><strong>Database design:</strong> Understanding of primary keys, foreign keys, and relationships.</li>
+                <li><strong>Why needed:</strong> To define relationships (e.g., User has one Role).</li>
+                <li><strong>Usage:</strong> These entities will be mapped to tables.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Phase 0 solution with <code>Jalsa.Domain</code> project.</li>
+                <li>Requirement: Users have email, password hash, first name, last name, role.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>User</code> entity class.</li>
+                <li><code>Role</code> entity class.</li>
+                <li><code>Permission</code> entity (optional, if needed).</li>
+                <li>Base entity with audit fields (<code>CreatedAt</code>, <code>UpdatedAt</code>, <code>IsDeleted</code>) – to be inherited.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create Base Entity</strong> – In <code>Jalsa.Domain/Common/BaseEntity.cs</code>, define properties: <code>Id</code> (Guid), <code>CreatedAt</code> (DateTime), <code>UpdatedAt</code> (DateTime), <code>IsDeleted</code> (bool). Use <code>Guid.NewGuid()</code> for Id generation.
+                    <br /><span style="color:#475569;">Why: Provides consistent audit fields and soft‑delete support.</span>
+                </li>
+                <li>
+                    <strong>Create <code>Role</code> entity</strong> – In <code>Jalsa.Domain/Entities/Role.cs</code>, define <code>Id</code> (Guid), <code>Name</code> (string, required, max 50), <code>Description</code> (string, optional). Add navigation property <code>ICollection&lt;User&gt; Users</code>.
+                </li>
+                <li>
+                    <strong>Create <code>User</code> entity</strong> – In <code>Jalsa.Domain/Entities/User.cs</code>, inherit from <code>BaseEntity</code>. Add properties: <code>Email</code> (string, required, unique), <code>PasswordHash</code> (string, required), <code>FirstName</code> (string, required, max 100), <code>LastName</code> (string, required, max 100), <code>RoleId</code> (Guid, foreign key). Add navigation property <code>Role</code>.
+                </li>
+                <li>
+                    <strong>Optional: <code>Permission</code> entity</strong> – If fine‑grained permissions are needed, add <code>Permission</code> and a many‑to‑many relationship with <code>Role</code>. For MVP, we'll keep it simple with roles.
+                </li>
+                <li>
+                    <strong>Ensure all properties are properly typed</strong> – Use <code>string</code> for text, <code>DateTime</code> for dates, <code>bool</code> for flags.
+                </li>
+                <li>
+                    <strong>Add XML comments</strong> – Document each property for clarity.
+                </li>
+            </ol>
+
+            <h3>Detailed Database Workflow</h3>
+            <p><em>This task creates the domain classes; database mappings will be configured in DB-009. However, we anticipate the following:</em></p>
+            <ul>
+                <li><strong>Tables:</strong> <code>Users</code>, <code>Roles</code>.</li>
+                <li><strong>Relationships:</strong> <code>User</code> has one <code>Role</code> (foreign key <code>RoleId</code>).</li>
+                <li><strong>Constraints:</strong> <code>Email</code> unique, <code>PasswordHash</code> not null.</li>
+                <li><strong>Indexes:</strong> On <code>Email</code> for fast login.</li>
+            </ul>
+
+            <h3>Detailed Frontend Workflow</h3>
+            <p>None – this is backend only.</p>
+
+            <h3>API Design</h3>
+            <p>No endpoints yet – these entities are for internal storage.</p>
+
+            <h3>Data Flow Diagram</h3>
+            <div class="flow-diagram">
+                <span class="step">Application</span> <span class="arrow">→</span>
+                <span class="step">User/Role Entities</span> <span class="arrow">→</span>
+                <span class="step">DbContext</span> <span class="arrow">→</span>
+                <span class="step">Database</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li><code>Jalsa.Domain/Common/BaseEntity.cs</code></li>
+                <li><code>Jalsa.Domain/Entities/User.cs</code></li>
+                <li><code>Jalsa.Domain/Entities/Role.cs</code></li>
+                <li>Optional <code>Permission.cs</code> if needed.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>All entities inherit from <code>BaseEntity</code> (or have Id).</li>
+                <li>Navigation properties are correctly typed (<code>Role</code> for <code>User</code>, <code>ICollection&lt;User&gt;</code> for <code>Role</code>).</li>
+                <li>Properties have appropriate data types and constraints (e.g., <code>string</code> with <code>Required</code>).</li>
+                <li>No database‑specific attributes are used – keep domain pure.</li>
+                <li>Project builds with no errors.</li>
+            </ul>
+
+            <h3>Testing Strategy</h3>
+            <p><em>Unit Tests:</em> Not applicable – these are simple POCOs. However, later integration tests will verify mappings.</p>
+            <p><em>Integration Tests:</em> Will be added in DB-011 when repositories are used.</p>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Using <code>List&lt;T&gt;</code> for navigation properties – use <code>ICollection&lt;T&gt;</code> to avoid EF Core lazy‑loading issues.
+            </div>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Adding foreign key properties as <code>int</code> instead of <code>Guid</code> – use <code>Guid</code> for consistency.
+            </div>
+            <div class="tip-box">
+                <strong>Tip:</strong> Use <code>private set</code> for Id to enforce encapsulation, or use a base class constructor to assign Id.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>All core entity classes are created in the Domain project.</li>
+                <li>BaseEntity is implemented.</li>
+                <li>Navigation properties are defined.</li>
+                <li>Solution builds successfully.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <h4>Must Know</h4>
+            <ul>
+                <li>EF Core entities and navigation properties.</li>
+                <li>Guid usage for primary keys.</li>
+            </ul>
+            <h4>Nice To Know</h4>
+            <ul>
+                <li>Value objects (e.g., Email as a value object).</li>
+            </ul>
+            <h4>Recommended Learning Order</h4>
+            <ol>
+                <li>EF Core entity modelling (2h).</li>
+                <li>Clean Architecture domain layer (1h).</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DB-002                                                           -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">DB-002</span>
+                <span class="task-name">Domain Entities – Patient</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-blue">P0</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">5h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DB-002</li>
+                <li><strong>Task Name:</strong> Domain Entities – Patient</li>
+                <li><strong>Owner:</strong> M2 (Backend)</li>
+                <li><strong>Dependencies:</strong> DB-001 (User exists)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 5 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Create domain entities for patient management: <code>PatientProfile</code>, <code>IntakeForm</code>, <code>Assessment</code>, and <code>AssessmentType</code>.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Patients are the core of the system. We need to store demographic data, intake information, and psychological assessments to track progress.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Define the data structure for patient records, intake forms, and assessments. These entities will be used in patient management, reporting, and analytics.</p>
+
+            <h3>Prerequisites</h3>
+            <h4>Backend</h4>
+            <ul>
+                <li>Understanding of EF Core relationships (one‑to‑one, one‑to‑many).</li>
+                <li>Knowledge of <code>Guid</code> and <code>DateTime</code> usage.</li>
+            </ul>
+            <h4>Database</h4>
+            <ul>
+                <li>Foreign key relationships.</li>
+                <li>JSON columns (for FormData and ExtractedData).</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>DB-001 (User entity).</li>
+                <li>Requirement: Patient profiles store date of birth, gender, emergency contact, etc.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>PatientProfile</code> entity (inherits BaseEntity).</li>
+                <li><code>IntakeForm</code> entity.</li>
+                <li><code>Assessment</code> entity.</li>
+                <li><code>AssessmentType</code> entity (lookup).</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create <code>PatientProfile</code></strong> – Inherit from <code>BaseEntity</code>. Add properties:
+                    <ul>
+                        <li><code>UserId</code> (Guid, foreign key to User)</li>
+                        <li><code>DateOfBirth</code> (DateTime)</li>
+                        <li><code>Gender</code> (string, enum later)</li>
+                        <li><code>EmergencyContact</code> (string)</li>
+                        <li><code>Notes</code> (string, optional)</li>
+                    </ul>
+                    Navigation: <code>User</code> (one‑to‑one) and <code>ICollection&lt;IntakeForm&gt;</code>, <code>ICollection&lt;Assessment&gt;</code>.
+                </li>
+                <li>
+                    <strong>Create <code>IntakeForm</code></strong> – Properties: <code>PatientId</code> (Guid), <code>FormData</code> (string – JSON), <code>ImageUrl</code> (string), <code>ExtractedData</code> (string – JSON from OCR). Navigation: <code>PatientProfile</code>.
+                </li>
+                <li>
+                    <strong>Create <code>AssessmentType</code></strong> – Lookup table: <code>Id</code> (Guid), <code>Name</code> (e.g., PHQ‑9, GAD‑7), <code>Description</code>.
+                </li>
+                <li>
+                    <strong>Create <code>Assessment</code></strong> – Properties: <code>PatientId</code> (Guid), <code>AssessmentTypeId</code> (Guid), <code>Score</code> (int), <code>DateAdministered</code> (DateTime), <code>Notes</code> (string). Navigation: <code>PatientProfile</code>, <code>AssessmentType</code>.
+                </li>
+                <li>
+                    <strong>Add XML documentation</strong>.
+                </li>
+            </ol>
+
+            <h3>Detailed Database Workflow</h3>
+            <ul>
+                <li><strong>Tables:</strong> <code>PatientProfiles</code>, <code>IntakeForms</code>, <code>Assessments</code>, <code>AssessmentTypes</code>.</li>
+                <li><strong>Relationships:</strong> <code>PatientProfile</code> 1:1 <code>User</code>; 1:many <code>IntakeForm</code>; 1:many <code>Assessment</code>.</li>
+                <li><strong>Constraints:</strong> <code>UserId</code> unique for patient, <code>AssessmentType</code> unique name.</li>
+                <li><strong>Indexes:</strong> On <code>PatientProfile.UserId</code>, <code>Assessment.PatientId</code>, <code>Assessment.DateAdministered</code>.</li>
+            </ul>
+
+            <h3>API Design</h3>
+            <p>No endpoints yet.</p>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li><code>PatientProfile.cs</code></li>
+                <li><code>IntakeForm.cs</code></li>
+                <li><code>Assessment.cs</code></li>
+                <li><code>AssessmentType.cs</code></li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>All entities inherit from <code>BaseEntity</code>.</li>
+                <li>Navigation properties correctly set (e.g., <code>PatientProfile</code> has <code>User</code>).</li>
+                <li>JSON fields are strings (will be converted later).</li>
+                <li>Proper foreign key properties exist.</li>
+            </ul>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Using <code>DateTime</code> without timezone handling – use <code>DateTime.UtcNow</code> for consistency.
+            </div>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Forgetting to add a foreign key property (e.g., <code>PatientId</code>) – EF Core can infer shadow properties but explicit is better.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>All patient‑related entities are created.</li>
+                <li>Relationships are properly defined.</li>
+                <li>Solution builds.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <p>Same as DB-001.</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DB-003                                                           -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">DB-003</span>
+                <span class="task-name">Domain Entities – Session</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-blue">P0</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">4h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DB-003</li>
+                <li><strong>Task Name:</strong> Domain Entities – Session</li>
+                <li><strong>Owner:</strong> M2 (Backend)</li>
+                <li><strong>Dependencies:</strong> DB-001 (User), DB-002 (Patient)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 4 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Create domain entities for session notes: <code>SessionNote</code>, <code>VoiceMemo</code>, and <code>AISummary</code>.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Therapists record session notes, voice memos, and AI‑generated summaries to track patient progress over time.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Store session content, audio metadata, and AI summaries. Enable search and retrieval for reporting and analytics.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Knowledge of one‑to‑many and one‑to‑one relationships.</li>
+                <li>Understanding of blob storage URLs (string).</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>DB-001 (User as therapist), DB-002 (Patient).</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>SessionNote</code> entity.</li>
+                <li><code>VoiceMemo</code> entity.</li>
+                <li><code>AISummary</code> entity.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create <code>SessionNote</code></strong> – Properties: <code>PatientId</code> (Guid), <code>TherapistId</code> (Guid), <code>Content</code> (string), <code>SessionDate</code> (DateTime), <code>Status</code> (string enum – Draft, Final). Navigation: <code>PatientProfile</code>, <code>User</code> (therapist), <code>VoiceMemo</code> (one‑to‑one), <code>AISummary</code> (one‑to‑one).
+                </li>
+                <li>
+                    <strong>Create <code>VoiceMemo</code></strong> – Properties: <code>SessionNoteId</code> (Guid), <code>AudioUrl</code> (string), <code>Duration</code> (int seconds), <code>Transcript</code> (string). Navigation: <code>SessionNote</code>.
+                </li>
+                <li>
+                    <strong>Create <code>AISummary</code></strong> – Properties: <code>SessionNoteId</code> (Guid), <code>SummaryText</code> (string), <code>GeneratedAt</code> (DateTime). Navigation: <code>SessionNote</code>.
+                </li>
+            </ol>
+
+            <h3>Detailed Database Workflow</h3>
+            <ul>
+                <li><strong>Tables:</strong> <code>SessionNotes</code>, <code>VoiceMemos</code>, <code>AISummaries</code>.</li>
+                <li><strong>Relationships:</strong> <code>SessionNote</code> 1:1 <code>VoiceMemo</code>, 1:1 <code>AISummary</code>.</li>
+                <li><strong>Indexes:</strong> On <code>SessionNote.PatientId</code>, <code>SessionDate</code>.</li>
+            </ul>
+
+            <h3>API Design</h3>
+            <p>No endpoints yet.</p>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li><code>SessionNote.cs</code></li>
+                <li><code>VoiceMemo.cs</code></li>
+                <li><code>AISummary.cs</code></li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>Navigation properties set correctly.</li>
+                <li>Foreign keys included.</li>
+                <li>One‑to‑one relationships configured.</li>
+            </ul>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Using <code>string</code> for large content – consider <code>nvarchar(max)</code> in SQL.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>All session entities created.</li>
+                <li>Solution builds.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DB-004                                                           -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">DB-004</span>
+                <span class="task-name">Domain Entities – Exercise</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-blue">P0</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">4h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DB-004</li>
+                <li><strong>Task Name:</strong> Domain Entities – Exercise</li>
+                <li><strong>Owner:</strong> M2 (Backend)</li>
+                <li><strong>Dependencies:</strong> DB-001, DB-002</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 4 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Create entities for exercises: <code>Exercise</code>, <code>PatientExercise</code>, <code>ExerciseCompletion</code>, and <code>ReflectionNote</code>.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Therapists assign exercises to patients, track completion, and allow patients to add reflection notes.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Store exercise definitions, assignments, statuses, and reflections for monitoring.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Understanding of many‑to‑many relationships (Patient-Exercise).</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Patient and User entities.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>Exercise</code> entity.</li>
+                <li><code>PatientExercise</code> junction entity.</li>
+                <li><code>ExerciseCompletion</code> entity (optional, if separate).</li>
+                <li><code>ReflectionNote</code> entity.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create <code>Exercise</code></strong> – Properties: <code>Title</code>, <code>Description</code>, <code>Type</code>, <code>DefaultDueDays</code> (int). Navigation: <code>ICollection&lt;PatientExercise&gt;</code>.
+                </li>
+                <li>
+                    <strong>Create <code>PatientExercise</code></strong> – Junction entity: <code>PatientId</code>, <code>ExerciseId</code>, <code>AssignedDate</code>, <code>DueDate</code>, <code>Status</code> (string enum: Assigned, InProgress, Complete, Partial, Skipped), <code>Reflection</code> (string). Navigation: <code>PatientProfile</code>, <code>Exercise</code>.
+                </li>
+                <li>
+                    <strong>Optional <code>ExerciseCompletion</code></strong> – If multiple completions per patient‑exercise, add this. For MVP, status on PatientExercise is sufficient.
+                </li>
+                <li>
+                    <strong><code>ReflectionNote</code></strong> – Could be a separate entity or a property on PatientExercise. For simplicity, add as a property.
+                </li>
+            </ol>
+
+            <h3>Detailed Database Workflow</h3>
+            <ul>
+                <li><strong>Tables:</strong> <code>Exercises</code>, <code>PatientExercises</code>.</li>
+                <li><strong>Relationships:</strong> Many‑to‑many between Patient and Exercise via <code>PatientExercises</code>.</li>
+                <li><strong>Indexes:</strong> On <code>PatientExercises.PatientId</code>, <code>DueDate</code>.</li>
+            </ul>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li><code>Exercise.cs</code></li>
+                <li><code>PatientExercise.cs</code></li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>Junction entity has composite key (PatientId, ExerciseId) or separate Id.</li>
+                <li>Status property uses enum.</li>
+            </ul>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Using <code>string</code> for Status – use an enum to ensure consistency.
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DB-005                                                           -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">DB-005</span>
+                <span class="task-name">Domain Entities – Chat</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-blue">P0</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">4h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DB-005</li>
+                <li><strong>Task Name:</strong> Domain Entities – Chat</li>
+                <li><strong>Owner:</strong> M2 (Backend)</li>
+                <li><strong>Dependencies:</strong> DB-001, DB-002</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 4 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Create entities for chat: <code>ChatSession</code>, <code>ChatMessage</code>, and <code>CrisisAlert</code>.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Patients can chat with AI support; therapists monitor conversations and receive crisis alerts.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Store chat history, AI messages, and crisis flags for later review and analytics.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Understanding of one‑to‑many relationships.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Patient entity.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>ChatSession</code> entity.</li>
+                <li><code>ChatMessage</code> entity.</li>
+                <li><code>CrisisAlert</code> entity.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create <code>ChatSession</code></strong> – Properties: <code>PatientId</code>, <code>StartedAt</code>, <code>EndedAt</code>, <code>IsActive</code>. Navigation: <code>PatientProfile</code>, <code>ICollection&lt;ChatMessage&gt;</code>.
+                </li>
+                <li>
+                    <strong>Create <code>ChatMessage</code></strong> – Properties: <code>SessionId</code>, <code>Sender</code> (string enum: Patient, AI), <code>Content</code>, <code>Timestamp</code>, <code>IsCrisis</code> (bool). Navigation: <code>ChatSession</code>.
+                </li>
+                <li>
+                    <strong>Create <code>CrisisAlert</code></strong> – Properties: <code>PatientId</code>, <code>ChatMessageId</code> (optional), <code>TriggeredAt</code>, <code>ResolvedAt</code>, <code>Severity</code> (string enum). Navigation: <code>PatientProfile</code>, <code>ChatMessage</code>.
+                </li>
+            </ol>
+
+            <h3>Detailed Database Workflow</h3>
+            <ul>
+                <li><strong>Tables:</strong> <code>ChatSessions</code>, <code>ChatMessages</code>, <code>CrisisAlerts</code>.</li>
+                <li><strong>Indexes:</strong> On <code>ChatMessages.SessionId</code>, <code>Timestamp</code>.</li>
+            </ul>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li><code>ChatSession.cs</code></li>
+                <li><code>ChatMessage.cs</code></li>
+                <li><code>CrisisAlert.cs</code></li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>Sender is enum.</li>
+                <li>IsCrisis flag is set.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DB-006                                                           -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">DB-006</span>
+                <span class="task-name">Domain Entities – Reports</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-blue">P0</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">4h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DB-006</li>
+                <li><strong>Task Name:</strong> Domain Entities – Reports</li>
+                <li><strong>Owner:</strong> M1 (Backend Lead)</li>
+                <li><strong>Dependencies:</strong> DB-001, DB-002, DB-003</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 4 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Create entities for referral reports: <code>ReferralReport</code>, <code>ReportHistory</code>, and <code>ReportApproval</code>.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Therapists generate AI‑drafted referral reports, review, edit, and approve them for export. Need to track changes and approval status.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Store report drafts, final versions, approval workflow, and PDF URLs.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Understanding of versioning/history.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>Patient, Therapist (User), SessionNotes.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>ReferralReport</code> entity.</li>
+                <li><code>ReportHistory</code> entity (for audit).</li>
+                <li><code>ReportApproval</code> entity.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create <code>ReferralReport</code></strong> – Properties: <code>PatientId</code>, <code>TherapistId</code>, <code>DraftContent</code>, <code>FinalContent</code>, <code>Status</code> (enum: Draft, UnderReview, Approved, Rejected), <code>PdfUrl</code>. Navigation: <code>PatientProfile</code>, <code>User</code> (therapist), <code>ICollection&lt;ReportHistory&gt;</code>.
+                </li>
+                <li>
+                    <strong>Create <code>ReportHistory</code></strong> – Properties: <code>ReportId</code>, <code>Content</code>, <code>ChangedAt</code>, <code>ChangedBy</code> (UserId). Navigation: <code>ReferralReport</code>.
+                </li>
+                <li>
+                    <strong>Create <code>ReportApproval</code></strong> – Properties: <code>ReportId</code>, <code>ApprovedBy</code> (UserId), <code>ApprovedAt</code>, <code>Comments</code>.
+                </li>
+            </ol>
+
+            <h3>Detailed Database Workflow</h3>
+            <ul>
+                <li><strong>Tables:</strong> <code>ReferralReports</code>, <code>ReportHistories</code>, <code>ReportApprovals</code>.</li>
+                <li><strong>Indexes:</strong> On <code>ReferralReports.PatientId</code>, <code>Status</code>.</li>
+            </ul>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li><code>ReferralReport.cs</code></li>
+                <li><code>ReportHistory.cs</code></li>
+                <li><code>ReportApproval.cs</code></li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>Status enum defined.</li>
+                <li>History tracks changes.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DB-007                                                           -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">DB-007</span>
+                <span class="task-name">Domain Entities – Notifications</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-green">Low-Med</span>
+                <span class="tag">3h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DB-007</li>
+                <li><strong>Task Name:</strong> Domain Entities – Notifications</li>
+                <li><strong>Owner:</strong> M5 (DevOps / QA / AI)</li>
+                <li><strong>Dependencies:</strong> DB-001</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-green">Low-Med</span></li>
+                <li><strong>Estimated Effort:</strong> 3 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Create entities for notifications: <code>Notification</code>, <code>NotificationType</code>, and <code>ReminderSchedule</code>.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Send reminders for exercises, crisis alerts, and system notifications to users.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Store notification messages, status, and delivery history.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Understanding of user‑specific notifications.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>User entity.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>Notification</code> entity.</li>
+                <li><code>NotificationType</code> lookup.</li>
+                <li><code>ReminderSchedule</code> entity.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create <code>NotificationType</code></strong> – Id, Name (e.g., ExerciseReminder, CrisisAlert).
+                </li>
+                <li>
+                    <strong>Create <code>Notification</code></strong> – Properties: <code>UserId</code>, <code>TypeId</code>, <code>Message</code>, <code>IsRead</code>, <code>CreatedAt</code>, <code>SentAt</code>. Navigation: <code>User</code>, <code>NotificationType</code>.
+                </li>
+                <li>
+                    <strong>Create <code>ReminderSchedule</code></strong> – If recurring reminders needed (e.g., daily exercise reminders). Properties: <code>PatientId</code>, <code>ExerciseId</code>, <code>NextReminderDate</code>, <code>Frequency</code>.
+                </li>
+            </ol>
+
+            <h3>Detailed Database Workflow</h3>
+            <ul>
+                <li><strong>Tables:</strong> <code>NotificationTypes</code>, <code>Notifications</code>, <code>ReminderSchedules</code>.</li>
+            </ul>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li><code>Notification.cs</code></li>
+                <li><code>NotificationType.cs</code></li>
+                <li><code>ReminderSchedule.cs</code></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DB-008                                                           -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">DB-008</span>
+                <span class="task-name">Domain Entities – Audit</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-green">P2</span>
+                <span class="tag tag-green">Low</span>
+                <span class="tag">3h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DB-008</li>
+                <li><strong>Task Name:</strong> Domain Entities – Audit</li>
+                <li><strong>Owner:</strong> M1 (Backend Lead)</li>
+                <li><strong>Dependencies:</strong> DB-001</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-green">Low</span></li>
+                <li><strong>Estimated Effort:</strong> 3 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Create <code>AuditLog</code> entity to track changes to sensitive data.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Compliance – need to log who changed what and when for patient records.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Store audit entries with old/new values for auditing.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Understanding of auditing patterns.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>User entity.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>AuditLog</code> entity.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create <code>AuditLog</code></strong> – Properties: <code>UserId</code>, <code>Action</code> (string, e.g., Create, Update, Delete), <code>Entity</code> (string), <code>EntityId</code> (string), <code>OldValues</code> (string JSON), <code>NewValues</code> (string JSON), <code>Timestamp</code>. Navigation: <code>User</code>.
+                </li>
+            </ol>
+
+            <h3>Detailed Database Workflow</h3>
+            <ul>
+                <li><strong>Table:</strong> <code>AuditLogs</code>.</li>
+                <li><strong>Index:</strong> On <code>Timestamp</code>, <code>UserId</code>.</li>
+            </ul>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li><code>AuditLog.cs</code></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DB-009                                                           -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">DB-009</span>
+                <span class="task-name">DbContext Configuration</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-blue">P0</span>
+                <span class="tag tag-red">High</span>
+                <span class="tag">6h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DB-009</li>
+                <li><strong>Task Name:</strong> DbContext Configuration</li>
+                <li><strong>Owner:</strong> M1 (Backend Lead)</li>
+                <li><strong>Dependencies:</strong> DB-001 through DB-008 (all entities)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                <li><strong>Estimated Effort:</strong> 6 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Create the EF Core <code>DbContext</code> class and configure all entity mappings using Fluent API.</p>
+
+            <h3>Business Purpose</h3>
+            <p>This is the bridge between domain entities and the database. Correct configuration ensures data integrity and performance.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Define table names, relationships, constraints, indexes, and soft‑delete filters. Enable migrations.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li><strong>EF Core:</strong> Fluent API, OnModelCreating, DbSet properties.</li>
+                <li><strong>Database design:</strong> Primary keys, foreign keys, indexes.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>All entity classes from DB-001..008.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>JalsaDbContext</code> class in Infrastructure/Data.</li>
+                <li>Service registration for DbContext (AddDbContext).</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create <code>JalsaDbContext</code></strong> – Inherit from <code>DbContext</code>.
+                </li>
+                <li>
+                    <strong>Add <code>DbSet&lt;T&gt;</code></strong> for each entity.
+                </li>
+                <li>
+                    <strong>Override <code>OnModelCreating</code></strong> – Use <code>modelBuilder.Entity&lt;T&gt;()</code> to configure:
+                    <ul>
+                        <li>Table names (e.g., <code>.ToTable("Users")</code>)</li>
+                        <li>Primary keys (<code>.HasKey(x => x.Id)</code>)</li>
+                        <li>Relationships – <code>.HasOne(x => x.Role).WithMany(r => r.Users).HasForeignKey(x => x.RoleId)</code></li>
+                        <li>Constraints – <code>.Property(x => x.Email).IsRequired().HasMaxLength(256)</code></li>
+                        <li>Indexes – <code>.HasIndex(x => x.Email).IsUnique()</code></li>
+                        <li>Global query filters for soft‑delete – <code>.HasQueryFilter(x => !x.IsDeleted)</code></li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Add <code>OnConfiguring</code></strong> – If not using DI, but we'll use DI.
+                </li>
+                <li>
+                    <strong>Register DbContext</strong> in <code>Startup.cs</code> / <code>Program.cs</code>:
+                    <code>services.AddDbContext&lt;JalsaDbContext&gt;(options => options.UseNpgsql(connectionString));</code>
+                </li>
+                <li>
+                    <strong>Add migration</strong> (later task).
+                </li>
+            </ol>
+
+            <h3>Detailed Database Workflow</h3>
+            <ul>
+                <li>All tables are defined with proper constraints.</li>
+                <li>Foreign keys are configured with <code>OnDelete</code> behaviour (e.g., <code>Restrict</code> to prevent accidental deletion).</li>
+                <li>Indexes are added for frequently queried columns.</li>
+            </ul>
+
+            <h3>Data Flow</h3>
+            <div class="flow-diagram">
+                <span class="step">Application</span> <span class="arrow">→</span>
+                <span class="step">DbContext</span> <span class="arrow">→</span>
+                <span class="step">Database</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li><code>JalsaDbContext.cs</code></li>
+                <li>Service registration in DI.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>All <code>DbSet</code> properties exist.</li>
+                <li>Fluent API covers all relationships.</li>
+                <li>Soft‑delete filter applied.</li>
+                <li>Indexes defined.</li>
+            </ul>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Forgetting to set <code>OnDelete</code> behaviour – can cause cascade delete loops. Use <code>Restrict</code> for critical relationships.
+            </div>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Not configuring <code>HasQueryFilter</code> for soft‑delete – then deleted records will appear in queries.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>DbContext is created and configured.</li>
+                <li>DI registration is complete.</li>
+                <li>Solution builds.</li>
+            </ul>
+
+            <h3>Learning Resources</h3>
+            <ul>
+                <li>EF Core Fluent API documentation.</li>
+                <li>Entity relationships in EF Core.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DB-010                                                           -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">DB-010</span>
+                <span class="task-name">Migrations – Initial</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-blue">P0</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">3h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DB-010</li>
+                <li><strong>Task Name:</strong> Migrations – Initial</li>
+                <li><strong>Owner:</strong> M1 (Backend Lead)</li>
+                <li><strong>Dependencies:</strong> DB-009 (DbContext)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 3 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Generate the initial EF Core migration and apply it to the database.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Create the database schema from the domain model.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Establish the database structure for all entities. Enable version‑controlled schema changes.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li><strong>EF Core tools:</strong> <code>dotnet ef</code> installed.</li>
+                <li><strong>Connection string:</strong> Database server running (PostgreSQL).</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>DbContext from DB-009.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Migration files in <code>Migrations</code> folder.</li>
+                <li>Database schema applied.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Add migration</strong> – <code>dotnet ef migrations add InitialCreate --project src/Jalsa.Infrastructure --startup-project src/Jalsa.API</code>.
+                    <br /><span style="color:#475569;">Why: Creates migration files based on DbContext.</span>
+                </li>
+                <li>
+                    <strong>Review migration</strong> – Check the generated code for correctness.
+                </li>
+                <li>
+                    <strong>Apply migration</strong> – <code>dotnet ef database update</code>.
+                </li>
+                <li>
+                    <strong>Verify</strong> – Connect to database and check tables are created.
+                </li>
+                <li>
+                    <strong>Commit</strong> – Add migration files to source control.
+                </li>
+            </ol>
+
+            <h3>Detailed Database Workflow</h3>
+            <ul>
+                <li><strong>Tables:</strong> All entities become tables.</li>
+                <li><strong>Constraints:</strong> Primary keys, foreign keys, unique constraints.</li>
+                <li><strong>Sequences:</strong> If using identity columns.</li>
+            </ul>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Migration files.</li>
+                <li>Database schema created.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>Migration applies without errors.</li>
+                <li>All tables exist.</li>
+                <li>Foreign keys are correctly set.</li>
+                <li>Indexes are present.</li>
+            </ul>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Forgetting to specify the startup project – migrations may not find the DbContext.
+            </div>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Running migration on a non‑empty database – ensure it's fresh or use <code>--force</code> with caution.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Migration applied successfully.</li>
+                <li>Database schema matches entities.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DB-011                                                           -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">DB-011</span>
+                <span class="task-name">Repository Pattern – Base</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-blue">P0</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">5h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DB-011</li>
+                <li><strong>Task Name:</strong> Repository Pattern – Base</li>
+                <li><strong>Owner:</strong> M2 (Backend)</li>
+                <li><strong>Dependencies:</strong> DB-009 (DbContext)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 5 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Implement the generic repository pattern and Unit of Work to abstract data access.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Simplifies data access code, enables mocking for unit tests, and centralises common query logic.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Create <code>IGenericRepository&lt;T&gt;</code> and <code>GenericRepository&lt;T&gt;</code> with methods like <code>GetByIdAsync</code>, <code>AddAsync</code>, <code>Update</code>, <code>Delete</code>, <code>GetAllAsync</code>. Also <code>IUnitOfWork</code> to coordinate multiple repositories.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Understanding of generics and dependency injection.</li>
+                <li>EF Core <code>DbContext</code>.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>DbContext from DB-009.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li><code>IGenericRepository&lt;T&gt;</code> interface.</li>
+                <li><code>GenericRepository&lt;T&gt;</code> implementation.</li>
+                <li><code>IUnitOfWork</code> interface and <code>UnitOfWork</code> implementation.</li>
+                <li>DI registration.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create <code>IGenericRepository&lt;T&gt;</code></strong> – Define methods: <code>GetByIdAsync</code>, <code>GetAllAsync</code>, <code>FindAsync</code> (with expression), <code>AddAsync</code>, <code>Update</code>, <code>Delete</code>.
+                </li>
+                <li>
+                    <strong>Implement <code>GenericRepository&lt;T&gt;</code></strong> – Inject <code>DbContext</code>, use <code>DbSet&lt;T&gt;</code>. Implement methods.
+                </li>
+                <li>
+                    <strong>Create <code>IUnitOfWork</code></strong> – Expose repositories (e.g., <code>IPatientRepository</code> later), <code>SaveChangesAsync</code>.
+                </li>
+                <li>
+                    <strong>Implement <code>UnitOfWork</code></strong> – Wrap all repository instances, use same <code>DbContext</code>.
+                </li>
+                <li>
+                    <strong>Register in DI</strong> – <code>services.AddScoped&lt;IUnitOfWork, UnitOfWork&gt;()</code>.
+                </li>
+            </ol>
+
+            <h3>Data Flow</h3>
+            <div class="flow-diagram">
+                <span class="step">Service</span> <span class="arrow">→</span>
+                <span class="step">IUnitOfWork</span> <span class="arrow">→</span>
+                <span class="step">Repository</span> <span class="arrow">→</span>
+                <span class="step">DbContext</span> <span class="arrow">→</span>
+                <span class="step">Database</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Repository interfaces and implementations.</li>
+                <li>UnitOfWork.</li>
+                <li>DI registration.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>Repository methods work with test data.</li>
+                <li>UnitOfWork commits changes correctly.</li>
+                <li>DI resolves dependencies.</li>
+            </ul>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Using <code>Dispose</code> incorrectly – ensure <code>DbContext</code> lifetime is scoped.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Repository and UnitOfWork implemented.</li>
+                <li>Unit tests for repository pass.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DB-012                                                           -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">DB-012</span>
+                <span class="task-name">Seed Data</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag">4h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DB-012</li>
+                <li><strong>Task Name:</strong> Seed Data</li>
+                <li><strong>Owner:</strong> M1 (Backend Lead)</li>
+                <li><strong>Dependencies:</strong> DB-010 (migrations applied)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-amber">Medium</span></li>
+                <li><strong>Estimated Effort:</strong> 4 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Seed initial data: roles (Therapist, Patient), an admin user, and assessment types.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Provide default data so that the system is usable immediately after deployment.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Populate lookup tables and create a default admin user for testing.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Knowledge of <code>DbContext</code> seeding.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>DbContext.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Seed data in database.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Create seed method</strong> – In <code>JalsaDbContext</code> or a separate class.
+                </li>
+                <li>
+                    <strong>Seed roles</strong> – <code>new Role { Id = Guid.NewGuid(), Name = "Therapist" }</code>.
+                </li>
+                <li>
+                    <strong>Seed admin user</strong> – Create a user with password hash (use BCrypt), assign to Therapist role.
+                </li>
+                <li>
+                    <strong>Seed AssessmentTypes</strong> – e.g., PHQ‑9, GAD‑7.
+                </li>
+                <li>
+                    <strong>Call seed method</strong> in <code>Program.cs</code> after migration.
+                </li>
+            </ol>
+
+            <h3>Detailed Database Workflow</h3>
+            <ul>
+                <li>Insert statements for roles, user, assessment types.</li>
+            </ul>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Seed data logic.</li>
+                <li>Data populated in database.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>Roles exist.</li>
+                <li>Admin user can log in.</li>
+                <li>Assessment types are available.</li>
+            </ul>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Hard‑coding Guids – use <code>Guid.NewGuid()</code> but ensure they are consistent across environments? Better to use fixed Guids for lookup data.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Seed data is populated.</li>
+                <li>Admin user can authenticate.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DB-013                                                           -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">DB-013</span>
+                <span class="task-name">Database Indexes</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-green">Low-Med</span>
+                <span class="tag">3h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DB-013</li>
+                <li><strong>Task Name:</strong> Database Indexes</li>
+                <li><strong>Owner:</strong> M1 (Backend Lead)</li>
+                <li><strong>Dependencies:</strong> DB-010 (migrations)</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-green">Low-Med</span></li>
+                <li><strong>Estimated Effort:</strong> 3 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Add missing indexes to improve query performance.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Ensure fast search and retrieval for patient data, sessions, and reports.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Add indexes on foreign keys and frequently searched columns.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Understanding of database indexing.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>DbContext configuration.</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>Indexes added via migration.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Identify columns</strong> – Foreign keys (PatientId, UserId, etc.), search columns (Email, Patient name), date columns (SessionDate).
+                </li>
+                <li>
+                    <strong>Add indexes in Fluent API</strong> – <code>.HasIndex(x => x.Email).IsUnique()</code>.
+                </li>
+                <li>
+                    <strong>Create a new migration</strong> – <code>dotnet ef migrations add AddIndexes</code>.
+                </li>
+                <li>
+                    <strong>Apply migration</strong>.
+                </li>
+            </ol>
+
+            <h3>Detailed Database Workflow</h3>
+            <ul>
+                <li>Indexes created on specified columns.</li>
+            </ul>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>Migration with indexes.</li>
+                <li>Indexes applied.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>Indexes are present in the database.</li>
+                <li>Queries using those columns show improved performance (test with large dataset).</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TASK DB-014                                                           -->
+    <!-- ===================================================================== -->
+    <div class="task-card">
+        <div class="task-header" onclick="toggleTask(this)">
+            <span>
+                <span class="task-id">DB-014</span>
+                <span class="task-name">Vector Store Setup</span>
+            </span>
+            <span class="task-badges">
+                <span class="tag tag-amber">P1</span>
+                <span class="tag tag-red">High</span>
+                <span class="tag">5h</span>
+                <span class="chevron">▾</span>
+            </span>
+        </div>
+        <div class="task-body">
+            <h3>Task Information</h3>
+            <ul>
+                <li><strong>Task ID:</strong> DB-014</li>
+                <li><strong>Task Name:</strong> Vector Store Setup</li>
+                <li><strong>Owner:</strong> M5 (DevOps / QA / AI)</li>
+                <li><strong>Dependencies:</strong> DB-009 (DbContext) – but can be separate</li>
+                <li><strong>Complexity:</strong> <span class="tag tag-red">High</span></li>
+                <li><strong>Estimated Effort:</strong> 5 hours</li>
+            </ul>
+
+            <h3>Objective</h3>
+            <p>Set up the vector database (pgvector or Azure Cognitive Search) for storing and querying embeddings.</p>
+
+            <h3>Business Purpose</h3>
+            <p>Enable semantic search and RAG (Retrieval Augmented Generation) for AI features like report generation and chat.</p>
+
+            <h3>Technical Purpose</h3>
+            <p>Install and configure pgvector extension on PostgreSQL, or configure Azure Cognitive Search index. Create collections for session notes embeddings.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li><strong>Vector databases:</strong> Understanding of embeddings, similarity search.</li>
+                <li><strong>PostgreSQL:</strong> Ability to install extensions.</li>
+            </ul>
+
+            <h3>Inputs</h3>
+            <ul>
+                <li>PostgreSQL instance (from Docker Compose).</li>
+            </ul>
+
+            <h3>Outputs</h3>
+            <ul>
+                <li>pgvector extension enabled.</li>
+                <li>Table or collection for embeddings (e.g., <code>Embeddings</code> table with vector column).</li>
+                <li>Configuration for vector store client.</li>
+            </ul>
+
+            <h3>Detailed Backend Workflow</h3>
+            <ol>
+                <li>
+                    <strong>Enable pgvector extension</strong> – <code>CREATE EXTENSION IF NOT EXISTS vector;</code>.
+                </li>
+                <li>
+                    <strong>Create embeddings table</strong> – <code>CREATE TABLE Embeddings (Id uuid, ChunkText text, Embedding vector(1536), Metadata jsonb)</code>.
+                </li>
+                <li>
+                    <strong>Create index for cosine similarity</strong> – <code>CREATE INDEX ON Embeddings USING ivfflat (embedding vector_cosine_ops);</code>.
+                </li>
+                <li>
+                    <strong>Create a service class</strong> – <code>IVectorStore</code> with methods <code>AddEmbedding</code>, <code>SimilaritySearch</code>.
+                </li>
+                <li>
+                    <strong>Implement using Npgsql</strong> – or use Azure SDK if using Cognitive Search.
+                </li>
+                <li>
+                    <strong>Register in DI</strong>.
+                </li>
+            </ol>
+
+            <h3>Detailed Database Workflow</h3>
+            <ul>
+                <li><strong>Table:</strong> <code>Embeddings</code>.</li>
+                <li><strong>Vector column:</strong> <code>embedding vector(1536)</code> for OpenAI embeddings.</li>
+                <li><strong>Index:</strong> ivfflat for fast similarity search.</li>
+            </ul>
+
+            <h3>Detailed AI Workflow</h3>
+            <p>This task only sets up the store; AI integration will come later.</p>
+
+            <h3>Data Flow</h3>
+            <div class="flow-diagram">
+                <span class="step">AI Service</span> <span class="arrow">→</span>
+                <span class="step">Vector Store (pgvector)</span> <span class="arrow">→</span>
+                <span class="step">Similarity Search</span>
+            </div>
+
+            <h3>Deliverables</h3>
+            <ul>
+                <li>pgvector enabled.</li>
+                <li>Embeddings table.</li>
+                <li>Vector store service.</li>
+            </ul>
+
+            <h3>Validation Checklist</h3>
+            <ul class="checklist">
+                <li>pgvector extension is installed.</li>
+                <li>Embeddings table exists.</li>
+                <li>Can insert and query vectors.</li>
+            </ul>
+
+            <h3>Common Pitfalls</h3>
+            <div class="pitfall-box">
+                <strong>Pitfall:</strong> Not creating the vector index – without it, similarity search is slow.
+            </div>
+
+            <h3>Definition of Done</h3>
+            <ul>
+                <li>Vector store is operational.</li>
+                <li>Can perform similarity search.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- PHASE COMPLETION CRITERIA                                             -->
+    <!-- ===================================================================== -->
+    <hr class="hr" />
+
+    <h2 style="background: #f0fdf4; border-left-color: #22c55e;">✅ Phase Completion Criteria</h2>
+    <ul class="checklist">
+        <li>All 14 tasks (DB-001 through DB-014) are completed and their deliverables committed.</li>
+        <li>All domain entities are created in the Domain project.</li>
+        <li>DbContext is configured with Fluent API and includes all entities.</li>
+        <li>Initial migration is generated and applied to the database.</li>
+        <li>Repository pattern and Unit of Work are implemented and registered.</li>
+        <li>Seed data (roles, admin user, assessment types) is populated.</li>
+        <li>Database indexes are added for performance.</li>
+        <li>Vector store (pgvector) is set up and configured.</li>
+        <li>All unit tests for repositories pass.</li>
+        <li>Integration tests for DbContext and repositories pass.</li>
+    </ul>
+
+    <h2 style="background: #f0f9ff; border-left-color: #3b82f6;">📋 Code Review Checklist</h2>
+    <ul class="checklist">
+        <li>Entities follow Clean Architecture (no EF Core attributes in Domain).</li>
+        <li>Fluent API configurations are correct (relationships, constraints, indexes).</li>
+        <li>Migrations are properly generated and reviewed.</li>
+        <li>Repository and UnitOfWork are correctly implemented and tested.</li>
+        <li>Seed data is idempotent.</li>
+        <li>Vector store setup is verified.</li>
+        <li>No secrets or connection strings are committed.</li>
+        <li>All tests pass.</li>
+    </ul>
+
+    <h2 style="background: #fefce8; border-left-color: #f59e0b;">🚀 Pull Request Checklist</h2>
+    <ul class="checklist">
+        <li>Branch is up‑to‑date with <code>develop</code>.</li>
+        <li>CI pipeline is green.</li>
+        <li>Code review completed with approval.</li>
+        <li>Migration has been tested on a fresh database.</li>
+        <li>All checklist items from Code Review Checklist are satisfied.</li>
+    </ul>
+
+    <h2 style="background: #fef2f2; border-left-color: #ef4444;">🧪 Deployment Readiness Checklist</h2>
+    <ul class="checklist">
+        <li>All Phase 1 tasks are complete and merged.</li>
+        <li>Database schema is up‑to‑date in the target environment.</li>
+        <li>Seed data is applied.</li>
+        <li>Vector store is operational.</li>
+        <li>Integration tests pass against the deployed database.</li>
+    </ul>
+
+    <hr class="hr" />
+    <div style="text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 20px 0 0;">
+        Jalsa – Database &amp; Core Infra Implementation Playbook &bull; v1.0 &bull; For development team
+    </div>
+</div>
+
+<script>
+    function toggleTask(header) {
+        const body = header.nextElementSibling;
+        const isOpen = body.classList.contains('open');
+        body.classList.toggle('open');
+        header.classList.toggle('open');
+    }
+    // Auto-open first task for convenience
+    document.addEventListener('DOMContentLoaded', function() {
+        const firstHeader = document.querySelector('.task-header');
+        if (firstHeader) firstHeader.click();
+    });
+</script>
+</body>
+</html>
