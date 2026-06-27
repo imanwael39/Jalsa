@@ -27,10 +27,10 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
     error = this.state.error;
 
     columns: TableColumn[] = [
-        { key: 'description', label: 'Description' },
-        { key: 'frequency', label: 'Frequency' },
-        { key: 'status', label: 'Status' },
-        { key: 'dueDate', label: 'Due Date' },
+        { key: 'description', label: 'الوصف' },
+        { key: 'frequency', label: 'التكرار' },
+        { key: 'status', label: 'الحالة' },
+        { key: 'dueDate', label: 'تاريخ الاستحقاق' },
     ];
 
     ngOnInit(): void {
