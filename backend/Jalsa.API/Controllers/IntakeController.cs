@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.Infrastructure.Data;
@@ -7,6 +8,7 @@ namespace Jalsa.API.Controllers;
 
 [ApiController]
 [Route("api/intake")]
+[Authorize(Roles = "Therapist")]
 public class IntakeController : ControllerBase
 {
     private readonly IOcrService _ocrService;
