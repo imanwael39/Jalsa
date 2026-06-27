@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal, OnInit, DestroyRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, input, OnInit, DestroyRef } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
@@ -25,6 +25,8 @@ export class Assessment implements OnInit {
     private router = inject(Router);
     private destroyRef = inject(DestroyRef);
 
+    patientIdInput = input<string | null>(null);
+
     patientId = signal<string>('');
     assessments = signal<AssessmentModel[]>([]);
     loading = signal(false);
@@ -47,7 +49,8 @@ export class Assessment implements OnInit {
     ];
 
     ngOnInit(): void {
-        const id = this.route.snapshot.paramMap.get('id');
+        const inputId = this.patientIdInput();
+        const id = inputId || this.route.snapshot.paramMap.get('id');
         if (id) {
             this.patientId.set(id);
             this.loadAssessments();
@@ -59,14 +62,15 @@ export class Assessment implements OnInit {
     loadAssessments(): void {
         this.loading.set(true);
         this.error.set(null);
-        this.patientService.getAssessments(this.patientId())
+        this.patientService
+            .getAssessments(this.patientId())
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
-                next: (data) => {
+                next: data => {
                     this.assessments.set(data);
                     this.loading.set(false);
                 },
-                error: (err) => {
+                error: err => {
                     this.error.set(err?.message || 'Failed to load assessments');
                     this.loading.set(false);
                 },
@@ -91,7 +95,8 @@ export class Assessment implements OnInit {
             status: 'Completed',
         };
 
-        this.patientService.addAssessment(this.patientId(), assessmentData)
+        this.patientService
+            .addAssessment(this.patientId(), assessmentData)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: () => {
@@ -105,7 +110,7 @@ export class Assessment implements OnInit {
                     });
                     this.loadAssessments();
                 },
-                error: (err) => {
+                error: err => {
                     this.error.set(err?.message || 'Failed to add assessment');
                     this.submitLoading.set(false);
                 },

@@ -34,30 +34,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
     isStale = this.state.isStale;
     user = this.authService.currentUser;
 
-    assessmentTrendLabels = computed(() =>
-        this.extractTrendLabels(this.summary()?.analytics?.assessmentTrend)
-    );
+    assessmentTrendLabels = computed(() => this.extractTrendLabels(this.summary()?.analytics?.assessmentTrend));
     assessmentTrendData = computed(() =>
-        this.buildLineDataset('Assessment Score', this.summary()?.analytics?.assessmentTrend, '#0d6efd')
+        this.buildLineDataset('درجة التقييم', this.summary()?.analytics?.assessmentTrend, '#0d6efd')
     );
 
-    sessionFrequencyLabels = computed(() =>
-        this.extractTrendLabels(this.summary()?.analytics?.sessionFrequency)
-    );
+    sessionFrequencyLabels = computed(() => this.extractTrendLabels(this.summary()?.analytics?.sessionFrequency));
     sessionFrequencyData = computed(() =>
-        this.buildLineDataset('Sessions', this.summary()?.analytics?.sessionFrequency, '#198754')
+        this.buildLineDataset('الجلسات', this.summary()?.analytics?.sessionFrequency, '#198754')
     );
 
-    exerciseCompletionLabels = computed(() => ['Complete', 'Partial', 'Skipped']);
+    exerciseCompletionLabels = computed(() => ['مكتمل', 'جزئي', 'تم التخطي']);
     exerciseCompletionData = computed<ChartDataset<'bar'>[]>(() => {
         const breakdown = this.summary()?.analytics?.exerciseCompletion;
-        return [{
-            label: 'Exercises',
-            data: breakdown
-                ? [breakdown.complete, breakdown.partial, breakdown.skipped]
-                : [0, 0, 0],
-            backgroundColor: ['#198754', '#ffc107', '#dc3545'],
-        }];
+        return [
+            {
+                label: 'التمارين',
+                data: breakdown ? [breakdown.complete, breakdown.partial, breakdown.skipped] : [0, 0, 0],
+                backgroundColor: ['#198754', '#ffc107', '#dc3545'],
+            },
+        ];
     });
 
     ngOnInit(): void {
@@ -71,34 +67,37 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     loadDashboard(): void {
         this.state.setLoading(true);
-        this.dashboardService.getDashboardSummary().pipe(
-            takeUntilDestroyed(this.destroyRef),
-        ).subscribe({
-            next: (data) => {
-                this.state.setSummary(data);
-                this.state.setLoading(false);
-            },
-            error: (err) => {
-                this.state.setError(err.message || 'Failed to load dashboard data');
-                this.state.setLoading(false);
-            },
-        });
+        this.dashboardService
+            .getDashboardSummary()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: data => {
+                    this.state.setSummary(data);
+                    this.state.setLoading(false);
+                },
+                error: err => {
+                    this.state.setError(err.message || 'Failed to load dashboard data');
+                    this.state.setLoading(false);
+                },
+            });
     }
 
     private startAutoRefresh(): void {
-        this.autoRefreshSub = interval(AUTO_REFRESH_INTERVAL_MS).pipe(
-            takeUntilDestroyed(this.destroyRef),
-            filter(() => !this.loading()),
-            switchMap(() => this.dashboardService.getDashboardSummary()),
-        ).subscribe({
-            next: (data) => {
-                this.state.setSummary(data);
-                this.state.setLoading(false);
-            },
-            error: () => {
-                this.state.setLoading(false);
-            },
-        });
+        this.autoRefreshSub = interval(AUTO_REFRESH_INTERVAL_MS)
+            .pipe(
+                takeUntilDestroyed(this.destroyRef),
+                filter(() => !this.loading()),
+                switchMap(() => this.dashboardService.getDashboardSummary())
+            )
+            .subscribe({
+                next: data => {
+                    this.state.setSummary(data);
+                    this.state.setLoading(false);
+                },
+                error: () => {
+                    this.state.setLoading(false);
+                },
+            });
     }
 
     private stopAutoRefresh(): void {
@@ -113,13 +112,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     private buildLineDataset(label: string, trends: TrendDto[] | undefined, color: string): ChartDataset<'line'>[] {
-        return [{
-            label,
-            data: trends?.map(t => t.value) ?? [],
-            borderColor: color,
-            backgroundColor: color + '20',
-            tension: 0.3,
-            fill: true,
-        }];
+        return [
+            {
+                label,
+                data: trends?.map(t => t.value) ?? [],
+                borderColor: color,
+                backgroundColor: color + '20',
+                tension: 0.3,
+                fill: true,
+            },
+        ];
     }
 }
