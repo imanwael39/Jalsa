@@ -33,11 +33,13 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <strong>النوع:</strong>
-                        <span>{{ session()!.sessionType || 'N/A' }}</span>
+                        <span>{{ session()!.sessionType || 'غير متوفر' }}</span>
                     </div>
                     <div class="col-md-6">
                         <strong>المدة:</strong>
-                        <span>{{ session()!.durationMinutes ? session()!.durationMinutes + ' دقيقة' : 'N/A' }}</span>
+                        <span>{{
+                            session()!.durationMinutes ? session()!.durationMinutes + ' دقيقة' : 'غير متوفر'
+                        }}</span>
                     </div>
                 </div>
                 <div class="row mb-3">

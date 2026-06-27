@@ -45,14 +45,15 @@ export class IntakeForm implements OnInit {
             this.patientId.set(id);
             this.loadIntakeForm();
         } else {
-            this.error.set('Patient ID required');
+            this.error.set('معرف المريض مطلوب');
         }
     }
 
     loadIntakeForm(): void {
         this.loading.set(true);
         this.error.set(null);
-        this.patientService.getIntakeForm(this.patientId())
+        this.patientService
+            .getIntakeForm(this.patientId())
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: (intakeForm: IntakeFormModel) => {
@@ -84,27 +85,35 @@ export class IntakeForm implements OnInit {
         this.ocrLoading.set(true);
         this.ocrSuccess.set(false);
         this.error.set(null);
-        this.patientService.uploadIntakeImage(this.patientId(), file)
+        this.patientService
+            .uploadIntakeImage(this.patientId(), file)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
-                next: (result) => {
+                next: result => {
                     this.ocrLoading.set(false);
                     this.ocrSuccess.set(true);
                     if (result.extractedData) {
                         this.form.patchValue({
-                            presentingProblem: result.extractedData['presentingProblem'] ?? result.extractedData['reasonForVisit'] ?? '',
-                            psychiatricHistory: result.extractedData['psychiatricHistory'] ?? result.extractedData['medicalHistory'] ?? '',
+                            presentingProblem:
+                                result.extractedData['presentingProblem'] ??
+                                result.extractedData['reasonForVisit'] ??
+                                '',
+                            psychiatricHistory:
+                                result.extractedData['psychiatricHistory'] ??
+                                result.extractedData['medicalHistory'] ??
+                                '',
                             familyHistory: result.extractedData['familyHistory'] ?? '',
                             medications: result.extractedData['medications'] ?? '',
-                            socialHistory: result.extractedData['socialHistory'] ?? result.extractedData['otherInfo'] ?? '',
+                            socialHistory:
+                                result.extractedData['socialHistory'] ?? result.extractedData['otherInfo'] ?? '',
                         });
-                        this.notification.success('OCR data extracted successfully');
+                        this.notification.success('تم استخراج البيانات بنجاح');
                     }
                 },
-                error: (err) => {
+                error: err => {
                     this.ocrLoading.set(false);
-                    this.error.set(err?.message || 'Failed to upload image');
-                    this.notification.error('OCR extraction failed. Please enter data manually.');
+                    this.error.set(err?.message || 'فشل رفع الصورة');
+                    this.notification.error('فشل استخراج البيانات. يرجى إدخال البيانات يدوياً.');
                 },
             });
     }
@@ -112,16 +121,17 @@ export class IntakeForm implements OnInit {
     onSubmit(): void {
         this.loading.set(true);
         this.error.set(null);
-        this.patientService.saveIntakeForm(this.patientId(), this.form.value)
+        this.patientService
+            .saveIntakeForm(this.patientId(), this.form.value)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: () => {
                     this.loading.set(false);
-                    this.notification.success('Intake form saved successfully');
+                    this.notification.success('تم حفظ استمارة الاستقبال بنجاح');
                     this.router.navigate(['/patients', this.patientId()]);
                 },
-                error: (err) => {
-                    this.error.set(err?.message || 'Failed to save intake form');
+                error: err => {
+                    this.error.set(err?.message || 'فشل حفظ استمارة الاستقبال');
                     this.loading.set(false);
                 },
             });

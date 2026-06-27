@@ -54,10 +54,11 @@ export class PatientForm implements OnInit {
     loadPatient(id: string): void {
         this.loading.set(true);
         this.error.set(null);
-        this.patientService.getPatient(id)
+        this.patientService
+            .getPatient(id)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
-                next: (patient) => {
+                next: patient => {
                     this.form.patchValue({
                         fullName: patient.fullName,
                         email: patient.email ?? '',
@@ -71,8 +72,8 @@ export class PatientForm implements OnInit {
                     this.state.selectPatient(patient);
                     this.loading.set(false);
                 },
-                error: (err) => {
-                    this.error.set(err?.message || 'Failed to load patient');
+                error: err => {
+                    this.error.set(err?.message || 'فشل تحميل بيانات المريض');
                     this.loading.set(false);
                 },
             });
@@ -111,32 +112,34 @@ export class PatientForm implements OnInit {
                 referralSource: formValue.referralSource || null,
                 chiefComplaint: formValue.chiefComplaint || null,
             };
-            this.patientService.updatePatient(this.patientId()!, updateData)
+            this.patientService
+                .updatePatient(this.patientId()!, updateData)
                 .pipe(takeUntilDestroyed(this.destroyRef))
                 .subscribe({
-                    next: (patient) => {
+                    next: patient => {
                         this.state.updatePatient(patient);
-                        this.notification.success('Patient updated successfully');
+                        this.notification.success('تم تحديث بيانات المريض بنجاح');
                         this.loading.set(false);
                         this.router.navigate(['/patients', this.patientId()]);
                     },
-                    error: (err) => {
-                        this.error.set(err?.message || 'Failed to update patient');
+                    error: err => {
+                        this.error.set(err?.message || 'فشل تحديث بيانات المريض');
                         this.loading.set(false);
                     },
                 });
         } else {
-            this.patientService.createPatient(createData)
+            this.patientService
+                .createPatient(createData)
                 .pipe(takeUntilDestroyed(this.destroyRef))
                 .subscribe({
-                    next: (patient) => {
+                    next: patient => {
                         this.state.addPatient(patient);
-                        this.notification.success('Patient created successfully');
+                        this.notification.success('تم إنشاء المريض بنجاح');
                         this.loading.set(false);
                         this.router.navigate(['/patients', patient.id]);
                     },
-                    error: (err) => {
-                        this.error.set(err?.message || 'Failed to create patient');
+                    error: err => {
+                        this.error.set(err?.message || 'فشل إنشاء المريض');
                         this.loading.set(false);
                     },
                 });
@@ -157,30 +160,30 @@ export class PatientForm implements OnInit {
         if (!field || !field.errors || !field.touched) return '';
 
         if (field.errors['required']) {
-            return `${this.getFieldLabel(fieldName)} is required`;
+            return `${this.getFieldLabel(fieldName)} مطلوب`;
         }
         if (field.errors['minlength']) {
-            return `${this.getFieldLabel(fieldName)} must be at least ${field.errors['minlength'].requiredLength} characters`;
+            return `${this.getFieldLabel(fieldName)} يجب أن يكون ${field.errors['minlength'].requiredLength} أحرف على الأقل`;
         }
         if (field.errors['maxlength']) {
-            return `${this.getFieldLabel(fieldName)} must be no more than ${field.errors['maxlength'].requiredLength} characters`;
+            return `${this.getFieldLabel(fieldName)} يجب ألا يتجاوز ${field.errors['maxlength'].requiredLength} حرف`;
         }
         if (field.errors['email']) {
-            return 'Please enter a valid email address';
+            return 'يرجى إدخال بريد إلكتروني صحيح';
         }
         return '';
     }
 
     private getFieldLabel(fieldName: string): string {
         const labels: Record<string, string> = {
-            fullName: 'Full name',
-            email: 'Email',
-            phone: 'Phone',
-            dateOfBirth: 'Date of birth',
-            gender: 'Gender',
-            address: 'Address',
-            referralSource: 'Referral source',
-            chiefComplaint: 'Chief complaint',
+            fullName: 'الاسم الكامل',
+            email: 'البريد الإلكتروني',
+            phone: 'الهاتف',
+            dateOfBirth: 'تاريخ الميلاد',
+            gender: 'الجنس',
+            address: 'العنوان',
+            referralSource: 'مصدر الإحالة',
+            chiefComplaint: 'الشكوى الرئيسية',
         };
         return labels[fieldName] || fieldName;
     }
