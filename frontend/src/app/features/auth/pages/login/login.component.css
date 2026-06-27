@@ -6,9 +6,10 @@
     font-family: 'Cairo', sans-serif;
     font-size: 1.5rem;
     font-weight: 700;
-    color: #1a2332;
+    color: var(--text-primary);
     text-align: center;
     margin: 0 0 1.75rem 0;
+    letter-spacing: -0.01em;
 }
 
 .forgot-row {
@@ -18,12 +19,14 @@
 
 .forgot-link {
     font-size: 0.875rem;
-    color: #185fa5;
+    color: var(--primary);
     text-decoration: none;
     font-weight: 500;
+    transition: color var(--transition-fast);
 }
 
 .forgot-link:hover {
+    color: var(--primary-dark);
     text-decoration: underline;
 }
 
@@ -33,33 +36,36 @@
 
 .switch-text {
     text-align: center;
-    font-size: 0.875rem;
-    color: #6c7a89;
+    font-size: 0.9375rem;
+    color: var(--text-muted);
     margin: 0;
 }
 
 .switch-link {
-    color: #185fa5;
+    color: var(--primary);
     text-decoration: none;
     font-weight: 600;
+    transition: color var(--transition-fast);
 }
 
 .switch-link:hover {
+    color: var(--primary-dark);
     text-decoration: underline;
 }
 
 .alert {
-    padding: 0.75rem 1rem;
-    border-radius: 10px;
-    font-size: 0.875rem;
+    padding: 0.875rem 1.125rem;
+    border-radius: var(--radius-md);
+    font-size: 0.9375rem;
     margin-bottom: 1rem;
     text-align: start;
+    border: none;
 }
 
 .alert-error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+    background-color: var(--danger-light);
+    color: var(--danger-dark);
+    border-inline-start: 4px solid var(--danger);
 }
 
 @media (max-width: 375px) {

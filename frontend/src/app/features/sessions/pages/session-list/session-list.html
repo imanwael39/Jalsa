@@ -1,8 +1,8 @@
 <div class="session-list">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Sessions</h2>
-        <app-button variant="primary" (clicked)="navigateToNew()" ariaLabel="Create new session">
-            <i class="bi bi-plus-lg" aria-hidden="true"></i> New Session
+    <div class="page-header">
+        <h2 class="page-title">الجلسات</h2>
+        <app-button variant="primary" (clicked)="navigateToNew()" ariaLabel="إنشاء جلسة جديدة">
+            <i class="bi bi-plus-lg" aria-hidden="true"></i> جلسة جديدة +
         </app-button>
     </div>
 
@@ -15,7 +15,7 @@
             [data]="sessions()"
             [columns]="columns"
             [loading]="loading()"
-            emptyMessage="No sessions found for this patient."
+            emptyMessage="لم يتم العثور على جلسات لهذا المريض."
             (rowClick)="onRowClick($event)"
         >
             <ng-template appColumnCell="sessionDate" let-row>
@@ -37,13 +37,13 @@
             </ng-template>
             <ng-template appColumnCell="actions" let-row>
                 <div class="d-flex gap-1 justify-content-center">
-                    <app-button variant="secondary" size="sm" (clicked)="navigateToView(row.id)" ariaLabel="View session">
+                    <app-button variant="secondary" size="sm" (clicked)="navigateToView(row.id)" ariaLabel="عرض الجلسة">
                         <i class="bi bi-eye" aria-hidden="true"></i>
                     </app-button>
-                    <app-button variant="primary" size="sm" (clicked)="navigateToEdit(row.id)" ariaLabel="Edit session">
+                    <app-button variant="primary" size="sm" (clicked)="navigateToEdit(row.id)" ariaLabel="تعديل الجلسة">
                         <i class="bi bi-pencil" aria-hidden="true"></i>
                     </app-button>
-                    <app-button variant="danger" size="sm" (clicked)="deleteSession(row.id)" ariaLabel="Delete session">
+                    <app-button variant="danger" size="sm" (clicked)="deleteSession(row.id)" ariaLabel="حذف الجلسة">
                         <i class="bi bi-trash" aria-hidden="true"></i>
                     </app-button>
                 </div>

@@ -1,5 +1,5 @@
 <div class="session-form">
-    <h2>{{ isEdit() ? 'Edit Session' : 'New Session' }}</h2>
+    <h2>{{ isEdit() ? 'تعديل الجلسة' : 'جلسة جديدة' }}</h2>
 
     @if (error()) {
         <div class="alert alert-danger" role="alert">{{ error() }}</div>
@@ -12,7 +12,7 @@
     } @else {
         <form [formGroup]="form" (ngSubmit)="onSubmit()">
             <div class="form-group mb-3">
-                <label class="form-label" for="sessionDate">Session Date</label>
+                <label class="form-label" for="sessionDate">تاريخ الجلسة</label>
                 <input
                     class="form-control"
                     [class.is-invalid]="form.get('sessionDate')?.invalid && form.get('sessionDate')?.touched"
@@ -21,42 +21,42 @@
                     formControlName="sessionDate"
                 />
                 @if (form.get('sessionDate')?.invalid && form.get('sessionDate')?.touched) {
-                    <div class="invalid-feedback">Session date is required.</div>
+                    <div class="invalid-feedback">تاريخ الجلسة مطلوب.</div>
                 }
             </div>
 
             <div class="form-group mb-3">
-                <label class="form-label">Session Notes (Rich Text)</label>
+                <label class="form-label">ملاحظات الجلسة (نص منسق)</label>
                 <quill-editor
                     formControlName="content"
                     [modules]="quillConfig"
-                    placeholder="Enter session notes..."
+                    placeholder="أدخل ملاحظات الجلسة..."
                     [style]="{ minHeight: '200px' }"
                 ></quill-editor>
                 @if (form.get('content')?.invalid && form.get('content')?.touched) {
-                    <div class="text-danger small mt-1">Session notes are required.</div>
+                    <div class="text-danger small mt-1">ملاحظات الجلسة مطلوبة.</div>
                 }
             </div>
 
             <app-input
-                label="Session Type"
+                label="نوع الجلسة"
                 type="text"
                 formControlName="sessionType"
-                placeholder="e.g. Individual, Group, Follow-up"
+                placeholder="مثال: فردية، جماعية، متابعة"
             ></app-input>
 
             <app-input
-                label="Duration (minutes)"
+                label="المدة (بالدقائق)"
                 type="number"
                 formControlName="durationMinutes"
             ></app-input>
 
             <div class="form-group mb-3">
-                <label class="form-label" for="status">Status</label>
+                <label class="form-label" for="status">الحالة</label>
                 <select class="form-select" id="status" formControlName="status">
-                    <option value="Draft">Draft</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Archived">Archived</option>
+                    <option value="Draft">مسودة</option>
+                    <option value="Completed">مكتملة</option>
+                    <option value="Archived">مؤرشفة</option>
                 </select>
             </div>
 
@@ -67,17 +67,17 @@
                 ></app-voice-recorder>
                 @if (voiceMemoUrl()) {
                     <div class="mt-2 text-success">
-                        <i class="bi bi-check-circle" aria-hidden="true"></i> Voice memo uploaded.
+                        <i class="bi bi-check-circle" aria-hidden="true"></i> تم رفع الملاحظة الصوتية.
                     </div>
                 }
             </div>
 
             <div class="d-flex gap-2 mt-4">
                 <app-button type="submit" variant="primary" [disabled]="loading()">
-                    {{ isEdit() ? 'Update' : 'Create' }} Session
+                    {{ isEdit() ? 'تحديث' : 'إنشاء' }} الجلسة
                 </app-button>
                 <app-button type="button" variant="secondary" (clicked)="cancel()">
-                    Cancel
+                    إلغاء
                 </app-button>
             </div>
         </form>

@@ -1,11 +1,11 @@
 @if (hasPages) {
-    <nav aria-label="Pagination" class="pagination-wrapper">
+    <nav aria-label="التنقل بين الصفحات" class="pagination-wrapper">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div class="pagination-info text-muted small">
                 @if (totalItems > 0) {
-                    <span>Showing {{ startIndex }} to {{ endIndex }} of {{ totalItems }} entries</span>
+                    <span>عرض {{ startIndex }} إلى {{ endIndex }} من أصل {{ totalItems }} سجل</span>
                 } @else {
-                    <span>No entries</span>
+                    <span>لا توجد سجلات</span>
                 }
             </div>
 
@@ -14,7 +14,7 @@
                     <button
                         type="button"
                         class="page-link"
-                        [attr.aria-label]="'First page'"
+                        [attr.aria-label]="'الصفحة الأولى'"
                         [disabled]="isFirstPage"
                         (click)="goToFirstPage()"
                     >
@@ -26,7 +26,7 @@
                     <button
                         type="button"
                         class="page-link"
-                        [attr.aria-label]="'Previous page'"
+                        [attr.aria-label]="'الصفحة السابقة'"
                         [disabled]="isFirstPage"
                         (click)="goToPreviousPage()"
                     >
@@ -39,7 +39,7 @@
                         <button
                             type="button"
                             class="page-link"
-                            [attr.aria-label]="'Page ' + page"
+                            [attr.aria-label]="'صفحة ' + page"
                             [attr.aria-current]="page === currentPage ? 'page' : null"
                             (click)="goToPage(page)"
                         >
@@ -52,7 +52,7 @@
                     <button
                         type="button"
                         class="page-link"
-                        [attr.aria-label]="'Next page'"
+                        [attr.aria-label]="'الصفحة التالية'"
                         [disabled]="isLastPage"
                         (click)="goToNextPage()"
                     >
@@ -64,7 +64,7 @@
                     <button
                         type="button"
                         class="page-link"
-                        [attr.aria-label]="'Last page'"
+                        [attr.aria-label]="'الصفحة الأخيرة'"
                         [disabled]="isLastPage"
                         (click)="goToLastPage()"
                     >

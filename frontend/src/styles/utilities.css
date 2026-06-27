@@ -1,5 +1,9 @@
 /* ================================================================
-   1. Spacing (margin and padding)
+   JALSA Utility Classes
+   ================================================================ */
+
+/* ================================================================
+   1. Spacing (margin and padding) — RTL-aware
    ================================================================ */
 
 /* Spacer 0 */
@@ -18,7 +22,7 @@
 .px-0 { padding-left: 0; padding-right: 0; }
 .py-0 { padding-top: 0; padding-bottom: 0; }
 
-/* Spacer 1 */
+/* Spacer 1 (0.25rem) */
 .m-1 { margin: var(--spacer-1); }
 .mt-1 { margin-top: var(--spacer-1); }
 .mb-1 { margin-bottom: var(--spacer-1); }
@@ -34,7 +38,7 @@
 .px-1 { padding-left: var(--spacer-1); padding-right: var(--spacer-1); }
 .py-1 { padding-top: var(--spacer-1); padding-bottom: var(--spacer-1); }
 
-/* Spacer 2 */
+/* Spacer 2 (0.5rem) */
 .m-2 { margin: var(--spacer-2); }
 .mt-2 { margin-top: var(--spacer-2); }
 .mb-2 { margin-bottom: var(--spacer-2); }
@@ -50,7 +54,7 @@
 .px-2 { padding-left: var(--spacer-2); padding-right: var(--spacer-2); }
 .py-2 { padding-top: var(--spacer-2); padding-bottom: var(--spacer-2); }
 
-/* Spacer 3 */
+/* Spacer 3 (0.75rem) */
 .m-3 { margin: var(--spacer-3); }
 .mt-3 { margin-top: var(--spacer-3); }
 .mb-3 { margin-bottom: var(--spacer-3); }
@@ -66,7 +70,7 @@
 .px-3 { padding-left: var(--spacer-3); padding-right: var(--spacer-3); }
 .py-3 { padding-top: var(--spacer-3); padding-bottom: var(--spacer-3); }
 
-/* Spacer 4 */
+/* Spacer 4 (1rem) */
 .m-4 { margin: var(--spacer-4); }
 .mt-4 { margin-top: var(--spacer-4); }
 .mb-4 { margin-bottom: var(--spacer-4); }
@@ -82,7 +86,7 @@
 .px-4 { padding-left: var(--spacer-4); padding-right: var(--spacer-4); }
 .py-4 { padding-top: var(--spacer-4); padding-bottom: var(--spacer-4); }
 
-/* Spacer 5 */
+/* Spacer 5 (1.25rem) */
 .m-5 { margin: var(--spacer-5); }
 .mt-5 { margin-top: var(--spacer-5); }
 .mb-5 { margin-bottom: var(--spacer-5); }
@@ -98,7 +102,7 @@
 .px-5 { padding-left: var(--spacer-5); padding-right: var(--spacer-5); }
 .py-5 { padding-top: var(--spacer-5); padding-bottom: var(--spacer-5); }
 
-/* Spacer 6 */
+/* Spacer 6 (1.5rem) */
 .m-6 { margin: var(--spacer-6); }
 .mt-6 { margin-top: var(--spacer-6); }
 .mb-6 { margin-bottom: var(--spacer-6); }
@@ -114,7 +118,7 @@
 .px-6 { padding-left: var(--spacer-6); padding-right: var(--spacer-6); }
 .py-6 { padding-top: var(--spacer-6); padding-bottom: var(--spacer-6); }
 
-/* Spacer 7 */
+/* Spacer 7 (2rem) */
 .m-7 { margin: var(--spacer-7); }
 .mt-7 { margin-top: var(--spacer-7); }
 .mb-7 { margin-bottom: var(--spacer-7); }
@@ -130,7 +134,7 @@
 .px-7 { padding-left: var(--spacer-7); padding-right: var(--spacer-7); }
 .py-7 { padding-top: var(--spacer-7); padding-bottom: var(--spacer-7); }
 
-/* Spacer 8 */
+/* Spacer 8 (2.5rem) */
 .m-8 { margin: var(--spacer-8); }
 .mt-8 { margin-top: var(--spacer-8); }
 .mb-8 { margin-bottom: var(--spacer-8); }
@@ -236,18 +240,21 @@
 .border-end { border-inline-end: 1px solid var(--border-color); }
 .border-0 { border: 0; }
 
-.border-radius { border-radius: var(--border-radius); }
-.border-radius-lg { border-radius: var(--border-radius-lg); }
-.border-radius-sm { border-radius: var(--border-radius-sm); }
-.border-radius-pill { border-radius: var(--border-radius-pill); }
+.border-radius { border-radius: var(--radius-md); }
+.border-radius-lg { border-radius: var(--radius-lg); }
+.border-radius-sm { border-radius: var(--radius-sm); }
+.border-radius-pill { border-radius: var(--radius-full); }
 .border-radius-circle { border-radius: 50%; }
 
 /* ================================================================
    8. Shadow
    ================================================================ */
+.shadow-xs { box-shadow: var(--shadow-xs); }
 .shadow-sm { box-shadow: var(--shadow-sm); }
 .shadow { box-shadow: var(--shadow); }
+.shadow-md { box-shadow: var(--shadow-md); }
 .shadow-lg { box-shadow: var(--shadow-lg); }
+.shadow-xl { box-shadow: var(--shadow-xl); }
 .shadow-none { box-shadow: none; }
 
 /* ================================================================
@@ -263,6 +270,7 @@
 .bg-info { background-color: var(--info); }
 .bg-light { background-color: var(--background); }
 .bg-dark { background-color: var(--primary-dark); }
+.bg-subtle { background-color: var(--bg-subtle); }
 
 /* ================================================================
    10. Cursor
@@ -272,7 +280,29 @@
 .cursor-not-allowed { cursor: not-allowed; }
 
 /* ================================================================
-   11. Visually Hidden (Accessibility)
+   11. Transition Utilities
+   ================================================================ */
+.transition-all { transition: all var(--transition-base); }
+.transition-fast { transition: all var(--transition-fast); }
+.transition-slow { transition: all var(--transition-slow); }
+
+/* ================================================================
+   12. Card Utilities
+   ================================================================ */
+.card-modern {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    transition: box-shadow var(--transition-base), transform var(--transition-base);
+}
+
+.card-modern:hover {
+    box-shadow: var(--shadow-card-hover);
+}
+
+/* ================================================================
+   13. Visually Hidden (Accessibility)
    ================================================================ */
 .visually-hidden {
     position: absolute;
@@ -287,7 +317,7 @@
 }
 
 /* ================================================================
-   12. Skip Link (Accessibility)
+   14. Skip Link (Accessibility)
    ================================================================ */
 .skip-link {
     position: absolute;
@@ -299,16 +329,17 @@
     color: #fff;
     text-decoration: none;
     font-weight: 600;
+    border-radius: 0 0 var(--radius-sm) 0;
 }
 
 .skip-link:focus {
     top: 0;
-    outline: 2px solid var(--secondary);
+    outline: 2px solid var(--primary);
     outline-offset: 2px;
 }
 
 /* ================================================================
-   13. Responsive Utilities
+   15. Responsive Utilities
    ================================================================ */
 @media (max-width: 576px) {
     .d-sm-none { display: none; }
@@ -318,4 +349,9 @@
 @media (min-width: 768px) {
     .d-md-none { display: none; }
     .d-md-block { display: block; }
+}
+
+@media (min-width: 992px) {
+    .d-lg-none { display: none; }
+    .d-lg-block { display: block; }
 }

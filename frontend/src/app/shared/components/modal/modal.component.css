@@ -3,42 +3,56 @@
 }
 
 .modal {
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
 }
 
 .modal-content {
     border: none;
-    border-radius: 0.375rem;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    animation: modalSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .modal-header {
-    border-bottom: 1px solid #dee2e6;
-    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.25rem 1.5rem;
+    background-color: var(--gray-50);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
 
 .modal-title {
     margin-bottom: 0;
-    font-weight: 500;
+    font-weight: 700;
+    font-size: 1.125rem;
+    color: var(--text-primary);
 }
 
 .modal-body {
-    padding: 1.25rem;
+    padding: 1.5rem;
 }
 
 .modal-footer {
-    border-top: 1px solid #dee2e6;
-    padding: 0.75rem 1.25rem;
+    border-top: 1px solid var(--border-color);
+    padding: 1rem 1.5rem;
+    background-color: var(--gray-50);
+    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
 }
 
 .btn-close {
-    padding: 0.25rem 0.25rem;
-    margin: -0.25rem -0.25rem -0.25rem auto;
+    padding: 0.375rem;
+    margin: -0.375rem -0.375rem -0.375rem auto;
+    border-radius: var(--radius-sm);
+    transition: background-color var(--transition-fast);
+}
+
+.btn-close:hover {
+    background-color: var(--gray-200);
 }
 
 /* RTL Support */
 [dir="rtl"] .btn-close {
-    margin: -0.25rem auto -0.25rem -0.25rem;
+    margin: -0.375rem auto -0.375rem -0.375rem;
 }
 
 /* Scrollable modal */
@@ -49,15 +63,15 @@
 
 /* Size variants */
 .modal-sm {
-    max-width: 300px;
+    max-width: 400px;
 }
 
 .modal-lg {
-    max-width: 800px;
+    max-width: 720px;
 }
 
 .modal-xl {
-    max-width: 1140px;
+    max-width: 1000px;
 }
 
 /* Responsive adjustments */
@@ -68,22 +82,34 @@
         max-width: calc(100vw - 1rem);
         margin: 0.5rem;
     }
+
+    .modal-content {
+        border-radius: var(--radius-lg);
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 1rem;
+    }
 }
 
 /* Animation */
-.modal.fade .modal-dialog {
-    transition: transform 0.3s ease-out;
-    transform: translate(0, -50px);
-}
-
-.modal.show .modal-dialog {
-    transform: none;
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 /* Focus styles for accessibility */
 .btn-close:focus {
     outline: none;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    box-shadow: 0 0 0 3px rgba(13, 110, 86, 0.2);
 }
 
 /* Scrollbar styling */
@@ -92,14 +118,14 @@
 }
 
 .modal-body-scrollable::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: transparent;
 }
 
 .modal-body-scrollable::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 3px;
+    background: var(--gray-300);
+    border-radius: var(--radius-full);
 }
 
 .modal-body-scrollable::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: var(--gray-400);
 }

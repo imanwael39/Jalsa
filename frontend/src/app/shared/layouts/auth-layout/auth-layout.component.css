@@ -8,8 +8,22 @@
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    background: linear-gradient(135deg, #f7f9fc 0%, #e8eef5 100%);
+    background: linear-gradient(135deg, #E6F4EE 0%, #D0EBE1 50%, #A8D9C8 100%);
     padding: 2rem 1rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-layout::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 50%, rgba(15, 110, 86, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(34, 164, 127, 0.05) 0%, transparent 50%);
+    pointer-events: none;
 }
 
 .auth-container {
@@ -18,45 +32,61 @@
     align-items: center;
     width: 100%;
     max-width: 440px;
+    position: relative;
+    z-index: 1;
 }
 
 .auth-brand {
     text-align: center;
-    margin-block-end: 1.75rem;
+    margin-block-end: 2rem;
 }
 
 .brand-icon {
-    margin-block-end: 0.75rem;
+    margin-block-end: 1rem;
 }
 
 .brand-name {
-    font-family: 'Cairo', sans-serif;
-    font-size: 2.25rem;
-    font-weight: 700;
-    color: #1a2332;
+    font-family: 'Tajawal', 'Cairo', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
     margin: 0;
     line-height: 1.2;
+    letter-spacing: -0.02em;
 }
 
 .brand-tagline {
-    font-family: 'Cairo', sans-serif;
+    font-family: 'Tajawal', 'Cairo', sans-serif;
     font-size: 0.9375rem;
-    color: #6c7a89;
-    margin: 0.25rem 0 0 0;
+    color: var(--text-muted);
+    margin: 0.5rem 0 0 0;
 }
 
 .auth-card {
     width: 100%;
-    background-color: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.08);
-    padding: 2rem;
+    background-color: var(--surface);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-lg);
+    padding: 2.25rem;
+    border: 1px solid var(--border-light);
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .auth-footer {
-    margin-block-start: 1.5rem;
+    margin-block-start: 2rem;
     font-size: 0.8125rem;
-    color: #8c98a4;
+    color: var(--gray-400);
     text-align: center;
 }
 
@@ -69,10 +99,10 @@
 
     .auth-card {
         padding: 1.5rem;
-        border-radius: 12px;
+        border-radius: var(--radius-xl);
     }
 
     .brand-name {
-        font-size: 1.75rem;
+        font-size: 2rem;
     }
 }

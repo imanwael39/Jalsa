@@ -11,7 +11,6 @@ import { TableComponent, TableColumn } from '../../../../shared/components/table
 import { ColumnCellDirective } from '../../../../shared/components/table/column-cell.directive';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
-import { InputComponent } from '../../../../shared/components/input/input.component';
 
 @Component({
     selector: 'app-patient-list',
@@ -22,7 +21,6 @@ import { InputComponent } from '../../../../shared/components/input/input.compon
         ColumnCellDirective,
         PaginationComponent,
         ButtonComponent,
-        InputComponent,
     ],
     templateUrl: './patient-list.html',
     styleUrl: './patient-list.css',

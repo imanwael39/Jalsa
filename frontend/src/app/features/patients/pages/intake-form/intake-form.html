@@ -1,16 +1,16 @@
 <div class="intake-form">
     <div class="form-header">
         <div class="header-left">
-            <app-button variant="ghost" size="sm" (clicked)="goBack()" ariaLabel="Go back to patient detail">
-                <i class="bi bi-arrow-left" aria-hidden="true"></i> Back
+            <app-button variant="ghost" size="sm" (clicked)="goBack()" ariaLabel="العودة إلى تفاصيل المريض">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i> رجوع
             </app-button>
-            <h1 class="form-title">Intake Form</h1>
+            <h1 class="form-title">استمارة الاستقبال</h1>
         </div>
     </div>
 
     @if (loading() && !ocrLoading()) {
         <div class="loading-container">
-            <app-spinner size="lg" label="Loading intake form..."></app-spinner>
+            <app-spinner size="lg" label="جاري تحميل استمارة الاستقبال..."></app-spinner>
         </div>
     }
 
@@ -24,40 +24,40 @@
     <div class="upload-section">
         <h2 class="section-title">
             <i class="bi bi-cloud-upload" aria-hidden="true"></i>
-            Upload Intake Form Image
+            رفع صورة استمارة الاستقبال
         </h2>
         <p class="section-description">
-            Upload a scanned intake form image to automatically extract data using OCR.
+            ارفع صورة ممسوحة لاستمارة الاستقبال لاستخراج البيانات تلقائياً باستخدام التعرف الضوئي.
         </p>
 
         <div class="upload-area">
             <label for="fileInput" class="upload-label" [class.has-file]="selectedFileName()">
                 @if (ocrLoading()) {
-                    <app-spinner size="sm" label="Processing OCR..."></app-spinner>
-                    <span>Processing OCR...</span>
+                    <app-spinner size="sm" label="جاري معالجة التعرف الضوئي..."></app-spinner>
+                    <span>جاري معالجة التعرف الضوئي...</span>
                 } @else if (selectedFileName()) {
                     <i class="bi bi-file-earmark-check" aria-hidden="true"></i>
                     <span>{{ selectedFileName() }}</span>
                     <button type="button" class="btn-clear" (click)="clearFileSelection(); $event.preventDefault()"
-                            ariaLabel="Clear selected file">
+                            ariaLabel="إزالة الملف المحدد">
                         <i class="bi bi-x-circle" aria-hidden="true"></i>
                     </button>
                 } @else {
                     <i class="bi bi-cloud-arrow-up" aria-hidden="true"></i>
-                    <span>Click to upload or drag and drop</span>
-                    <span class="upload-hint">Supports: JPG, PNG, PDF (max 10MB)</span>
+                    <span>اضغط للرفع أو اسحب وأفلت</span>
+                    <span class="upload-hint">الصيغ المدعومة: JPG, PNG, PDF (حد أقصى 10 ميجابايت)</span>
                 }
             </label>
             <input type="file" id="fileInput" class="file-input"
                    (change)="onFileSelected($event)"
                    accept="image/*,.pdf"
-                   ariaLabel="Upload intake form image">
+                   ariaLabel="رفع صورة استمارة الاستقبال">
         </div>
 
         @if (ocrSuccess()) {
             <div class="ocr-success" role="status">
                 <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-                OCR data extracted successfully. Review and edit the fields below.
+                تم استخراج البيانات بنجاح. راجع وعدل الحقول أدناه.
             </div>
         }
     </div>
@@ -65,57 +65,57 @@
     @if (!loading() || ocrLoading()) {
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-content" novalidate>
             <div class="form-section">
-                <h2 class="section-title">Clinical Information</h2>
+                <h2 class="section-title">المعلومات السريرية</h2>
                 <div class="form-grid">
                     <div class="form-field full-width">
-                        <label for="presentingProblem" class="form-label">Presenting Problem / Reason for Visit</label>
+                        <label for="presentingProblem" class="form-label">المشكلة الحالية / سبب الزيارة</label>
                         <textarea
                             id="presentingProblem"
                             class="form-control"
                             formControlName="presentingProblem"
                             name="presentingProblem"
                             rows="3"
-                            placeholder="Describe the main reason for the visit"></textarea>
+                            placeholder="صف السبب الرئيسي للزيارة"></textarea>
                     </div>
                     <div class="form-field full-width">
-                        <label for="psychiatricHistory" class="form-label">Psychiatric History</label>
+                        <label for="psychiatricHistory" class="form-label">التاريخ النفسي</label>
                         <textarea
                             id="psychiatricHistory"
                             class="form-control"
                             formControlName="psychiatricHistory"
                             name="psychiatricHistory"
                             rows="3"
-                            placeholder="Previous psychiatric diagnoses, treatments, hospitalizations"></textarea>
+                            placeholder="التشخيصات والعلاجات النفسية السابقة، التنقلات المستشفية"></textarea>
                     </div>
                     <div class="form-field full-width">
-                        <label for="familyHistory" class="form-label">Family History</label>
+                        <label for="familyHistory" class="form-label">التاريخ العائلي</label>
                         <textarea
                             id="familyHistory"
                             class="form-control"
                             formControlName="familyHistory"
                             name="familyHistory"
                             rows="3"
-                            placeholder="Relevant family medical/psychiatric history"></textarea>
+                            placeholder="التاريخ الطبي/النفسي العائلي ذي الصلة"></textarea>
                     </div>
                     <div class="form-field full-width">
-                        <label for="medications" class="form-label">Current Medications</label>
+                        <label for="medications" class="form-label">الأدوية الحالية</label>
                         <textarea
                             id="medications"
                             class="form-control"
                             formControlName="medications"
                             name="medications"
                             rows="2"
-                            placeholder="List current medications and dosages"></textarea>
+                            placeholder="أدخل الأدوية الحالية والجرعات"></textarea>
                     </div>
                     <div class="form-field full-width">
-                        <label for="socialHistory" class="form-label">Social History / Other Information</label>
+                        <label for="socialHistory" class="form-label">التاريخ الاجتماعي / معلومات أخرى</label>
                         <textarea
                             id="socialHistory"
                             class="form-control"
                             formControlName="socialHistory"
                             name="socialHistory"
                             rows="3"
-                            placeholder="Social history, living situation, occupation, etc."></textarea>
+                            placeholder="التاريخ الاجتماعي، معايشة، مهنة، إلخ."></textarea>
                     </div>
                 </div>
             </div>
@@ -125,16 +125,16 @@
                     type="submit"
                     variant="primary"
                     [loading]="loading()"
-                    ariaLabel="Save intake form">
-                    Save Intake Form
+                    ariaLabel="حفظ استمارة الاستقبال">
+                    حفظ استمارة الاستقبال
                 </app-button>
                 <app-button
                     type="button"
                     variant="secondary"
                     (clicked)="goBack()"
                     [disabled]="loading()"
-                    ariaLabel="Cancel and go back">
-                    Cancel
+                    ariaLabel="إلغاء والعودة">
+                    إلغاء
                 </app-button>
             </div>
         </form>

@@ -29,4 +29,22 @@
             }
         </ul>
     </nav>
+    @if (user(); as u) {
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <div class="user-avatar">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+                @if (!collapsed()) {
+                    <div class="user-info">
+                        <span class="user-name">{{ u.firstName }} {{ u.lastName }}</span>
+                        <span class="user-role">{{ getRoleLabel() }}</span>
+                    </div>
+                    <button class="logout-btn" (click)="logout()" aria-label="تسجيل الخروج">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </button>
+                }
+            </div>
+        </div>
+    }
 </aside>
