@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, DestroyRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, DestroyRef, input } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReportService } from '../../../../core/services/report.service';
@@ -25,6 +25,8 @@ export class ReportList implements OnInit {
     private notification = inject(NotificationService);
     private destroyRef = inject(DestroyRef);
 
+    patientIdInput = input<string | null>(null);
+
     patientId = '';
     reports = this.state.reports;
     loading = this.state.loading;
@@ -38,7 +40,12 @@ export class ReportList implements OnInit {
     ];
 
     ngOnInit(): void {
-        this.patientId = this.route.snapshot.paramMap.get('patientId') || '';
+        const inputId = this.patientIdInput();
+        if (inputId) {
+            this.patientId = inputId;
+        } else {
+            this.patientId = this.route.snapshot.paramMap.get('patientId') || '';
+        }
         if (this.patientId) {
             this.loadReports();
         }

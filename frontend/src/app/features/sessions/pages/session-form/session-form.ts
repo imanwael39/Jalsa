@@ -2,9 +2,12 @@ import { Component, ChangeDetectionStrategy, inject, signal, OnInit, DestroyRef 
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { switchMap } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { SessionService } from '../../../../core/services/session.service';
 import { SessionStateService } from '../../../../core/state/session-state.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { Session } from '../../../../core/models';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { InputComponent } from '../../../../shared/components/input/input.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
@@ -77,22 +80,37 @@ export class SessionForm implements OnInit {
 
     loadSession(id: string): void {
         this.loading.set(true);
-        this.sessionService.getSession(id)
+        this.sessionService
+            .getSession(id)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
-                next: (session) => {
+                next: session => {
                     this.form.patchValue({
                         sessionDate: session.sessionDate,
-                        content: session.content,
                         sessionType: session.sessionType,
                         durationMinutes: session.durationMinutes,
                         status: session.status,
                     });
-                    this.voiceMemoUrl.set(session.voiceMemoUrl);
+                    this.patientId.set(session.patientId);
+                    this.loadNote(id);
+                },
+                error: err => {
+                    this.error.set(err.message || 'فشل في تحميل الجلسة');
                     this.loading.set(false);
                 },
-                error: (err) => {
-                    this.error.set(err.message || 'Failed to load session');
+            });
+    }
+
+    private loadNote(sessionId: string): void {
+        this.sessionService
+            .getSessionNote(sessionId)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: note => {
+                    this.form.patchValue({ content: note.observations });
+                    this.loading.set(false);
+                },
+                error: () => {
                     this.loading.set(false);
                 },
             });
@@ -110,48 +128,66 @@ export class SessionForm implements OnInit {
 
         this.loading.set(true);
         const formValue = this.form.value;
+        const noteContent = formValue.content;
 
         if (this.isEdit() && this.sessionId()) {
-            this.sessionService.updateSession(this.sessionId()!, {
-                sessionDate: formValue.sessionDate ?? undefined,
-                content: formValue.content ?? undefined,
-                sessionType: formValue.sessionType ?? undefined,
-                durationMinutes: formValue.durationMinutes ?? undefined,
-                status: formValue.status ?? undefined,
-            }).pipe(takeUntilDestroyed(this.destroyRef))
+            this.sessionService
+                .updateSession(this.sessionId()!, {
+                    sessionDate: formValue.sessionDate ?? undefined,
+                    sessionType: formValue.sessionType ?? undefined,
+                    durationMinutes: formValue.durationMinutes ?? undefined,
+                    status: formValue.status ?? undefined,
+                })
+                .pipe(
+                    switchMap(session => this.saveNoteIfNeeded(session, noteContent)),
+                    takeUntilDestroyed(this.destroyRef)
+                )
                 .subscribe({
-                    next: (session) => {
+                    next: session => {
                         this.state.updateSession(session);
-                        this.notification.success('Session updated successfully');
+                        this.notification.success('تم تحديث الجلسة بنجاح');
                         this.loading.set(false);
                         this.router.navigate(['/sessions', session.id]);
                     },
-                    error: (err) => {
-                        this.error.set(err.message || 'Failed to update session');
+                    error: err => {
+                        this.error.set(err.message || 'فشل في تحديث الجلسة');
                         this.loading.set(false);
                     },
                 });
         } else {
-            this.sessionService.createSession({
-                patientId: this.patientId(),
-                sessionDate: formValue.sessionDate ?? '',
-                content: formValue.content ?? undefined,
-                sessionType: formValue.sessionType ?? undefined,
-                durationMinutes: formValue.durationMinutes ?? undefined,
-            }).pipe(takeUntilDestroyed(this.destroyRef))
+            this.sessionService
+                .createSession({
+                    patientId: this.patientId(),
+                    sessionDate: formValue.sessionDate ?? '',
+                    sessionType: formValue.sessionType ?? undefined,
+                    durationMinutes: formValue.durationMinutes ?? undefined,
+                })
+                .pipe(
+                    switchMap(session => this.saveNoteIfNeeded(session, noteContent)),
+                    takeUntilDestroyed(this.destroyRef)
+                )
                 .subscribe({
-                    next: (session) => {
+                    next: session => {
                         this.state.addSession(session);
-                        this.notification.success('Session created successfully');
+                        this.notification.success('تم إنشاء الجلسة بنجاح');
                         this.loading.set(false);
                         this.router.navigate(['/sessions', session.id]);
                     },
-                    error: (err) => {
-                        this.error.set(err.message || 'Failed to create session');
+                    error: err => {
+                        this.error.set(err.message || 'فشل في إنشاء الجلسة');
                         this.loading.set(false);
                     },
                 });
         }
+    }
+
+    private saveNoteIfNeeded(session: Session, content: string | null | undefined) {
+        if (!content) return of(session);
+        return this.sessionService
+            .saveSessionNote(session.id, {
+                observations: content,
+            })
+            .pipe(switchMap(() => of(session)));
     }
 
     cancel(): void {
