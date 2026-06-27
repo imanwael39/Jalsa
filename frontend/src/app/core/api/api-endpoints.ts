@@ -19,11 +19,11 @@ export const API = {
         assessments: (id: string) => `/api/patient/${id}/assessments`,
     },
     sessions: {
-        base: '/sessions',
-        byPatient: (patientId: string) => `/sessions/patient/${patientId}`,
-        byId: (id: string) => `/sessions/${id}`,
-        voice: (id: string) => `/sessions/${id}/voice`,
-        summary: (id: string) => `/sessions/${id}/summary`,
+        base: '/api/sessions',
+        byPatient: (patientId: string) => `/api/sessions/patient/${patientId}`,
+        byId: (id: string) => `/api/sessions/${id}`,
+        voice: (id: string) => `/api/sessions/${id}/voice`,
+        summary: (id: string) => `/api/sessions/${id}/summary`,
     },
     exercises: {
         base: '/api/exercises',
