@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Jalsa.API.Services.Interfaces.AI;
 
@@ -5,6 +6,7 @@ namespace Jalsa.API.Controllers;
 
 [ApiController]
 [Route("api/ai")]
+[Authorize(Roles = "Therapist")]
 public class AiController : ControllerBase
 {
     private readonly ISummarizationService _summarizationService;
