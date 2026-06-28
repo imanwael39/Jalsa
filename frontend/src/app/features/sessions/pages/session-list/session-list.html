@@ -28,11 +28,13 @@
                 {{ formatDuration(row.durationMinutes) }}
             </ng-template>
             <ng-template appColumnCell="status" let-row>
-                <span class="badge"
+                <span
+                    class="badge"
                     [class.bg-secondary]="row.status === 'Draft'"
                     [class.bg-success]="row.status === 'Completed'"
-                    [class.bg-warning]="row.status === 'Archived'">
-                    {{ row.status }}
+                    [class.bg-warning]="row.status === 'Archived'"
+                >
+                    {{ row.status | statusAr }}
                 </span>
             </ng-template>
             <ng-template appColumnCell="actions" let-row>

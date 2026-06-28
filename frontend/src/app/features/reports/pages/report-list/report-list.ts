@@ -8,11 +8,12 @@ import { ReferralReport } from '../../../../core/models';
 import { TableComponent, TableColumn } from '../../../../shared/components/table/table.component';
 import { ColumnCellDirective } from '../../../../shared/components/table/column-cell.directive';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { StatusArPipe } from '../../../../shared/pipes/status-ar.pipe';
 
 @Component({
     selector: 'app-report-list',
     standalone: true,
-    imports: [TableComponent, ColumnCellDirective, ButtonComponent],
+    imports: [TableComponent, ColumnCellDirective, ButtonComponent, StatusArPipe],
     templateUrl: './report-list.html',
     styleUrl: './report-list.css',
     changeDetection: ChangeDetectionStrategy.OnPush,

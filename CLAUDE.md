@@ -76,6 +76,10 @@ backend/
 11. ~~**No Profile endpoints**~~ — Fixed: GET/PUT /api/auth/profile bridging User + Therapist.FullName
 12. ~~**Dashboard chart labels in English**~~ — Fixed: All labels translated to Arabic
 13. ~~**Reports frontend routes empty**~~ — Fixed: list, generate, detail pages wired
+14. ~~**Ownership check broken (4 services)**~~ — Fixed: Session/Intake/Assessment/Report services compared JWT User ID against Therapist entity ID — resolved via `ResolveTherapistIdAsync`
+15. ~~**Registration ignores fullName/licenseNumber**~~ — Fixed: RegisterDto now accepts fullName, licenseNumber, specialization
+16. ~~**Dashboard analytics labels in English**~~ — Fixed: Month/week labels use `ar-EG` CultureInfo
+17. ~~**Session duration shows "min" (English)**~~ — Fixed: Changed to "دقيقة"
 
 ## Remaining Issues (Post-MVP)
 

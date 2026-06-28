@@ -51,7 +51,7 @@
                             [class.bg-success]="session()!.status === 'Completed'"
                             [class.bg-warning]="session()!.status === 'Archived'"
                         >
-                            {{ session()!.status }}
+                            {{ session()!.status | statusAr }}
                         </span>
                     </div>
                     <div class="col-md-6">

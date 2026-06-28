@@ -20,12 +20,14 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <h5 class="card-title mb-0">التمرين</h5>
-                    <span class="badge"
+                    <span
+                        class="badge"
                         [class.bg-secondary]="exercise.status === 'NotStarted'"
                         [class.bg-info]="exercise.status === 'InProgress'"
                         [class.bg-success]="exercise.status === 'Completed'"
-                        [class.bg-warning]="exercise.status === 'Overdue'">
-                        {{ exercise.status }}
+                        [class.bg-warning]="exercise.status === 'Overdue'"
+                    >
+                        {{ exercise.status | statusAr }}
                     </span>
                 </div>
 
@@ -45,7 +47,7 @@
                     }
                 </div>
 
-                <hr class="my-3">
+                <hr class="my-3" />
 
                 <div class="log-section">
                     <h6>تسجيل الإنجاز</h6>
@@ -82,7 +84,7 @@
                             (clicked)="logCompletion(exercise)"
                             ariaLabel="تسجيل إنجاز التمرين"
                         >
-تسجيل الإنجاز
+                            تسجيل الإنجاز
                         </app-button>
                         @if (loggingId() === exercise.id) {
                             <small class="text-muted">جاري الحفظ...</small>
@@ -91,17 +93,19 @@
                 </div>
 
                 @if (logsByExercise().get(exercise.id)?.length) {
-                    <hr class="my-3">
+                    <hr class="my-3" />
                     <div class="logs-section">
                         <h6>سجل الإنجازات</h6>
                         @for (log of logsByExercise().get(exercise.id)!; track log.id) {
                             <div class="log-entry">
-                                <span class="badge bg-light text-dark">{{ log.completionStatus }}</span>
+                                <span class="badge bg-light text-dark">{{ log.completionStatus | statusAr }}</span>
                                 @if (log.loggedAt) {
                                     <small class="text-muted ms-2">{{ formatDate(log.loggedAt) }}</small>
                                 }
                                 @if (log.reflectionNote) {
-                                    <p class="mb-0 mt-1 text-muted"><em>{{ log.reflectionNote }}</em></p>
+                                    <p class="mb-0 mt-1 text-muted">
+                                        <em>{{ log.reflectionNote }}</em>
+                                    </p>
                                 }
                             </div>
                         }

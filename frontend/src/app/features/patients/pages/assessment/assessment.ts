@@ -8,11 +8,12 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { Assessment as AssessmentModel } from '../../../../core/models';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { StatusArPipe } from '../../../../shared/pipes/status-ar.pipe';
 
 @Component({
     selector: 'app-assessment',
     standalone: true,
-    imports: [ReactiveFormsModule, ButtonComponent, SpinnerComponent, DatePipe],
+    imports: [ReactiveFormsModule, ButtonComponent, SpinnerComponent, DatePipe, StatusArPipe],
     templateUrl: './assessment.html',
     styleUrl: './assessment.css',
     changeDetection: ChangeDetectionStrategy.OnPush,

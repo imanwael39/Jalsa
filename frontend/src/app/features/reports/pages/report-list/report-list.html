@@ -27,13 +27,7 @@
                     [class.bg-secondary]="row.status === 'Draft'"
                     [class.bg-success]="row.status === 'Approved'"
                 >
-                    @if (row.status === 'Draft') {
-                        مسودة
-                    } @else if (row.status === 'Approved') {
-                        معتمد
-                    } @else {
-                        {{ row.status }}
-                    }
+                    {{ row.status | statusAr }}
                 </span>
             </ng-template>
             <ng-template appColumnCell="versionCount" let-row>

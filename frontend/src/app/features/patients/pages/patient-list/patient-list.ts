@@ -11,11 +11,12 @@ import { TableComponent, TableColumn } from '../../../../shared/components/table
 import { ColumnCellDirective } from '../../../../shared/components/table/column-cell.directive';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { StatusArPipe } from '../../../../shared/pipes/status-ar.pipe';
 
 @Component({
     selector: 'app-patient-list',
     standalone: true,
-    imports: [FormsModule, TableComponent, ColumnCellDirective, PaginationComponent, ButtonComponent],
+    imports: [FormsModule, TableComponent, ColumnCellDirective, PaginationComponent, ButtonComponent, StatusArPipe],
     templateUrl: './patient-list.html',
     styleUrl: './patient-list.css',
     changeDetection: ChangeDetectionStrategy.OnPush,

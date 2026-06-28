@@ -19,9 +19,13 @@
             />
         </div>
         <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="includeArchived"
-                   [(ngModel)]="includeArchived"
-                   (ngModelChange)="onToggleArchived()">
+            <input
+                class="form-check-input"
+                type="checkbox"
+                id="includeArchived"
+                [(ngModel)]="includeArchived"
+                (ngModelChange)="onToggleArchived()"
+            />
             <label class="form-check-label" for="includeArchived">عرض المؤرشفين</label>
         </div>
     </div>
@@ -42,8 +46,12 @@
                 {{ formatDate(row.dateOfBirth) }}
             </ng-template>
             <ng-template appColumnCell="status" let-row>
-                <span class="badge" [class.bg-success]="row.status === 'Active'" [class.bg-danger]="row.status === 'Archived'">
-                    {{ row.status }}
+                <span
+                    class="badge"
+                    [class.bg-success]="row.status === 'Active'"
+                    [class.bg-danger]="row.status === 'Archived'"
+                >
+                    {{ row.status | statusAr }}
                 </span>
             </ng-template>
             <ng-template appColumnCell="actions" let-row>
@@ -55,11 +63,21 @@
                         <i class="bi bi-pencil" aria-hidden="true"></i>
                     </app-button>
                     @if (row.status === 'Active') {
-                        <app-button variant="danger" size="sm" (clicked)="archivePatient(row.id)" ariaLabel="أرشفة المريض">
+                        <app-button
+                            variant="danger"
+                            size="sm"
+                            (clicked)="archivePatient(row.id)"
+                            ariaLabel="أرشفة المريض"
+                        >
                             <i class="bi bi-archive" aria-hidden="true"></i>
                         </app-button>
                     } @else {
-                        <app-button variant="secondary" size="sm" (clicked)="restorePatient(row.id)" ariaLabel="استعادة المريض">
+                        <app-button
+                            variant="secondary"
+                            size="sm"
+                            (clicked)="restorePatient(row.id)"
+                            ariaLabel="استعادة المريض"
+                        >
                             <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
                         </app-button>
                     }

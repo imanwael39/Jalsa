@@ -12,6 +12,7 @@ import { SessionList } from '../../../sessions/pages/session-list/session-list';
 import { PatientExerciseComponent } from '../../../exercises/pages/patient-exercise/patient-exercise.component';
 import { ReportList } from '../../../reports/pages/report-list/report-list';
 import { Assessment } from '../assessment/assessment';
+import { StatusArPipe } from '../../../../shared/pipes/status-ar.pipe';
 
 @Component({
     selector: 'app-patient-detail',
@@ -26,6 +27,7 @@ import { Assessment } from '../assessment/assessment';
         PatientExerciseComponent,
         ReportList,
         Assessment,
+        StatusArPipe,
     ],
     templateUrl: './patient-detail.html',
     styleUrl: './patient-detail.css',

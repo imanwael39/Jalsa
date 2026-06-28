@@ -1,39 +1,41 @@
 <div class="exercise-list">
-  <div class="page-header">
-    <h2 class="page-title">التمارين</h2>
-    <app-button variant="primary" (clicked)="navigateToAssign()" ariaLabel="إضافة تمرين جديد">
-      <i class="bi bi-plus-lg" aria-hidden="true"></i> إضافة تمرين +
-    </app-button>
-  </div>
+    <div class="page-header">
+        <h2 class="page-title">التمارين</h2>
+        <app-button variant="primary" (clicked)="navigateToAssign()" ariaLabel="إضافة تمرين جديد">
+            <i class="bi bi-plus-lg" aria-hidden="true"></i> إضافة تمرين +
+        </app-button>
+    </div>
 
-  @if (error()) {
-    <div class="alert alert-danger" role="alert">{{ error() }}</div>
-  }
+    @if (error()) {
+        <div class="alert alert-danger" role="alert">{{ error() }}</div>
+    }
 
-  <div class="table-responsive">
-    <app-table
-      [data]="exercises()"
-      [columns]="columns"
-      [loading]="loading()"
-      emptyMessage="لم يتم العثور على تمارين."
-    >
-      <ng-template appColumnCell="description" let-row>
-        {{ row.description | truncate: 80 }}
-      </ng-template>
-      <ng-template appColumnCell="frequency" let-row>
-        {{ row.frequency || '-' }}
-      </ng-template>
-      <ng-template appColumnCell="status" let-row>
-        <span class="badge"
-          [class.bg-secondary]="row.status === 'NotStarted'"
-          [class.bg-warning]="row.status === 'InProgress'"
-          [class.bg-success]="row.status === 'Completed'">
-          {{ row.status }}
-        </span>
-      </ng-template>
-      <ng-template appColumnCell="dueDate" let-row>
-        {{ formatDate(row.dueDate) }}
-      </ng-template>
-    </app-table>
-  </div>
+    <div class="table-responsive">
+        <app-table
+            [data]="exercises()"
+            [columns]="columns"
+            [loading]="loading()"
+            emptyMessage="لم يتم العثور على تمارين."
+        >
+            <ng-template appColumnCell="description" let-row>
+                {{ row.description | truncate: 80 }}
+            </ng-template>
+            <ng-template appColumnCell="frequency" let-row>
+                {{ row.frequency || '-' }}
+            </ng-template>
+            <ng-template appColumnCell="status" let-row>
+                <span
+                    class="badge"
+                    [class.bg-secondary]="row.status === 'NotStarted'"
+                    [class.bg-warning]="row.status === 'InProgress'"
+                    [class.bg-success]="row.status === 'Completed'"
+                >
+                    {{ row.status | statusAr }}
+                </span>
+            </ng-template>
+            <ng-template appColumnCell="dueDate" let-row>
+                {{ formatDate(row.dueDate) }}
+            </ng-template>
+        </app-table>
+    </div>
 </div>

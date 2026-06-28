@@ -8,11 +8,12 @@ import { SessionNote } from '../../../../core/models';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { Summary } from '../../components/summary/summary';
+import { StatusArPipe } from '../../../../shared/pipes/status-ar.pipe';
 
 @Component({
     selector: 'app-session-detail',
     standalone: true,
-    imports: [ButtonComponent, SpinnerComponent, Summary],
+    imports: [ButtonComponent, SpinnerComponent, Summary, StatusArPipe],
     templateUrl: './session-detail.html',
     styleUrl: './session-detail.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
