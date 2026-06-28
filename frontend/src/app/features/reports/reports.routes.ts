@@ -8,6 +8,11 @@ export const REPORTS_ROUTES: Routes = [
         canActivate: [authGuard, roleGuard(['Therapist', 'Admin'])],
         children: [
             {
+                path: '',
+                pathMatch: 'full',
+                loadComponent: () => import('./pages/report-landing/report-landing').then(m => m.ReportLanding),
+            },
+            {
                 path: 'patient/:patientId',
                 loadComponent: () => import('./pages/report-list/report-list').then(m => m.ReportList),
             },
