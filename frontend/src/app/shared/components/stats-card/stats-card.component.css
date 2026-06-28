@@ -6,7 +6,9 @@
     border-radius: var(--radius-xl);
     border: 1px solid var(--border-color);
     background-color: var(--surface);
-    transition: transform var(--transition-base), box-shadow var(--transition-base);
+    transition:
+        transform var(--transition-base),
+        box-shadow var(--transition-base);
     cursor: default;
     overflow: hidden;
 }
@@ -29,7 +31,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
+    color: var(--text-inverse);
     font-size: 1.375rem;
     flex-shrink: 0;
 }
@@ -70,23 +72,23 @@
 
 /* Color variants for icon backgrounds */
 .stats-icon.bg-primary {
-    background: linear-gradient(135deg, #0F6E56, #22A47F);
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
 }
 
 .stats-icon.bg-success {
-    background: linear-gradient(135deg, #0B5240, #0F6E56);
+    background: linear-gradient(135deg, var(--success-dark), var(--success));
 }
 
 .stats-icon.bg-danger {
-    background: linear-gradient(135deg, #DC2626, #EF4444);
+    background: linear-gradient(135deg, var(--danger-dark), var(--danger));
 }
 
 .stats-icon.bg-warning {
-    background: linear-gradient(135deg, #D97706, #F59E0B);
+    background: linear-gradient(135deg, var(--warning-dark), var(--warning));
 }
 
 .stats-icon.bg-info {
-    background: linear-gradient(135deg, #4F46E5, #6366F1);
+    background: linear-gradient(135deg, var(--info-dark), var(--info));
 }
 
 /* Badge styles */

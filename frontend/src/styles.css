@@ -33,7 +33,9 @@ html {
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-card);
     background-color: var(--surface);
-    transition: box-shadow var(--transition-base), transform var(--transition-base);
+    transition:
+        box-shadow var(--transition-base),
+        transform var(--transition-base);
 }
 
 .card-header {
@@ -91,32 +93,32 @@ html {
 
 .bg-success {
     background-color: var(--success) !important;
-    color: #fff !important;
+    color: var(--text-inverse) !important;
 }
 
 .bg-danger {
     background-color: var(--danger) !important;
-    color: #fff !important;
+    color: var(--text-inverse) !important;
 }
 
 .bg-warning {
     background-color: var(--warning) !important;
-    color: #fff !important;
+    color: var(--text-inverse) !important;
 }
 
 .bg-secondary {
     background-color: var(--gray-500) !important;
-    color: #fff !important;
+    color: var(--text-inverse) !important;
 }
 
 .bg-info {
     background-color: var(--info) !important;
-    color: #fff !important;
+    color: var(--text-inverse) !important;
 }
 
 .bg-primary {
     background-color: var(--primary) !important;
-    color: #fff !important;
+    color: var(--text-inverse) !important;
 }
 
 /* Global list group */
@@ -226,7 +228,8 @@ html {
 }
 
 @keyframes pulse {
-    0%, 100% {
+    0%,
+    100% {
         opacity: 1;
     }
     50% {
