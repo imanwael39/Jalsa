@@ -40,7 +40,7 @@ export class TableComponent<T = Record<string, unknown>> {
     @Input() data: T[] = [];
     @Input() columns: TableColumn[] = [];
     @Input() loading = false;
-    @Input() emptyMessage = 'No data available';
+    @Input() emptyMessage = 'لا توجد بيانات';
     @Input() striped = true;
     @Input() bordered = false;
     @Input() hover = true;
@@ -105,7 +105,7 @@ export class TableComponent<T = Record<string, unknown>> {
     }
 
     getCellTemplate(column: ColumnCellDirective): ColumnCellDirective | undefined {
-        return this.cellTemplates?.find((tpl) => tpl.columnKey === column.columnKey);
+        return this.cellTemplates?.find(tpl => tpl.columnKey === column.columnKey);
     }
 
     trackByRow: TrackByFunction<T> = (index: number, item: T): unknown => {

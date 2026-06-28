@@ -7,7 +7,7 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EmptyStateComponent {
-    @Input() title = 'No data available';
+    @Input() title = 'لا توجد بيانات';
     @Input() message = '';
     @Input() icon = 'bi-inbox';
     @Input() image = '';

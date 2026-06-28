@@ -12,7 +12,7 @@ export class SpinnerComponent {
     @Input() size: SpinnerSize = 'md';
     @Input() colour = 'primary';
     @Input() overlay = false;
-    @Input() label = 'Loading...';
+    @Input() label = 'جاري التحميل...';
 
     @HostBinding('class.spinner-overlay')
     get isOverlay(): boolean {
