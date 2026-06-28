@@ -1,4 +1,4 @@
-using Jalsa.API.Services.Interfaces.AI;
+﻿using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.Domain.Models.Ai;
 using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -7,10 +7,10 @@ namespace Jalsa.API.Services.Implementations.AI;
 
 public class ConversationMemoryService : IConversationMemoryService
 {
-    private readonly Galsa_DBDbContext _context;
+    private readonly JalsaDbContext _context;
     private readonly IEmbeddingService _embedding;
 
-    public ConversationMemoryService(Galsa_DBDbContext context, IEmbeddingService embedding)
+    public ConversationMemoryService(JalsaDbContext context, IEmbeddingService embedding)
     {
         _context = context;
         _embedding = embedding;

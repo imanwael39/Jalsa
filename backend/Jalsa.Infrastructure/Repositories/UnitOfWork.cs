@@ -1,16 +1,16 @@
-using Jalsa.Application.Interfaces.Repositores;
+﻿using Jalsa.Application.Interfaces.Repositores;
 using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Jalsa.Infrastructure.Repositories;
 public class UnitOfWork : IUnitOfWork
 {
-    private readonly Galsa_DBDbContext _context;
+    private readonly JalsaDbContext _context;
     private readonly Dictionary<Type,object>_repositories=new();
     private IDbContextTransaction?_transaction;
     private bool _disposed;
 
-    public UnitOfWork(Galsa_DBDbContext context)=>_context=context;
+    public UnitOfWork(JalsaDbContext context)=>_context=context;
     public IGenericRepository<T> Repository<T>() where T : class
     {
         var type = typeof(T);

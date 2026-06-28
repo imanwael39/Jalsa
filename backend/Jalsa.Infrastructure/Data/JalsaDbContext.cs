@@ -1,4 +1,4 @@
-using Jalsa.Domain.Models.Ai;
+﻿using Jalsa.Domain.Models.Ai;
 using Jalsa.Domain.Models.Assessment;
 using Jalsa.Domain.Models.Audit;
 using Jalsa.Domain.Models.Chat;
@@ -16,9 +16,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Jalsa.Infrastructure.Data;
 
-public class Galsa_DBDbContext : DbContext
+public class JalsaDbContext : DbContext
 {
-    public Galsa_DBDbContext(DbContextOptions<Galsa_DBDbContext> options) : base(options) { }
+    public JalsaDbContext(DbContextOptions<JalsaDbContext> options) : base(options) { }
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();

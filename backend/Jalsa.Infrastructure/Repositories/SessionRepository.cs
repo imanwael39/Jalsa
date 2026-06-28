@@ -1,4 +1,4 @@
-using Jalsa.Application.Interfaces.Repositories;
+﻿using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Domain.Models.Session;
 using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +7,7 @@ namespace Jalsa.Infrastructure.Repositories;
 
 public class SessionRepository : GenericRepository<Session>, ISessionRepository
 {
-    public SessionRepository(Galsa_DBDbContext context) : base(context) { }
+    public SessionRepository(JalsaDbContext context) : base(context) { }
 
     public async Task<Session?> GetByIdWithNoteAsync(Guid id, CancellationToken cancellationToken = default)
     {

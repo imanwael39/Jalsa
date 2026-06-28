@@ -1,4 +1,4 @@
-using Jalsa.API.Configurations;
+﻿using Jalsa.API.Configurations;
 using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -10,13 +10,13 @@ namespace Jalsa.API.Services.Implementations.AI;
 public class SummarizationService : ISummarizationService
 {
     private readonly ChatClient _client;
-    private readonly Galsa_DBDbContext _context;
+    private readonly JalsaDbContext _context;
     private readonly IVectorStore _vectorStore;
     private readonly IEmbeddingService _embeddingService;
 
     public SummarizationService(
         IOptions<OpenAiSettings> settings,
-        Galsa_DBDbContext context,
+        JalsaDbContext context,
         IVectorStore vectorStore,
         IEmbeddingService embeddingService)
     {

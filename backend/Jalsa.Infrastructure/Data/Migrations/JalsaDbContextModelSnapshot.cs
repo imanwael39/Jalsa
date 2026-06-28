@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Jalsa.Infrastructure.Data.Migrations
 {
-    [DbContext(typeof(Galsa_DBDbContext))]
-    partial class Galsa_DBDbContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(JalsaDbContext))]
+    partial class JalsaDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {

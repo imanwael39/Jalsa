@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Jalsa.Infrastructure.Data.Migrations
 {
-    [DbContext(typeof(Galsa_DBDbContext))]
+    [DbContext(typeof(JalsaDbContext))]
     [Migration("20260606182227_InitialCreate")]
     partial class InitialCreate
     {

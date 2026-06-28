@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.Domain.Models.Chat;
 using Jalsa.Domain.Models.Crisis;
@@ -13,13 +13,13 @@ public class ChatHub : Hub
     private readonly IChatAiService _chatAi;
     private readonly IConversationMemoryService _memory;
     private readonly ICrisisDetectionService _crisisDetection;
-    private readonly Galsa_DBDbContext _context;
+    private readonly JalsaDbContext _context;
 
     public ChatHub(
         IChatAiService chatAi,
         IConversationMemoryService memory,
         ICrisisDetectionService crisisDetection,
-        Galsa_DBDbContext context)
+        JalsaDbContext context)
     {
         _chatAi = chatAi;
         _memory = memory;

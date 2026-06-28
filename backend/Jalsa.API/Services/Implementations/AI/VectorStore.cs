@@ -1,4 +1,4 @@
-using Jalsa.API.Services.Interfaces.AI;
+﻿using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.Infrastructure.Data;
 using Jalsa.Domain.Models.Session;
 using Microsoft.EntityFrameworkCore;
@@ -7,9 +7,9 @@ namespace Jalsa.API.Services.Implementations.AI;
 
 public class VectorStore : IVectorStore
 {
-    private readonly Galsa_DBDbContext _context;
+    private readonly JalsaDbContext _context;
 
-    public VectorStore(Galsa_DBDbContext context)
+    public VectorStore(JalsaDbContext context)
     {
         _context = context;
     }

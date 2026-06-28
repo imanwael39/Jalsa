@@ -1,4 +1,4 @@
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -16,11 +16,11 @@ using Jalsa.Domain.Models.Identity;
 
 public class AuthService : IAuthService
 {
-    private readonly Galsa_DBDbContext _context;
+    private readonly JalsaDbContext _context;
     private readonly JwtSettings _jwtSettings;
     private readonly IEmailService _emailService;
 
-    public AuthService(Galsa_DBDbContext context, IOptions<JwtSettings> jwt, IEmailService emailService)
+    public AuthService(JalsaDbContext context, IOptions<JwtSettings> jwt, IEmailService emailService)
     {
         _context = context;
         _jwtSettings = jwt.Value;

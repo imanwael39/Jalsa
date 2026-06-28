@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -73,7 +73,7 @@ builder.Services.AddScoped<IOcrService, OcrService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPatientService ,PatientService>();
 
-builder.Services.AddDbContext<Galsa_DBDbContext>(options =>
+builder.Services.AddDbContext<JalsaDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddSignalR();
@@ -130,7 +130,7 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<Galsa_DBDbContext>();
+    var db = scope.ServiceProvider.GetRequiredService<JalsaDbContext>();
     db.Database.Migrate();
 
     var roleNames = new[] { "Therapist", "Patient", "Admin" };

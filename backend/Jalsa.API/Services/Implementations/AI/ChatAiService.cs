@@ -1,4 +1,4 @@
-using Jalsa.API.Configurations;
+﻿using Jalsa.API.Configurations;
 using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +9,7 @@ namespace Jalsa.API.Services.Implementations.AI;
 public class ChatAiService : IChatAiService
 {
     private readonly OpenAI.Chat.ChatClient _client;
-    private readonly Galsa_DBDbContext _context;
+    private readonly JalsaDbContext _context;
     private readonly IVectorStore _vectorStore;
     private readonly IEmbeddingService _embeddingService;
     private readonly IConversationMemoryService _memory;
@@ -17,7 +17,7 @@ public class ChatAiService : IChatAiService
 
     public ChatAiService(
         IOptions<OpenAiSettings> settings,
-        Galsa_DBDbContext context,
+        JalsaDbContext context,
         IVectorStore vectorStore,
         IEmbeddingService embeddingService,
         IConversationMemoryService memory)

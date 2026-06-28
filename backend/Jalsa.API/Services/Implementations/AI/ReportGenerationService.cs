@@ -1,4 +1,4 @@
-using Jalsa.API.Configurations;
+﻿using Jalsa.API.Configurations;
 using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -10,14 +10,14 @@ namespace Jalsa.API.Services.Implementations.AI;
 public class ReportGenerationService : IReportGenerationService
 {
     private readonly ChatClient _client;
-    private readonly Galsa_DBDbContext _context;
+    private readonly JalsaDbContext _context;
     private readonly IVectorStore _vectorStore;
     private readonly IEmbeddingService _embeddingService;
     private readonly string _model;
 
     public ReportGenerationService(
         IOptions<OpenAiSettings> settings,
-        Galsa_DBDbContext context,
+        JalsaDbContext context,
         IVectorStore vectorStore,
         IEmbeddingService embeddingService)
     {
