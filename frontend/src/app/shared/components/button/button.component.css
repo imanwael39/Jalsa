@@ -21,10 +21,9 @@ button {
 }
 
 button:focus-visible {
-    box-shadow: 0 0 0 3px rgba(15, 110, 86, 0.2);
+    box-shadow: 0 0 0 3px var(--primary-50);
 }
 
-/* Sizes */
 .btn-sm {
     padding: 0.5rem 1rem;
     font-size: 0.8125rem;
@@ -41,10 +40,9 @@ button:focus-visible {
     font-size: 1rem;
 }
 
-/* Variants — Exact spec */
 .btn-primary {
     background-color: var(--primary);
-    color: #ffffff;
+    color: var(--text-inverse);
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -58,14 +56,18 @@ button:focus-visible {
     box-shadow: var(--shadow-sm);
 }
 
+.btn-primary:focus-visible {
+    box-shadow: 0 0 0 3px var(--primary-50);
+}
+
 .btn-secondary {
     background-color: var(--secondary);
-    color: #ffffff;
+    color: var(--text-inverse);
 }
 
 .btn-secondary:hover:not(:disabled) {
     background-color: var(--secondary-dark);
-    box-shadow: 0 4px 12px rgba(34, 164, 127, 0.3);
+    box-shadow: var(--shadow-secondary);
     transform: translateY(-1px);
 }
 
@@ -73,19 +75,27 @@ button:focus-visible {
     transform: translateY(0);
 }
 
+.btn-secondary:focus-visible {
+    box-shadow: 0 0 0 3px var(--secondary-50);
+}
+
 .btn-danger {
     background-color: var(--danger);
-    color: #ffffff;
+    color: var(--text-inverse);
 }
 
 .btn-danger:hover:not(:disabled) {
     background-color: var(--danger-dark);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    box-shadow: var(--shadow-danger);
     transform: translateY(-1px);
 }
 
 .btn-danger:active:not(:disabled) {
     transform: translateY(0);
+}
+
+.btn-danger:focus-visible {
+    box-shadow: 0 0 0 3px var(--danger-light);
 }
 
 .btn-ghost {
@@ -104,7 +114,11 @@ button:focus-visible {
     background-color: var(--gray-100);
 }
 
-/* Disabled */
+.btn-ghost:focus-visible {
+    box-shadow: 0 0 0 3px var(--primary-50);
+    border-color: var(--primary);
+}
+
 button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -112,7 +126,6 @@ button:disabled {
     box-shadow: none !important;
 }
 
-/* Loading */
 .is-loading {
     pointer-events: none;
 }
@@ -120,10 +133,16 @@ button:disabled {
 .spinner {
     width: 1.125rem;
     height: 1.125rem;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-top-color: #ffffff;
+    border: 2px solid currentColor;
+    border-top-color: var(--text-inverse);
     border-radius: 50%;
     animation: spin 0.6s linear infinite;
+    opacity: 0.4;
+}
+
+.btn-ghost .spinner {
+    border-color: var(--text-muted);
+    border-top-color: var(--text-primary);
 }
 
 @keyframes spin {
