@@ -10,9 +10,6 @@ jobs:
   backend:
     name: Backend Build & Test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
 
     steps:
       - uses: actions/checkout@v4
@@ -22,21 +19,21 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Restore dependencies
-        run: dotnet restore backend.sln
+      - name: Restore
+        run: dotnet restore
+        working-directory: backend
 
       - name: Build
-        run: dotnet build backend.sln --no-restore --configuration Release
+        run: dotnet build --no-restore --configuration Release
+        working-directory: backend
 
       - name: Test
         run: dotnet test --no-build --configuration Release --verbosity normal
+        working-directory: backend
 
   frontend:
     name: Frontend Build & Test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
 
     steps:
       - uses: actions/checkout@v4
@@ -45,14 +42,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
         run: npm ci
+        working-directory: frontend
 
       - name: Build
         run: npx ng build --configuration production
+        working-directory: frontend
 
       - name: Test
         run: npm run test:ci
+        working-directory: frontend
