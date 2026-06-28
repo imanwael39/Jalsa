@@ -25,6 +25,7 @@ export class IntakeForm implements OnInit {
     private destroyRef = inject(DestroyRef);
 
     patientId = signal<string>('');
+    intakeFormId = signal<string | null>(null);
     loading = signal(false);
     error = signal<string | null>(null);
     ocrLoading = signal(false);
@@ -57,6 +58,7 @@ export class IntakeForm implements OnInit {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: (intakeForm: IntakeFormModel) => {
+                    this.intakeFormId.set(intakeForm.id);
                     this.form.patchValue({
                         presentingProblem: intakeForm.presentingProblem ?? '',
                         psychiatricHistory: intakeForm.psychiatricHistory ?? '',
@@ -85,8 +87,14 @@ export class IntakeForm implements OnInit {
         this.ocrLoading.set(true);
         this.ocrSuccess.set(false);
         this.error.set(null);
+        const formId = this.intakeFormId();
+        if (!formId) {
+            this.error.set('يرجى حفظ الاستمارة أولاً قبل رفع الصورة');
+            this.ocrLoading.set(false);
+            return;
+        }
         this.patientService
-            .uploadIntakeImage(this.patientId(), file)
+            .uploadIntakeImage(this.patientId(), formId, file)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: result => {

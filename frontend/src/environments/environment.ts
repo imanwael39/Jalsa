@@ -6,6 +6,6 @@ export const environment: Environment = {
     signalRHubUrl: 'http://localhost:5014/chatHub',
     aiServiceUrl: 'http://localhost:5001',
     appName: 'Jalsa (Dev)',
-    enableMockApi: true,
+    enableMockApi: false,
     logLevel: 'debug',
 };

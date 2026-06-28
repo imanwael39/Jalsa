@@ -15,7 +15,7 @@ export const API = {
         archive: (id: string) => `/api/patient/${id}/archive`,
         restore: (id: string) => `/api/patient/${id}/restore`,
         intake: (id: string) => `/api/patient/${id}/intake`,
-        intakeImage: (id: string) => `/api/patient/${id}/intake/image`,
+        intakeOcr: (id: string, intakeFormId: string) => `/api/patient/${id}/intake/${intakeFormId}/ocr`,
         assessments: (id: string) => `/api/patient/${id}/assessments`,
     },
     sessions: {

@@ -12,9 +12,7 @@ export class PatientService {
     private http = inject(HttpClientService);
 
     getPatients(filter: PatientFilter): Observable<Patient[]> {
-        let params = new HttpParams()
-            .set('page', filter.page.toString())
-            .set('pageSize', filter.pageSize.toString());
+        let params = new HttpParams().set('page', filter.page.toString()).set('pageSize', filter.pageSize.toString());
         if (filter.searchTerm) {
             params = params.set('searchTerm', filter.searchTerm);
         }
@@ -56,10 +54,17 @@ export class PatientService {
         return this.http.post<IntakeForm>(API.patients.intake(patientId), data);
     }
 
-    uploadIntakeImage(patientId: string, file: File): Observable<{ imageUrl: string; extractedData: Record<string, string> }> {
+    uploadIntakeImage(
+        patientId: string,
+        intakeFormId: string,
+        file: File
+    ): Observable<{ imageUrl: string; extractedData: Record<string, string> }> {
         const formData = new FormData();
         formData.append('file', file);
-        return this.http.upload<{ imageUrl: string; extractedData: Record<string, string> }>(API.patients.intakeImage(patientId), formData);
+        return this.http.upload<{ imageUrl: string; extractedData: Record<string, string> }>(
+            API.patients.intakeOcr(patientId, intakeFormId),
+            formData
+        );
     }
 
     getAssessments(patientId: string): Observable<Assessment[]> {
