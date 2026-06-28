@@ -28,6 +28,7 @@ export class ReportDetail implements OnInit, OnDestroy {
     loading = signal(true);
     error = signal<string | null>(null);
     approving = signal(false);
+    exporting = signal(false);
 
     ngOnDestroy(): void {
         this.state.clearSelected();
@@ -103,6 +104,31 @@ export class ReportDetail implements OnInit, OnDestroy {
                     },
                 });
         }
+    }
+
+    exportReport(): void {
+        const r = this.report();
+        if (!r) return;
+
+        this.exporting.set(true);
+        this.reportService
+            .exportReport(r.id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: blob => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `report-${r.id}.html`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    this.exporting.set(false);
+                },
+                error: () => {
+                    this.notification.error('فشل في تصدير التقرير');
+                    this.exporting.set(false);
+                },
+            });
     }
 
     navigateBack(): void {

@@ -10,34 +10,35 @@ export class HttpClientService {
 
     constructor(private http: HttpClient) {}
 
-    get<T>(endpoint: string, params?: HttpParams | { [param: string]: string | number | boolean | readonly (string | number | boolean)[] }): Observable<T> {
-        return this.http.get<T>(`${this.baseUrl}${endpoint}`, { params })
-            .pipe(catchError(this.handleError));
+    get<T>(
+        endpoint: string,
+        params?: HttpParams | { [param: string]: string | number | boolean | readonly (string | number | boolean)[] }
+    ): Observable<T> {
+        return this.http.get<T>(`${this.baseUrl}${endpoint}`, { params }).pipe(catchError(this.handleError));
     }
 
     post<T>(endpoint: string, body: unknown | null, options?: { headers?: HttpHeaders }): Observable<T> {
-        return this.http.post<T>(`${this.baseUrl}${endpoint}`, body, options)
-            .pipe(catchError(this.handleError));
+        return this.http.post<T>(`${this.baseUrl}${endpoint}`, body, options).pipe(catchError(this.handleError));
     }
 
     put<T>(endpoint: string, body: unknown): Observable<T> {
-        return this.http.put<T>(`${this.baseUrl}${endpoint}`, body)
-            .pipe(catchError(this.handleError));
+        return this.http.put<T>(`${this.baseUrl}${endpoint}`, body).pipe(catchError(this.handleError));
     }
 
     patch<T>(endpoint: string, body: unknown): Observable<T> {
-        return this.http.patch<T>(`${this.baseUrl}${endpoint}`, body)
-            .pipe(catchError(this.handleError));
+        return this.http.patch<T>(`${this.baseUrl}${endpoint}`, body).pipe(catchError(this.handleError));
     }
 
     delete<T>(endpoint: string): Observable<T> {
-        return this.http.delete<T>(`${this.baseUrl}${endpoint}`)
-            .pipe(catchError(this.handleError));
+        return this.http.delete<T>(`${this.baseUrl}${endpoint}`).pipe(catchError(this.handleError));
     }
 
     upload<T>(endpoint: string, formData: FormData): Observable<T> {
-        return this.http.post<T>(`${this.baseUrl}${endpoint}`, formData)
-            .pipe(catchError(this.handleError));
+        return this.http.post<T>(`${this.baseUrl}${endpoint}`, formData).pipe(catchError(this.handleError));
+    }
+
+    blob(endpoint: string): Observable<Blob> {
+        return this.http.get(`${this.baseUrl}${endpoint}`, { responseType: 'blob' }).pipe(catchError(this.handleError));
     }
 
     private handleError(error: HttpErrorResponse): Observable<never> {

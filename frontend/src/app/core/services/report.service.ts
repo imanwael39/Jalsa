@@ -44,4 +44,8 @@ export class ReportService {
     deleteReport(id: string): Observable<void> {
         return this.http.delete<void>(API.reports.byId(id));
     }
+
+    exportReport(id: string): Observable<Blob> {
+        return this.http.blob(API.reports.export(id));
+    }
 }
