@@ -32,8 +32,8 @@ export class BaseStateService<T> {
     protected handleObservable<R>(obs: Observable<R>, _onSuccess: (data: R) => void): Observable<R> {
         this.startLoading();
         return obs.pipe(
-            catchError((err) => {
-                this.setError(err.message || 'An error occurred');
+            catchError(err => {
+                this.setError(err.message || 'حدث خطأ غير متوقع');
                 this.stopLoading();
                 throw err;
             }),

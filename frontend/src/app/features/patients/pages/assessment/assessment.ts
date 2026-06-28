@@ -42,11 +42,11 @@ export class Assessment implements OnInit {
     });
 
     assessmentTypes = [
-        { value: 'phq-9', label: 'PHQ-9 (Depression)' },
-        { value: 'gad-7', label: 'GAD-7 (Anxiety)' },
-        { value: 'dass-21', label: 'DASS-21 (Stress)' },
-        { value: 'pcl-5', label: 'PCL-5 (PTSD)' },
-        { value: 'other', label: 'Other' },
+        { value: 'phq-9', label: 'PHQ-9 (اكتئاب)' },
+        { value: 'gad-7', label: 'GAD-7 (قلق)' },
+        { value: 'dass-21', label: 'DASS-21 (ضغط نفسي)' },
+        { value: 'pcl-5', label: 'PCL-5 (اضطراب ما بعد الصدمة)' },
+        { value: 'other', label: 'أخرى' },
     ];
 
     ngOnInit(): void {
