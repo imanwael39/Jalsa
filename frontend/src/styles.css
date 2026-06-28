@@ -86,43 +86,46 @@ html {
     border-inline-start: 3px solid var(--info);
 }
 
-/* Global badge styles */
+/* Global badge styles — tinted bg + colored text */
 .badge {
     font-size: var(--text-xs);
     font-weight: 600;
-    padding: 0.25em 0.625em;
+    padding: 2px var(--space-2);
     border-radius: var(--radius-full);
-    letter-spacing: 0.02em;
+    letter-spacing: 0.01em;
+    line-height: 1.5;
+    display: inline-flex;
+    align-items: center;
 }
 
 .bg-success {
-    background-color: var(--success) !important;
-    color: var(--text-inverse) !important;
+    background-color: var(--success-light) !important;
+    color: var(--success-dark) !important;
 }
 
 .bg-danger {
-    background-color: var(--danger) !important;
-    color: var(--text-inverse) !important;
+    background-color: var(--danger-light) !important;
+    color: var(--danger-dark) !important;
 }
 
 .bg-warning {
-    background-color: var(--warning) !important;
-    color: var(--text-inverse) !important;
+    background-color: var(--warning-light) !important;
+    color: var(--warning-dark) !important;
 }
 
 .bg-secondary {
-    background-color: var(--gray-500) !important;
-    color: var(--text-inverse) !important;
+    background-color: var(--gray-100) !important;
+    color: var(--gray-600) !important;
 }
 
 .bg-info {
-    background-color: var(--info) !important;
-    color: var(--text-inverse) !important;
+    background-color: var(--info-light) !important;
+    color: var(--info-dark) !important;
 }
 
 .bg-primary {
-    background-color: var(--primary) !important;
-    color: var(--text-inverse) !important;
+    background-color: var(--primary-light) !important;
+    color: var(--primary-dark) !important;
 }
 
 /* Global list group */

@@ -120,20 +120,30 @@ Max 2 shadow levels on any single page.
 
 ### Tables
 - Row height: min 48px
-- Header: gray bg, 13px, 600 weight
+- Header: gray bg, 12px, 600 weight, no uppercase
 - Rows: 14px, hover bg #F9FAFB
+- Header border: 1px (not 2px)
 - Empty state: centered icon + message
 - Loading: skeleton rows
 
 ### Modals
-- 16px radius, shadow-lg
-- Header: 20px padding, 18px title
+- 16px radius, shadow-lg, 1px border
+- Header: white bg, heading font (Cairo), 18px title
 - Body: 24px padding
-- Backdrop: rgba(0,0,0,0.4) + blur(4px)
+- Backdrop: rgba(0,0,0,0.35) + blur(4px)
+- Animation: 200ms ease-out, scale(0.97) — no bounce, no translateY
 
-### Badges
-- Pill shape, 12px, 600 weight
-- Tinted background + colored text (not full-color)
+### Badges / Status Tags
+- Pill shape (radius-full), 12px, 600 weight
+- Tinted background + colored text (NOT solid-color)
+- Statuses: success (green tint), warning (amber tint), danger (red tint), info (blue tint), neutral (gray tint)
+- Padding: 2px 8px
+- No border, no shadow
+
+### Toast / Notifications
+- 12px radius, shadow-md, 3px left accent border
+- Auto-dismiss: 4s default
+- Position: top-center
 
 ---
 
@@ -142,7 +152,8 @@ Max 2 shadow levels on any single page.
 - Max duration: 250ms
 - Easing: cubic-bezier(0.4, 0, 0.2, 1)
 - Hover: translateY(-1px) on clickable elements only
-- Page entrance: 200ms opacity fade only
+- Page entrance: 200ms opacity fade only — no translateY
+- Modal entrance: 200ms scale(0.97) — no bounce
 - No gradients, no spring easing
 
 ---
@@ -155,13 +166,31 @@ Bootstrap Icons (`bi-*`) — already installed across all components.
 
 ## Build Order
 
-1. variables.css — full token replacement
-2. Global styles (body, typography, Google Fonts, scrollbar)
-3. Sidebar / Navbar
-4. Buttons
-5. Form inputs (text, select, textarea, checkbox)
-6. Cards
-7. Tables (hover, empty state, skeleton)
-8. Modals
-9. Badges and status tags
-10. Pages — one at a time
+| # | Step | Branch | Status |
+|---|------|--------|--------|
+| 1 | variables.css — full token replacement | `2026-06-27_Mustafa_DesignTokens` | Done |
+| 2 | Global styles (typography, body, Google Fonts) | `2026-06-28_Mustafa_GlobalStyles` | Done |
+| 3 | Sidebar / Navbar | `2026-06-28_Mustafa_SidebarRedesign` | Done |
+| 4 | Buttons (primary/secondary/ghost/danger) | `2026-06-28_Mustafa_ButtonsRedesign` | Done |
+| 5 | Form inputs (input, select, textarea, checkbox, radio) | `2026-06-28_Mustafa_FormInputsRedesign` | Done |
+| 6 | Cards (stats-card) | `2026-06-28_Mustafa_CardsRedesign` | Done |
+| 7 | Tables (hover, empty state) | `2026-06-28_Mustafa_TablesRedesign` | Done |
+| 8 | Modals | `2026-06-28_Mustafa_ModalsRedesign` | Done |
+| 9 | Badges, status tags, toast | — | Pending |
+| 10 | Pages — auth, dashboard, patients, sessions, exercises, reports | — | Pending |
+
+---
+
+## Page-Level Redesign (Step 10)
+
+Each page gets its own branch. Order by most-used:
+
+1. **Dashboard** — stats cards, charts, welcome header
+2. **Patient List** — table, search, filters, empty state
+3. **Patient Detail** — tabs, intake, assessments
+4. **Patient Form** — create/edit form
+5. **Session List** — table, filters
+6. **Session Form / Detail** — form, notes editor
+7. **Exercise List** — cards/table, assign flow
+8. **Report List / Generate / Detail** — AI report flow
+9. **Auth pages** — login, register, forgot/reset password, profile
