@@ -70,6 +70,7 @@ builder.Services.AddScoped<ICrisisDetectionService, CrisisDetectionService>();
 builder.Services.AddScoped<ISummarizationService, SummarizationService>();
 builder.Services.AddScoped<IReportGenerationService, ReportGenerationService>();
 builder.Services.AddScoped<IOcrService, OcrService>();
+builder.Services.AddScoped<ISttService, SttService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPatientService ,PatientService>();
 

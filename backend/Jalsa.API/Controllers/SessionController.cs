@@ -1,9 +1,13 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Jalsa.API.Exceptions;
+using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.Application.DTOs.Session;
 using Jalsa.Application.Interfaces.Services;
+using Jalsa.Domain.Models.Session;
+using Jalsa.Infrastructure.Data;
 
 namespace Jalsa.API.Controllers;
 
@@ -13,10 +17,20 @@ namespace Jalsa.API.Controllers;
 public class SessionController : ControllerBase
 {
     private readonly ISessionService _sessionService;
+    private readonly ISttService _sttService;
+    private readonly ISummarizationService _summarizationService;
+    private readonly JalsaDbContext _context;
 
-    public SessionController(ISessionService sessionService)
+    public SessionController(
+        ISessionService sessionService,
+        ISttService sttService,
+        ISummarizationService summarizationService,
+        JalsaDbContext context)
     {
         _sessionService = sessionService;
+        _sttService = sttService;
+        _summarizationService = summarizationService;
+        _context = context;
     }
 
     [HttpPost]
@@ -75,6 +89,45 @@ public class SessionController : ControllerBase
         var result = await _sessionService.GetNoteAsync(id, therapistId);
         if (result is null) return NotFound();
         return Ok(result);
+    }
+
+    [HttpGet("{id:guid}/summary")]
+    public async Task<IActionResult> GetSummary(Guid id, [FromQuery] string language = "ar")
+    {
+        var therapistId = GetCurrentUserId();
+        await _sessionService.GetByIdAsync(id, therapistId);
+
+        var summary = await _summarizationService.SummarizeSessionAsync(id, language);
+        return Ok(new { sessionId = id, summary });
+    }
+
+    [HttpPost("{id:guid}/voice")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> UploadVoiceMemo(Guid id, IFormFile audio)
+    {
+        if (audio is null || audio.Length == 0)
+            return BadRequest(new { message = "الملف الصوتي مطلوب" });
+
+        var therapistId = GetCurrentUserId();
+        await _sessionService.GetByIdAsync(id, therapistId);
+
+        using var stream = audio.OpenReadStream();
+        var transcript = await _sttService.TranscribeAsync(stream, audio.FileName);
+
+        var memo = new VoiceMemo
+        {
+            Id = Guid.NewGuid(),
+            SessionId = id,
+            AudioUrl = null,
+            Transcript = transcript,
+            DurationSeconds = null,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.VoiceMemos.Add(memo);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { memo.Id, memo.SessionId, memo.Transcript, memo.CreatedAt });
     }
 
     private Guid GetCurrentUserId()

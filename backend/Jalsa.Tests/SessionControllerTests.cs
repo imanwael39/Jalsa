@@ -1,10 +1,13 @@
 using System.Security.Claims;
 using FluentAssertions;
 using Jalsa.API.Controllers;
+using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.Application.DTOs.Session;
 using Jalsa.Application.Interfaces.Services;
+using Jalsa.Infrastructure.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 
 namespace Jalsa.Tests;
@@ -12,13 +15,28 @@ namespace Jalsa.Tests;
 public class SessionControllerTests
 {
     private readonly Mock<ISessionService> _sessionServiceMock;
+    private readonly Mock<ISttService> _sttServiceMock;
+    private readonly Mock<ISummarizationService> _summarizationServiceMock;
+    private readonly JalsaDbContext _dbContext;
     private readonly SessionController _sut;
     private readonly Guid _therapistUserId;
 
     public SessionControllerTests()
     {
         _sessionServiceMock = new Mock<ISessionService>();
-        _sut = new SessionController(_sessionServiceMock.Object);
+        _sttServiceMock = new Mock<ISttService>();
+        _summarizationServiceMock = new Mock<ISummarizationService>();
+
+        var options = new DbContextOptionsBuilder<JalsaDbContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .Options;
+        _dbContext = new JalsaDbContext(options);
+
+        _sut = new SessionController(
+            _sessionServiceMock.Object,
+            _sttServiceMock.Object,
+            _summarizationServiceMock.Object,
+            _dbContext);
 
         _therapistUserId = Guid.NewGuid();
         var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, _therapistUserId.ToString()) };
