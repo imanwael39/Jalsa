@@ -10,20 +10,21 @@
 
 .table th {
     font-weight: 600;
-    font-size: 0.8125rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    font-size: var(--text-xs);
+    letter-spacing: 0.03em;
     color: var(--text-muted);
     background-color: var(--gray-50);
-    border-bottom: 2px solid var(--border-color);
-    padding: 0.875rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    padding: var(--space-3) var(--space-4);
     white-space: nowrap;
 }
 
 .table th.sortable {
     cursor: pointer;
     user-select: none;
-    transition: background-color var(--transition-fast), color var(--transition-fast);
+    transition:
+        background-color var(--transition-fast),
+        color var(--transition-fast);
 }
 
 .table th.sortable:hover {
@@ -37,7 +38,7 @@
 }
 
 .table th .bi {
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     opacity: 0.4;
     transition: opacity var(--transition-fast);
 }
@@ -48,10 +49,10 @@
 }
 
 .table td {
-    padding: 0.875rem 1rem;
+    padding: var(--space-3) var(--space-4);
     vertical-align: middle;
     border-bottom: 1px solid var(--border-light);
-    font-size: 0.9375rem;
+    font-size: var(--text-base);
     color: var(--text-secondary);
 }
 
@@ -69,56 +70,50 @@
 }
 
 .table-responsive {
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
     overflow: hidden;
     border: 1px solid var(--border-color);
     background-color: var(--surface);
 }
 
-/* RTL Support */
-[dir="rtl"] .table th .bi {
-    margin-inline-start: 0.25rem;
+[dir='rtl'] .table th .bi {
+    margin-inline-start: var(--space-1);
     margin-inline-end: 0;
 }
 
-[dir="rtl"] .table th .d-flex {
+[dir='rtl'] .table th .d-flex {
     flex-direction: row-reverse;
 }
 
-/* Loading state */
 .spinner-border {
     vertical-align: middle;
 }
 
-/* Empty state */
 .table td.text-muted {
     font-style: italic;
-    padding: 2rem 1rem;
+    padding: var(--space-7) var(--space-4);
 }
 
-/* Bordered table borders */
 .table-bordered > :not(caption) > * > * {
     border-inline-end-width: 1px;
 }
 
-/* Small table adjustments */
 .table-sm th,
 .table-sm td {
-    padding: 0.5rem 0.75rem;
+    padding: var(--space-2) var(--space-3);
 }
 
-/* Responsive adjustments */
 @media (max-width: 767.98px) {
     .table {
-        font-size: 0.875rem;
+        font-size: var(--text-sm);
     }
 
     .table th,
     .table td {
-        padding: 0.625rem 0.5rem;
+        padding: var(--space-2) var(--space-2);
     }
 
     .table th {
-        font-size: 0.75rem;
+        font-size: var(--text-xs);
     }
 }
