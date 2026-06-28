@@ -6,11 +6,12 @@ import { ReportStateService } from '../../../../core/state/report-state.service'
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { StatusArPipe } from '../../../../shared/pipes/status-ar.pipe';
 
 @Component({
     selector: 'app-report-detail',
     standalone: true,
-    imports: [ButtonComponent, SpinnerComponent],
+    imports: [ButtonComponent, SpinnerComponent, StatusArPipe],
     templateUrl: './report-detail.html',
     styleUrl: './report-detail.css',
     changeDetection: ChangeDetectionStrategy.OnPush,

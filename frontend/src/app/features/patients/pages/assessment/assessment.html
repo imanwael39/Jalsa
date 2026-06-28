@@ -36,7 +36,8 @@
                         class="form-select"
                         formControlName="templateId"
                         name="templateId"
-                        [class.is-invalid]="isFieldInvalid('templateId')">
+                        [class.is-invalid]="isFieldInvalid('templateId')"
+                    >
                         <option value="">اختر النوع</option>
                         @for (type of assessmentTypes; track type.value) {
                             <option [value]="type.value">{{ type.label }}</option>
@@ -56,7 +57,8 @@
                         name="totalScore"
                         placeholder="أدخل الدرجة"
                         min="0"
-                        [class.is-invalid]="isFieldInvalid('totalScore')">
+                        [class.is-invalid]="isFieldInvalid('totalScore')"
+                    />
                     @if (isFieldInvalid('totalScore')) {
                         <div class="invalid-feedback">{{ getFieldError('totalScore') }}</div>
                     }
@@ -69,7 +71,8 @@
                         class="form-control"
                         formControlName="assessmentDate"
                         name="assessmentDate"
-                        [class.is-invalid]="isFieldInvalid('assessmentDate')">
+                        [class.is-invalid]="isFieldInvalid('assessmentDate')"
+                    />
                     @if (isFieldInvalid('assessmentDate')) {
                         <div class="invalid-feedback">{{ getFieldError('assessmentDate') }}</div>
                     }
@@ -83,14 +86,11 @@
                     class="form-control"
                     formControlName="title"
                     name="title"
-                    placeholder="عنوان مخصص لهذا التقييم">
+                    placeholder="عنوان مخصص لهذا التقييم"
+                />
             </div>
             <div class="form-actions">
-                <app-button
-                    type="submit"
-                    variant="primary"
-                    [loading]="submitLoading()"
-                    ariaLabel="إضافة تقييم">
+                <app-button type="submit" variant="primary" [loading]="submitLoading()" ariaLabel="إضافة تقييم">
                     إضافة التقييم
                 </app-button>
             </div>
@@ -129,10 +129,14 @@
                                 <td>
                                     <span class="score-badge">{{ assessment.totalScore ?? '-' }}</span>
                                 </td>
-                                <td>{{ assessment.assessmentDate | date:'mediumDate' }}</td>
+                                <td>{{ assessment.assessmentDate | date: 'mediumDate' }}</td>
                                 <td>
-                                    <span class="status-badge" [class.status-completed]="assessment.status === 'Completed'" [class.status-draft]="assessment.status === 'Draft'">
-                                        {{ assessment.status }}
+                                    <span
+                                        class="status-badge"
+                                        [class.status-completed]="assessment.status === 'Completed'"
+                                        [class.status-draft]="assessment.status === 'Draft'"
+                                    >
+                                        {{ assessment.status | statusAr }}
                                     </span>
                                 </td>
                             </tr>

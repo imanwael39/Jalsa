@@ -20,7 +20,7 @@
                         <div class="patient-meta">
                             <span class="meta-item">
                                 <i class="bi bi-person" aria-hidden="true"></i>
-                                {{ p.gender === 'Male' ? 'ذكر' : 'أنثى' }}
+                                {{ p.gender | statusAr }}
                             </span>
                             <span class="meta-item">
                                 <i class="bi bi-calendar" aria-hidden="true"></i>
@@ -96,7 +96,7 @@
                         <dt>تاريخ الميلاد</dt>
                         <dd>{{ formatDate(p.dateOfBirth) }}</dd>
                         <dt>الجنس</dt>
-                        <dd>{{ p.gender || 'غير محدد' }}</dd>
+                        <dd>{{ (p.gender | statusAr) || 'غير محدد' }}</dd>
                         <dt>الحالة</dt>
                         <dd>
                             <span
@@ -104,7 +104,7 @@
                                 [class.bg-success]="p.status === 'Active'"
                                 [class.bg-danger]="p.status === 'Archived'"
                             >
-                                {{ p.status }}
+                                {{ p.status | statusAr }}
                             </span>
                         </dd>
                     </dl>

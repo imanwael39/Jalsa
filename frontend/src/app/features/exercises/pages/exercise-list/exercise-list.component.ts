@@ -7,11 +7,12 @@ import { TableComponent, TableColumn } from '../../../../shared/components/table
 import { ColumnCellDirective } from '../../../../shared/components/table/column-cell.directive';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { TruncatePipe } from '../../../../shared/pipes/truncate.pipe';
+import { StatusArPipe } from '../../../../shared/pipes/status-ar.pipe';
 
 @Component({
     selector: 'app-exercise-list',
     standalone: true,
-    imports: [TableComponent, ColumnCellDirective, ButtonComponent, TruncatePipe],
+    imports: [TableComponent, ColumnCellDirective, ButtonComponent, TruncatePipe, StatusArPipe],
     templateUrl: './exercise-list.component.html',
     styleUrl: './exercise-list.component.css',
     changeDetection: ChangeDetectionStrategy.OnPush,

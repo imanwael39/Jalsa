@@ -35,13 +35,7 @@
                             [class.bg-secondary]="report()!.status === 'Draft'"
                             [class.bg-success]="report()!.status === 'Approved'"
                         >
-                            @if (report()!.status === 'Draft') {
-                                مسودة
-                            } @else if (report()!.status === 'Approved') {
-                                معتمد
-                            } @else {
-                                {{ report()!.status }}
-                            }
+                            {{ report()!.status | statusAr }}
                         </span>
                     </div>
                     <div class="col-md-4">

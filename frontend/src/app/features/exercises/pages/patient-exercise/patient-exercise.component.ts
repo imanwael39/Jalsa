@@ -16,11 +16,12 @@ import { AuthService } from '../../../../core/services/auth.service';
 import { Exercise } from '../../../../core/models';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { StatusArPipe } from '../../../../shared/pipes/status-ar.pipe';
 
 @Component({
     selector: 'app-patient-exercise',
     standalone: true,
-    imports: [FormsModule, ButtonComponent, SpinnerComponent],
+    imports: [FormsModule, ButtonComponent, SpinnerComponent, StatusArPipe],
     templateUrl: './patient-exercise.component.html',
     styleUrl: './patient-exercise.component.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
