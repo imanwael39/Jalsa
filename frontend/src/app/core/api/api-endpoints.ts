@@ -43,6 +43,11 @@ export const API = {
     dashboard: {
         summary: '/api/progress/dashboard',
     },
+    notifications: {
+        base: '/api/notifications',
+        markRead: (id: string) => `/api/notifications/${id}/read`,
+        markAllRead: '/api/notifications/read-all',
+    },
     chat: {
         conversations: '/api/chat/conversations',
         conversation: (conversationId: string) => `/api/chat/conversations/${conversationId}`,
