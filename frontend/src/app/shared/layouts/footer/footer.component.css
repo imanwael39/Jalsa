@@ -1,9 +1,9 @@
 .app-footer {
     background: var(--surface);
     border-top: 1px solid var(--border-color);
-    padding-block: 0.875rem;
-    padding-inline: 1.5rem;
-    font-size: 0.875rem;
+    padding-block: var(--space-3);
+    padding-inline: var(--space-6);
+    font-size: var(--text-base);
     color: var(--text-muted);
 }
 
@@ -12,12 +12,12 @@
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 .footer-links {
     display: flex;
-    gap: 1.5rem;
+    gap: var(--space-6);
 }
 
 .footer-links a {

@@ -176,8 +176,10 @@ Bootstrap Icons (`bi-*`) — already installed across all components.
 | 6 | Cards (stats-card) | `2026-06-28_Mustafa_CardsRedesign` | Done |
 | 7 | Tables (hover, empty state) | `2026-06-28_Mustafa_TablesRedesign` | Done |
 | 8 | Modals | `2026-06-28_Mustafa_ModalsRedesign` | Done |
-| 9 | Badges, status tags, toast | — | Pending |
-| 10 | Pages — auth, dashboard, patients, sessions, exercises, reports | — | Pending |
+| 9 | Badges, status tags, toast | `2026-06-28_Mustafa_BadgesToastRedesign` | Done |
+| 10a | Dashboard page | `2026-06-28_Mustafa_DashboardPage` | Done |
+| 10b | Patient pages (list, form, detail, intake, assessment) | `2026-06-28_Mustafa_PatientPages` | Done |
+| 10c | Sessions, exercises, reports, auth pages (16 files) | `2026-06-28_Mustafa_RemainingPages` | Done |
 
 ---
 

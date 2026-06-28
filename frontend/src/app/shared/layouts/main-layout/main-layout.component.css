@@ -14,19 +14,19 @@
 
 .app-content {
     flex: 1;
-    padding-inline: 2rem;
-    padding-block: 1.5rem;
+    padding-inline: var(--space-7);
+    padding-block: var(--space-6);
     background-color: var(--background);
 }
 
 /* ================================================================
    RTL: Sidebar on right in RTL mode
    ================================================================ */
-[dir="rtl"] .sidebar {
+[dir='rtl'] .sidebar {
     order: 2;
 }
 
-[dir="rtl"] .app-main {
+[dir='rtl'] .app-main {
     order: 1;
 }
 
@@ -75,11 +75,11 @@
     }
 
     /* RTL: slide from right instead of left */
-    [dir="rtl"] .sidebar {
+    [dir='rtl'] .sidebar {
         transform: translateX(100%);
     }
 
-    [dir="rtl"] .mobile-sidebar-open .sidebar {
+    [dir='rtl'] .mobile-sidebar-open .sidebar {
         transform: translateX(0);
     }
 
@@ -88,8 +88,8 @@
     }
 
     .app-content {
-        padding-inline: 1rem;
-        padding-block: 1rem;
+        padding-inline: var(--space-4);
+        padding-block: var(--space-4);
     }
 }
 
@@ -108,12 +108,12 @@
 
     .sidebar .sidebar-header {
         justify-content: center;
-        padding-inline: 0.5rem;
+        padding-inline: var(--space-2);
     }
 
     .sidebar .sidebar-nav .nav-link {
         justify-content: center;
-        padding: 0.75rem;
+        padding: var(--space-3);
     }
 
     .sidebar .sidebar-nav .nav-link span {
