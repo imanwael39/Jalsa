@@ -2,13 +2,13 @@
     <!-- Welcome Banner -->
     <div class="welcome-banner">
         <div class="welcome-content">
-            <h2 class="welcome-title">
+            <h1 class="welcome-title">
                 @if (user(); as u) {
                     مرحباً بك {{ u.firstName }} 👋
                 } @else {
                     مرحباً بك 👋
                 }
-            </h2>
+            </h1>
             <p class="welcome-subtitle">إليك نظرة عامة على نشاطات اليوم</p>
         </div>
         <button class="refresh-btn" (click)="loadDashboard()" [disabled]="loading()">
@@ -16,19 +16,65 @@
         </button>
     </div>
 
+    <!-- Skeleton Loading State -->
     @if (loading()) {
-        <div class="text-center py-5">
-            <app-spinner size="lg"></app-spinner>
+        <div class="skeleton-grid">
+            @for (i of [1, 2, 3, 4]; track i) {
+                <div class="skeleton-card">
+                    <div class="skeleton-icon"></div>
+                    <div class="skeleton-lines">
+                        <div class="skeleton-line short"></div>
+                        <div class="skeleton-line tall"></div>
+                        <div class="skeleton-line medium"></div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="skeleton-charts">
+            @for (i of [1, 2]; track i) {
+                <div class="skeleton-chart">
+                    <div class="skeleton-chart-header">
+                        <div class="skeleton-line" style="width: 120px; height: 1rem"></div>
+                        <div class="skeleton-line" style="width: 80px; height: 1rem"></div>
+                    </div>
+                    <div class="skeleton-chart-area"></div>
+                </div>
+            }
+        </div>
+        <div class="skeleton-bottom">
+            @for (i of [1, 2]; track i) {
+                <div class="skeleton-info">
+                    <div class="skeleton-info-header">
+                        <div class="skeleton-line" style="width: 100px; height: 1rem"></div>
+                    </div>
+                    <div class="skeleton-info-body">
+                        @for (j of [1, 2, 3]; track j) {
+                            <div class="skeleton-info-row">
+                                <div class="skeleton-dot"></div>
+                                <div class="skeleton-line" style="flex: 1"></div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
         </div>
     }
 
+    <!-- Error State -->
     @if (error()) {
-        <div class="alert alert-danger d-flex align-items-center" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-            <div>{{ error() }}</div>
+        <div class="error-state">
+            <div class="error-state-icon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <h3 class="error-state-title">تعذّر تحميل لوحة التحكم</h3>
+            <p class="error-state-message">{{ error() }}</p>
+            <button class="btn btn-primary btn-sm" (click)="loadDashboard()">
+                <i class="bi bi-arrow-clockwise"></i> إعادة المحاولة
+            </button>
         </div>
     }
 
+    <!-- Empty State (no data) -->
     @if (!loading() && !error() && !summary()) {
         <div class="empty-state">
             <i class="bi bi-inbox"></i>
@@ -39,6 +85,7 @@
         </div>
     }
 
+    <!-- Dashboard Content -->
     @if (!loading() && !error() && summary()) {
         <!-- Row 1: Primary KPI Stats Cards -->
         <div class="stats-grid">
@@ -96,7 +143,8 @@
                     [labels]="sessionFrequencyLabels()"
                     [datasets]="sessionFrequencyData()"
                     [loading]="loading()"
-                    height="280px">
+                    height="280px"
+                >
                 </app-line-chart>
             </div>
             <div class="chart-card">
@@ -109,7 +157,8 @@
                     [labels]="exerciseCompletionLabels()"
                     [datasets]="exerciseCompletionData()"
                     [loading]="loading()"
-                    height="280px">
+                    height="280px"
+                >
                 </app-bar-chart>
             </div>
         </div>
