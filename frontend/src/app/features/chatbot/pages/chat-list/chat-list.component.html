@@ -1,0 +1,66 @@
+<div class="chat-list">
+    <div class="page-header">
+        <h2 class="page-title">محادثات المرضى</h2>
+    </div>
+
+    @if (error()) {
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+            {{ error() }}
+        </div>
+    }
+
+    @if (loading()) {
+        <div class="loading-wrapper">
+            <app-spinner size="lg" label="جاري تحميل المحادثات..."></app-spinner>
+        </div>
+    } @else if (!error()) {
+        @if (conversations().length === 0) {
+            <app-empty-state
+                title="لا توجد محادثات"
+                message="لا توجد محادثات نشطة مع أي مريض حتى الآن."
+                icon="bi-chat-dots"
+            ></app-empty-state>
+        } @else {
+            <div class="conversations-list">
+                @for (conv of conversations(); track conv.id) {
+                    <button
+                        class="conversation-card"
+                        (click)="openConversation(conv.id)"
+                        type="button"
+                        [attr.aria-label]="'فتح محادثة ' + conv.patientName"
+                    >
+                        <div class="conversation-avatar">
+                            <i class="bi bi-person-circle" aria-hidden="true"></i>
+                        </div>
+                        <div class="conversation-info">
+                            <div class="conversation-header">
+                                <span class="patient-name">{{ conv.patientName }}</span>
+                                <span
+                                    class="status-badge"
+                                    [class.status-open]="isOpenStatus(conv.status)"
+                                    [class.status-closed]="!isOpenStatus(conv.status)"
+                                >
+                                    {{ getStatusLabel(conv.status) }}
+                                </span>
+                            </div>
+                            <div class="conversation-meta">
+                                <span class="meta-item">
+                                    <i class="bi bi-chat-left-text" aria-hidden="true"></i>
+                                    {{ conv.messageCount }} رسالة
+                                </span>
+                                <span class="meta-item">
+                                    <i class="bi bi-clock" aria-hidden="true"></i>
+                                    آخر نشاط: {{ formatDate(conv.lastActivityAt) }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="conversation-arrow">
+                            <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                        </div>
+                    </button>
+                }
+            </div>
+        }
+    }
+</div>

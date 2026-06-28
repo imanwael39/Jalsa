@@ -44,7 +44,11 @@ export const API = {
         summary: '/api/progress/dashboard',
     },
     chat: {
-        history: (sessionId: string) => `/api/chat/${sessionId}/history`,
+        conversations: '/api/chat/conversations',
+        conversation: (conversationId: string) => `/api/chat/conversations/${conversationId}`,
+        conversationsByPatient: (patientId: string) => `/api/chat/conversations?patientId=${patientId}`,
+        history: (conversationId: string) => `/api/chat/${conversationId}/history`,
         send: '/api/chat/send',
+        close: (conversationId: string) => `/api/chat/conversations/${conversationId}/close`,
     },
 } as const;

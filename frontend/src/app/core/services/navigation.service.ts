@@ -21,7 +21,7 @@ export class NavigationService {
         { label: 'الجلسات', icon: 'bi-calendar', route: '/sessions', roles: ['Therapist', 'Admin'] },
         { label: 'التمارين', icon: 'bi-clipboard', route: '/exercises', roles: ['Therapist', 'Admin'] },
         { label: 'التقارير', icon: 'bi-file-text', route: '/reports', roles: ['Therapist', 'Admin'] },
-        { label: 'المحادثة', icon: 'bi-chat', route: '/chatbot', roles: ['Patient'] },
+        { label: 'المحادثات', icon: 'bi-chat-dots', route: '/chatbot', roles: ['Therapist', 'Admin', 'Patient'] },
     ];
 
     readonly menuItems = computed(() => {

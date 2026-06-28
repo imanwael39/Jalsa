@@ -1,0 +1,112 @@
+<div class="chat-room">
+    <!-- Header -->
+    <div class="chat-header">
+        <button class="back-btn" type="button" (click)="goBack()" aria-label="العودة إلى قائمة المحادثات">
+            <i class="bi bi-arrow-right" aria-hidden="true"></i>
+        </button>
+        <div class="header-info">
+            <div class="header-avatar">
+                <i class="bi bi-person-circle" aria-hidden="true"></i>
+            </div>
+            <div class="header-text">
+                <h2 class="header-title">محادثة المريض</h2>
+                @if (patientName()) {
+                    <span class="header-subtitle">{{ patientName() }}</span>
+                }
+            </div>
+        </div>
+        @if (connecting()) {
+            <div class="connection-status">
+                <span class="status-dot connecting"></span>
+                <span class="status-label">جاري الاتصال...</span>
+            </div>
+        } @else {
+            <div class="connection-status">
+                <span class="status-dot connected"></span>
+                <span class="status-label">متصل</span>
+            </div>
+        }
+    </div>
+
+    <!-- Error Banner -->
+    @if (error()) {
+        <div class="error-banner" role="alert">
+            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+            {{ error() }}
+        </div>
+    }
+
+    <!-- Messages Area -->
+    <div class="messages-area">
+        @if (loading()) {
+            <div class="loading-wrapper">
+                <app-spinner size="lg" label="جاري تحميل المحادثة..."></app-spinner>
+            </div>
+        } @else if (messages().length === 0) {
+            <div class="empty-messages">
+                <i class="bi bi-chat-dots empty-icon" aria-hidden="true"></i>
+                <p class="empty-text">لا توجد رسائل بعد. ابدأ المحادثة.</p>
+            </div>
+        } @else {
+            <div class="messages-list">
+                @for (msg of messages(); track msg.id) {
+                    <div
+                        class="message-wrapper"
+                        [class.message-ai]="isAiMessage(msg)"
+                        [class.message-patient]="!isAiMessage(msg) && !isTherapistMessage(msg)"
+                        [class.message-therapist]="isTherapistMessage(msg)"
+                    >
+                        @if (isAiMessage(msg)) {
+                            <div class="message-sender-icon ai-icon" aria-hidden="true">
+                                <i class="bi bi-robot"></i>
+                            </div>
+                        }
+                        <div class="message-bubble">
+                            <p class="message-content">{{ msg.content }}</p>
+                            <span class="message-time">{{ formatTime(msg.createdAt) }}</span>
+                        </div>
+                        @if (!isAiMessage(msg)) {
+                            <div
+                                class="message-sender-icon"
+                                [class.patient-icon]="!isTherapistMessage(msg)"
+                                [class.therapist-icon]="isTherapistMessage(msg)"
+                                aria-hidden="true"
+                            >
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                        }
+                    </div>
+                }
+                <div #messagesEnd></div>
+            </div>
+        }
+    </div>
+
+    <!-- Input Area -->
+    <div class="input-area">
+        <textarea
+            class="message-input"
+            rows="1"
+            placeholder="أرسل رسالة..."
+            [value]="messageText()"
+            (input)="updateMessageText($any($event.target).value)"
+            (keydown)="onKeyDown($event)"
+            [disabled]="loading() || sending()"
+            aria-label="اكتب رسالتك"
+        ></textarea>
+        <button
+            class="send-btn"
+            type="button"
+            (click)="sendMessage()"
+            [disabled]="!messageText().trim() || loading() || sending()"
+            aria-label="إرسال الرسالة"
+        >
+            @if (sending()) {
+                <app-spinner size="sm"></app-spinner>
+            } @else {
+                <i class="bi bi-send-fill" aria-hidden="true"></i>
+            }
+            <span class="send-label">إرسال</span>
+        </button>
+    </div>
+</div>

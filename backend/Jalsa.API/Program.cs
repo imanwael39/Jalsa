@@ -204,6 +204,7 @@ app.UseCors("AngularPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<Jalsa.API.Hubs.ChatHub>("/chatHub");
 
 app.UseHangfireDashboard("/hangfire");
 
