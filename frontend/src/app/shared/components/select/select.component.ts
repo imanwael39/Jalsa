@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output, forwardRef } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    EventEmitter,
+    HostBinding,
+    Input,
+    Output,
+    forwardRef,
+} from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { JsonPipe } from '@angular/common';
 
@@ -25,7 +33,7 @@ export interface SelectOption {
 })
 export class SelectComponent implements ControlValueAccessor {
     @Input() label = '';
-    @Input() placeholder = 'Select an option';
+    @Input() placeholder = 'اختر...';
     @Input() helpText = '';
     @Input() error = '';
     @Input() required = false;

@@ -16,7 +16,9 @@
                         [class.sorted]="sortKey === column.key"
                         (click)="sortColumn(column)"
                         role="columnheader"
-                        [attr.aria-sort]="sortKey === column.key ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
+                        [attr.aria-sort]="
+                            sortKey === column.key ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'
+                        "
                     >
                         <div class="d-flex align-items-center gap-1">
                             <span>{{ column.label }}</span>
@@ -33,9 +35,9 @@
                 <tr>
                     <td [attr.colspan]="columns.length" class="text-center py-4">
                         <div class="spinner-border spinner-border-sm text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
+                            <span class="visually-hidden">جاري التحميل...</span>
                         </div>
-                        <span class="ms-2">Loading...</span>
+                        <span class="ms-2">جاري التحميل...</span>
                     </td>
                 </tr>
             } @else if (data.length === 0) {
@@ -49,7 +51,12 @@
                     <tr (click)="onRowClick(row)" class="table-row">
                         @for (column of columns; track column.key) {
                             <td [style.text-align]="column.align || 'start'">
-                                <ng-container *ngTemplateOutlet="getCellTemplate($any(column))?.templateRef; context: { $implicit: getCellValue(row, column), row: row, column: column }">
+                                <ng-container
+                                    *ngTemplateOutlet="
+                                        getCellTemplate($any(column))?.templateRef;
+                                        context: { $implicit: getCellValue(row, column), row: row, column: column }
+                                    "
+                                >
                                 </ng-container>
                                 @if (!getCellTemplate($any(column))) {
                                     {{ getCellValue(row, column) }}
