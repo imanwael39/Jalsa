@@ -1,32 +1,35 @@
 :host {
     display: block;
-    margin-bottom: var(--spacer, 1rem);
+    margin-bottom: var(--space-4);
 }
 
 .form-check {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-2);
     min-height: 1.5rem;
 }
 
 .form-check-input {
-    width: 1.25rem;
-    height: 1.25rem;
-    margin-top: 0.25rem;
+    width: 1.125rem;
+    height: 1.125rem;
+    margin-top: 0;
     vertical-align: top;
     background-color: var(--surface);
     border: 1px solid var(--border-color);
-    border-radius: 0.25rem;
+    border-radius: var(--radius-sm);
     appearance: none;
+    cursor: pointer;
+    flex-shrink: 0;
     transition:
         border-color var(--transition-fast),
-        box-shadow var(--transition-fast);
+        box-shadow var(--transition-fast),
+        background-color var(--transition-fast);
 }
 
 .form-check-input:checked {
-    background-color: var(--secondary);
-    border-color: var(--secondary);
+    background-color: var(--primary);
+    border-color: var(--primary);
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
     background-repeat: no-repeat;
     background-position: center;
@@ -34,32 +37,31 @@
 }
 
 .form-check-input:hover:not(:disabled):not(:checked) {
-    border-color: var(--secondary);
+    border-color: var(--primary);
 }
 
-.form-check-input:focus {
-    border-color: var(--secondary);
-    outline: 0;
-    box-shadow: 0 0 0 3px var(--focus-ring-secondary);
+.form-check-input:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
 }
 
 .form-check-input:disabled {
-    background-color: var(--bg-subtle);
-    opacity: 1;
+    background-color: var(--gray-100);
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .form-check-input.is-invalid {
     border-color: var(--danger);
 }
 
-.form-check-input.is-invalid:focus {
-    border-color: var(--danger);
-    box-shadow: 0 0 0 3px var(--focus-ring-danger);
+.form-check-input.is-invalid:focus-visible {
+    outline-color: var(--danger);
 }
 
 .form-check-input:indeterminate {
-    background-color: var(--secondary);
-    border-color: var(--secondary);
+    background-color: var(--primary);
+    border-color: var(--primary);
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10h8'/%3e%3c/svg%3e");
     background-repeat: no-repeat;
     background-position: center;
@@ -67,43 +69,35 @@
 }
 
 .form-check-label {
-    font-size: 1rem;
+    font-size: var(--text-base);
     color: var(--text-primary);
     cursor: pointer;
 }
 
 .form-text {
-    margin-top: 0.25rem;
-    font-size: 0.875rem;
+    margin-top: var(--space-1);
+    font-size: var(--text-xs);
     color: var(--text-muted);
 }
 
 .invalid-feedback {
     display: block;
-    margin-top: 0.25rem;
-    font-size: 0.875rem;
+    margin-top: var(--space-1);
+    font-size: var(--text-xs);
     color: var(--danger);
 }
 
-/* RTL Support */
 [dir='rtl'] .form-check-input {
     margin-right: 0;
-    margin-left: 0.5rem;
+    margin-left: var(--space-2);
 }
 
-/* Accessibility */
-.form-check-input:focus-visible {
-    outline: 2px solid var(--secondary);
-    outline-offset: 2px;
-}
-
-/* High contrast mode support */
 @media (forced-colors: active) {
     .form-check-input {
         border: 1px solid ButtonText;
     }
 
-    .form-check-input:focus {
+    .form-check-input:focus-visible {
         outline: 2px solid Highlight;
     }
 

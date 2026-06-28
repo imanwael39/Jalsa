@@ -1,13 +1,13 @@
 :host {
     display: block;
-    margin-bottom: var(--spacer, 1rem);
+    margin-bottom: var(--space-5);
 }
 
 .form-label {
     display: block;
-    margin-bottom: 0.375rem;
-    font-weight: 600;
-    font-size: 0.875rem;
+    margin-bottom: 6px;
+    font-weight: 500;
+    font-size: var(--text-base);
     color: var(--text-primary);
 }
 
@@ -18,27 +18,28 @@
 
 .form-select {
     width: 100%;
-    padding: 0.75rem 2.5rem 0.75rem 1rem;
-    font-size: 0.9375rem;
+    padding: var(--space-2) var(--space-8) var(--space-2) var(--space-4);
+    font-size: var(--text-base);
     font-family: var(--font-family-base);
-    line-height: 1.5;
+    line-height: 1.6;
     color: var(--text-primary);
     background-color: var(--surface);
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
     background-repeat: no-repeat;
     background-position: right 0.75rem center;
     background-size: 16px 12px;
-    border: 1.5px solid var(--gray-300);
-    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
     appearance: none;
     transition:
         border-color var(--transition-fast),
         box-shadow var(--transition-fast);
     cursor: pointer;
+    min-height: 40px;
 }
 
 .form-select:hover:not(:disabled):not(:focus) {
-    border-color: var(--gray-400);
+    border-color: var(--gray-300);
 }
 
 .form-select:focus {
@@ -63,31 +64,28 @@
 }
 
 .form-text {
-    margin-top: 0.25rem;
-    font-size: 0.8125rem;
+    margin-top: var(--space-1);
+    font-size: var(--text-xs);
     color: var(--text-muted);
 }
 
 .invalid-feedback {
     display: block;
-    margin-top: 0.25rem;
-    font-size: 0.8125rem;
+    margin-top: var(--space-1);
+    font-size: var(--text-xs);
     color: var(--danger);
 }
 
-/* RTL Support */
 [dir='rtl'] .form-select {
     background-position: left 0.75rem center;
-    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    padding: var(--space-2) var(--space-4) var(--space-2) var(--space-8);
 }
 
-/* Accessibility */
 .form-select:focus-visible {
     outline: 2px solid var(--primary);
     outline-offset: 2px;
 }
 
-/* High contrast mode support */
 @media (forced-colors: active) {
     .form-select {
         border: 1px solid ButtonText;
