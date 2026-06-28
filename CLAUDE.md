@@ -54,12 +54,13 @@ backend/
 | Dashboard | Done (charts, stats, auto-refresh) | Done (ProgressController) | 90% |
 | AI Reports | Done (list, generate, detail) | Done (generate, CRUD, approve) | 85% |
 | Chatbot | Routes empty, no pages | Hub only, NO controller | 25% BLOCKED — Post-MVP |
-| Tests | — | 29 tests (5 files) passing | 70% |
+| Tests | 270 tests (Vitest) passing | 28 tests (xUnit) passing | 85% |
 
 ### Build Status
 
-- **Backend**: Builds clean (0 warnings, 0 errors), 29 tests passing
-- **Frontend**: Builds clean
+- **Backend**: Builds clean (0 warnings, 0 errors), 28 tests passing
+- **Frontend**: Builds clean, 270 tests passing
+- **CI/CD**: GitHub Actions workflow on push/PR to develop and main
 
 ## Bugs Fixed
 
@@ -85,8 +86,8 @@ backend/
 
 1. **No ChatController** — REST endpoints missing for chat history (post-MVP per scope)
 2. **Chatbot frontend routes empty** — No pages, no components (post-MVP)
-3. **`Galsa_DBDbContext` misspelled** — Should be `Jalsa` (risky migration rename, defer)
-4. **`PatientService` misplaced** — Lives in API layer instead of Application layer (high churn, defer)
+3. ~~**`Galsa_DBDbContext` misspelled**~~ — Fixed: Renamed to `JalsaDbContext`
+4. ~~**`PatientService` misplaced**~~ — Fixed: Moved to Application layer
 
 ## Next Steps (Priority Order)
 
@@ -99,10 +100,10 @@ backend/
 ### Post-MVP Enhancements
 5. **Chatbot module** — ChatController REST endpoints + frontend chat UI (currently blocked/deferred)
 6. **PDF export** — Report PDF generation and download
-7. **Frontend tests** — Vitest unit tests for critical components (currently 0)
-8. **`PatientService` refactor** — Move from API layer to Application layer
-9. **`Galsa_DBDbContext` rename** — Fix misspelling (requires migration coordination)
-10. **CI/CD pipeline** — GitHub Actions for build + test on PR
+7. ~~**Frontend tests**~~ — Done: 270 Vitest tests passing across shared components, interceptors, and patient feature pages
+8. ~~**`PatientService` refactor**~~ — Done: Moved to Application layer with proper DTOs
+9. ~~**`Galsa_DBDbContext` rename**~~ — Done: Renamed to `JalsaDbContext` across 18 files
+10. ~~**CI/CD pipeline**~~ — Done: GitHub Actions workflow (`.github/workflows/ci.yml`)
 
 ## Branch Convention
 
