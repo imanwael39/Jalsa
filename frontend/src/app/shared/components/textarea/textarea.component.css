@@ -31,7 +31,9 @@
     background-color: var(--surface);
     border: 1.5px solid var(--gray-300);
     border-radius: var(--radius-md);
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    transition:
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast);
     outline: none;
     box-sizing: border-box;
     resize: vertical;
@@ -48,7 +50,7 @@
 
 .textarea:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(13, 110, 86, 0.1);
+    box-shadow: 0 0 0 3px var(--focus-ring-primary);
 }
 
 .textarea:disabled {
@@ -63,7 +65,7 @@
 
 .textarea.is-invalid:focus {
     border-color: var(--danger);
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    box-shadow: 0 0 0 3px var(--focus-ring-danger);
 }
 
 .char-count {

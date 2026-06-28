@@ -97,6 +97,11 @@
     --border-light: #f1f5f9;
     --border-focus: var(--primary);
 
+    /* Focus Rings */
+    --focus-ring-primary: rgba(15, 110, 86, 0.15);
+    --focus-ring-secondary: rgba(99, 102, 241, 0.25);
+    --focus-ring-danger: rgba(239, 68, 68, 0.15);
+
     /* ================================================================
        Typography — Tajawal Arabic (exact spec)
        ================================================================ */

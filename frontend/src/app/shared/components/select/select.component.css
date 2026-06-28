@@ -31,7 +31,9 @@
     border: 1.5px solid var(--gray-300);
     border-radius: var(--radius-md);
     appearance: none;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    transition:
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast);
     cursor: pointer;
 }
 
@@ -42,7 +44,7 @@
 .form-select:focus {
     border-color: var(--primary);
     outline: 0;
-    box-shadow: 0 0 0 3px rgba(13, 110, 86, 0.1);
+    box-shadow: 0 0 0 3px var(--focus-ring-primary);
 }
 
 .form-select:disabled {
@@ -57,7 +59,7 @@
 
 .form-select.is-invalid:focus {
     border-color: var(--danger);
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    box-shadow: 0 0 0 3px var(--focus-ring-danger);
 }
 
 .form-text {
@@ -74,7 +76,7 @@
 }
 
 /* RTL Support */
-[dir="rtl"] .form-select {
+[dir='rtl'] .form-select {
     background-position: left 0.75rem center;
     padding: 0.75rem 1rem 0.75rem 2.5rem;
 }
