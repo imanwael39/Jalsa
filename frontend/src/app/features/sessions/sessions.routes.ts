@@ -8,6 +8,11 @@ export const SESSIONS_ROUTES: Routes = [
         canActivate: [authGuard, roleGuard(['Therapist', 'Admin'])],
         children: [
             {
+                path: '',
+                pathMatch: 'full',
+                loadComponent: () => import('./pages/session-landing/session-landing').then(m => m.SessionLanding),
+            },
+            {
                 path: 'patient/:patientId',
                 loadComponent: () => import('./pages/session-list/session-list').then(m => m.SessionList),
             },
