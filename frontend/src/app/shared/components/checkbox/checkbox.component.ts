@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output, forwardRef } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    EventEmitter,
+    HostBinding,
+    Input,
+    Output,
+    forwardRef,
+} from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 @Component({
@@ -75,8 +83,10 @@ export class CheckboxComponent implements ControlValueAccessor {
         this.blur.emit(event);
     }
 
+    private _generatedId = `checkbox-${Math.random().toString(36).substring(2, 9)}`;
+
     get checkboxId(): string {
-        return this.id || `checkbox-${this.name || Math.random().toString(36).substring(2, 9)}`;
+        return this.id || (this.name ? `checkbox-${this.name}` : this._generatedId);
     }
 
     get ariaDescribedBy(): string {

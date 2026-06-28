@@ -25,7 +25,7 @@ describe('SelectComponent', () => {
         const fixture = TestBed.createComponent(SelectComponent);
         const component = fixture.componentInstance;
         expect(component.label).toBe('');
-        expect(component.placeholder).toBe('Select an option');
+        expect(component.placeholder).toBe('اختر...');
         expect(component.helpText).toBe('');
         expect(component.error).toBe('');
         expect(component.required).toBe(false);
@@ -69,7 +69,7 @@ describe('SelectComponent', () => {
         fixture.detectChanges();
         const placeholderOption = fixture.nativeElement.querySelector('option[value=""]');
         expect(placeholderOption).toBeTruthy();
-        expect(placeholderOption.textContent).toContain('Select an option');
+        expect(placeholderOption.textContent).toContain('اختر...');
     });
 
     it('should render help text', () => {

@@ -1,8 +1,9 @@
 /// <reference types="vitest" />
-import { defineConfig } from 'vitest/config';
-import { getViteConfig } from 'astro/config';
+import { defineConfig } from 'vite';
+import angular from '@analogjs/vite-plugin-angular';
 
 export default defineConfig({
+    plugins: [angular()],
     test: {
         globals: true,
         environment: 'jsdom',

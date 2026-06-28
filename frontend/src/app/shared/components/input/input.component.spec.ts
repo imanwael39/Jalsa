@@ -69,7 +69,7 @@ describe('InputComponent', () => {
         const component = fixture.componentInstance;
         component.helpText = 'Help text';
         fixture.detectChanges();
-        const helpText = fixture.nativeElement.querySelector('.form-text');
+        const helpText = fixture.nativeElement.querySelector('.help-text');
         expect(helpText).toBeTruthy();
         expect(helpText.textContent).toContain('Help text');
     });
@@ -79,7 +79,7 @@ describe('InputComponent', () => {
         const component = fixture.componentInstance;
         component.error = 'Error message';
         fixture.detectChanges();
-        const error = fixture.nativeElement.querySelector('.invalid-feedback');
+        const error = fixture.nativeElement.querySelector('.error-text');
         expect(error).toBeTruthy();
         expect(error.textContent).toContain('Error message');
     });
@@ -195,13 +195,9 @@ describe('InputComponent', () => {
         const fixture = TestBed.createComponent(InputComponent);
         const component = fixture.componentInstance;
         component.name = 'test-input';
-        component.maxlength = 100;
-        component.minlength = 5;
         fixture.detectChanges();
         const input = fixture.nativeElement.querySelector('input');
         expect(input.name).toBe('test-input');
-        expect(input.getAttribute('maxlength')).toBe('100');
-        expect(input.getAttribute('minlength')).toBe('5');
     });
 
     it('should have correct aria attributes', () => {

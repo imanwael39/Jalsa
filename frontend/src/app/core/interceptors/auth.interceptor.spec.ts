@@ -7,27 +7,23 @@ import { authInterceptor } from './auth.interceptor';
 describe('authInterceptor', () => {
     let http: HttpClient;
     let httpMock: HttpTestingController;
+    let authService: AuthService;
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            providers: [
-                provideHttpClient(withInterceptors([authInterceptor])),
-                provideHttpClientTesting(),
-                AuthService,
-            ],
+            providers: [provideHttpClient(withInterceptors([authInterceptor])), provideHttpClientTesting()],
         });
         http = TestBed.inject(HttpClient);
         httpMock = TestBed.inject(HttpTestingController);
-        localStorage.clear();
+        authService = TestBed.inject(AuthService);
     });
 
     afterEach(() => {
         httpMock.verify();
-        localStorage.clear();
     });
 
     it('should add Authorization header when token exists', () => {
-        localStorage.setItem('jwt_token', 'test-token-123');
+        vi.spyOn(authService, 'getToken').mockReturnValue('test-token-123');
         http.get('/api/data').subscribe();
 
         const req = httpMock.expectOne('/api/data');
@@ -37,6 +33,7 @@ describe('authInterceptor', () => {
     });
 
     it('should not add Authorization header when no token exists', () => {
+        vi.spyOn(authService, 'getToken').mockReturnValue(null);
         http.get('/api/data').subscribe();
 
         const req = httpMock.expectOne('/api/data');
@@ -45,7 +42,7 @@ describe('authInterceptor', () => {
     });
 
     it('should skip auth for refresh token endpoint', () => {
-        localStorage.setItem('jwt_token', 'test-token-123');
+        vi.spyOn(authService, 'getToken').mockReturnValue('test-token-123');
         http.get('/api/auth/refresh').subscribe();
 
         const req = httpMock.expectOne('/api/auth/refresh');

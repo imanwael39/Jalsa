@@ -45,7 +45,7 @@ describe('errorInterceptor', () => {
             error: () => {
                 expect(logoutSpy).toHaveBeenCalled();
                 expect(mockRouter.navigate).toHaveBeenCalledWith(['/auth/login']);
-                expect(errorSpy).toHaveBeenCalledWith('Your session has expired. Please log in again.');
+                expect(errorSpy).toHaveBeenCalledWith('انتهت صلاحية جلستك، يرجى تسجيل الدخول مرة أخرى');
             },
         });
 
@@ -58,7 +58,7 @@ describe('errorInterceptor', () => {
 
         http.get('/api/data').subscribe({
             error: () => {
-                expect(errorSpy).toHaveBeenCalledWith('You do not have permission to perform this action.');
+                expect(errorSpy).toHaveBeenCalledWith('ليس لديك صلاحية للقيام بهذه العملية');
             },
         });
 
@@ -84,7 +84,7 @@ describe('errorInterceptor', () => {
 
         http.get('/api/data').subscribe({
             error: () => {
-                expect(errorSpy).toHaveBeenCalledWith('A server error occurred. Please try again later.');
+                expect(errorSpy).toHaveBeenCalledWith('حدث خطأ غير متوقع، يرجى المحاولة مرة أخرى');
             },
         });
 
@@ -97,7 +97,7 @@ describe('errorInterceptor', () => {
 
         http.get('/api/data').subscribe({
             error: () => {
-                expect(errorSpy).toHaveBeenCalledWith('Network error. Please check your connection.');
+                expect(errorSpy).toHaveBeenCalledWith('تعذر الاتصال بالخادم، يرجى التحقق من اتصالك بالإنترنت');
             },
         });
 

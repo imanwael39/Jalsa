@@ -100,8 +100,10 @@ export class SelectComponent implements ControlValueAccessor {
         this.blur.emit(event);
     }
 
+    private _generatedId = `select-${Math.random().toString(36).substring(2, 9)}`;
+
     get selectId(): string {
-        return this.id || `select-${this.name || Math.random().toString(36).substring(2, 9)}`;
+        return this.id || (this.name ? `select-${this.name}` : this._generatedId);
     }
 
     get ariaDescribedBy(): string {

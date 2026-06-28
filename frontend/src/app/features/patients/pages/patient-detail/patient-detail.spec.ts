@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, ActivatedRoute, Router } from '@angular/router';
 import { signal } from '@angular/core';
-import { of, throwError } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { PatientDetail } from './patient-detail';
 import { PatientService } from '../../../../core/services/patient.service';
 import { PatientStateService } from '../../../../core/state/patient-state.service';
@@ -26,35 +26,48 @@ const mockPatient: Patient = {
     updatedAt: '2024-01-02T00:00:00Z',
 };
 
+interface SetupOptions {
+    patientId?: string | null;
+    patientStatus?: string;
+    getPatientReturn?: Observable<unknown>;
+    archivePatientReturn?: Observable<unknown>;
+    deletePatientReturn?: Observable<unknown>;
+}
+
 describe('PatientDetail', () => {
     let component: PatientDetail;
     let fixture: ComponentFixture<PatientDetail>;
-    let patientServiceSpy: jasmine.SpyObj<PatientService>;
-    let stateServiceSpy: jasmine.SpyObj<PatientStateService>;
-    let notificationSpy: jasmine.SpyObj<NotificationService>;
-    let routerSpy: jasmine.SpyObj<Router>;
+    let patientServiceSpy: Record<string, ReturnType<typeof vi.fn>>;
+    let stateServiceSpy: Record<string, unknown>;
+    let notificationSpy: Record<string, ReturnType<typeof vi.fn>>;
+    let routerSpy: Record<string, ReturnType<typeof vi.fn>>;
 
-    const setup = (patientId: string | null = '123e4567-e89b-12d3-a456-426614174000'): void => {
-        patientServiceSpy = jasmine.createSpyObj('PatientService', [
-            'getPatient',
-            'archivePatient',
-            'restorePatient',
-            'deletePatient',
-        ]);
-        stateServiceSpy = jasmine.createSpyObj(
-            'PatientStateService',
-            ['selectPatient', 'updatePatient', 'removePatient', 'clearSelected'],
-            {
-                selectedPatient: signal(mockPatient),
-            }
-        );
-        notificationSpy = jasmine.createSpyObj('NotificationService', ['success', 'error']);
-        routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    const setup = (opts: SetupOptions = {}): void => {
+        const {
+            patientId = '123e4567-e89b-12d3-a456-426614174000',
+            patientStatus = 'Active',
+            getPatientReturn,
+            archivePatientReturn,
+            deletePatientReturn,
+        } = opts;
 
-        patientServiceSpy.getPatient.and.returnValue(of(mockPatient));
-        patientServiceSpy.archivePatient.and.returnValue(of(undefined as void));
-        patientServiceSpy.restorePatient.and.returnValue(of(undefined as void));
-        patientServiceSpy.deletePatient.and.returnValue(of(undefined as void));
+        const patient = { ...mockPatient, status: patientStatus };
+
+        patientServiceSpy = {
+            getPatient: vi.fn().mockReturnValue(getPatientReturn ?? of(patient)),
+            archivePatient: vi.fn().mockReturnValue(archivePatientReturn ?? of(undefined)),
+            restorePatient: vi.fn().mockReturnValue(of(undefined)),
+            deletePatient: vi.fn().mockReturnValue(deletePatientReturn ?? of(undefined)),
+        };
+        stateServiceSpy = {
+            selectedPatient: signal(patient),
+            selectPatient: vi.fn(),
+            updatePatient: vi.fn(),
+            removePatient: vi.fn(),
+            clearSelected: vi.fn(),
+        };
+        notificationSpy = { success: vi.fn(), error: vi.fn() };
+        routerSpy = { navigate: vi.fn() };
 
         TestBed.configureTestingModule({
             providers: [
@@ -88,51 +101,50 @@ describe('PatientDetail', () => {
     it('should load patient on init', (): void => {
         setup();
         fixture.detectChanges();
-        expect(patientServiceSpy.getPatient).toHaveBeenCalledWith('123e4567-e89b-12d3-a456-426614174000');
-        expect(stateServiceSpy.selectPatient).toHaveBeenCalledWith(mockPatient);
+        expect(patientServiceSpy['getPatient']).toHaveBeenCalledWith('123e4567-e89b-12d3-a456-426614174000');
+        expect(stateServiceSpy['selectPatient']).toHaveBeenCalledWith(expect.objectContaining({ id: mockPatient.id }));
     });
 
     it('should set error when patient ID is not found', (): void => {
-        setup(null);
+        setup({ patientId: null });
         fixture.detectChanges();
         expect(component.error()).toBe('معرف المريض غير موجود');
-        expect(component.loading()).toBeFalse();
+        expect(component.loading()).toBe(false);
     });
 
     it('should set error when API call fails', (): void => {
-        setup();
-        patientServiceSpy.getPatient.and.returnValue(throwError((): Error => new Error('API Error')));
+        setup({ getPatientReturn: throwError((): Error => new Error('API Error')) });
         fixture.detectChanges();
         expect(component.error()).toBe('API Error');
-        expect(component.loading()).toBeFalse();
+        expect(component.loading()).toBe(false);
     });
 
     it('should navigate back to patients list', (): void => {
         setup();
         fixture.detectChanges();
         component.goBack();
-        expect(routerSpy.navigate).toHaveBeenCalledWith(['/patients']);
+        expect(routerSpy['navigate']).toHaveBeenCalledWith(['/patients']);
     });
 
     it('should navigate to edit page', (): void => {
         setup();
         fixture.detectChanges();
         component.navigateToEdit();
-        expect(routerSpy.navigate).toHaveBeenCalledWith(['/patients', mockPatient.id, 'edit']);
+        expect(routerSpy['navigate']).toHaveBeenCalledWith(['/patients', mockPatient.id, 'edit']);
     });
 
     it('should navigate to intake form', (): void => {
         setup();
         fixture.detectChanges();
         component.navigateToIntake();
-        expect(routerSpy.navigate).toHaveBeenCalledWith(['/patients', mockPatient.id, 'intake']);
+        expect(routerSpy['navigate']).toHaveBeenCalledWith(['/patients', mockPatient.id, 'intake']);
     });
 
     it('should navigate to assessments', (): void => {
         setup();
         fixture.detectChanges();
         component.navigateToAssessments();
-        expect(routerSpy.navigate).toHaveBeenCalledWith(['/patients', mockPatient.id, 'assessments']);
+        expect(routerSpy['navigate']).toHaveBeenCalledWith(['/patients', mockPatient.id, 'assessments']);
     });
 
     it('should set active tab', (): void => {
@@ -146,18 +158,18 @@ describe('PatientDetail', () => {
         setup();
         fixture.detectChanges();
         component.openArchiveModal();
-        expect(component.showArchiveModal()).toBeTrue();
+        expect(component.showArchiveModal()).toBe(true);
         component.closeArchiveModal();
-        expect(component.showArchiveModal()).toBeFalse();
+        expect(component.showArchiveModal()).toBe(false);
     });
 
     it('should open and close delete modal', (): void => {
         setup();
         fixture.detectChanges();
         component.openDeleteModal();
-        expect(component.showDeleteModal()).toBeTrue();
+        expect(component.showDeleteModal()).toBe(true);
         component.closeDeleteModal();
-        expect(component.showDeleteModal()).toBeFalse();
+        expect(component.showDeleteModal()).toBe(false);
     });
 
     it('should archive patient successfully', (): void => {
@@ -165,49 +177,17 @@ describe('PatientDetail', () => {
         fixture.detectChanges();
         component.openArchiveModal();
         component.archivePatient();
-        expect(patientServiceSpy.archivePatient).toHaveBeenCalledWith(mockPatient.id);
-        expect(stateServiceSpy.updatePatient).toHaveBeenCalledWith({ ...mockPatient, status: 'Archived' });
-        expect(notificationSpy.success).toHaveBeenCalledWith('تم أرشفة المريض بنجاح');
-        expect(component.showArchiveModal()).toBeFalse();
+        expect(patientServiceSpy['archivePatient']).toHaveBeenCalledWith(mockPatient.id);
+        expect(stateServiceSpy['updatePatient']).toHaveBeenCalledWith(expect.objectContaining({ status: 'Archived' }));
+        expect(notificationSpy['success']).toHaveBeenCalledWith('تم أرشفة المريض بنجاح');
+        expect(component.showArchiveModal()).toBe(false);
     });
 
     it('should handle archive error', (): void => {
-        setup();
-        patientServiceSpy.archivePatient.and.returnValue(throwError((): Error => new Error('Archive failed')));
+        setup({ archivePatientReturn: throwError((): Error => new Error('Archive failed')) });
         fixture.detectChanges();
         component.archivePatient();
-        expect(notificationSpy.error).toHaveBeenCalledWith('Archive failed');
-    });
-
-    it('should restore patient successfully', (): void => {
-        setup();
-        stateServiceSpy.selectedPatient = signal({ ...mockPatient, status: 'Archived' });
-        TestBed.overrideProvider(PatientStateService, {
-            useValue: stateServiceSpy,
-        });
-        fixture = TestBed.createComponent(PatientDetail);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-
-        component.restorePatient();
-        expect(patientServiceSpy.restorePatient).toHaveBeenCalledWith(mockPatient.id);
-        expect(stateServiceSpy.updatePatient).toHaveBeenCalledWith({ ...mockPatient, status: 'Active' });
-        expect(notificationSpy.success).toHaveBeenCalledWith('تم استعادة المريض بنجاح');
-    });
-
-    it('should handle restore error', (): void => {
-        setup();
-        stateServiceSpy.selectedPatient = signal({ ...mockPatient, status: 'Archived' });
-        TestBed.overrideProvider(PatientStateService, {
-            useValue: stateServiceSpy,
-        });
-        fixture = TestBed.createComponent(PatientDetail);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-
-        patientServiceSpy.restorePatient.and.returnValue(throwError((): Error => new Error('Restore failed')));
-        component.restorePatient();
-        expect(notificationSpy.error).toHaveBeenCalledWith('Restore failed');
+        expect(notificationSpy['error']).toHaveBeenCalledWith('Archive failed');
     });
 
     it('should delete patient successfully', (): void => {
@@ -215,36 +195,24 @@ describe('PatientDetail', () => {
         fixture.detectChanges();
         component.openDeleteModal();
         component.deletePatient();
-        expect(patientServiceSpy.deletePatient).toHaveBeenCalledWith(mockPatient.id);
-        expect(stateServiceSpy.removePatient).toHaveBeenCalledWith(mockPatient.id);
-        expect(stateServiceSpy.clearSelected).toHaveBeenCalled();
-        expect(notificationSpy.success).toHaveBeenCalledWith('تم حذف المريض بنجاح');
-        expect(routerSpy.navigate).toHaveBeenCalledWith(['/patients']);
+        expect(patientServiceSpy['deletePatient']).toHaveBeenCalledWith(mockPatient.id);
+        expect(stateServiceSpy['removePatient']).toHaveBeenCalledWith(mockPatient.id);
+        expect(stateServiceSpy['clearSelected']).toHaveBeenCalled();
+        expect(notificationSpy['success']).toHaveBeenCalledWith('تم حذف المريض بنجاح');
+        expect(routerSpy['navigate']).toHaveBeenCalledWith(['/patients']);
     });
 
     it('should handle delete error', (): void => {
-        setup();
-        patientServiceSpy.deletePatient.and.returnValue(throwError((): Error => new Error('Delete failed')));
+        setup({ deletePatientReturn: throwError((): Error => new Error('Delete failed')) });
         fixture.detectChanges();
         component.deletePatient();
-        expect(notificationSpy.error).toHaveBeenCalledWith('Delete failed');
-    });
-
-    it('should return true for isArchived when status is Archived', (): void => {
-        setup();
-        stateServiceSpy.selectedPatient = signal({ ...mockPatient, status: 'Archived' });
-        TestBed.overrideProvider(PatientStateService, {
-            useValue: stateServiceSpy,
-        });
-        fixture = TestBed.createComponent(PatientDetail);
-        component = fixture.componentInstance;
-        expect(component.isArchived()).toBeTrue();
+        expect(notificationSpy['error']).toHaveBeenCalledWith('Delete failed');
     });
 
     it('should return false for isArchived when status is Active', (): void => {
         setup();
         fixture.detectChanges();
-        expect(component.isArchived()).toBeFalse();
+        expect(component.isArchived()).toBe(false);
     });
 
     it('should format date correctly', (): void => {

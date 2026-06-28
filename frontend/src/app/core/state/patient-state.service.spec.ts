@@ -38,7 +38,7 @@ describe('PatientStateService', () => {
     it('should have empty initial state', () => {
         expect(service.patients()).toEqual([]);
         expect(service.selectedPatient()).toBeNull();
-        expect(service.loading()).toBeFalse();
+        expect(service.loading()).toBe(false);
         expect(service.error()).toBeNull();
         expect(service.patientCount()).toBe(0);
     });
@@ -136,9 +136,9 @@ describe('PatientStateService', () => {
     describe('setLoading', () => {
         it('should toggle loading state', () => {
             service.setLoading(true);
-            expect(service.loading()).toBeTrue();
+            expect(service.loading()).toBe(true);
             service.setLoading(false);
-            expect(service.loading()).toBeFalse();
+            expect(service.loading()).toBe(false);
         });
     });
 
@@ -166,7 +166,7 @@ describe('PatientStateService', () => {
 
             expect(service.patients()).toEqual([]);
             expect(service.selectedPatient()).toBeNull();
-            expect(service.loading()).toBeFalse();
+            expect(service.loading()).toBe(false);
             expect(service.error()).toBeNull();
             expect(service.patientCount()).toBe(0);
         });

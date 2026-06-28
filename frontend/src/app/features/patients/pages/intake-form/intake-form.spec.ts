@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
-import { of, throwError } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { IntakeForm } from './intake-form';
 import { PatientService } from '../../../../core/services/patient.service';
 import { NotificationService } from '../../../../core/services/notification.service';
@@ -20,33 +20,39 @@ const mockIntakeForm: IntakeFormModel = {
     submittedAt: null,
 };
 
+interface SetupOptions {
+    patientId?: string | null;
+    getIntakeFormReturn?: Observable<unknown>;
+    saveIntakeFormReturn?: Observable<unknown>;
+    uploadIntakeImageReturn?: Observable<unknown>;
+}
+
 describe('IntakeForm', () => {
     let component: IntakeForm;
     let fixture: ComponentFixture<IntakeForm>;
-    let patientServiceSpy: jasmine.SpyObj<PatientService>;
-    let notificationSpy: jasmine.SpyObj<NotificationService>;
-    let routerSpy: jasmine.SpyObj<Router>;
+    let patientServiceSpy: Record<string, ReturnType<typeof vi.fn>>;
+    let notificationSpy: Record<string, ReturnType<typeof vi.fn>>;
+    let routerSpy: Record<string, ReturnType<typeof vi.fn>>;
 
-    const setup = (patientId: string | null = 'patient-123'): void => {
-        patientServiceSpy = jasmine.createSpyObj('PatientService', [
-            'getIntakeForm',
-            'saveIntakeForm',
-            'uploadIntakeImage',
-        ]);
-        notificationSpy = jasmine.createSpyObj('NotificationService', ['success', 'error']);
-        routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    const setup = (opts: SetupOptions = {}): void => {
+        const { patientId = 'patient-123', getIntakeFormReturn, saveIntakeFormReturn, uploadIntakeImageReturn } = opts;
 
-        patientServiceSpy.getIntakeForm.and.returnValue(of(mockIntakeForm));
-        patientServiceSpy.saveIntakeForm.and.returnValue(of(mockIntakeForm));
-        patientServiceSpy.uploadIntakeImage.and.returnValue(
-            of({
-                imageUrl: 'http://example.com/image.jpg',
-                extractedData: {
-                    presentingProblem: 'Extracted problem',
-                    psychiatricHistory: 'Extracted history',
-                },
-            })
-        );
+        patientServiceSpy = {
+            getIntakeForm: vi.fn().mockReturnValue(getIntakeFormReturn ?? of(mockIntakeForm)),
+            saveIntakeForm: vi.fn().mockReturnValue(saveIntakeFormReturn ?? of(mockIntakeForm)),
+            uploadIntakeImage: vi.fn().mockReturnValue(
+                uploadIntakeImageReturn ??
+                    of({
+                        imageUrl: 'http://example.com/image.jpg',
+                        extractedData: {
+                            presentingProblem: 'Extracted problem',
+                            psychiatricHistory: 'Extracted history',
+                        },
+                    })
+            ),
+        };
+        notificationSpy = { success: vi.fn(), error: vi.fn() };
+        routerSpy = { navigate: vi.fn() };
 
         TestBed.configureTestingModule({
             imports: [ReactiveFormsModule],
@@ -84,7 +90,7 @@ describe('IntakeForm', () => {
     });
 
     it('should set error when patient ID is missing', (): void => {
-        setup(null);
+        setup({ patientId: null });
         fixture.detectChanges();
         expect(component.error()).toBe('معرف المريض مطلوب');
     });
@@ -92,15 +98,14 @@ describe('IntakeForm', () => {
     it('should load intake form on init', (): void => {
         setup();
         fixture.detectChanges();
-        expect(patientServiceSpy.getIntakeForm).toHaveBeenCalledWith('patient-123');
+        expect(patientServiceSpy['getIntakeForm']).toHaveBeenCalledWith('patient-123');
         expect(component.form.get('presentingProblem')?.value).toBe('Anxiety and panic attacks');
     });
 
     it('should handle load error gracefully', (): void => {
-        setup();
-        patientServiceSpy.getIntakeForm.and.returnValue(throwError((): Error => new Error('Load failed')));
+        setup({ getIntakeFormReturn: throwError((): Error => new Error('Load failed')) });
         fixture.detectChanges();
-        expect(component.loading()).toBeFalse();
+        expect(component.loading()).toBe(false);
     });
 
     it('should upload image and pre-fill form', (): void => {
@@ -111,13 +116,12 @@ describe('IntakeForm', () => {
             target: { files: [mockFile] },
         } as unknown as Event;
         component.onFileSelected(mockEvent);
-        expect(patientServiceSpy.uploadIntakeImage).toHaveBeenCalled();
-        expect(component.ocrSuccess()).toBeTrue();
+        expect(patientServiceSpy['uploadIntakeImage']).toHaveBeenCalled();
+        expect(component.ocrSuccess()).toBe(true);
     });
 
     it('should handle upload error', (): void => {
-        setup();
-        patientServiceSpy.uploadIntakeImage.and.returnValue(throwError((): Error => new Error('Upload failed')));
+        setup({ uploadIntakeImageReturn: throwError((): Error => new Error('Upload failed')) });
         fixture.detectChanges();
         const mockFile = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
         const mockEvent = {
@@ -134,14 +138,13 @@ describe('IntakeForm', () => {
             presentingProblem: 'Updated problem',
         });
         component.onSubmit();
-        expect(patientServiceSpy.saveIntakeForm).toHaveBeenCalled();
-        expect(notificationSpy.success).toHaveBeenCalledWith('Intake form saved successfully');
-        expect(routerSpy.navigate).toHaveBeenCalledWith(['/patients', 'patient-123']);
+        expect(patientServiceSpy['saveIntakeForm']).toHaveBeenCalled();
+        expect(notificationSpy['success']).toHaveBeenCalledWith('تم حفظ استمارة الاستقبال بنجاح');
+        expect(routerSpy['navigate']).toHaveBeenCalledWith(['/patients', 'patient-123']);
     });
 
     it('should handle submit error', (): void => {
-        setup();
-        patientServiceSpy.saveIntakeForm.and.returnValue(throwError((): Error => new Error('Save failed')));
+        setup({ saveIntakeFormReturn: throwError((): Error => new Error('Save failed')) });
         fixture.detectChanges();
         component.onSubmit();
         expect(component.error()).toBe('Save failed');
@@ -151,7 +154,7 @@ describe('IntakeForm', () => {
         setup();
         fixture.detectChanges();
         component.goBack();
-        expect(routerSpy.navigate).toHaveBeenCalledWith(['/patients', 'patient-123']);
+        expect(routerSpy['navigate']).toHaveBeenCalledWith(['/patients', 'patient-123']);
     });
 
     it('should clear file selection', (): void => {
@@ -163,6 +166,6 @@ describe('IntakeForm', () => {
         expect(component.selectedFileName()).toBeTruthy();
         component.clearFileSelection();
         expect(component.selectedFileName()).toBeNull();
-        expect(component.ocrSuccess()).toBeFalse();
+        expect(component.ocrSuccess()).toBe(false);
     });
 });

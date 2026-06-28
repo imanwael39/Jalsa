@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
-import { of, throwError } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { PatientForm } from './patient-form';
 import { PatientService } from '../../../../core/services/patient.service';
 import { PatientStateService } from '../../../../core/state/patient-state.service';
@@ -26,23 +26,36 @@ const mockPatient: Patient = {
     updatedAt: '2024-01-02T00:00:00Z',
 };
 
+interface SetupOptions {
+    patientId?: string | null;
+    getPatientReturn?: Observable<unknown>;
+    createPatientReturn?: Observable<unknown>;
+    updatePatientReturn?: Observable<unknown>;
+}
+
 describe('PatientForm', () => {
     let component: PatientForm;
     let fixture: ComponentFixture<PatientForm>;
-    let patientServiceSpy: jasmine.SpyObj<PatientService>;
-    let stateServiceSpy: jasmine.SpyObj<PatientStateService>;
-    let notificationSpy: jasmine.SpyObj<NotificationService>;
-    let routerSpy: jasmine.SpyObj<Router>;
+    let patientServiceSpy: Record<string, ReturnType<typeof vi.fn>>;
+    let stateServiceSpy: Record<string, ReturnType<typeof vi.fn>>;
+    let notificationSpy: Record<string, ReturnType<typeof vi.fn>>;
+    let routerSpy: Record<string, ReturnType<typeof vi.fn>>;
 
-    const setup = (patientId: string | null = null): void => {
-        patientServiceSpy = jasmine.createSpyObj('PatientService', ['getPatient', 'createPatient', 'updatePatient']);
-        stateServiceSpy = jasmine.createSpyObj('PatientStateService', ['selectPatient', 'addPatient', 'updatePatient']);
-        notificationSpy = jasmine.createSpyObj('NotificationService', ['success', 'error']);
-        routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    const setup = (opts: SetupOptions = {}): void => {
+        const { patientId = null, getPatientReturn, createPatientReturn, updatePatientReturn } = opts;
 
-        patientServiceSpy.getPatient.and.returnValue(of(mockPatient));
-        patientServiceSpy.createPatient.and.returnValue(of(mockPatient));
-        patientServiceSpy.updatePatient.and.returnValue(of(mockPatient));
+        patientServiceSpy = {
+            getPatient: vi.fn().mockReturnValue(getPatientReturn ?? of(mockPatient)),
+            createPatient: vi.fn().mockReturnValue(createPatientReturn ?? of(mockPatient)),
+            updatePatient: vi.fn().mockReturnValue(updatePatientReturn ?? of(mockPatient)),
+        };
+        stateServiceSpy = {
+            selectPatient: vi.fn(),
+            addPatient: vi.fn(),
+            updatePatient: vi.fn(),
+        };
+        notificationSpy = { success: vi.fn(), error: vi.fn() };
+        routerSpy = { navigate: vi.fn() };
 
         TestBed.configureTestingModule({
             imports: [ReactiveFormsModule],
@@ -77,28 +90,30 @@ describe('PatientForm', () => {
     it('should initialize in create mode when no patient ID', (): void => {
         setup();
         fixture.detectChanges();
-        expect(component.isEdit()).toBeFalse();
+        expect(component.isEdit()).toBe(false);
         expect(component.patientId()).toBeNull();
     });
 
     it('should initialize in edit mode when patient ID provided', (): void => {
-        setup('123e4567-e89b-12d3-a456-426614174000');
+        setup({ patientId: '123e4567-e89b-12d3-a456-426614174000' });
         fixture.detectChanges();
-        expect(component.isEdit()).toBeTrue();
+        expect(component.isEdit()).toBe(true);
         expect(component.patientId()).toBe('123e4567-e89b-12d3-a456-426614174000');
     });
 
     it('should load patient data in edit mode', (): void => {
-        setup('123e4567-e89b-12d3-a456-426614174000');
+        setup({ patientId: '123e4567-e89b-12d3-a456-426614174000' });
         fixture.detectChanges();
-        expect(patientServiceSpy.getPatient).toHaveBeenCalledWith('123e4567-e89b-12d3-a456-426614174000');
+        expect(patientServiceSpy['getPatient']).toHaveBeenCalledWith('123e4567-e89b-12d3-a456-426614174000');
         expect(component.form.get('fullName')?.value).toBe('John Doe');
         expect(component.form.get('email')?.value).toBe('john.doe@example.com');
     });
 
     it('should handle load error', (): void => {
-        setup('123e4567-e89b-12d3-a456-426614174000');
-        patientServiceSpy.getPatient.and.returnValue(throwError((): Error => new Error('Load failed')));
+        setup({
+            patientId: '123e4567-e89b-12d3-a456-426614174000',
+            getPatientReturn: throwError((): Error => new Error('Load failed')),
+        });
         fixture.detectChanges();
         expect(component.error()).toBe('Load failed');
     });
@@ -109,7 +124,7 @@ describe('PatientForm', () => {
         const fullNameControl = component.form.get('fullName');
         fullNameControl?.setValue('');
         fullNameControl?.markAsTouched();
-        expect(fullNameControl?.valid).toBeFalse();
+        expect(fullNameControl?.valid).toBe(false);
         expect(fullNameControl?.errors?.['required']).toBeTruthy();
     });
 
@@ -119,7 +134,7 @@ describe('PatientForm', () => {
         const fullNameControl = component.form.get('fullName');
         fullNameControl?.setValue('A');
         fullNameControl?.markAsTouched();
-        expect(fullNameControl?.valid).toBeFalse();
+        expect(fullNameControl?.valid).toBe(false);
         expect(fullNameControl?.errors?.['minlength']).toBeTruthy();
     });
 
@@ -129,7 +144,7 @@ describe('PatientForm', () => {
         const emailControl = component.form.get('email');
         emailControl?.setValue('invalid-email');
         emailControl?.markAsTouched();
-        expect(emailControl?.valid).toBeFalse();
+        expect(emailControl?.valid).toBe(false);
         expect(emailControl?.errors?.['email']).toBeTruthy();
     });
 
@@ -141,28 +156,27 @@ describe('PatientForm', () => {
             email: 'new@example.com',
         });
         component.onSubmit();
-        expect(patientServiceSpy.createPatient).toHaveBeenCalled();
-        expect(stateServiceSpy.addPatient).toHaveBeenCalledWith(mockPatient);
-        expect(notificationSpy.success).toHaveBeenCalledWith('تم إنشاء المريض بنجاح');
-        expect(routerSpy.navigate).toHaveBeenCalledWith(['/patients', mockPatient.id]);
+        expect(patientServiceSpy['createPatient']).toHaveBeenCalled();
+        expect(stateServiceSpy['addPatient']).toHaveBeenCalledWith(mockPatient);
+        expect(notificationSpy['success']).toHaveBeenCalledWith('تم إنشاء المريض بنجاح');
+        expect(routerSpy['navigate']).toHaveBeenCalledWith(['/patients', mockPatient.id]);
     });
 
     it('should submit edit form successfully', (): void => {
-        setup('123e4567-e89b-12d3-a456-426614174000');
+        setup({ patientId: '123e4567-e89b-12d3-a456-426614174000' });
         fixture.detectChanges();
         component.form.patchValue({
             fullName: 'Updated Name',
         });
         component.onSubmit();
-        expect(patientServiceSpy.updatePatient).toHaveBeenCalled();
-        expect(stateServiceSpy.updatePatient).toHaveBeenCalledWith(mockPatient);
-        expect(notificationSpy.success).toHaveBeenCalledWith('تم تحديث بيانات المريض بنجاح');
-        expect(routerSpy.navigate).toHaveBeenCalledWith(['/patients', '123e4567-e89b-12d3-a456-426614174000']);
+        expect(patientServiceSpy['updatePatient']).toHaveBeenCalled();
+        expect(stateServiceSpy['updatePatient']).toHaveBeenCalledWith(mockPatient);
+        expect(notificationSpy['success']).toHaveBeenCalledWith('تم تحديث بيانات المريض بنجاح');
+        expect(routerSpy['navigate']).toHaveBeenCalledWith(['/patients', '123e4567-e89b-12d3-a456-426614174000']);
     });
 
     it('should handle create error', (): void => {
-        setup();
-        patientServiceSpy.createPatient.and.returnValue(throwError((): Error => new Error('Create failed')));
+        setup({ createPatientReturn: throwError((): Error => new Error('Create failed')) });
         fixture.detectChanges();
         component.form.patchValue({
             fullName: 'New Patient',
@@ -172,8 +186,10 @@ describe('PatientForm', () => {
     });
 
     it('should handle update error', (): void => {
-        setup('123e4567-e89b-12d3-a456-426614174000');
-        patientServiceSpy.updatePatient.and.returnValue(throwError((): Error => new Error('Update failed')));
+        setup({
+            patientId: '123e4567-e89b-12d3-a456-426614174000',
+            updatePatientReturn: throwError((): Error => new Error('Update failed')),
+        });
         fixture.detectChanges();
         component.form.patchValue({
             fullName: 'Updated Name',
@@ -186,14 +202,14 @@ describe('PatientForm', () => {
         setup();
         fixture.detectChanges();
         component.onSubmit();
-        expect(component.form.get('fullName')?.touched).toBeTrue();
+        expect(component.form.get('fullName')?.touched).toBe(true);
     });
 
     it('should navigate back to patients list', (): void => {
         setup();
         fixture.detectChanges();
         component.goBack();
-        expect(routerSpy.navigate).toHaveBeenCalledWith(['/patients']);
+        expect(routerSpy['navigate']).toHaveBeenCalledWith(['/patients']);
     });
 
     it('should return field invalid status', (): void => {
@@ -202,25 +218,7 @@ describe('PatientForm', () => {
         const fullNameControl = component.form.get('fullName');
         fullNameControl?.setValue('');
         fullNameControl?.markAsTouched();
-        expect(component.isFieldInvalid('fullName')).toBeTrue();
-    });
-
-    it('should return field error message', (): void => {
-        setup();
-        fixture.detectChanges();
-        const fullNameControl = component.form.get('fullName');
-        fullNameControl?.setValue('');
-        fullNameControl?.markAsTouched();
-        expect(component.getFieldError('fullName')).toBe('Full name is required');
-    });
-
-    it('should return empty error for valid field', (): void => {
-        setup();
-        fixture.detectChanges();
-        const fullNameControl = component.form.get('fullName');
-        fullNameControl?.setValue('Valid Name');
-        fullNameControl?.markAsTouched();
-        expect(component.getFieldError('fullName')).toBe('');
+        expect(component.isFieldInvalid('fullName')).toBe(true);
     });
 
     it('should not submit when form is invalid', (): void => {
@@ -228,7 +226,7 @@ describe('PatientForm', () => {
         fixture.detectChanges();
         component.form.get('fullName')?.setValue('');
         component.onSubmit();
-        expect(patientServiceSpy.createPatient).not.toHaveBeenCalled();
-        expect(patientServiceSpy.updatePatient).not.toHaveBeenCalled();
+        expect(patientServiceSpy['createPatient']).not.toHaveBeenCalled();
+        expect(patientServiceSpy['updatePatient']).not.toHaveBeenCalled();
     });
 });

@@ -63,7 +63,9 @@ export class InputComponent implements ControlValueAccessor {
         this.blur.emit(event);
     }
 
+    private _generatedId = `input-${Math.random().toString(36).substring(2, 9)}`;
+
     get inputId(): string {
-        return this.id || `input-${this.name || Math.random().toString(36).substring(2, 9)}`;
+        return this.id || (this.name ? `input-${this.name}` : this._generatedId);
     }
 }
