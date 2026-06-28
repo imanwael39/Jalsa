@@ -46,6 +46,11 @@ export const routes: Routes = [
         ],
     },
     {
+        path: 'forbidden',
+        loadComponent: () =>
+            import('./features/auth/pages/forbidden/forbidden.component').then(m => m.ForbiddenComponent),
+    },
+    {
         path: '**',
         redirectTo: 'auth/login',
     },

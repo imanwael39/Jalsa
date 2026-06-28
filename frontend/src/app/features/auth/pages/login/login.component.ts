@@ -60,19 +60,22 @@ export class LoginComponent {
 
         const { email, password } = this.loginForm.getRawValue();
 
-        this.authService.login({ email, password }).pipe(
-            takeUntilDestroyed(this.destroyRef),
-        ).subscribe({
-            next: () => {
-                this.loading.set(false);
-                this.router.navigateByUrl(this.returnUrl);
-            },
-            error: (err) => {
-                this.loading.set(false);
-                this.loginError.set(
-                    err.error?.message || err.error?.error || 'البريد الإلكتروني أو كلمة المرور غير صحيحة',
-                );
-            },
-        });
+        this.authService
+            .login({ email, password })
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: () => {
+                    this.loading.set(false);
+                    const roles = this.authService.currentUser()?.roles ?? [];
+                    const target = roles.includes('Patient') ? '/exercises/my-exercises' : this.returnUrl;
+                    this.router.navigateByUrl(target);
+                },
+                error: err => {
+                    this.loading.set(false);
+                    this.loginError.set(
+                        err.error?.message || err.error?.error || 'البريد الإلكتروني أو كلمة المرور غير صحيحة'
+                    );
+                },
+            });
     }
 }
