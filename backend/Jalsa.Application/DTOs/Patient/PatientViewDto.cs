@@ -1,7 +1,8 @@
-namespace Jalsa.API.DTOs.Patient;
-public class PatientResponseDTO
+namespace Jalsa.Application.DTOs.Patient;
+
+public class PatientViewDto
 {
-     public Guid Id { get; set; }
+    public Guid Id { get; set; }
     public Guid TherapistId { get; set; }
     public Guid? ClinicId { get; set; }
     public Guid? UserId { get; set; }

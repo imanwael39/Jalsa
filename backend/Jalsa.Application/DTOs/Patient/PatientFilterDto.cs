@@ -1,4 +1,4 @@
-namespace Jalsa.API.DTOs.Patient;
+namespace Jalsa.Application.DTOs.Patient;
 
 public class PatientFilterDto
 {

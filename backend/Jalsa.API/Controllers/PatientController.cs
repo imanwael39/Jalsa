@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using Jalsa.API.DTOs.Patient;
 using Jalsa.API.Exceptions;
-using Jalsa.API.Services.Interfaces;
+using Jalsa.Application.DTOs.Patient;
+using Jalsa.Application.Interfaces.Services;
 
 namespace Jalsa.API.Controllers;
 
@@ -36,7 +36,7 @@ public class PatientController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreatePatientDTO dto)
+    public async Task<IActionResult> Create(PatientCreateDto dto)
     {
         var currentUserId = GetCurrentUserId();
         var result = await _patientService.CreateAsync(dto, currentUserId);
@@ -44,7 +44,7 @@ public class PatientController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, UpdatePatientDto dto)
+    public async Task<IActionResult> Update(Guid id, PatientUpdateDto dto)
     {
         var currentUserId = GetCurrentUserId();
         var result = await _patientService.UpdateAsync(id, dto, currentUserId);

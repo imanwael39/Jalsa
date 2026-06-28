@@ -1,23 +1,23 @@
-using Jalsa.API.DTOs.Patient;
-using Jalsa.API.Exceptions;
-using Jalsa.API.Services.Interfaces;
+using Jalsa.Application.DTOs.Patient;
 using Jalsa.Application.Interfaces.Repositores;
-using Jalsa.Domain.Models.Patient;
+using Jalsa.Application.Interfaces.Services;
 using Jalsa.Domain.Models.Clinic;
+using Jalsa.Domain.Models.Patient;
 
-namespace Jalsa.API.Services.Implementations;
+namespace Jalsa.Application.Services;
 
 public class PatientService : IPatientService
 {
     private readonly IUnitOfWork _unitOfWork;
+
     public PatientService(IUnitOfWork unitOfWork)
     {
-        _unitOfWork=unitOfWork;
+        _unitOfWork = unitOfWork;
     }
 
-        public async Task<PatientResponseDTO> CreateAsync(CreatePatientDTO dto, Guid currentUserId)
+    public async Task<PatientViewDto> CreateAsync(PatientCreateDto dto, Guid userId)
     {
-        var therapistId = await ResolveTherapistIdAsync(currentUserId);
+        var therapistId = await ResolveTherapistIdAsync(userId);
 
         var patient = new Patient
         {
@@ -42,20 +42,20 @@ public class PatientService : IPatientService
         return MapToDto(patient);
     }
 
-        public async Task<PatientResponseDTO> GetByIdAsync(Guid id, Guid currentUserId)
+    public async Task<PatientViewDto> GetByIdAsync(Guid id, Guid userId)
     {
-        var therapistId = await ResolveTherapistIdAsync(currentUserId);
+        var therapistId = await ResolveTherapistIdAsync(userId);
         var patient = await _unitOfWork.Repository<Patient>().GetByIdAsync(id);
 
         if (patient == null || patient.TherapistId != therapistId)
-            throw new ApiException(404, "Patient not found");
+            throw new KeyNotFoundException("Patient not found");
 
         return MapToDto(patient);
     }
 
-        public async Task<IEnumerable<PatientResponseDTO>> GetAllAsync(Guid currentUserId, PatientFilterDto? filter = null)
+    public async Task<IEnumerable<PatientViewDto>> GetAllAsync(Guid userId, PatientFilterDto? filter = null)
     {
-        var therapistId = await ResolveTherapistIdAsync(currentUserId);
+        var therapistId = await ResolveTherapistIdAsync(userId);
         var query = _unitOfWork.Repository<Patient>().Query()
             .Where(p => p.TherapistId == therapistId);
 
@@ -80,13 +80,14 @@ public class PatientService : IPatientService
         var patients = query.OrderByDescending(p => p.CreatedAt).ToList();
         return patients.Select(MapToDto);
     }
-        public async Task<PatientResponseDTO> UpdateAsync(Guid id, UpdatePatientDto dto, Guid currentUserId)
+
+    public async Task<PatientViewDto> UpdateAsync(Guid id, PatientUpdateDto dto, Guid userId)
     {
-        var therapistId = await ResolveTherapistIdAsync(currentUserId);
+        var therapistId = await ResolveTherapistIdAsync(userId);
         var patient = await _unitOfWork.Repository<Patient>().GetByIdAsync(id);
 
         if (patient == null || patient.TherapistId != therapistId)
-            throw new ApiException(404, "Patient not found");
+            throw new KeyNotFoundException("Patient not found");
 
         patient.FullName = dto.FullName;
         patient.DateOfBirth = dto.DateOfBirth;
@@ -103,13 +104,14 @@ public class PatientService : IPatientService
 
         return MapToDto(patient);
     }
-        public async Task ArchiveAsync(Guid id, Guid currentUserId)
+
+    public async Task ArchiveAsync(Guid id, Guid userId)
     {
-        var therapistId = await ResolveTherapistIdAsync(currentUserId);
+        var therapistId = await ResolveTherapistIdAsync(userId);
         var patient = await _unitOfWork.Repository<Patient>().GetByIdAsync(id);
 
         if (patient == null || patient.TherapistId != therapistId)
-            throw new ApiException(404, "Patient not found");
+            throw new KeyNotFoundException("Patient not found");
 
         patient.Status = "Archived";
         patient.UpdatedAt = DateTime.UtcNow;
@@ -117,13 +119,14 @@ public class PatientService : IPatientService
         _unitOfWork.Repository<Patient>().Update(patient);
         await _unitOfWork.SaveChangesAsync();
     }
-        public async Task RestoreAsync(Guid id, Guid currentUserId)
+
+    public async Task RestoreAsync(Guid id, Guid userId)
     {
-        var therapistId = await ResolveTherapistIdAsync(currentUserId);
+        var therapistId = await ResolveTherapistIdAsync(userId);
         var patient = await _unitOfWork.Repository<Patient>().GetByIdAsync(id);
 
         if (patient == null || patient.TherapistId != therapistId)
-            throw new ApiException(404, "Patient not found");
+            throw new KeyNotFoundException("Patient not found");
 
         patient.Status = "Active";
         patient.UpdatedAt = DateTime.UtcNow;
@@ -131,28 +134,29 @@ public class PatientService : IPatientService
         _unitOfWork.Repository<Patient>().Update(patient);
         await _unitOfWork.SaveChangesAsync();
     }
-        public async Task DeleteAsync(Guid id, Guid currentUserId)
+
+    public async Task DeleteAsync(Guid id, Guid userId)
     {
-        var therapistId = await ResolveTherapistIdAsync(currentUserId);
+        var therapistId = await ResolveTherapistIdAsync(userId);
         var patient = await _unitOfWork.Repository<Patient>().GetByIdAsync(id);
 
         if (patient == null || patient.TherapistId != therapistId)
-            throw new ApiException(404, "Patient not found");
+            throw new KeyNotFoundException("Patient not found");
 
         _unitOfWork.Repository<Patient>().Remove(patient);
         await _unitOfWork.SaveChangesAsync();
     }
-        private async Task<Guid> ResolveTherapistIdAsync(Guid userId)
+
+    private async Task<Guid> ResolveTherapistIdAsync(Guid userId)
     {
         var therapist = await _unitOfWork.Repository<Therapist>()
-            .FindSingleAsync(t => t.UserId == userId);
-
-        if (therapist == null)
-            throw new ApiException(403, "Authenticated user is not a therapist");
+            .FindSingleAsync(t => t.UserId == userId)
+            ?? throw new UnauthorizedAccessException("Therapist profile not found.");
 
         return therapist.Id;
     }
-        private static PatientResponseDTO MapToDto(Patient patient) => new()
+
+    private static PatientViewDto MapToDto(Patient patient) => new()
     {
         Id = patient.Id,
         TherapistId = patient.TherapistId,

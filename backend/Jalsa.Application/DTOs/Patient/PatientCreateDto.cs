@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Jalsa.API.DTOs.Patient;
+namespace Jalsa.Application.DTOs.Patient;
 
-public class UpdatePatientDto
+public class PatientCreateDto
 {
     [Required, MaxLength(200)]
     public string FullName { get; set; } = string.Empty;
@@ -11,7 +11,6 @@ public class UpdatePatientDto
 
     [MaxLength(20)]
     public string? Gender { get; set; }
-
     [MaxLength(20)]
     public string? Phone { get; set; }
 

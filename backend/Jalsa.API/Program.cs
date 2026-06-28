@@ -23,7 +23,6 @@ using Jalsa.Infrastructure.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Jalsa.Application.Validators.Exercise;
-using Jalsa.API.DTOs.Patient;
 
 DotNetEnv.Env.Load();
 
