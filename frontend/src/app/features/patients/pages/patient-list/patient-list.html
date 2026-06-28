@@ -1,8 +1,8 @@
 <div class="patient-list">
     <div class="page-header">
-        <h2 class="page-title">المرضى</h2>
+        <h1 class="page-title">المرضى</h1>
         <app-button variant="primary" (clicked)="navigateToNew()" ariaLabel="إضافة مريض جديد">
-            <i class="bi bi-plus-lg" aria-hidden="true"></i> إضافة مريض +
+            <i class="bi bi-plus-lg" aria-hidden="true"></i> إضافة مريض
         </app-button>
     </div>
 
@@ -30,61 +30,102 @@
         </div>
     </div>
 
+    <!-- Error State -->
     @if (error()) {
-        <div class="alert alert-danger" role="alert">{{ error() }}</div>
+        <div class="error-state">
+            <div class="error-state-icon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <h3 class="error-state-title">تعذّر تحميل قائمة المرضى</h3>
+            <p class="error-state-message">{{ error() }}</p>
+            <button class="btn btn-primary btn-sm" (click)="loadPatients()">
+                <i class="bi bi-arrow-clockwise"></i> إعادة المحاولة
+            </button>
+        </div>
     }
 
-    <div class="table-responsive">
-        <app-table
-            [data]="patients()"
-            [columns]="columns"
-            [loading]="loading()"
-            emptyMessage="لم يتم العثور على مرضى"
-            (rowClick)="onRowClick($event)"
-        >
-            <ng-template appColumnCell="dateOfBirth" let-row>
-                {{ formatDate(row.dateOfBirth) }}
-            </ng-template>
-            <ng-template appColumnCell="status" let-row>
-                <span
-                    class="badge"
-                    [class.bg-success]="row.status === 'Active'"
-                    [class.bg-danger]="row.status === 'Archived'"
-                >
-                    {{ row.status | statusAr }}
-                </span>
-            </ng-template>
-            <ng-template appColumnCell="actions" let-row>
-                <div class="d-flex gap-1 justify-content-center">
-                    <app-button variant="secondary" size="sm" (clicked)="navigateToView(row.id)" ariaLabel="عرض المريض">
-                        <i class="bi bi-eye" aria-hidden="true"></i>
-                    </app-button>
-                    <app-button variant="primary" size="sm" (clicked)="navigateToEdit(row.id)" ariaLabel="تعديل المريض">
-                        <i class="bi bi-pencil" aria-hidden="true"></i>
-                    </app-button>
-                    @if (row.status === 'Active') {
-                        <app-button
-                            variant="danger"
-                            size="sm"
-                            (clicked)="archivePatient(row.id)"
-                            ariaLabel="أرشفة المريض"
-                        >
-                            <i class="bi bi-archive" aria-hidden="true"></i>
-                        </app-button>
-                    } @else {
+    <!-- Skeleton Loading (initial load only) -->
+    @if (loading() && patients().length === 0) {
+        <div class="skeleton-table">
+            <div class="skeleton-table-header">
+                @for (col of [1, 2, 3, 4, 5, 6, 7]; track col) {
+                    <div class="skeleton-line" style="flex: 1; height: 1rem"></div>
+                }
+            </div>
+            @for (row of [1, 2, 3, 4, 5]; track row) {
+                <div class="skeleton-table-row">
+                    @for (col of [1, 2, 3, 4, 5, 6, 7]; track col) {
+                        <div class="skeleton-line" style="flex: 1"></div>
+                    }
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Table (hidden during initial skeleton load) -->
+    @if (!error() && !(loading() && patients().length === 0)) {
+        <div class="table-responsive">
+            <app-table
+                [data]="patients()"
+                [columns]="columns"
+                [loading]="loading()"
+                emptyMessage="لم يتم العثور على مرضى"
+                (rowClick)="onRowClick($event)"
+            >
+                <ng-template appColumnCell="dateOfBirth" let-row>
+                    {{ formatDate(row.dateOfBirth) }}
+                </ng-template>
+                <ng-template appColumnCell="status" let-row>
+                    <span
+                        class="badge"
+                        [class.bg-success]="row.status === 'Active'"
+                        [class.bg-danger]="row.status === 'Archived'"
+                    >
+                        {{ row.status | statusAr }}
+                    </span>
+                </ng-template>
+                <ng-template appColumnCell="actions" let-row>
+                    <div class="d-flex gap-1 justify-content-center">
                         <app-button
                             variant="secondary"
                             size="sm"
-                            (clicked)="restorePatient(row.id)"
-                            ariaLabel="استعادة المريض"
+                            (clicked)="navigateToView(row.id)"
+                            ariaLabel="عرض المريض"
                         >
-                            <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                            <i class="bi bi-eye" aria-hidden="true"></i>
                         </app-button>
-                    }
-                </div>
-            </ng-template>
-        </app-table>
-    </div>
+                        <app-button
+                            variant="primary"
+                            size="sm"
+                            (clicked)="navigateToEdit(row.id)"
+                            ariaLabel="تعديل المريض"
+                        >
+                            <i class="bi bi-pencil" aria-hidden="true"></i>
+                        </app-button>
+                        @if (row.status === 'Active') {
+                            <app-button
+                                variant="danger"
+                                size="sm"
+                                (clicked)="archivePatient(row.id)"
+                                ariaLabel="أرشفة المريض"
+                            >
+                                <i class="bi bi-archive" aria-hidden="true"></i>
+                            </app-button>
+                        } @else {
+                            <app-button
+                                variant="secondary"
+                                size="sm"
+                                (clicked)="restorePatient(row.id)"
+                                ariaLabel="استعادة المريض"
+                            >
+                                <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                            </app-button>
+                        }
+                    </div>
+                </ng-template>
+            </app-table>
+        </div>
+    }
 
     @if (totalItems > 0) {
         <div class="mt-3">
