@@ -1,16 +1,16 @@
 .patient-exercise {
-    padding: 0.5rem 0;
+    padding: var(--space-2) 0;
 }
 
 .exercise-meta p {
-    font-size: 0.9375rem;
+    font-size: var(--text-md);
     color: var(--text-secondary);
     line-height: 1.6;
 }
 
 .log-section h6 {
     font-weight: 600;
-    margin-bottom: 0.75rem;
+    margin-bottom: var(--space-3);
     color: var(--text-primary);
 }
 
@@ -25,6 +25,6 @@
 
 .logs-section h6 {
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--space-2);
     color: var(--text-primary);
 }

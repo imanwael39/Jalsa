@@ -3,22 +3,22 @@
 }
 
 .page-title {
-    font-family: 'Cairo', sans-serif;
-    font-size: 1.5rem;
+    font-family: var(--font-family-heading);
+    font-size: var(--text-xl);
     font-weight: 700;
     color: var(--text-primary);
     text-align: center;
-    margin: 0 0 1.75rem 0;
+    margin: 0 0 var(--space-7) 0;
     letter-spacing: -0.01em;
 }
 
 .forgot-row {
     text-align: start;
-    margin-bottom: 1.25rem;
+    margin-bottom: var(--space-5);
 }
 
 .forgot-link {
-    font-size: 0.875rem;
+    font-size: var(--text-base);
     color: var(--primary);
     text-decoration: none;
     font-weight: 500;
@@ -31,12 +31,12 @@
 }
 
 .submit-btn {
-    margin-bottom: 1.25rem;
+    margin-bottom: var(--space-5);
 }
 
 .switch-text {
     text-align: center;
-    font-size: 0.9375rem;
+    font-size: var(--text-md);
     color: var(--text-muted);
     margin: 0;
 }
@@ -54,10 +54,10 @@
 }
 
 .alert {
-    padding: 0.875rem 1.125rem;
+    padding: var(--space-3) var(--space-4);
     border-radius: var(--radius-md);
-    font-size: 0.9375rem;
-    margin-bottom: 1rem;
+    font-size: var(--text-md);
+    margin-bottom: var(--space-4);
     text-align: start;
     border: none;
 }
@@ -65,11 +65,11 @@
 .alert-error {
     background-color: var(--danger-light);
     color: var(--danger-dark);
-    border-inline-start: 4px solid var(--danger);
+    border-inline-start: 3px solid var(--danger);
 }
 
 @media (max-width: 375px) {
     .page-title {
-        font-size: 1.25rem;
+        font-size: var(--text-lg);
     }
 }

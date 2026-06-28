@@ -1,22 +1,20 @@
 .session-detail {
-    padding: 0.5rem 0;
-    animation: fadeIn 0.3s ease-out;
+    padding: var(--space-2) 0;
+    animation: fadeIn 200ms ease-out;
 }
 
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(8px);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
     }
 }
 
 .note-section {
-    padding: 0.75rem;
-    border-radius: 0.5rem;
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
     background-color: var(--bg-secondary, #f8f9fa);
 }
 

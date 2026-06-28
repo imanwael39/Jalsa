@@ -5,27 +5,27 @@
 .profile-container {
     max-width: 720px;
     margin-inline: auto;
-    padding: 2rem 1rem;
+    padding: var(--space-7) var(--space-4);
 }
 
 .profile-container h2 {
+    font-family: var(--font-family-heading);
     font-weight: 700;
     color: var(--text-primary);
-    margin-block-end: 1.5rem;
+    margin-block-end: var(--space-6);
 }
 
 .card {
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-card);
+    border-radius: var(--radius-md);
     background-color: var(--surface);
 }
 
 .card-header {
     background-color: var(--gray-50);
     border-bottom: 1px solid var(--border-color);
-    padding: 1rem 1.25rem;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
 }
 
 .card-header h5 {
@@ -35,7 +35,7 @@
 }
 
 .card-body {
-    padding: 1.5rem;
+    padding: var(--space-6);
 }
 
 .text-center {
@@ -43,23 +43,23 @@
 }
 
 .py-5 {
-    padding-block: 3rem;
+    padding-block: var(--space-8);
 }
 
 .alert {
     border-radius: var(--radius-md);
-    font-size: 0.9375rem;
+    font-size: var(--text-md);
     border: none;
 }
 
 .alert-danger {
     background-color: var(--danger-light);
     color: var(--danger-dark);
-    border-inline-start: 4px solid var(--danger);
+    border-inline-start: 3px solid var(--danger);
 }
 
 .alert-success {
     background-color: var(--success-light);
     color: var(--success-dark);
-    border-inline-start: 4px solid var(--success);
+    border-inline-start: 3px solid var(--success);
 }
