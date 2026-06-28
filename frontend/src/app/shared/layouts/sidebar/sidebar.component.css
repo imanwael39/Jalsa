@@ -1,9 +1,11 @@
 .sidebar {
     width: var(--sidebar-width, 260px);
     min-height: 100vh;
-    background: linear-gradient(180deg, #073A2D 0%, #0B5240 50%, #073A2D 100%);
-    color: #fff;
-    transition: width var(--transition-slow), transform var(--transition-slow);
+    background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--primary-dark) 50%, var(--sidebar-bg) 100%);
+    color: var(--text-inverse);
+    transition:
+        width var(--transition-slow),
+        transform var(--transition-slow);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
@@ -27,11 +29,11 @@
     font-weight: 800;
     white-space: nowrap;
     letter-spacing: -0.01em;
-    color: #ffffff;
+    color: var(--sidebar-text-active);
 }
 
 .toggle-btn {
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--sidebar-text);
     background: transparent;
     border: none;
     cursor: pointer;
@@ -47,7 +49,12 @@
 
 .toggle-btn:hover {
     background: var(--sidebar-hover);
-    color: #ffffff;
+    color: var(--sidebar-text-active);
+}
+
+.toggle-btn:focus-visible {
+    outline: 2px solid var(--sidebar-focus-ring);
+    outline-offset: 2px;
 }
 
 .sidebar-nav {
@@ -68,7 +75,7 @@
 }
 
 .sidebar-nav::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--sidebar-scrollbar);
     border-radius: var(--radius-full);
 }
 
@@ -102,6 +109,11 @@
     color: var(--sidebar-text-active);
 }
 
+.sidebar-nav .nav-link:focus-visible {
+    outline: 2px solid var(--sidebar-focus-ring);
+    outline-offset: -2px;
+}
+
 .sidebar-nav .nav-link.active {
     background: var(--sidebar-active);
     color: var(--sidebar-text-active);
@@ -116,7 +128,7 @@
     transform: translateY(-50%);
     width: 3px;
     height: 60%;
-    background: var(--secondary);
+    background: var(--primary-light);
     border-radius: var(--radius-full);
 }
 
@@ -162,13 +174,10 @@
     display: none;
 }
 
-/* ================================================================
-   Sidebar Footer: User info + logout
-   ================================================================ */
 .sidebar-footer {
     margin-top: auto;
     padding: 1rem 0.75rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid var(--sidebar-border);
     position: relative;
     z-index: 1;
 }
@@ -179,17 +188,17 @@
     gap: 0.75rem;
     padding: 0.75rem;
     border-radius: var(--radius-md);
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--sidebar-hover);
     transition: background var(--transition-fast);
 }
 
 .sidebar-user:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--sidebar-hover-strong);
 }
 
 .user-avatar {
     font-size: 2rem;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--sidebar-text);
     flex-shrink: 0;
 }
 
@@ -204,7 +213,7 @@
 .user-name {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #fff;
+    color: var(--sidebar-text-active);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -212,14 +221,14 @@
 
 .user-role {
     font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--sidebar-text);
     white-space: nowrap;
 }
 
 .logout-btn {
     background: transparent;
     border: none;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--sidebar-text);
     cursor: pointer;
     padding: 0.375rem;
     display: flex;
@@ -232,8 +241,13 @@
 }
 
 .logout-btn:hover {
-    background: rgba(239, 68, 68, 0.2);
-    color: #FCA5A5;
+    background: var(--sidebar-logout-bg);
+    color: var(--sidebar-logout-text);
+}
+
+.logout-btn:focus-visible {
+    outline: 2px solid var(--sidebar-focus-ring);
+    outline-offset: 2px;
 }
 
 .sidebar.collapsed .sidebar-footer {
@@ -250,9 +264,6 @@
     display: none;
 }
 
-/* ================================================================
-   Responsive: Mobile sidebar
-   ================================================================ */
 @media (max-width: 768px) {
     .sidebar {
         width: 280px;

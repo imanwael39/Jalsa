@@ -7,90 +7,101 @@
     /* ================================================================
        Primary Palette — Healthcare Green (exact spec colors)
        ================================================================ */
-    --primary: #0F6E56;
-    --primary-light: #22A47F;
-    --primary-dark: #0B5240;
-    --primary-50: #E6F4EE;
-    --primary-100: #D0EBE1;
-    --primary-200: #A8D9C8;
-    --primary-500: #22A47F;
-    --primary-600: #0F6E56;
-    --primary-700: #0B5240;
-    --primary-800: #073A2D;
-    --primary-900: #04221A;
+    --primary: #0f6e56;
+    --primary-light: #22a47f;
+    --primary-dark: #0b5240;
+    --primary-50: #e6f4ee;
+    --primary-100: #d0ebe1;
+    --primary-200: #a8d9c8;
+    --primary-500: #22a47f;
+    --primary-600: #0f6e56;
+    --primary-700: #0b5240;
+    --primary-800: #073a2d;
+    --primary-900: #04221a;
 
     /* ================================================================
-       Secondary Palette — Soft Green
+       Secondary Palette — Indigo
        ================================================================ */
-    --secondary: #22A47F;
-    --secondary-light: #4BBF9A;
-    --secondary-dark: #0F6E56;
-    --secondary-50: #E6F4EE;
-    --secondary-100: #D0EBE1;
-    --secondary-200: #A8D9C8;
-    --secondary-500: #22A47F;
-    --secondary-600: #0F6E56;
+    --secondary: #6366f1;
+    --secondary-light: #818cf8;
+    --secondary-dark: #4f46e5;
+    --secondary-50: #eef2ff;
+    --secondary-100: #e0e7ff;
+    --secondary-200: #c7d2fe;
+    --secondary-500: #6366f1;
+    --secondary-600: #4f46e5;
 
     /* ================================================================
-       Semantic Colors (exact spec)
+       Accent Palette — Warm Orange
        ================================================================ */
-    --success: #0F6E56;
-    --success-light: #E6F4EE;
-    --success-dark: #0B5240;
+    --accent: #ea580c;
+    --accent-light: #fb923c;
+    --accent-dark: #c2410c;
+    --accent-50: #fff7ed;
+    --accent-100: #ffedd5;
+    --accent-200: #fed7aa;
 
-    --warning: #F59E0B;
-    --warning-light: #FEF3C7;
-    --warning-dark: #D97706;
+    /* ================================================================
+       Semantic Colors
+       ================================================================ */
+    --success: #059669;
+    --success-light: #ecfdf5;
+    --success-dark: #047857;
 
-    --danger: #EF4444;
-    --danger-light: #FEE2E2;
-    --danger-dark: #DC2626;
+    --warning: #f59e0b;
+    --warning-light: #fef3c7;
+    --warning-dark: #d97706;
 
-    --info: #6366F1;
-    --info-light: #EEF2FF;
-    --info-dark: #4F46E5;
+    --danger: #ef4444;
+    --danger-light: #fee2e2;
+    --danger-dark: #dc2626;
+
+    --info: #6366f1;
+    --info-light: #eef2ff;
+    --info-dark: #4f46e5;
 
     /* ================================================================
        Neutral Palette (exact spec)
        ================================================================ */
-    --gray-50: #F8FAFC;
-    --gray-100: #F1F5F9;
-    --gray-200: #E2E8F0;
-    --gray-300: #CBD5E1;
-    --gray-400: #94A3B8;
-    --gray-500: #64748B;
+    --gray-50: #f8fafc;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
     --gray-600: #475569;
     --gray-700: #334155;
-    --gray-800: #1E293B;
-    --gray-900: #0D1B2A;
+    --gray-800: #1e293b;
+    --gray-900: #0d1b2a;
 
     /* ================================================================
        Background & Surface (exact spec)
        ================================================================ */
-    --background: #E6F4EE;
-    --surface: #F8FAFC;
-    --surface-elevated: #FFFFFF;
-    --surface-hover: #F1F5F9;
+    --background: #e6f4ee;
+    --surface: #f8fafc;
+    --surface-elevated: #ffffff;
+    --surface-hover: #f1f5f9;
 
     /* ================================================================
        Text (exact spec)
        ================================================================ */
-    --text-primary: #0D1B2A;
+    --text-primary: #0d1b2a;
     --text-secondary: #475569;
-    --text-muted: #64748B;
-    --text-inverse: #FFFFFF;
+    --text-muted: #64748b;
+    --text-inverse: #ffffff;
 
     /* ================================================================
        Borders (exact spec)
        ================================================================ */
-    --border-color: #E2E8F0;
-    --border-light: #F1F5F9;
+    --border-color: #e2e8f0;
+    --border-light: #f1f5f9;
     --border-focus: var(--primary);
 
     /* ================================================================
        Typography — Tajawal Arabic (exact spec)
        ================================================================ */
-    --font-family-base: 'Tajawal', 'Cairo', 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-family-base:
+        'Tajawal', 'Cairo', 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-family-mono: 'JetBrains Mono', 'Fira Code', monospace;
     --font-size-base: 0.9375rem;
     --line-height-base: 1.7;
@@ -171,24 +182,29 @@
        ================================================================ */
     --sidebar-width: 260px;
     --sidebar-collapsed-width: 64px;
-    --sidebar-bg: #073A2D;
+    --sidebar-bg: #073a2d;
     --sidebar-text: rgba(255, 255, 255, 0.7);
     --sidebar-text-active: #ffffff;
     --sidebar-hover: rgba(255, 255, 255, 0.08);
+    --sidebar-hover-strong: rgba(255, 255, 255, 0.12);
     --sidebar-active: rgba(34, 164, 127, 0.25);
     --sidebar-border: rgba(255, 255, 255, 0.08);
+    --sidebar-scrollbar: rgba(255, 255, 255, 0.15);
+    --sidebar-focus-ring: rgba(34, 164, 127, 0.5);
+    --sidebar-logout-bg: rgba(239, 68, 68, 0.15);
+    --sidebar-logout-text: #fca5a5;
 
     /* ================================================================
        Header
        ================================================================ */
     --header-height: 64px;
-    --header-bg: #FFFFFF;
-    --header-border: #E2E8F0;
+    --header-bg: #ffffff;
+    --header-border: #e2e8f0;
 
     /* ================================================================
        Additional Design Tokens
        ================================================================ */
-    --bg-subtle: #F1F5F9;
-    --text-muted-color: #64748B;
+    --bg-subtle: #f1f5f9;
+    --text-muted-color: #64748b;
     --text-secondary-color: #475569;
 }
