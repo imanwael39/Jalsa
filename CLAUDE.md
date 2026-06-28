@@ -32,36 +32,37 @@
 
 ```
 frontend/src/app/
-├── core/           # services/, guards/, interceptors/, models/, state/, api/
+├── core/           # services/ (16), guards/, interceptors/, models/, state/, api/
 ├── shared/         # components/ (13), layouts/ (5), directives/, pipes/, validators/
 ├── features/       # auth, patients, sessions, exercises, reports, dashboard, chatbot
 ├── app.routes.ts   # Root routes with lazy loading
 └── app.config.ts   # Providers: interceptors, router, animations, charts
 
 backend/
-├── Jalsa.API/          # Controllers (9), DTOs/Auth, Hubs, Services (Auth + 9 AI), HealthChecks
+├── Jalsa.API/          # Controllers (11), DTOs/Auth, Hubs, Services (Auth + 11 AI), HealthChecks
 ├── Jalsa.Domain/       # 33 entity models across 8 subfolders
 ├── Jalsa.Application/  # Services (6), DTOs (23), Interfaces, Validators (3)
 ├── Jalsa.Infrastructure/ # JalsaDbContext (34 DbSets), Migrations (1), Repositories (8)
-└── Jalsa.Tests/        # 6 test classes (28 tests passing)
+└── Jalsa.Tests/        # 7 test classes (51 tests passing)
 ```
 
 ## Current Status (2026-06-28)
 
 | Module | Frontend | Backend | Overall |
 |--------|----------|---------|---------|
-| Auth | Done (login, register, profile, forgot/reset pwd) | Done (8 endpoints + JWT + refresh) | 95% |
+| Auth | Done (login, register, profile, forgot/reset pwd, /forbidden page) | Done (8 endpoints + JWT + refresh) | 98% |
 | Patients | Done (list, CRUD, detail, intake, assessments) | Done (CRUD + intake + assessments + OCR) | 90% |
-| Sessions | Done (list, CRUD, detail + notes) | Done (CRUD + notes) | 90% |
+| Sessions | Done (list, CRUD, detail + notes + voice recorder) | Done (CRUD + notes + Whisper STT + AI summary) | 95% |
 | Exercises | Done (list, assign, my-exercises) | Done (CRUD + logs + extend + reminder job) | 90% |
 | Dashboard | Done (charts, stats cards) | Done (ProgressController) | 90% |
-| AI Reports | Done (list, generate, detail) | Done (generate, CRUD, approve) | 85% |
-| Chatbot | Routes defined, **no pages** | Hub only (ChatHub), **NO ChatController** | 20% — Post-MVP |
-| Tests | 270 tests (Vitest, 24 spec files) | 28 tests (xUnit, 5 real test classes + 1 empty) | 85% |
+| AI Reports | Done (list, generate, detail, export HTML, reject) | Done (generate, CRUD, approve, reject, export) | 95% |
+| Chatbot | Done (chat-list, chat-room + SignalR real-time) | Done (ChatController + ChatHub mapped) | 85% |
+| Notifications | Done (header bell, dropdown, polling every 30s) | Done (NotificationController + DB records) | 90% |
+| Tests | 270 tests (Vitest, 24 spec files) | 51 tests (xUnit, 7 test classes) | 90% |
 
 ### Build Status
 
-- **Backend**: Builds clean (0 errors), 28 tests passing
+- **Backend**: Builds clean (0 errors), 51 tests passing
 - **Frontend**: Builds clean, 270 tests passing
 - **CI/CD**: GitHub Actions active — parallel backend (.NET 8) and frontend (Node 22) jobs
 
@@ -71,16 +72,12 @@ backend/
 
 | # | Issue | Severity | Details |
 |---|-------|----------|---------|
-| 1 | **Frontend→Backend endpoint mismatches** | Medium | Frontend defines endpoints with no backend implementation: `sessions/{id}/voice`, `sessions/{id}/summary`, `reports/{id}/reject`, `reports/{id}/export`, `chat/*` |
-| 2 | **Intake image endpoint mismatch** | Low | Frontend: `/api/patient/{id}/intake/image` vs Backend: `/api/patient/{id}/intake/{intakeFormId}/ocr` (different URL shape) |
-| 3 | **No ChatController** | Post-MVP | REST endpoints missing for chat history; ChatHub exists for WebSocket but no CRUD API |
-| 4 | **Chatbot frontend empty** | Post-MVP | Routes file exists but no pages or components implemented |
-| 5 | **Only Exercise validators** | Low | FluentValidation only covers 3 Exercise DTOs; all other DTOs use DataAnnotations only |
-| 6 | **Empty test file** | Trivial | `Jalsa.Tests/UnitTest1.cs` is an empty placeholder |
-| 7 | **No integration/E2E tests** | Medium | Backend tests are unit-only (mocked); no controller or integration tests |
-| 8 | **Mock API still enabled in dev** | Low | `environment.ts` has `enableMockApi: true` — may mask real API issues during development |
+| 1 | **Intake image endpoint mismatch** | Low | Frontend: `/api/patient/{id}/intake/image` vs Backend: `/api/patient/{id}/intake/{intakeFormId}/ocr` (different URL shape) |
+| 2 | **Only Exercise validators** | Low | FluentValidation only covers 3 Exercise DTOs; all other DTOs use DataAnnotations only |
+| 3 | **No integration/E2E tests** | Medium | Backend tests are unit-only (mocked); no controller or integration tests |
+| 4 | **Mock API still enabled in dev** | Low | `environment.ts` has `enableMockApi: true` — may mask real API issues during development |
 
-### Fixed Issues (17 bugs + 4 post-MVP items)
+### Fixed Issues (complete log)
 
 <details>
 <summary>Click to expand fixed issues</summary>
@@ -106,43 +103,51 @@ backend/
 19. ~~`PatientService` in API layer~~ — Fixed: Moved to Application layer
 20. ~~No frontend tests~~ — Fixed: 270 Vitest tests passing
 21. ~~No CI/CD~~ — Fixed: GitHub Actions workflow
+22. ~~No ChatController~~ — Fixed: Full REST API at `/api/chat` (conversations, history, send, close)
+23. ~~ChatHub not mapped~~ — Fixed: `app.MapHub<ChatHub>("/chatHub")` added to Program.cs
+24. ~~Chatbot frontend empty~~ — Fixed: chat-list + chat-room pages with SignalR real-time
+25. ~~No in-app notifications~~ — Fixed: NotificationController + InAppNotificationService + header bell with dropdown
+26. ~~`sessions/{id}/voice` no backend~~ — Fixed: `POST /api/sessions/{id}/voice` (Whisper STT, saves VoiceMemo)
+27. ~~`sessions/{id}/summary` no backend~~ — Fixed: `GET /api/sessions/{id}/summary` (GPT-4o session summary)
+28. ~~`reports/{id}/reject` no backend~~ — Fixed: `POST /api/reports/{id}/reject`
+29. ~~`reports/{id}/export` no backend~~ — Fixed: `GET /api/reports/{id}/export` (Arabic RTL HTML download)
+30. ~~Patient role stuck on login page~~ — Fixed: Role-aware redirect in login + `/forbidden` page
+31. ~~`/forbidden` route missing~~ — Fixed: `ForbiddenComponent` registered at `/forbidden`, also role-aware `goHome()`
+32. ~~Empty test file (UnitTest1.cs)~~ — Fixed: Deleted placeholder
+33. ~~Backend tests at 28~~ — Fixed: Added SessionServiceTests + SessionControllerTests → 51 tests
 
 </details>
 
-## What Ships (MVP Scope)
+## What Ships
 
-**Included**: Login/Register/Profile, Patient CRUD + Intake + Assessments, Session CRUD + Notes, Exercise CRUD + Logging, Dashboard with charts + stats, AI Report generation + approval, Role-based access (Therapist/Patient/Admin guards)
+**Completed MVP + Post-MVP**: Login/Register/Profile, Patient CRUD + Intake + Assessments, Session CRUD + Notes + Voice STT + AI Summary, Exercise CRUD + Logging, Dashboard with charts + stats, AI Report generation + approval + reject + HTML export, Role-based access (with working `/forbidden` page), Chatbot UI + REST API + SignalR real-time, In-app notification bell + polling
 
-**Excluded (Post-MVP)**: Chatbot UI, Voice memo STT, PDF export, In-app notifications, Admin panel, Semantic search UI, Account lockout, Rate limiting
+**Remaining (Post-MVP)**: Admin panel, Semantic search UI, Account lockout, Rate limiting, Binary PDF export (HTML export shipped instead)
 
 ## API Reference
 
-### Controllers (9 total)
+### Controllers (11 total)
 
 | Controller | Route | Auth | Endpoints |
 |-----------|-------|------|-----------|
 | AuthController | `/api/auth` | Mixed | `POST register`, `POST login`, `POST refresh`, `POST revoke`, `POST forgot-password`, `POST reset-password`, `GET profile` ★, `PUT profile` ★ |
 | PatientController | `/api/patient` | ★ | `GET`, `GET /{id}`, `POST`, `PUT /{id}`, `PATCH /{id}/archive`, `PATCH /{id}/restore`, `DELETE /{id}` |
-| SessionController | `/api/sessions` | ★ Therapist | `POST`, `GET /{id}`, `GET /patient/{patientId}`, `PUT /{id}`, `DELETE /{id}`, `POST /{id}/note`, `GET /{id}/note` |
+| SessionController | `/api/sessions` | ★ Therapist | `POST`, `GET /{id}`, `GET /patient/{patientId}`, `PUT /{id}`, `DELETE /{id}`, `POST /{id}/note`, `GET /{id}/note`, `POST /{id}/voice` (Whisper STT), `GET /{id}/summary` (GPT-4o) |
 | ExerciseController | `/api/exercises` | ★ | Therapist: `GET`, `GET /{id}`, `GET /patient/{patientId}`, `POST`, `PUT /{id}`, `DELETE /{id}`, `PUT /{id}/extend`; Patient: `GET /my`, `POST /log`, `GET /my/logs` |
-| ReportController | `/api/reports` | ★ Therapist | `POST /generate`, `GET /{id}`, `GET /patient/{patientId}`, `PUT /{id}`, `POST /{id}/approve`, `DELETE /{id}` |
+| ReportController | `/api/reports` | ★ Therapist | `POST /generate`, `GET /{id}`, `GET /patient/{patientId}`, `PUT /{id}`, `POST /{id}/approve`, `POST /{id}/reject`, `GET /{id}/export`, `DELETE /{id}` |
 | AssessmentController | `/api/patient/{id}/assessments` | ★ Therapist | `GET`, `POST` (template auto-resolution) |
 | IntakeController | `/api/patient/{id}/intake` | ★ Therapist | `GET`, `POST` (save), `POST /submit`, `POST /{intakeFormId}/ocr` |
 | AiController | `/api/ai` | ★ Therapist | `POST /summarize/{patientId}`, `POST /report-draft/{patientId}` |
 | ProgressController | `/api/progress` | ★ Therapist | `GET /dashboard` |
+| ChatController | `/api/chat` | ★ | `GET /conversations`, `GET /{conversationId}/history`, `POST /conversations` (idempotent), `PATCH /conversations/{conversationId}/close`, `POST /send` |
+| NotificationController | `/api/notifications` | ★ | `GET` (last 50 + unreadCount), `PATCH /{id}/read`, `PATCH /read-all` |
 
 ★ = `[Authorize]` required
 
-### Frontend Endpoints Without Backend (gaps to close)
+### Remaining Frontend→Backend Gaps
 
 | Frontend Endpoint | Status |
 |-------------------|--------|
-| `GET /api/sessions/{id}/voice` | No backend — voice memo upload not implemented |
-| `GET /api/sessions/{id}/summary` | No backend — AI summary endpoint not implemented |
-| `POST /api/reports/{id}/reject` | No backend — only approve exists |
-| `GET /api/reports/{id}/export` | No backend — PDF export not implemented |
-| `GET /api/chat/{sessionId}/history` | No backend — ChatController doesn't exist |
-| `POST /api/chat/send` | No backend — ChatController doesn't exist |
 | `POST /api/patient/{id}/intake/image` | Mismatch — backend is `POST /api/patient/{id}/intake/{intakeFormId}/ocr` |
 
 ### SignalR Hubs
@@ -163,13 +168,14 @@ backend/
 | AssessmentService | IAssessmentService | Assessment CRUD + template resolution |
 | IntakeService | IIntakeService | Intake form CRUD + submission |
 | ProgressService | IProgressService | Dashboard analytics |
-| EmailNotificationService | INotificationService | Email notifications |
+| EmailNotificationService | INotificationService | Email + in-app notification DB persistence |
 
 **API Layer (Auth + AI):**
 | Service | Purpose |
 |---------|---------|
 | AuthService | JWT generation, password hashing, refresh tokens |
 | EmailService | SMTP email delivery |
+| SttService | Whisper STT transcription via Azure OpenAI AudioClient |
 | ChatAiService | OpenAI conversation generation |
 | ConversationMemoryService | Conversation context storage |
 | CrisisDetectionService | Crisis keyword/pattern detection |
@@ -177,7 +183,7 @@ backend/
 | VectorStore | SQL-based vector search |
 | OcrService | Azure Computer Vision OCR |
 | ReportGenerationService | AI report drafting |
-| SummarizationService | Patient note summarization |
+| SummarizationService | Patient note + session summarization (GPT-4o) |
 
 ### Domain Model (33 entities, 34 DbSets)
 
@@ -195,17 +201,17 @@ backend/
 
 ## Frontend Structure
 
-### Features (6 active + 1 empty)
+### Features (7 active)
 
 | Feature | Pages | Key Components |
 |---------|-------|----------------|
-| Auth | login, register, forgot-password, reset-password, profile | — |
+| Auth | login, register, forgot-password, reset-password, profile, **forbidden** | — |
 | Patients | patient-list, patient-form, patient-detail, intake-form, assessment | — |
 | Sessions | session-landing, session-list, session-form, session-detail | summary, voice-recorder |
 | Exercises | exercise-list, assign-exercise, patient-exercise | — |
 | Reports | report-landing, report-list, report-generate, report-detail | — |
 | Dashboard | dashboard | — |
-| Chatbot | *(empty — no pages)* | — |
+| Chatbot | **chat-list, chat-room** | — |
 
 ### Shared Components (13)
 
@@ -218,9 +224,9 @@ Charts: BarChart, LineChart
 
 MainLayout (sidebar + header + footer + router-outlet), AuthLayout, Sidebar, Header, Footer
 
-### Core Services (15)
+### Core Services (16)
 
-auth, patient, session, exercise, dashboard, report, notification, loading, app-state, navigation, exercise-state, patient-state, session-state, dashboard-state, report-state
+auth, patient, session, exercise, dashboard, report, notification, loading, app-state, navigation, exercise-state, patient-state, session-state, dashboard-state, report-state, **in-app-notification**
 
 ### Interceptors (3) + Guards (2)
 
@@ -228,13 +234,19 @@ auth, patient, session, exercise, dashboard, report, notification, loading, app-
 - `errorInterceptor` — Arabic error messages, 401 auto-logout
 - `loadingInterceptor` — Spinner toggle
 - `authGuard` — Redirects unauthenticated to /auth/login
-- `roleGuard(roles[])` — Factory guard, redirects to /forbidden
+- `roleGuard(roles[])` — Factory guard, redirects to /forbidden (page exists)
+
+### Patient Role Routing
+
+- Login redirects **Patient → `/exercises/my-exercises`** (not /dashboard which requires Therapist/Admin)
+- `/forbidden` route registered in `app.routes.ts`, serves `ForbiddenComponent`
+- `ForbiddenComponent.goHome()` is role-aware: Patient → /exercises/my-exercises, others → /dashboard
 
 ### Environment Config
 
 | Env | API URL | Mock API |
 |-----|---------|----------|
-| Development | `http://localhost:5014` | **true** |
+| Development | `http://localhost:5014` | **true** (known issue — may mask real API calls) |
 | Staging | `https://staging-api.jalsa.com/api` | false |
 | Production | `https://api.jalsa.com/api` | false |
 
@@ -246,11 +258,10 @@ auth, patient, session, exercise, dashboard, report, notification, loading, app-
 - Features: assessment, intake-form, patient-detail, patient-form
 - Shared: checkbox, input, radio, select, textarea
 
-### Backend (28 tests, 5 active test classes)
+### Backend (51 tests, 7 test classes)
 
-- ExerciseServiceTests, ProgressControllerTests, ProgressServiceTests, AssessmentServiceTests, IntakeServiceTests
+- ExerciseServiceTests, ProgressControllerTests, ProgressServiceTests, AssessmentServiceTests, IntakeServiceTests, **SessionServiceTests**, **SessionControllerTests** (uses EF InMemory)
 - Helper: AsyncQueryProvider (test infrastructure)
-- Empty: UnitTest1.cs (placeholder)
 
 ## Development Rules
 
@@ -294,13 +305,13 @@ The SRS defines 7 modules. Current implementation status vs spec:
 
 | SRS Module | Specified Features | Implemented | Gap |
 |------------|-------------------|-------------|-----|
-| 1. Auth | Register, login, JWT, refresh, roles, lockout, profile | All except lockout | Account lockout (Post-MVP) |
+| 1. Auth | Register, login, JWT, refresh, roles, lockout, profile | All except lockout; /forbidden page added | Account lockout (Post-MVP) |
 | 2. Patient Mgmt | CRUD, intake, assessments (PHQ-9/GAD-7/BDI), OCR, search, archive | All core features | Summary chips partial |
-| 3. Session Notes | Linked sessions, structured fields, Whisper STT, auto-save, embeddings, semantic search | CRUD + notes | Voice STT, auto-save, embeddings, semantic search (Post-MVP) |
-| 4. Exercise Tracking | Assign, log status, reflections, progress bars, notifications, deactivate/extend | All except notifications | In-app notifications (Post-MVP) |
+| 3. Session Notes | Linked sessions, structured fields, Whisper STT, auto-save, embeddings, semantic search | CRUD + notes + **Whisper STT** + **AI summary** | Auto-save, embeddings, semantic search (Post-MVP) |
+| 4. Exercise Tracking | Assign, log status, reflections, progress bars, notifications, deactivate/extend | All + **in-app notifications** | — |
 | 5. Dashboard | Assessment line charts, session bar charts, exercise donut, today's stats | All implemented | — |
-| 6. AI Reports | One-click generate, context agent, structured Arabic report, edit, PDF, versioning | Generate + edit + versioning | PDF export (Post-MVP) |
-| 7. Chatbot | Arabic GPT chat, crisis detection, therapist alerts, memory, audit logging | ChatHub + crisis detection backend | No UI, no ChatController (Post-MVP) |
+| 6. AI Reports | One-click generate, context agent, structured Arabic report, edit, PDF, versioning | Generate + edit + versioning + **reject** + **HTML export** | Binary PDF (Post-MVP) |
+| 7. Chatbot | Arabic GPT chat, crisis detection, therapist alerts, memory, audit logging | **ChatController + ChatHub + chat-list + chat-room UI + real-time SignalR** | Crisis alert UI, therapist push notifications (Post-MVP) |
 
 ## Mock Data
 
