@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, TrackB
 
 @Component({
     selector: 'app-pagination',
+    standalone: true,
     templateUrl: './pagination.component.html',
     styleUrl: './pagination.component.css',
     changeDetection: ChangeDetectionStrategy.OnPush,

@@ -7,7 +7,7 @@
 `2026-06-29_Iman_sprint-1`
 
 ## Current Task
-**FIX-010** — Fix SessionController voice memo (Completed)
+**FIX-011** — Fix 4 shared components to standalone (Completed)
 
 ## Sprint Progress
 
@@ -23,10 +23,10 @@
 | FIX-008 | Fix ChatController architecture | **Completed** |
 | FIX-009 | Fix NotificationController architecture | **Completed** |
 | FIX-010 | Fix SessionController voice memo | **Completed** |
-| FIX-011 | Fix 4 shared components to standalone | Not Started |
+| FIX-011 | Fix 4 shared components to standalone | **Completed** |
 
 ## Completion Percentage
-Sprint 1: 10/11 (91%)
+Sprint 1: 11/11 (100%) ✅ COMPLETE
 
 ## Completed Tasks
 1. **FIX-001** — Changed `localStorage.getItem('access_token')` to `localStorage.getItem('jalsa_token')` in `chat-room.component.ts:111` to match AuthService's TOKEN_KEY constant.
@@ -39,9 +39,10 @@ Sprint 1: 10/11 (91%)
 8. **FIX-008** — Extracted ChatService from ChatController. Created IChatService interface, ChatService implementation using IUnitOfWork, 5 Chat DTOs. Controller now injects IChatService instead of JalsaDbContext.
 9. **FIX-009** — Extended INotificationService with query/update methods (GetNotificationsAsync, MarkAsReadAsync, MarkAllAsReadAsync). Implemented in EmailNotificationService. Created 2 Notification DTOs. NotificationController now injects INotificationService instead of JalsaDbContext.
 10. **FIX-010** — Added SaveVoiceMemoAsync to ISessionService and SessionService. Moved VoiceMemo creation from controller to service layer using IUnitOfWork. Removed JalsaDbContext dependency from SessionController. Created VoiceMemoViewDto. Updated SessionControllerTests to match new constructor.
+11. **FIX-011** — Added `standalone: true` to PaginationComponent, EmptyStateComponent, SpinnerComponent, and ModalComponent. All 4 were missing the standalone flag required by ADR conventions.
 
 ## Remaining Tasks
-FIX-011
+None — Sprint 1 complete!
 
 ## Build Status
 - **Frontend**: Build clean (0 errors, warnings only — CSS budget + ESM)
@@ -55,16 +56,16 @@ FIX-011
 N/A
 
 ## Manual Verification Results
-- SessionController no longer imports JalsaDbContext, Microsoft.EntityFrameworkCore, Jalsa.Infrastructure.Data, or Jalsa.Domain.Models.Session
-- SessionController constructor reduced from 4 to 3 parameters (removed JalsaDbContext)
-- Voice memo creation moved to SessionService.SaveVoiceMemoAsync using IUnitOfWork
-- SessionService performs ownership check before saving voice memo
-- VoiceMemoViewDto created for typed response
-- SessionControllerTests updated: removed InMemory DbContext, now uses 3-arg constructor
+- PaginationComponent: `standalone: true` added
+- EmptyStateComponent: `standalone: true` added
+- SpinnerComponent: `standalone: true` added
+- ModalComponent: `standalone: true` added
+- All 4 components use new Angular control flow (`@if`, `@for`) — no CommonModule imports needed
+- All 4 already had `changeDetection: ChangeDetectionStrategy.OnPush`
 
 ## Regression Test Results
-- Backend: 51/51 tests passed
-- Backend build: 0 errors, 0 warnings
+- Frontend: 270/270 tests passed, build clean
+- Backend: 51/51 tests passed, build clean
 
 ## Known Issues
 1. Pre-existing: `error.interceptor.spec.ts` has 1 failing error (Arabic message mismatch) — unrelated to current work
@@ -77,4 +78,4 @@ None
 None introduced
 
 ## Next Recommended Task
-**FIX-011** — Fix 4 shared components to standalone (Frontend task)
+**Sprint 2** — Begin Sprint 2 tasks (create branch `2026-06-29_Iman_sprint-2`)
