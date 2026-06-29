@@ -1,10 +1,9 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Jalsa.API.Exceptions;
-using Jalsa.Infrastructure.Data;
-using Jalsa.Domain.Models.Chat;
+using Jalsa.Application.DTOs.Chat;
+using Jalsa.Application.Interfaces.Services;
 
 namespace Jalsa.API.Controllers;
 
@@ -13,135 +12,64 @@ namespace Jalsa.API.Controllers;
 [Authorize]
 public class ChatController : ControllerBase
 {
-    private readonly JalsaDbContext _context;
+    private readonly IChatService _chatService;
 
-    public ChatController(JalsaDbContext context)
+    public ChatController(IChatService chatService)
     {
-        _context = context;
+        _chatService = chatService;
     }
 
     [HttpGet("conversations")]
     public async Task<IActionResult> GetConversations([FromQuery] Guid? patientId)
     {
-        var query = _context.ChatConversations.AsQueryable();
-
-        if (patientId.HasValue)
-            query = query.Where(c => c.PatientId == patientId.Value);
-
-        var conversations = await query
-            .OrderByDescending(c => c.LastActivityAt ?? c.CreatedAt)
-            .Select(c => new
-            {
-                c.Id,
-                c.PatientId,
-                PatientName = c.Patient.FullName,
-                c.Status,
-                c.LastActivityAt,
-                c.CreatedAt,
-                MessageCount = c.ChatMessages.Count
-            })
-            .ToListAsync();
-
+        var conversations = await _chatService.GetConversationsAsync(patientId);
         return Ok(conversations);
     }
 
     [HttpGet("{conversationId:guid}/history")]
     public async Task<IActionResult> GetHistory(Guid conversationId)
     {
-        var conversation = await _context.ChatConversations
-            .Include(c => c.ChatMessages.OrderBy(m => m.CreatedAt))
-            .FirstOrDefaultAsync(c => c.Id == conversationId);
-
-        if (conversation is null)
+        var history = await _chatService.GetHistoryAsync(conversationId);
+        if (history is null)
             return NotFound(new { message = "المحادثة غير موجودة" });
 
-        var messages = conversation.ChatMessages.Select(m => new
-        {
-            m.Id,
-            m.ConversationId,
-            m.SenderType,
-            m.Content,
-            m.CreatedAt
-        });
-
-        return Ok(messages);
+        return Ok(history);
     }
 
     [HttpPost("conversations")]
-    public async Task<IActionResult> CreateConversation([FromBody] CreateConversationRequest request)
+    public async Task<IActionResult> CreateConversation([FromBody] CreateConversationDto dto)
     {
-        var patientExists = await _context.Patients.AnyAsync(p => p.Id == request.PatientId);
-        if (!patientExists)
-            return NotFound(new { message = "المريض غير موجود" });
-
-        var existing = await _context.ChatConversations
-            .Where(c => c.PatientId == request.PatientId && c.Status == "Open")
-            .FirstOrDefaultAsync();
-
-        if (existing is not null)
-            return Ok(new { existing.Id, existing.PatientId, existing.Status, existing.CreatedAt });
-
-        var conversation = new ChatConversation
+        try
         {
-            Id = Guid.NewGuid(),
-            PatientId = request.PatientId,
-            Status = "Open",
-            LastActivityAt = DateTime.UtcNow,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
-
-        _context.ChatConversations.Add(conversation);
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(GetHistory), new { conversationId = conversation.Id }, new
+            var result = await _chatService.CreateConversationAsync(dto.PatientId);
+            return CreatedAtAction(nameof(GetHistory), new { conversationId = result.Id }, result);
+        }
+        catch (KeyNotFoundException ex)
         {
-            conversation.Id,
-            conversation.PatientId,
-            conversation.Status,
-            conversation.CreatedAt
-        });
+            return NotFound(new { message = ex.Message });
+        }
     }
 
     [HttpPatch("conversations/{conversationId:guid}/close")]
     public async Task<IActionResult> CloseConversation(Guid conversationId)
     {
-        var conversation = await _context.ChatConversations.FindAsync(conversationId);
-        if (conversation is null)
+        var result = await _chatService.CloseConversationAsync(conversationId);
+        if (result is null)
             return NotFound(new { message = "المحادثة غير موجودة" });
 
-        conversation.Status = "Closed";
-        conversation.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
-
-        return Ok(new { conversation.Id, conversation.Status });
+        return Ok(result);
     }
 
     [HttpPost("send")]
-    public async Task<IActionResult> Send([FromBody] SendMessageRequest request)
+    public async Task<IActionResult> Send([FromBody] SendMessageDto dto)
     {
-        var conversation = await _context.ChatConversations.FindAsync(request.ConversationId);
-        if (conversation is null)
+        var senderType = User.IsInRole("Patient") ? "Patient" : "Therapist";
+        var result = await _chatService.SendMessageAsync(dto.ConversationId, dto.Content, senderType);
+
+        if (result is null)
             return NotFound(new { message = "المحادثة غير موجودة" });
 
-        var userId = GetCurrentUserId();
-        var senderType = User.IsInRole("Patient") ? "Patient" : "Therapist";
-
-        var message = new ChatMessage
-        {
-            Id = Guid.NewGuid(),
-            ConversationId = request.ConversationId,
-            SenderType = senderType,
-            Content = request.Content,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        _context.ChatMessages.Add(message);
-        conversation.LastActivityAt = DateTime.UtcNow;
-        conversation.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
-
-        return Ok(new { message.Id, message.ConversationId, message.SenderType, message.Content, message.CreatedAt });
+        return Ok(result);
     }
 
     private Guid GetCurrentUserId()
@@ -152,6 +80,3 @@ public class ChatController : ControllerBase
         return userId;
     }
 }
-
-public record CreateConversationRequest(Guid PatientId);
-public record SendMessageRequest(Guid ConversationId, string Content);
