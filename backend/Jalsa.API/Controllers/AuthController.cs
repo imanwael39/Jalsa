@@ -12,7 +12,7 @@ namespace Jalsa.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController : ControllerBase
+public class AuthController : BaseController
 {
     private readonly IAuthService _authService;
     private readonly IUnitOfWork _unitOfWork;
@@ -130,17 +130,6 @@ public class AuthController : ControllerBase
         await _unitOfWork.SaveChangesAsync();
 
         return await GetProfile();
-    }
-
-    private Guid GetCurrentUserId()
-    {
-        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                    ?? User.FindFirstValue("sub");
-
-        if (string.IsNullOrEmpty(claim) || !Guid.TryParse(claim, out var userId))
-            throw new ApiException(401, "Invalid authentication token");
-
-        return userId;
     }
 
     private static (string firstName, string lastName) SplitFullName(string? fullName)

@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using Jalsa.API.Exceptions;
 using Jalsa.Application.DTOs.Patient;
 using Jalsa.Application.Interfaces.Services;
 
@@ -10,7 +8,7 @@ namespace Jalsa.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize(Roles = "Therapist")]
-public class PatientController : ControllerBase
+public class PatientController : BaseController
 {
     private readonly IPatientService _patientService;
 
@@ -73,16 +71,5 @@ public class PatientController : ControllerBase
         var currentUserId = GetCurrentUserId();
         await _patientService.DeleteAsync(id, currentUserId);
         return NoContent();
-    }
-
-    private Guid GetCurrentUserId()
-    {
-        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                    ?? User.FindFirstValue("sub");
-
-        if (string.IsNullOrEmpty(claim) || !Guid.TryParse(claim, out var userId))
-            throw new ApiException(401, "Invalid authentication token");
-
-        return userId;
     }
 }

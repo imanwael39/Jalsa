@@ -1,7 +1,5 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Jalsa.API.Exceptions;
 using Jalsa.Application.Interfaces.Services;
 
 namespace Jalsa.API.Controllers;
@@ -9,7 +7,7 @@ namespace Jalsa.API.Controllers;
 [ApiController]
 [Route("api/notifications")]
 [Authorize]
-public class NotificationController : ControllerBase
+public class NotificationController : BaseController
 {
     private readonly INotificationService _notificationService;
 
@@ -44,13 +42,5 @@ public class NotificationController : ControllerBase
         var userId = GetCurrentUserId();
         var markedRead = await _notificationService.MarkAllAsReadAsync(userId);
         return Ok(new { markedRead });
-    }
-
-    private Guid GetCurrentUserId()
-    {
-        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
-        if (string.IsNullOrEmpty(claim) || !Guid.TryParse(claim, out var userId))
-            throw new ApiException(401, "Invalid authentication token");
-        return userId;
     }
 }

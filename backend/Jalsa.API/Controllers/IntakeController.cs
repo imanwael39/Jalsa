@@ -1,7 +1,5 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Jalsa.API.Exceptions;
 using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.Application.DTOs.Intake;
 using Jalsa.Application.Interfaces.Repositories;
@@ -12,7 +10,7 @@ namespace Jalsa.API.Controllers;
 
 [ApiController]
 [Authorize(Roles = "Therapist")]
-public class IntakeController : ControllerBase
+public class IntakeController : BaseController
 {
     private readonly IOcrService _ocrService;
     private readonly IUnitOfWork _unitOfWork;
@@ -75,17 +73,6 @@ public class IntakeController : ControllerBase
         await _unitOfWork.SaveChangesAsync();
 
         return Ok(result);
-    }
-
-    private Guid GetCurrentUserId()
-    {
-        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                    ?? User.FindFirstValue("sub");
-
-        if (string.IsNullOrEmpty(claim) || !Guid.TryParse(claim, out var userId))
-            throw new ApiException(401, "Invalid authentication token");
-
-        return userId;
     }
 }
 

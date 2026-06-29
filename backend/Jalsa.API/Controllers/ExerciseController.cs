@@ -8,7 +8,7 @@ namespace Jalsa.API.Controllers;
 
 [ApiController]
 [Route("api/exercises")]
-public class ExerciseController : ControllerBase
+public class ExerciseController : BaseController
 {
     private readonly IExerciseService _exerciseService;
 
@@ -120,13 +120,6 @@ public class ExerciseController : ControllerBase
     }
 
     // ──────────────────────────── Helpers ────────────────────────────────────────
-
-    private Guid GetCurrentUserId()
-    {
-        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)
-            ?? throw new UnauthorizedAccessException("User ID claim not found.");
-        return Guid.Parse(claim);
-    }
 
     private Guid? GetPatientId()
     {

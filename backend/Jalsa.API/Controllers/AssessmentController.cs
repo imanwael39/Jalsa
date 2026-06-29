@@ -1,7 +1,5 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Jalsa.API.Exceptions;
 using Jalsa.Application.DTOs.Assessment;
 using Jalsa.Application.Interfaces.Services;
 
@@ -10,7 +8,7 @@ namespace Jalsa.API.Controllers;
 [ApiController]
 [Route("api/patient/{patientId:guid}/assessments")]
 [Authorize(Roles = "Therapist")]
-public class AssessmentController : ControllerBase
+public class AssessmentController : BaseController
 {
     private readonly IAssessmentService _assessmentService;
 
@@ -33,16 +31,5 @@ public class AssessmentController : ControllerBase
         var therapistId = GetCurrentUserId();
         var result = await _assessmentService.CreateAsync(patientId, dto, therapistId);
         return CreatedAtAction(nameof(GetByPatientId), new { patientId }, result);
-    }
-
-    private Guid GetCurrentUserId()
-    {
-        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                    ?? User.FindFirstValue("sub");
-
-        if (string.IsNullOrEmpty(claim) || !Guid.TryParse(claim, out var userId))
-            throw new ApiException(401, "Invalid authentication token");
-
-        return userId;
     }
 }
