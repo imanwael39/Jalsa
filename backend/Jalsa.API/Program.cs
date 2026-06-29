@@ -211,7 +211,10 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHub<Jalsa.API.Hubs.ChatHub>("/chatHub");
 
-app.UseHangfireDashboard("/hangfire");
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new Jalsa.API.Filters.HangfireAuthorizationFilter() }
+});
 
 RecurringJob.AddOrUpdate<ExerciseReminderJob>(
     "exercise-reminder",
