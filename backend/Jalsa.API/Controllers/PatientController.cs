@@ -9,7 +9,7 @@ namespace Jalsa.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Roles = "Therapist")]
 public class PatientController : ControllerBase
 {
     private readonly IPatientService _patientService;
