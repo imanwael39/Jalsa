@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Jalsa.API.Controllers;
+using Jalsa.API.DTOs.AI;
 using Jalsa.API.Services.Interfaces.AI;
 using Microsoft.AspNetCore.Mvc;
 using Moq;

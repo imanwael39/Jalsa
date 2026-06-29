@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Jalsa.Application.DTOs.Exercise;
 using Jalsa.Application.Interfaces.Services;
+using ExtendDueDateRequest = Jalsa.Application.DTOs.Exercise.ExtendDueDateRequest;
 
 namespace Jalsa.API.Controllers;
 
@@ -126,6 +127,4 @@ public class ExerciseController : BaseController
         var value = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         return value is null ? null : Guid.Parse(value);
     }
-
-    public record ExtendDueDateRequest(DateOnly NewDueDate);
 }

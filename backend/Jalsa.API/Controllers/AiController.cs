@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Jalsa.API.DTOs.AI;
 using Jalsa.API.Services.Interfaces.AI;
 
 namespace Jalsa.API.Controllers;
@@ -38,15 +39,4 @@ public class AiController : ControllerBase
             request?.Language ?? "ar");
         return Ok(new { draft });
     }
-}
-
-public class SummarizeRequest
-{
-    public string Language { get; set; } = "ar";
-}
-
-public class ReportDraftRequest
-{
-    public string? TherapistInstructions { get; set; }
-    public string Language { get; set; } = "ar";
 }

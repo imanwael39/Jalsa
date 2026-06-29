@@ -75,8 +75,3 @@ public class IntakeController : BaseController
         return Ok(result);
     }
 }
-
-public class OcrRequest
-{
-    public string ImageUrl { get; set; } = string.Empty;
-}
