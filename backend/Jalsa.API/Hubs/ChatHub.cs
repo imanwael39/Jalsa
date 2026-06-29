@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.Domain.Models.Chat;
 using Jalsa.Domain.Models.Crisis;
@@ -8,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Jalsa.API.Hubs;
 
+[Authorize]
 public class ChatHub : Hub
 {
     private readonly IChatAiService _chatAi;
@@ -29,6 +32,18 @@ public class ChatHub : Hub
 
     public async Task SendMessage(Guid conversationId, Guid patientId, string message)
     {
+        var userIdClaim = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier)
+                          ?? Context.User?.FindFirstValue("sub");
+
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out _))
+            throw new HubException("Unauthorized: invalid user identity.");
+
+        var conversation = await _context.ChatConversations
+            .FirstOrDefaultAsync(c => c.Id == conversationId);
+
+        if (conversation == null)
+            throw new HubException("Conversation not found.");
+
         var patientMsg = new ChatMessage
         {
             Id = Guid.NewGuid(),
@@ -101,6 +116,12 @@ public class ChatHub : Hub
 
     public async Task JoinConversation(string conversationId)
     {
+        var userIdClaim = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier)
+                          ?? Context.User?.FindFirstValue("sub");
+
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out _))
+            throw new HubException("Unauthorized: invalid user identity.");
+
         await Groups.AddToGroupAsync(Context.ConnectionId, conversationId);
     }
 }

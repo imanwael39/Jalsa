@@ -68,8 +68,8 @@ public class ReportController : ControllerBase
     public async Task<IActionResult> Reject(Guid id)
     {
         var therapistId = GetCurrentUserId();
-        var result = await _reportService.GetByIdAsync(id, therapistId);
-        return Ok(new { result.Id, Status = "Rejected" });
+        var result = await _reportService.RejectAsync(id, therapistId);
+        return Ok(result);
     }
 
     [HttpGet("{id:guid}/export")]

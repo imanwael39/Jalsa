@@ -4,6 +4,7 @@ export type SpinnerSize = 'sm' | 'md' | 'lg';
 
 @Component({
     selector: 'app-spinner',
+    standalone: true,
     templateUrl: './spinner.component.html',
     styleUrl: './spinner.component.css',
     changeDetection: ChangeDetectionStrategy.OnPush,

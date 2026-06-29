@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
 
 @Component({
     selector: 'app-empty-state',
+    standalone: true,
     templateUrl: './empty-state.component.html',
     styleUrl: './empty-state.component.css',
     changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,0 +1,81 @@
+# PROGRESS
+
+## Current Sprint
+**Sprint 1** — Critical for MVP (Must Complete)
+
+## Current Branch
+`2026-06-29_Iman_sprint-1`
+
+## Current Task
+**FIX-011** — Fix 4 shared components to standalone (Completed)
+
+## Sprint Progress
+
+| Task ID | Task Name | Status |
+|---------|-----------|--------|
+| FIX-001 | Fix SignalR token key | **Completed** |
+| FIX-002 | Fix Report reject endpoint | **Completed** |
+| FIX-003 | Fix CrisisDetection exception handling | **Completed** |
+| FIX-004 | Add authGuard to chat routes | **Completed** |
+| FIX-005 | Add authGuard to profile route | **Completed** |
+| FIX-006 | Add role restriction to PatientController | **Completed** |
+| FIX-007 | Fix ChatHub authorization | **Completed** |
+| FIX-008 | Fix ChatController architecture | **Completed** |
+| FIX-009 | Fix NotificationController architecture | **Completed** |
+| FIX-010 | Fix SessionController voice memo | **Completed** |
+| FIX-011 | Fix 4 shared components to standalone | **Completed** |
+
+## Completion Percentage
+Sprint 1: 11/11 (100%) ✅ COMPLETE
+
+## Completed Tasks
+1. **FIX-001** — Changed `localStorage.getItem('access_token')` to `localStorage.getItem('jalsa_token')` in `chat-room.component.ts:111` to match AuthService's TOKEN_KEY constant.
+2. **FIX-002** — Added `RejectAsync` to `IReportService` and `ReportService`, updated `ReportController.Reject` to persist status change to DB instead of returning a fake response.
+3. **FIX-003** — Fixed CrisisDetectionService to parse AI response JSON and only return `IsCrisis=true` when AI confirms. On AI failure or non-crisis AI response, returns `IsCrisis=false`.
+4. **FIX-004** — Added `canActivate: [authGuard]` to both chatbot child routes (`''` and `':id'`) in `chatbot.routes.ts`.
+5. **FIX-005** — Added `canActivate: [authGuard]` to the profile route in `auth.routes.ts`. This route was completely unprotected since it sits outside the AuthLayout children and the `/auth` parent has no guard.
+6. **FIX-006** — Changed `[Authorize]` to `[Authorize(Roles = "Therapist")]` on `PatientController` to restrict patient management to therapists only.
+7. **FIX-007** — Added `[Authorize]` to ChatHub class, added user identity validation via JWT claims in both `SendMessage` and `JoinConversation`, added conversation existence check in `SendMessage`.
+8. **FIX-008** — Extracted ChatService from ChatController. Created IChatService interface, ChatService implementation using IUnitOfWork, 5 Chat DTOs. Controller now injects IChatService instead of JalsaDbContext.
+9. **FIX-009** — Extended INotificationService with query/update methods (GetNotificationsAsync, MarkAsReadAsync, MarkAllAsReadAsync). Implemented in EmailNotificationService. Created 2 Notification DTOs. NotificationController now injects INotificationService instead of JalsaDbContext.
+10. **FIX-010** — Added SaveVoiceMemoAsync to ISessionService and SessionService. Moved VoiceMemo creation from controller to service layer using IUnitOfWork. Removed JalsaDbContext dependency from SessionController. Created VoiceMemoViewDto. Updated SessionControllerTests to match new constructor.
+11. **FIX-011** — Added `standalone: true` to PaginationComponent, EmptyStateComponent, SpinnerComponent, and ModalComponent. All 4 were missing the standalone flag required by ADR conventions.
+
+## Remaining Tasks
+None — Sprint 1 complete!
+
+## Build Status
+- **Frontend**: Build clean (0 errors, warnings only — CSS budget + ESM)
+- **Backend**: Build clean (0 errors, 0 warnings)
+
+## Unit Test Results
+- **Frontend**: 270/270 passed (1 pre-existing error in error.interceptor.spec.ts — unrelated)
+- **Backend**: 51/51 passed
+
+## Integration Test Results
+N/A
+
+## Manual Verification Results
+- PaginationComponent: `standalone: true` added
+- EmptyStateComponent: `standalone: true` added
+- SpinnerComponent: `standalone: true` added
+- ModalComponent: `standalone: true` added
+- All 4 components use new Angular control flow (`@if`, `@for`) — no CommonModule imports needed
+- All 4 already had `changeDetection: ChangeDetectionStrategy.OnPush`
+
+## Regression Test Results
+- Frontend: 270/270 tests passed, build clean
+- Backend: 51/51 tests passed, build clean
+
+## Known Issues
+1. Pre-existing: `error.interceptor.spec.ts` has 1 failing error (Arabic message mismatch) — unrelated to current work
+2. CSS budget warnings on 4 component stylesheets — pre-existing
+
+## Blockers
+None
+
+## Technical Debt
+None introduced
+
+## Next Recommended Task
+**Sprint 2** — Begin Sprint 2 tasks (create branch `2026-06-29_Iman_sprint-2`)

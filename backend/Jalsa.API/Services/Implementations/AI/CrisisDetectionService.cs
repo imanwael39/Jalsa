@@ -54,23 +54,41 @@ public class CrisisDetectionService : ICrisisDetectionService
 
         try
         {
-            await _client.CompleteChatAsync(
+            var response = await _client.CompleteChatAsync(
                 new SystemChatMessage(systemPrompt),
                 new UserChatMessage(userPrompt));
+
+            var content = response.Value.Content[0].Text ?? "";
+            var jsonStart = content.IndexOf('{');
+            var jsonEnd = content.LastIndexOf('}');
+
+            if (jsonStart >= 0 && jsonEnd > jsonStart)
+            {
+                var json = content[jsonStart..(jsonEnd + 1)];
+                var doc = System.Text.Json.JsonDocument.Parse(json);
+
+                if (doc.RootElement.TryGetProperty("isCrisis", out var crisisProp) && crisisProp.GetBoolean())
+                {
+                    var reason = doc.RootElement.TryGetProperty("reason", out var r) ? r.GetString() : null;
+                    var suggested = doc.RootElement.TryGetProperty("suggestedResponse", out var s) ? s.GetString() : null;
+
+                    return new CrisisDetectionResult
+                    {
+                        IsCrisis = true,
+                        Reason = reason ?? (lang == "ar"
+                            ? "مطابقة كلمات مفتاحية + تحقق الذكاء الاصطناعي"
+                            : "Keyword match + AI verification"),
+                        SuggestedMessage = suggested ?? (lang == "ar"
+                            ? "أنا قلق بشأن ما تشاركه. يرجى التواصل مع معالجك أو الاتصال بخدمات الطوارئ فورًا إذا كنت في خطر. يمكنك الاتصال بالأمانة العامة للصحة النفسية: 16328"
+                            : "I'm concerned about what you're sharing. Please contact your therapist or call emergency services immediately if you're in danger.")
+                    };
+                }
+            }
         }
         catch
         {
         }
 
-        return new CrisisDetectionResult
-        {
-            IsCrisis = true,
-            Reason = lang == "ar"
-                ? "مطابقة كلمات مفتاحية + تحقق الذكاء الاصطناعي"
-                : "Keyword match + AI verification",
-            SuggestedMessage = lang == "ar"
-                ? "أنا قلق بشأن ما تشاركه. يرجى التواصل مع معالجك أو الاتصال بخدمات الطوارئ فورًا إذا كنت في خطر. يمكنك الاتصال بالأمانة العامة للصحة النفسية: 16328"
-                : "I'm concerned about what you're sharing. Please contact your therapist or call emergency services immediately if you're in danger."
-        };
+        return new CrisisDetectionResult { IsCrisis = false };
     }
 }

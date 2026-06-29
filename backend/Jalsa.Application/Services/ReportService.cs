@@ -105,6 +105,19 @@ public class ReportService : IReportService
         return MapToViewDto(report);
     }
 
+    public async Task<ReportViewDto> RejectAsync(Guid id, Guid therapistId)
+    {
+        var report = await GetReportWithOwnershipCheck(id, therapistId);
+
+        report.Status = "Rejected";
+        report.UpdatedAt = DateTime.UtcNow;
+
+        _reportRepository.Update(report);
+        await _unitOfWork.SaveChangesAsync();
+
+        return MapToViewDto(report);
+    }
+
     public async Task DeleteAsync(Guid id, Guid therapistId)
     {
         var report = await GetReportWithOwnershipCheck(id, therapistId);
