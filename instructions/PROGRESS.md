@@ -7,7 +7,7 @@
 `2026-06-29_Iman_sprint-2`
 
 ## Current Task
-**TEST-004** — Write NotificationController tests (Completed)
+**FIX-012** — Add therapist ownership check to ExerciseController (Completed)
 
 ## Sprint Progress
 
@@ -20,11 +20,11 @@
 | TEST-002 | Write PatientService unit tests | **Completed** |
 | TEST-003 | Write ChatController integration tests | **Completed** |
 | TEST-004 | Write NotificationController tests | **Completed** |
-| FIX-012 | Add therapist ownership check to ExerciseController | Not Started |
+| FIX-012 | Add therapist ownership check to ExerciseController | **Completed** |
 | FIX-013 | Add missing DB indexes | Not Started |
 
 ## Completion Percentage
-Sprint 2: 7/9 (78%)
+Sprint 2: 8/9 (89%)
 
 ## Completed Tasks
 1. **SEC-001** — Replaced hardcoded `http://localhost:4200` CORS origin in `Program.cs` with configurable `CorsOrigins` array from `appsettings.json`. Added `CorsOrigins` section to `appsettings.json` with `http://localhost:4200` as default. Staging/production can now override origins via their own appsettings or environment variables.
@@ -34,29 +34,34 @@ Sprint 2: 7/9 (78%)
 5. **TEST-002** — Created `PatientServiceTests.cs` with 15 unit tests using Moq. Tests cover: Create (success, no therapist profile), GetById (own, other therapist, non-existent), GetAll (own patients only, status filter, search by name), Update (success, ownership check), Archive/Restore (success, ownership check), Delete (success, ownership check).
 6. **TEST-003** — Created `ChatControllerTests.cs` with 11 controller tests using Moq. Tests cover: GetConversations (returns list, filters by patientId), GetHistory (success, 404), CreateConversation (201 created, patient not found 404), CloseConversation (success, 404), Send (success with Therapist role, 404, Patient role sets correct senderType).
 7. **TEST-004** — Created `NotificationControllerTests.cs` with 7 controller tests using Moq. Tests cover: GetNotifications (returns list, unread filter, empty list), MarkAsRead (success, 404), MarkAllAsRead (returns count, zero unread).
+8. **FIX-012** — Added therapist ownership checks to all ExerciseController therapist endpoints. Updated `IExerciseService` to accept `Guid userId` on therapist methods (Create, Update, Delete, GetById, GetAll, GetByPatientId, ExtendDueDate). Added `ResolveTherapistIdAsync` and `ValidatePatientOwnershipAsync` to `ExerciseService` (same pattern as PatientService). `GetAllAsync` now filters exercises to only those belonging to the therapist's patients. Added `GetCurrentUserId()` helper to controller. Patient endpoints (my, log, my/logs) remain unchanged — they use the non-ownership overload. Updated ExerciseServiceTests from 6 to 15 tests covering ownership validation for all methods.
 
 ## Remaining Tasks
-FIX-012, FIX-013
+FIX-013
 
 ## Build Status
 - **Backend**: Build clean (0 errors, 0 warnings)
 
 ## Unit Test Results
-- **Backend**: 99/99 passed (92 existing + 7 new NotificationControllerTests)
+- **Backend**: 108/108 passed (99 pre-existing + 9 new/updated ExerciseServiceTests)
 
 ## Integration Test Results
 N/A
 
 ## Manual Verification Results
-- All 7 NotificationControllerTests pass individually
-- GET /notifications returns Ok with list and unread count
-- GET /notifications?unreadOnly=true passes filter to service
-- PATCH /{id}/read returns Ok with id+isRead or 404
-- PATCH /read-all returns Ok with markedRead count
+- All 15 ExerciseServiceTests pass individually
+- CreateAsync validates patient belongs to therapist before creating exercise
+- UpdateAsync/DeleteAsync/GetByIdAsync verify ownership via exercise → patient → therapist chain
+- GetAllAsync filters to only exercises belonging to therapist's own patients
+- GetByPatientIdAsync (with userId) validates patient ownership
+- GetByPatientIdAsync (without userId) works for patient endpoints without ownership check
+- ExtendDueDateAsync validates ownership before modifying due date
+- Unauthorized access throws UnauthorizedAccessException
+- Missing therapist profile throws UnauthorizedAccessException
 
 ## Regression Test Results
-- Backend: 99/99 tests passed, build clean
-- All 92 pre-existing tests still pass
+- Backend: 108/108 tests passed, build clean
+- All 99 pre-existing tests still pass
 
 ## Known Issues
 None
@@ -68,4 +73,4 @@ None
 None introduced
 
 ## Next Recommended Task
-**FIX-012** — Add therapist ownership check to ExerciseController
+**FIX-013** — Add missing DB indexes
