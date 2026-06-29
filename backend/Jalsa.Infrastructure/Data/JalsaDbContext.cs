@@ -67,6 +67,8 @@ public class JalsaDbContext : DbContext
             e.HasIndex(u => u.Email).IsUnique();
             e.Property(u => u.PasswordHash).IsRequired();
             e.Property(u => u.IsActive).HasDefaultValue(true);
+            e.Property(u => u.FailedLoginAttempts).HasDefaultValue(0);
+            e.Property(u => u.LockoutEnd).IsRequired(false);
             e.Property(u => u.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
             e.Property(u => u.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
         });

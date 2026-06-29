@@ -7,7 +7,7 @@
 `2026-06-29_Iman_sprint-3`
 
 ## Current Task
-**QUAL-004** — Move inline DTOs to proper files (Completed)
+**QUAL-006** — Add rate limiting (Completed)
 
 ## Sprint Progress
 
@@ -18,11 +18,11 @@
 | QUAL-002 | Fix namespace typo Repositores→Repositories | **Completed** |
 | QUAL-003 | Extract GetCurrentUserId to base controller | **Completed** |
 | QUAL-004 | Move inline DTOs to proper files | **Completed** |
-| QUAL-005 | Account lockout | Pending |
-| QUAL-006 | Rate limiting | Pending |
+| QUAL-005 | Account lockout | **Completed** |
+| QUAL-006 | Rate limiting | **Completed** |
 
 ## Completion Percentage
-Sprint 3: 5/7 (71%)
+Sprint 3: 7/7 (100%)
 
 ## Completed Tasks
 1. **TEST-005** — Created 7 new controller test files covering all 11 controllers. Total test count: 150 (up from 108).
@@ -35,9 +35,24 @@ Sprint 3: 5/7 (71%)
    - `SummarizeRequest` → `Jalsa.API/DTOs/AI/AiRequestDtos.cs`
    - `ReportDraftRequest` → `Jalsa.API/DTOs/AI/AiRequestDtos.cs`
    Updated 3 controllers (ExerciseController, AiController, IntakeController) to use new DTOs. Updated AiControllerTests to use new namespace. Build clean, 149/149 tests pass.
+6. **QUAL-005** — Added account lockout to AuthService.LoginAsync:
+   - Added `FailedLoginAttempts` (int) and `LockoutEnd` (DateTime?) to User entity
+   - Created EF Core migration `AddAccountLockoutFields`
+   - Added Fluent API configuration in JalsaDbContext
+   - Implemented lockout logic: 5 failed attempts → 15 min lockout
+   - Successful login resets counter
+   - Added 5 tests: increment counter, lock after 5 attempts, locked returns 403, reset on success, expired lockout allows login
+   - Build clean, 154/154 tests pass.
+7. **QUAL-006** — Added rate limiting middleware:
+   - Added `Microsoft.AspNetCore.RateLimiting` imports
+   - Configured two FixedWindowLimiter policies: "general" (100 req/min) and "ai" (10 req/min)
+   - Added `[EnableRateLimiting("general")]` to BaseController (9 controllers) and ProgressController
+   - Added `[EnableRateLimiting("ai")]` to AiController
+   - Added `app.UseRateLimiter()` middleware with 429 JSON response
+   - Build clean, 154/154 tests pass.
 
 ## Remaining Tasks
-QUAL-005, QUAL-006
+None — Sprint 3 complete. Next: Sprint 4 tasks (CI/CD, staging config, documentation, monitoring, smoke testing)
 
 ## Build Status
 - **Backend**: Build clean (0 errors, 0 warnings)

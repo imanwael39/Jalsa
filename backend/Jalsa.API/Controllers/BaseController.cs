@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Jalsa.API.Exceptions;
 
 namespace Jalsa.API.Controllers;
@@ -7,6 +8,7 @@ namespace Jalsa.API.Controllers;
 /// <summary>
 /// Base controller providing common functionality for all API controllers.
 /// </summary>
+[EnableRateLimiting("general")]
 public abstract class BaseController : ControllerBase
 {
     /// <summary>

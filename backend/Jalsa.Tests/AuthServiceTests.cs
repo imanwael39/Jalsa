@@ -321,6 +321,114 @@ public class AuthServiceTests : IDisposable
         user.PasswordHash.Should().StartWith("$2");
     }
 
+    // --- Account Lockout ---
+
+    [Fact]
+    public async Task LoginAsync_WrongPassword_IncrementsFailedAttempts()
+    {
+        await RegisterTestUser("lockout@test.com", "Test123!");
+
+        var act = () => _sut.LoginAsync(new LoginDto
+        {
+            Email = "lockout@test.com",
+            Password = "WrongPassword"
+        });
+
+        await act.Should().ThrowAsync<ApiException>();
+
+        var user = await _context.Users.FirstAsync(u => u.Email == "lockout@test.com");
+        user.FailedLoginAttempts.Should().Be(1);
+        user.LockoutEnd.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task LoginAsync_FiveFailedAttempts_LocksAccount()
+    {
+        await RegisterTestUser("fivefail@test.com", "Test123!");
+
+        for (int i = 0; i < 4; i++)
+        {
+            var act = () => _sut.LoginAsync(new LoginDto
+            {
+                Email = "fivefail@test.com",
+                Password = "WrongPassword"
+            });
+            await act.Should().ThrowAsync<ApiException>();
+        }
+
+        var user = await _context.Users.FirstAsync(u => u.Email == "fivefail@test.com");
+        user.FailedLoginAttempts.Should().Be(4);
+        user.LockoutEnd.Should().BeNull();
+
+        var act5 = () => _sut.LoginAsync(new LoginDto
+        {
+            Email = "fivefail@test.com",
+            Password = "WrongPassword"
+        });
+        await act5.Should().ThrowAsync<ApiException>();
+
+        user = await _context.Users.FirstAsync(u => u.Email == "fivefail@test.com");
+        user.FailedLoginAttempts.Should().Be(5);
+        user.LockoutEnd.Should().NotBeNull();
+        user.LockoutEnd!.Value.Should().BeAfter(DateTime.UtcNow);
+    }
+
+    [Fact]
+    public async Task LoginAsync_LockedAccount_Throws403()
+    {
+        await RegisterTestUser("locked@test.com", "Test123!");
+        var user = await _context.Users.FirstAsync(u => u.Email == "locked@test.com");
+        user.FailedLoginAttempts = 5;
+        user.LockoutEnd = DateTime.UtcNow.AddMinutes(10);
+        await _context.SaveChangesAsync();
+
+        var act = () => _sut.LoginAsync(new LoginDto
+        {
+            Email = "locked@test.com",
+            Password = "Test123!"
+        });
+
+        var ex = await act.Should().ThrowAsync<ApiException>();
+        ex.Which.StatusCode.Should().Be(403);
+    }
+
+    [Fact]
+    public async Task LoginAsync_SuccessfulLogin_ResetsFailedAttempts()
+    {
+        await RegisterTestUser("reset@test.com", "Test123!");
+        var user = await _context.Users.FirstAsync(u => u.Email == "reset@test.com");
+        user.FailedLoginAttempts = 3;
+        await _context.SaveChangesAsync();
+
+        await _sut.LoginAsync(new LoginDto
+        {
+            Email = "reset@test.com",
+            Password = "Test123!"
+        });
+
+        user = await _context.Users.FirstAsync(u => u.Email == "reset@test.com");
+        user.FailedLoginAttempts.Should().Be(0);
+        user.LockoutEnd.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task LoginAsync_ExpiredLockout_AllowsLogin()
+    {
+        await RegisterTestUser("expired@test.com", "Test123!");
+        var user = await _context.Users.FirstAsync(u => u.Email == "expired@test.com");
+        user.FailedLoginAttempts = 5;
+        user.LockoutEnd = DateTime.UtcNow.AddMinutes(-1);
+        await _context.SaveChangesAsync();
+
+        var result = await _sut.LoginAsync(new LoginDto
+        {
+            Email = "expired@test.com",
+            Password = "Test123!"
+        });
+
+        result.Token.Should().NotBeNullOrEmpty();
+    }
+
     // --- Helper ---
 
     private async Task<AuthResponseDto> RegisterTestUser(string email, string password)

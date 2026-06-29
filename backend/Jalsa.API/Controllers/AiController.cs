@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Jalsa.API.DTOs.AI;
 using Jalsa.API.Services.Interfaces.AI;
 
@@ -8,6 +9,7 @@ namespace Jalsa.API.Controllers;
 [ApiController]
 [Route("api/ai")]
 [Authorize(Roles = "Therapist")]
+[EnableRateLimiting("ai")]
 public class AiController : ControllerBase
 {
     private readonly ISummarizationService _summarizationService;

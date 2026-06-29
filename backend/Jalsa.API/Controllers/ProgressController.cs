@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Jalsa.Application.Interfaces.Services;
 
 namespace Jalsa.API.Controllers;
 
 [ApiController]
 [Route("api/progress")]
+[EnableRateLimiting("general")]
 public class ProgressController : ControllerBase
 {
     private readonly IProgressService _progressService;
