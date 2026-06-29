@@ -7,7 +7,7 @@
 `2026-06-29_Iman_sprint-1`
 
 ## Current Task
-**FIX-009** — Fix NotificationController architecture (Completed)
+**FIX-010** — Fix SessionController voice memo (Completed)
 
 ## Sprint Progress
 
@@ -22,11 +22,11 @@
 | FIX-007 | Fix ChatHub authorization | **Completed** |
 | FIX-008 | Fix ChatController architecture | **Completed** |
 | FIX-009 | Fix NotificationController architecture | **Completed** |
-| FIX-010 | Fix SessionController voice memo | Not Started |
+| FIX-010 | Fix SessionController voice memo | **Completed** |
 | FIX-011 | Fix 4 shared components to standalone | Not Started |
 
 ## Completion Percentage
-Sprint 1: 9/11 (82%)
+Sprint 1: 10/11 (91%)
 
 ## Completed Tasks
 1. **FIX-001** — Changed `localStorage.getItem('access_token')` to `localStorage.getItem('jalsa_token')` in `chat-room.component.ts:111` to match AuthService's TOKEN_KEY constant.
@@ -38,9 +38,10 @@ Sprint 1: 9/11 (82%)
 7. **FIX-007** — Added `[Authorize]` to ChatHub class, added user identity validation via JWT claims in both `SendMessage` and `JoinConversation`, added conversation existence check in `SendMessage`.
 8. **FIX-008** — Extracted ChatService from ChatController. Created IChatService interface, ChatService implementation using IUnitOfWork, 5 Chat DTOs. Controller now injects IChatService instead of JalsaDbContext.
 9. **FIX-009** — Extended INotificationService with query/update methods (GetNotificationsAsync, MarkAsReadAsync, MarkAllAsReadAsync). Implemented in EmailNotificationService. Created 2 Notification DTOs. NotificationController now injects INotificationService instead of JalsaDbContext.
+10. **FIX-010** — Added SaveVoiceMemoAsync to ISessionService and SessionService. Moved VoiceMemo creation from controller to service layer using IUnitOfWork. Removed JalsaDbContext dependency from SessionController. Created VoiceMemoViewDto. Updated SessionControllerTests to match new constructor.
 
 ## Remaining Tasks
-FIX-010, FIX-011
+FIX-011
 
 ## Build Status
 - **Frontend**: Build clean (0 errors, warnings only — CSS budget + ESM)
@@ -54,12 +55,12 @@ FIX-010, FIX-011
 N/A
 
 ## Manual Verification Results
-- NotificationController no longer imports JalsaDbContext, Microsoft.EntityFrameworkCore, or Jalsa.Infrastructure.Data
-- NotificationController injects INotificationService (Clean Architecture compliant)
-- INotificationService extended with 3 query/update methods (no breaking changes to existing consumers)
-- EmailNotificationService implements all new methods using existing JalsaDbContext
-- 2 DTOs created: NotificationViewDto, NotificationListDto
-- All 3 API endpoints preserved with same routes, behavior, and response shapes
+- SessionController no longer imports JalsaDbContext, Microsoft.EntityFrameworkCore, Jalsa.Infrastructure.Data, or Jalsa.Domain.Models.Session
+- SessionController constructor reduced from 4 to 3 parameters (removed JalsaDbContext)
+- Voice memo creation moved to SessionService.SaveVoiceMemoAsync using IUnitOfWork
+- SessionService performs ownership check before saving voice memo
+- VoiceMemoViewDto created for typed response
+- SessionControllerTests updated: removed InMemory DbContext, now uses 3-arg constructor
 
 ## Regression Test Results
 - Backend: 51/51 tests passed
@@ -76,4 +77,4 @@ None
 None introduced
 
 ## Next Recommended Task
-**FIX-010** — Fix SessionController voice memo (Backend task)
+**FIX-011** — Fix 4 shared components to standalone (Frontend task)
