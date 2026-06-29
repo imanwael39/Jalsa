@@ -1,10 +1,10 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Jalsa.API.DTOs.Auth;
 using Jalsa.API.Exceptions;
 using Jalsa.API.Services.Interfaces;
-using Jalsa.Application.Interfaces.Repositores;
+using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Domain.Models.Clinic;
 using Jalsa.Domain.Models.Identity;
 

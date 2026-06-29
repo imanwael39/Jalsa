@@ -1,8 +1,7 @@
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using FluentAssertions;
 using Jalsa.Application.DTOs.Session;
 using Jalsa.Application.Interfaces.Repositories;
-using Jalsa.Application.Interfaces.Repositores;
 using Jalsa.Application.Services;
 using Jalsa.Domain.Models.Clinic;
 using Jalsa.Domain.Models.Patient;

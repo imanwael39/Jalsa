@@ -1,4 +1,4 @@
-﻿using Jalsa.Application.Interfaces.Repositores;
+﻿using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore.Storage;
 

@@ -1,10 +1,10 @@
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Security.Claims;
 using FluentAssertions;
 using Jalsa.API.Controllers;
 using Jalsa.API.DTOs.Auth;
 using Jalsa.API.Services.Interfaces;
-using Jalsa.Application.Interfaces.Repositores;
+using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Domain.Models.Clinic;
 using Jalsa.Domain.Models.Identity;
 using Microsoft.AspNetCore.Http;

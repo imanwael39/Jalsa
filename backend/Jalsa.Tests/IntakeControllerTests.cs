@@ -1,9 +1,9 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using FluentAssertions;
 using Jalsa.API.Controllers;
 using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.Application.DTOs.Intake;
-using Jalsa.Application.Interfaces.Repositores;
+using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Application.Interfaces.Services;
 using Jalsa.Domain.Models.Patient;
 using Microsoft.AspNetCore.Http;
