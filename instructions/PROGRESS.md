@@ -7,7 +7,7 @@
 `2026-06-29_Iman_sprint-1`
 
 ## Current Task
-**FIX-004** — Add authGuard to chat routes (Completed)
+**FIX-005** — Add authGuard to profile route (Completed)
 
 ## Sprint Progress
 
@@ -17,7 +17,7 @@
 | FIX-002 | Fix Report reject endpoint | **Completed** |
 | FIX-003 | Fix CrisisDetection exception handling | **Completed** |
 | FIX-004 | Add authGuard to chat routes | **Completed** |
-| FIX-005 | Add authGuard to profile route | Not Started |
+| FIX-005 | Add authGuard to profile route | **Completed** |
 | FIX-006 | Add role restriction to PatientController | Not Started |
 | FIX-007 | Fix ChatHub authorization | Not Started |
 | FIX-008 | Fix ChatController architecture | Not Started |
@@ -26,16 +26,17 @@
 | FIX-011 | Fix 4 shared components to standalone | Not Started |
 
 ## Completion Percentage
-Sprint 1: 4/11 (36%)
+Sprint 1: 5/11 (45%)
 
 ## Completed Tasks
 1. **FIX-001** — Changed `localStorage.getItem('access_token')` to `localStorage.getItem('jalsa_token')` in `chat-room.component.ts:111` to match AuthService's TOKEN_KEY constant.
 2. **FIX-002** — Added `RejectAsync` to `IReportService` and `ReportService`, updated `ReportController.Reject` to persist status change to DB instead of returning a fake response.
 3. **FIX-003** — Fixed CrisisDetectionService to parse AI response JSON and only return `IsCrisis=true` when AI confirms. On AI failure or non-crisis AI response, returns `IsCrisis=false`.
 4. **FIX-004** — Added `canActivate: [authGuard]` to both chatbot child routes (`''` and `':id'`) in `chatbot.routes.ts`.
+5. **FIX-005** — Added `canActivate: [authGuard]` to the profile route in `auth.routes.ts`. This route was completely unprotected since it sits outside the AuthLayout children and the `/auth` parent has no guard.
 
 ## Remaining Tasks
-FIX-005, FIX-006, FIX-007, FIX-008, FIX-009, FIX-010, FIX-011
+FIX-006, FIX-007, FIX-008, FIX-009, FIX-010, FIX-011
 
 ## Build Status
 - **Frontend**: Build clean (0 errors, warnings only — CSS budget + ESM)
@@ -49,8 +50,8 @@ FIX-005, FIX-006, FIX-007, FIX-008, FIX-009, FIX-010, FIX-011
 N/A
 
 ## Manual Verification Results
-- Both chatbot routes (`''` and `':id'`) now have `canActivate: [authGuard]`
-- Parent route already had authGuard; child routes now have defense-in-depth
+- Profile route at `/auth/profile` now has `canActivate: [authGuard]`
+- Previously unprotected: `/auth` parent has no guard (login/register are public), and profile was a sibling route without its own guard
 - Import path verified: `../../core/guards/auth.guard`
 
 ## Regression Test Results
@@ -68,4 +69,4 @@ None
 None introduced
 
 ## Next Recommended Task
-**FIX-005** — Add authGuard to profile route (Frontend task)
+**FIX-006** — Add role restriction to PatientController (Backend task)

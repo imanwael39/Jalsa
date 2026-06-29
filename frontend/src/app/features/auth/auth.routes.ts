@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authGuard } from '../../core/guards/auth.guard';
 import { AuthLayoutComponent } from '../../shared/layouts/auth-layout/auth-layout.component';
 
 export const AUTH_ROUTES: Routes = [
@@ -16,11 +17,13 @@ export const AUTH_ROUTES: Routes = [
             },
             {
                 path: 'forgot-password',
-                loadComponent: () => import('./pages/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent),
+                loadComponent: () =>
+                    import('./pages/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent),
             },
             {
                 path: 'reset-password',
-                loadComponent: () => import('./pages/reset-password/reset-password.component').then(m => m.ResetPasswordComponent),
+                loadComponent: () =>
+                    import('./pages/reset-password/reset-password.component').then(m => m.ResetPasswordComponent),
             },
             {
                 path: '',
@@ -31,6 +34,7 @@ export const AUTH_ROUTES: Routes = [
     },
     {
         path: 'profile',
+        canActivate: [authGuard],
         loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent),
     },
 ];
