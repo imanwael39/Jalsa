@@ -108,7 +108,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy, AfterViewChecked {
 
         this.hubConnection = new signalR.HubConnectionBuilder()
             .withUrl(environment.signalRHubUrl, {
-                accessTokenFactory: () => localStorage.getItem('access_token') ?? '',
+                accessTokenFactory: () => localStorage.getItem('jalsa_token') ?? '',
             })
             .withAutomaticReconnect()
             .build();
