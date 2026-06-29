@@ -7,7 +7,7 @@
 `2026-06-29_Iman_sprint-1`
 
 ## Current Task
-**FIX-002** — Fix Report reject endpoint (Completed)
+**FIX-003** — Fix CrisisDetection exception handling (Completed)
 
 ## Sprint Progress
 
@@ -15,7 +15,7 @@
 |---------|-----------|--------|
 | FIX-001 | Fix SignalR token key | **Completed** |
 | FIX-002 | Fix Report reject endpoint | **Completed** |
-| FIX-003 | Fix CrisisDetection exception handling | Not Started |
+| FIX-003 | Fix CrisisDetection exception handling | **Completed** |
 | FIX-004 | Add authGuard to chat routes | Not Started |
 | FIX-005 | Add authGuard to profile route | Not Started |
 | FIX-006 | Add role restriction to PatientController | Not Started |
@@ -26,14 +26,15 @@
 | FIX-011 | Fix 4 shared components to standalone | Not Started |
 
 ## Completion Percentage
-Sprint 1: 2/11 (18%)
+Sprint 1: 3/11 (27%)
 
 ## Completed Tasks
 1. **FIX-001** — Changed `localStorage.getItem('access_token')` to `localStorage.getItem('jalsa_token')` in `chat-room.component.ts:111` to match AuthService's TOKEN_KEY constant.
 2. **FIX-002** — Added `RejectAsync` to `IReportService` and `ReportService`, updated `ReportController.Reject` to persist status change to DB instead of returning a fake response.
+3. **FIX-003** — Fixed CrisisDetectionService to parse AI response JSON and only return `IsCrisis=true` when AI confirms. On AI failure or non-crisis AI response, returns `IsCrisis=false`.
 
 ## Remaining Tasks
-FIX-003, FIX-004, FIX-005, FIX-006, FIX-007, FIX-008, FIX-009, FIX-010, FIX-011
+FIX-004, FIX-005, FIX-006, FIX-007, FIX-008, FIX-009, FIX-010, FIX-011
 
 ## Build Status
 - **Frontend**: Build clean (0 errors, warnings only — CSS budget + ESM)
@@ -47,10 +48,11 @@ FIX-003, FIX-004, FIX-005, FIX-006, FIX-007, FIX-008, FIX-009, FIX-010, FIX-011
 N/A
 
 ## Manual Verification Results
-- `IReportService` now declares `RejectAsync(Guid id, Guid therapistId)`
-- `ReportService.RejectAsync` sets `Status = "Rejected"`, updates timestamp, persists via UoW
-- `ReportController.Reject` calls `_reportService.RejectAsync` and returns full `ReportViewDto`
-- Pattern matches existing `ApproveAsync` implementation
+- AI response is now parsed: extracts `isCrisis`, `reason`, `suggestedResponse` from JSON
+- On AI failure (exception), returns `IsCrisis = false` instead of `true`
+- On AI success with `isCrisis: false`, returns `IsCrisis = false`
+- On AI success with `isCrisis: true`, returns full result with AI-provided reason and suggestion
+- Fallback messages still provided when AI fields are null
 
 ## Regression Test Results
 - Backend: 51/51 tests passed
@@ -67,4 +69,4 @@ None
 None introduced
 
 ## Next Recommended Task
-**FIX-003** — Fix CrisisDetection exception handling (Backend task)
+**FIX-004** — Add authGuard to chat routes (Frontend task)
