@@ -7,7 +7,7 @@
 `2026-06-29_Iman_sprint-2`
 
 ## Current Task
-**TEST-003** — Write ChatController integration tests (Completed)
+**TEST-004** — Write NotificationController tests (Completed)
 
 ## Sprint Progress
 
@@ -19,12 +19,12 @@
 | TEST-001 | Write AuthService unit tests | **Completed** |
 | TEST-002 | Write PatientService unit tests | **Completed** |
 | TEST-003 | Write ChatController integration tests | **Completed** |
-| TEST-004 | Write NotificationController tests | Not Started |
+| TEST-004 | Write NotificationController tests | **Completed** |
 | FIX-012 | Add therapist ownership check to ExerciseController | Not Started |
 | FIX-013 | Add missing DB indexes | Not Started |
 
 ## Completion Percentage
-Sprint 2: 6/9 (67%)
+Sprint 2: 7/9 (78%)
 
 ## Completed Tasks
 1. **SEC-001** — Replaced hardcoded `http://localhost:4200` CORS origin in `Program.cs` with configurable `CorsOrigins` array from `appsettings.json`. Added `CorsOrigins` section to `appsettings.json` with `http://localhost:4200` as default. Staging/production can now override origins via their own appsettings or environment variables.
@@ -33,30 +33,30 @@ Sprint 2: 6/9 (67%)
 4. **TEST-001** — Created `AuthServiceTests.cs` with 15 unit tests using EF Core InMemory provider. Tests cover: Register (success, duplicate email, patient role, invalid role), Login (success, wrong password, non-existent user, inactive user), Refresh Token (valid rotation, invalid token, revoked token), Revoke Token (success, already revoked), JWT claims validation, BCrypt password hashing.
 5. **TEST-002** — Created `PatientServiceTests.cs` with 15 unit tests using Moq. Tests cover: Create (success, no therapist profile), GetById (own, other therapist, non-existent), GetAll (own patients only, status filter, search by name), Update (success, ownership check), Archive/Restore (success, ownership check), Delete (success, ownership check).
 6. **TEST-003** — Created `ChatControllerTests.cs` with 11 controller tests using Moq. Tests cover: GetConversations (returns list, filters by patientId), GetHistory (success, 404), CreateConversation (201 created, patient not found 404), CloseConversation (success, 404), Send (success with Therapist role, 404, Patient role sets correct senderType).
+7. **TEST-004** — Created `NotificationControllerTests.cs` with 7 controller tests using Moq. Tests cover: GetNotifications (returns list, unread filter, empty list), MarkAsRead (success, 404), MarkAllAsRead (returns count, zero unread).
 
 ## Remaining Tasks
-TEST-004, FIX-012, FIX-013
+FIX-012, FIX-013
 
 ## Build Status
 - **Backend**: Build clean (0 errors, 0 warnings)
 
 ## Unit Test Results
-- **Backend**: 92/92 passed (81 existing + 11 new ChatControllerTests)
+- **Backend**: 99/99 passed (92 existing + 7 new NotificationControllerTests)
 
 ## Integration Test Results
 N/A
 
 ## Manual Verification Results
-- All 11 ChatControllerTests pass individually
-- GET /conversations returns Ok with list, passes patientId filter
-- GET /{id}/history returns Ok or 404
-- POST /conversations returns 201 or 404
-- PATCH /conversations/{id}/close returns Ok or 404
-- POST /send returns Ok or 404; Patient role correctly sets senderType to "Patient"
+- All 7 NotificationControllerTests pass individually
+- GET /notifications returns Ok with list and unread count
+- GET /notifications?unreadOnly=true passes filter to service
+- PATCH /{id}/read returns Ok with id+isRead or 404
+- PATCH /read-all returns Ok with markedRead count
 
 ## Regression Test Results
-- Backend: 92/92 tests passed, build clean
-- All 81 pre-existing tests still pass
+- Backend: 99/99 tests passed, build clean
+- All 92 pre-existing tests still pass
 
 ## Known Issues
 None
@@ -68,4 +68,4 @@ None
 None introduced
 
 ## Next Recommended Task
-**TEST-004** — Write NotificationController tests
+**FIX-012** — Add therapist ownership check to ExerciseController
