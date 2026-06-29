@@ -204,6 +204,7 @@ public class JalsaDbContext : DbContext
             e.Property(s => s.SessionDate).HasColumnType("date");
             e.Property(s => s.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
             e.Property(s => s.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+            e.HasIndex(s => s.PatientId);
             e.HasOne(s => s.Patient).WithMany(p => p.Sessions).HasForeignKey(s => s.PatientId).OnDelete(DeleteBehavior.NoAction);
             e.HasOne(s => s.IntakeForm).WithMany(f => f.Sessions).HasForeignKey(s => s.IntakeFormId).OnDelete(DeleteBehavior.SetNull);
         });
@@ -259,6 +260,7 @@ public class JalsaDbContext : DbContext
             e.Property(n => n.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
             e.Property(n => n.IsRead).HasDefaultValue(false);
             e.Property(n => n.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            e.HasIndex(n => n.RecipientUserId);
             e.HasOne(n => n.RecipientUser).WithMany(u => u.Notifications).HasForeignKey(n => n.RecipientUserId).OnDelete(DeleteBehavior.NoAction);
         });
 
@@ -329,6 +331,7 @@ public class JalsaDbContext : DbContext
             e.Property(ex => ex.Status).HasDefaultValue("Active");
             e.Property(ex => ex.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
             e.Property(ex => ex.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+            e.HasIndex(ex => ex.PatientId);
             e.HasOne(ex => ex.Patient).WithMany(p => p.Exercises).HasForeignKey(ex => ex.PatientId).OnDelete(DeleteBehavior.NoAction);
         });
 
@@ -360,6 +363,7 @@ public class JalsaDbContext : DbContext
             e.HasKey(cm => cm.Id);
             e.Property(cm => cm.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
             e.Property(cm => cm.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            e.HasIndex(cm => cm.ConversationId);
             e.HasOne(cm => cm.Conversation).WithMany(cc => cc.ChatMessages).HasForeignKey(cm => cm.ConversationId).OnDelete(DeleteBehavior.NoAction);
         });
 
