@@ -13,17 +13,22 @@ public class SummarizationService : ISummarizationService
     private readonly JalsaDbContext _context;
     private readonly IVectorStore _vectorStore;
     private readonly IEmbeddingService _embeddingService;
+    private readonly ILlmObservabilityService _observability;
+    private readonly string _model;
 
     public SummarizationService(
         IOptions<OpenAiSettings> settings,
         JalsaDbContext context,
         IVectorStore vectorStore,
-        IEmbeddingService embeddingService)
+        IEmbeddingService embeddingService,
+        ILlmObservabilityService observability)
     {
         var config = settings.Value;
         _context = context;
         _vectorStore = vectorStore;
         _embeddingService = embeddingService;
+        _observability = observability;
+        _model = config.ChatModel;
 
         OpenAI.OpenAIClient openAi = string.IsNullOrWhiteSpace(config.Endpoint)
             ? new OpenAI.OpenAIClient(config.ApiKey)
@@ -82,8 +87,24 @@ public class SummarizationService : ISummarizationService
             new UserChatMessage(prompt)
         };
 
+        var startTime = DateTime.UtcNow;
         var result = await _client.CompleteChatAsync(messages);
-        return result.Value.Content[0].Text;
+        var output = result.Value.Content[0].Text;
+
+        await _observability.LogGenerationAsync(new LlmGenerationLog
+        {
+            Name = "summarize-patient",
+            Model = _model,
+            Input = prompt,
+            Output = output,
+            InputTokens = result.Value.Usage?.InputTokenCount,
+            OutputTokens = result.Value.Usage?.OutputTokenCount,
+            StartTime = startTime,
+            EndTime = DateTime.UtcNow,
+            Metadata = new Dictionary<string, object> { ["patientId"] = patientId.ToString() }
+        });
+
+        return output;
     }
 
     public async Task<string> SummarizeSessionAsync(Guid sessionId, string language = "ar")
@@ -147,7 +168,23 @@ public class SummarizationService : ISummarizationService
             new UserChatMessage(prompt)
         };
 
+        var startTime = DateTime.UtcNow;
         var result = await _client.CompleteChatAsync(messages);
-        return result.Value.Content[0].Text;
+        var output = result.Value.Content[0].Text;
+
+        await _observability.LogGenerationAsync(new LlmGenerationLog
+        {
+            Name = "summarize-session",
+            Model = _model,
+            Input = prompt,
+            Output = output,
+            InputTokens = result.Value.Usage?.InputTokenCount,
+            OutputTokens = result.Value.Usage?.OutputTokenCount,
+            StartTime = startTime,
+            EndTime = DateTime.UtcNow,
+            Metadata = new Dictionary<string, object> { ["sessionId"] = sessionId.ToString() }
+        });
+
+        return output;
     }
 }

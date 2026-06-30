@@ -15,13 +15,17 @@ public class ChatAiService : IChatAiService
     private readonly IConversationMemoryService _memory;
     private readonly string _model;
 
+    private readonly ILlmObservabilityService _observability;
+
     public ChatAiService(
         IOptions<OpenAiSettings> settings,
         JalsaDbContext context,
         IVectorStore vectorStore,
         IEmbeddingService embeddingService,
-        IConversationMemoryService memory)
+        IConversationMemoryService memory,
+        ILlmObservabilityService observability)
     {
+        _observability = observability;
         var config = settings.Value;
         _model = config.ChatModel;
         _context = context;
@@ -93,8 +97,26 @@ public class ChatAiService : IChatAiService
             new OpenAI.Chat.UserChatMessage(prompt)
         };
 
+        var startTime = DateTime.UtcNow;
         var result = await _client.CompleteChatAsync(messages);
         var response = result.Value.Content[0].Text;
+
+        await _observability.LogGenerationAsync(new LlmGenerationLog
+        {
+            Name = "chat-response",
+            Model = _model,
+            Input = message,
+            Output = response,
+            InputTokens = result.Value.Usage?.InputTokenCount,
+            OutputTokens = result.Value.Usage?.OutputTokenCount,
+            StartTime = startTime,
+            EndTime = DateTime.UtcNow,
+            Metadata = new Dictionary<string, object>
+            {
+                ["conversationId"] = conversationId.ToString(),
+                ["patientId"] = patientId.ToString()
+            }
+        });
 
         var startedAt = history.Count > 0 ? history.First().CreatedAt : DateTime.UtcNow;
 

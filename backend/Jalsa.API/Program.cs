@@ -91,6 +91,10 @@ builder.Services.Configure<EmailSettings>(
 builder.Services.Configure<OpenAiSettings>(
     builder.Configuration.GetSection("OpenAI")
 );
+builder.Services.Configure<LangfuseSettings>(
+    builder.Configuration.GetSection("Langfuse")
+);
+builder.Services.AddHttpClient<ILlmObservabilityService, LangfuseObservabilityService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IEmbeddingService, EmbeddingService>();
 builder.Services.AddScoped<IVectorStore, VectorStore>();

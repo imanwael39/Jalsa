@@ -15,12 +15,16 @@ public class ReportGenerationService : IReportGenerationService
     private readonly IEmbeddingService _embeddingService;
     private readonly string _model;
 
+    private readonly ILlmObservabilityService _observability;
+
     public ReportGenerationService(
         IOptions<OpenAiSettings> settings,
         JalsaDbContext context,
         IVectorStore vectorStore,
-        IEmbeddingService embeddingService)
+        IEmbeddingService embeddingService,
+        ILlmObservabilityService observability)
     {
+        _observability = observability;
         var config = settings.Value;
         _model = config.ChatModel;
         _context = context;
@@ -102,7 +106,23 @@ public class ReportGenerationService : IReportGenerationService
             new UserChatMessage(prompt)
         };
 
+        var startTime = DateTime.UtcNow;
         var result = await _client.CompleteChatAsync(messages);
-        return result.Value.Content[0].Text;
+        var output = result.Value.Content[0].Text;
+
+        await _observability.LogGenerationAsync(new LlmGenerationLog
+        {
+            Name = "generate-report-draft",
+            Model = _model,
+            Input = prompt,
+            Output = output,
+            InputTokens = result.Value.Usage?.InputTokenCount,
+            OutputTokens = result.Value.Usage?.OutputTokenCount,
+            StartTime = startTime,
+            EndTime = DateTime.UtcNow,
+            Metadata = new Dictionary<string, object> { ["patientId"] = patientId.ToString() }
+        });
+
+        return output;
     }
 }
