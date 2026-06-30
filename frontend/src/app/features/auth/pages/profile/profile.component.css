@@ -63,3 +63,13 @@
     color: var(--success-dark);
     border-inline-start: 3px solid var(--success);
 }
+
+@media (max-width: 768px) {
+    .profile-container {
+        padding: var(--space-4) var(--space-2);
+    }
+
+    .card-body {
+        padding: var(--space-4);
+    }
+}

@@ -21,3 +21,11 @@
 .note-content {
     line-height: 1.7;
 }
+
+@media (max-width: 768px) {
+    .session-detail .d-flex.justify-content-between {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-3);
+    }
+}
