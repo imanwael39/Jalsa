@@ -7,14 +7,14 @@
 `2026-06-30_Iman_sprint-5`
 
 ## Current Task
-**Fix 1.1 — [R1]** — Remove duplicate error handling from HttpClientService (Completed)
+**Fix 1.2 — [A1]** — Fix BaseStateService.handleObservable callback (Completed)
 
 ## Sprint Progress
 
 | Task ID | Task Name | Status |
 |---------|-----------|--------|
 | R1 | Remove duplicate error handling from HttpClientService | **Completed** |
-| A1 | Fix BaseStateService.handleObservable callback | Not Started |
+| A1 | Fix BaseStateService.handleObservable callback | **Completed** |
 | Q1/Q2 | Consolidate duplicate chat interfaces | Not Started |
 | P2 | Deduplicate Chart.registerables registration | Not Started |
 | P1 | Reduce initial bundle size below 900 kB warning | Not Started |
@@ -22,7 +22,7 @@
 | Q5 | Extend BaseStateService in domain state services | Not Started |
 
 ## Completion Percentage
-Sprint 5: 1/7 (14%)
+Sprint 5: 2/7 (29%)
 
 ## Completed Tasks
 1. **R1** — Removed duplicate error handling from HttpClientService:
@@ -31,8 +31,13 @@ Sprint 5: 1/7 (14%)
    - Removed unused imports: `HttpErrorResponse`, `throwError`, `catchError`
    - Error handling now flows exclusively through `errorInterceptor` (single handler)
 
+2. **A1** — Fixed BaseStateService.handleObservable callback:
+   - Added `tap(data => onSuccess(data))` operator to invoke the success callback
+   - Renamed `_onSuccess` parameter to `onSuccess` (removed underscore prefix for unused param)
+   - Added `tap` to imports from `rxjs/operators`
+   - No behavioral change yet (no current code calls `handleObservable`); enables Q5
+
 ## Remaining Tasks
-- A1: Fix BaseStateService.handleObservable callback
 - Q1/Q2: Consolidate duplicate chat interfaces
 - P2: Deduplicate Chart.registerables registration
 - P1: Reduce initial bundle size below 900 kB warning
@@ -51,8 +56,8 @@ N/A (no integration test infrastructure)
 ## Manual Verification Results
 - Build passes with 0 errors
 - All 435 tests pass
-- `http-client.service.ts` no longer imports `catchError`, `throwError`, or `HttpErrorResponse`
-- Error flow now goes through `errorInterceptor` only (no double-handling)
+- `base-state.service.ts` now invokes `onSuccess` callback via `tap` operator
+- No behavioral change (method not yet called by any code — enables Q5)
 
 ## Regression Test Results
 - Frontend: 435/435 tests pass (no regressions)
@@ -69,4 +74,4 @@ None
 None introduced
 
 ## Next Recommended Task
-**Fix 1.2 — [A1]** — Fix BaseStateService.handleObservable to invoke callback
+**Fix 1.3 — [Q1/Q2]** — Consolidate duplicate chat interfaces
