@@ -29,6 +29,14 @@ DotNetEnv.Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.UseSentry(o =>
+{
+    o.Dsn = builder.Configuration["Sentry:Dsn"] ?? "";
+    o.TracesSampleRate = double.TryParse(builder.Configuration["Sentry:TracesSampleRate"], out var rate) ? rate : 0.2;
+    o.Environment = builder.Environment.EnvironmentName;
+    o.SendDefaultPii = false;
+});
+
 //create jwt token
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("Jwt")
@@ -238,6 +246,7 @@ if (app.Environment.IsDevelopment())
 
 
 app.UseRouting();
+app.UseSentryTracing();
 app.UseRateLimiter();
 app.UseCors("AngularPolicy");
 

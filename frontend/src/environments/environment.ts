@@ -8,4 +8,5 @@ export const environment: Environment = {
     appName: 'Jalsa (Dev)',
     enableMockApi: false,
     logLevel: 'debug',
+    sentryDsn: '',
 };
