@@ -1,78 +1,66 @@
 # PROGRESS
 
 ## Current Sprint
-**Sprint 4** — Stabilization & MVP Release (COMPLETE)
+**Sprint 5** — Frontend Quality & Architecture Fixes
 
 ## Current Branch
-`2026-06-30_Iman_sprint-4`
+`2026-06-30_Iman_sprint-5`
 
 ## Current Task
-**POLISH-003** — Bug fixes from testing (Completed)
+**Fix 1.1 — [R1]** — Remove duplicate error handling from HttpClientService (Completed)
 
 ## Sprint Progress
 
 | Task ID | Task Name | Status |
 |---------|-----------|--------|
-| DEP-001 | Create CI/CD pipeline | **Completed** |
-| DEP-002 | Staging environment config | **Completed** |
-| DOC-001 | Create backend README | **Completed** |
-| DOC-002 | Add Langfuse LLM observability | **Completed** |
-| DOC-003 | Add Sentry error monitoring | **Completed** |
-| POLISH-001 | End-to-end smoke testing | **Completed** |
-| POLISH-002 | Responsive UI review | **Completed** |
-| POLISH-003 | Bug fixes from testing | **Completed** |
+| R1 | Remove duplicate error handling from HttpClientService | **Completed** |
+| A1 | Fix BaseStateService.handleObservable callback | Not Started |
+| Q1/Q2 | Consolidate duplicate chat interfaces | Not Started |
+| P2 | Deduplicate Chart.registerables registration | Not Started |
+| P1 | Reduce initial bundle size below 900 kB warning | Not Started |
+| Q4 | Export StatusArPipe from barrel | Not Started |
+| Q5 | Extend BaseStateService in domain state services | Not Started |
 
 ## Completion Percentage
-Sprint 4: 8/8 (100%)
+Sprint 5: 1/7 (14%)
 
 ## Completed Tasks
-1. **DEP-001** — Created GitHub Actions CI/CD pipeline
-2. **DEP-002** — Created environment-specific appsettings for Staging and Production
-3. **DOC-001** — Created `backend/README.md` with setup, architecture, and API docs
-4. **DOC-002** — Added Langfuse LLM observability across 4 AI services
-5. **DOC-003** — Added Sentry error monitoring (frontend + backend)
-6. **POLISH-001** — End-to-end smoke testing (test fix + full verification)
-7. **POLISH-002** — Responsive UI review (7 CSS files fixed with breakpoints)
-8. **POLISH-003** — Bug fixes from testing:
-   - **Backend fixes (4)**:
-     - `CrisisDetectionService.cs` — CRITICAL: Fixed silent empty catch block that swallowed AI call failures in crisis detection logic. Now logs the exception via Debug.WriteLine.
-     - `ProgressController.cs` — HIGH: Fixed `ex.Message` exposure to client (information leak). Now returns generic Arabic error message.
-     - `ExerciseController.cs` — HIGH: Added class-level `[Authorize]` as safety net (individual endpoints already had role-specific authorization).
-     - `EmailNotificationService.cs` — MEDIUM: Removed `Console.WriteLine` debug output from production code.
-   - **Frontend fixes (3)**:
-     - `dashboard.component.ts` — Removed redundant manual `Subscription` management (was duplicating `takeUntilDestroyed`), removed unused `OnDestroy` and `Subscription` import.
-     - `http-client.service.ts` — Removed `console.error` from production error handler (error interceptor handles user-facing errors).
-     - `dashboard.component.html` — Removed 4 hardcoded placeholder trend strings ("+9 هذا الشهر", "+8 هذا الأسبوع", etc.) that showed fake data.
-   - **Test fix (1)**:
-     - `http-client.service.spec.ts` — Updated test to verify errors propagate WITHOUT console logging (was asserting console.error was called).
+1. **R1** — Removed duplicate error handling from HttpClientService:
+   - Removed `catchError(this.handleError)` from all 7 methods (get, post, put, patch, delete, upload, blob)
+   - Removed the `private handleError` method entirely
+   - Removed unused imports: `HttpErrorResponse`, `throwError`, `catchError`
+   - Error handling now flows exclusively through `errorInterceptor` (single handler)
 
 ## Remaining Tasks
-None — Sprint 4 complete
+- A1: Fix BaseStateService.handleObservable callback
+- Q1/Q2: Consolidate duplicate chat interfaces
+- P2: Deduplicate Chart.registerables registration
+- P1: Reduce initial bundle size below 900 kB warning
+- Q4: Export StatusArPipe from barrel
+- Q5: Extend BaseStateService in domain state services
 
 ## Build Status
-- **Backend**: Build clean (0 errors, 0 warnings) — Release configuration
-- **Frontend**: Build clean — production configuration
+- **Frontend**: Build clean (0 errors, pre-existing warnings: bundle budget, quill-delta CommonJS)
 
 ## Unit Test Results
-- **Backend**: 154/154 passed (19 test classes, 0 failures)
-- **Frontend**: 270/270 passed (24 test files, 0 failures, 0 unhandled errors)
+- **Frontend**: 435/435 passed (39 test files, 0 failures)
 
 ## Integration Test Results
 N/A (no integration test infrastructure)
 
 ## Manual Verification Results
-- Full codebase bug scan completed (frontend + backend)
-- All identified bugs fixed and verified
-- Both builds clean after fixes
-- All tests pass after fixes
+- Build passes with 0 errors
+- All 435 tests pass
+- `http-client.service.ts` no longer imports `catchError`, `throwError`, or `HttpErrorResponse`
+- Error flow now goes through `errorInterceptor` only (no double-handling)
 
 ## Regression Test Results
-- Backend: 154/154 tests pass (no regressions)
-- Frontend: 270/270 tests pass, 0 unhandled errors (no regressions)
+- Frontend: 435/435 tests pass (no regressions)
 
 ## Known Issues
 - Pre-existing: 3 CSS budget warnings (sidebar, patient-detail, chat-room) — cosmetic, not blocking
 - Pre-existing: quill-delta CommonJS warning — third-party, not fixable
+- Pre-existing: bundle size 901 kB exceeds 700 kB budget (addressed in P1)
 
 ## Blockers
 None
@@ -81,4 +69,4 @@ None
 None introduced
 
 ## Next Recommended Task
-Sprint 4 complete. All sprints finished. Project ready for MVP release.
+**Fix 1.2 — [A1]** — Fix BaseStateService.handleObservable to invoke callback
