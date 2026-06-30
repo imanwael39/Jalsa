@@ -308,6 +308,21 @@
     }
 }
 
+@media (max-width: 768px) {
+    .chat-room {
+        height: calc(100vh - 160px);
+        border-radius: 0;
+    }
+
+    .chat-header {
+        padding: var(--space-3) var(--space-4);
+    }
+
+    .input-area {
+        padding: var(--space-3) var(--space-4);
+    }
+}
+
 @media (max-width: 576px) {
     .message-wrapper {
         max-width: 90%;

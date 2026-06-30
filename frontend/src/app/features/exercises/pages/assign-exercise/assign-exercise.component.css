@@ -9,6 +9,8 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: var(--space-6);
+    flex-wrap: wrap;
+    gap: var(--space-3);
 }
 
 .page-title {

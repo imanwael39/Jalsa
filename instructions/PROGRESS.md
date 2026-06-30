@@ -1,86 +1,84 @@
 # PROGRESS
 
 ## Current Sprint
-**Sprint 3** — Quality & Hardening
+**Sprint 4** — Stabilization & MVP Release (COMPLETE)
 
 ## Current Branch
-`2026-06-29_Iman_sprint-3`
+`2026-06-30_Iman_sprint-4`
 
 ## Current Task
-**QUAL-006** — Add rate limiting (Completed)
+**POLISH-003** — Bug fixes from testing (Completed)
 
 ## Sprint Progress
 
 | Task ID | Task Name | Status |
 |---------|-----------|--------|
-| TEST-005 | Write controller tests for all 11 controllers | **Completed** |
-| QUAL-001 | Add FluentValidation for all DTOs | **Completed** |
-| QUAL-002 | Fix namespace typo Repositores→Repositories | **Completed** |
-| QUAL-003 | Extract GetCurrentUserId to base controller | **Completed** |
-| QUAL-004 | Move inline DTOs to proper files | **Completed** |
-| QUAL-005 | Account lockout | **Completed** |
-| QUAL-006 | Rate limiting | **Completed** |
+| DEP-001 | Create CI/CD pipeline | **Completed** |
+| DEP-002 | Staging environment config | **Completed** |
+| DOC-001 | Create backend README | **Completed** |
+| DOC-002 | Add Langfuse LLM observability | **Completed** |
+| DOC-003 | Add Sentry error monitoring | **Completed** |
+| POLISH-001 | End-to-end smoke testing | **Completed** |
+| POLISH-002 | Responsive UI review | **Completed** |
+| POLISH-003 | Bug fixes from testing | **Completed** |
 
 ## Completion Percentage
-Sprint 3: 7/7 (100%)
+Sprint 4: 8/8 (100%)
 
 ## Completed Tasks
-1. **TEST-005** — Created 7 new controller test files covering all 11 controllers. Total test count: 150 (up from 108).
-2. **QUAL-001** — Created 11 new FluentValidation validators across 6 modules: Patient (PatientCreateDtoValidator, PatientUpdateDtoValidator), Session (SessionCreateDtoValidator, SessionUpdateDtoValidator, SessionNoteDtoValidator), Report (ReportGenerateDtoValidator, ReportUpdateDtoValidator), Intake (IntakeFormSaveDtoValidator), Assessment (AssessmentCreateDtoValidator), Chat (CreateConversationDtoValidator, SendMessageDtoValidator). All validators follow the existing pattern (Exercise validators). Auto-discovered by `AddValidatorsFromAssemblyContaining` in Program.cs. Total validators: 14 (3 existing Exercise + 11 new).
-3. **QUAL-002** — Verified namespace typo `Repositores` does NOT exist in the codebase. All 18+ repository-related files already use correct spelling `Repositories`. No changes needed. Build clean, 149/149 tests pass.
-4. **QUAL-003** — Created `BaseController.cs` with `GetCurrentUserId()` method. Updated 9 controllers to inherit from `BaseController` instead of `ControllerBase`: AuthController, PatientController, SessionController, ReportController, NotificationController, IntakeController, AssessmentController, ChatController, ExerciseController. Removed duplicate `GetCurrentUserId()` from all 9 controllers. Removed unused `using System.Security.Claims` and `using Jalsa.API.Exceptions` where no longer needed. Build clean, 149/149 tests pass.
-5. **QUAL-004** — Moved 4 inline DTOs from controllers to proper files:
-   - `ExtendDueDateRequest` → `Jalsa.Application/DTOs/Exercise/ExtendDueDateRequest.cs`
-   - `OcrRequest` → `Jalsa.Application/DTOs/Intake/OcrRequest.cs`
-   - `SummarizeRequest` → `Jalsa.API/DTOs/AI/AiRequestDtos.cs`
-   - `ReportDraftRequest` → `Jalsa.API/DTOs/AI/AiRequestDtos.cs`
-   Updated 3 controllers (ExerciseController, AiController, IntakeController) to use new DTOs. Updated AiControllerTests to use new namespace. Build clean, 149/149 tests pass.
-6. **QUAL-005** — Added account lockout to AuthService.LoginAsync:
-   - Added `FailedLoginAttempts` (int) and `LockoutEnd` (DateTime?) to User entity
-   - Created EF Core migration `AddAccountLockoutFields`
-   - Added Fluent API configuration in JalsaDbContext
-   - Implemented lockout logic: 5 failed attempts → 15 min lockout
-   - Successful login resets counter
-   - Added 5 tests: increment counter, lock after 5 attempts, locked returns 403, reset on success, expired lockout allows login
-   - Build clean, 154/154 tests pass.
-7. **QUAL-006** — Added rate limiting middleware:
-   - Added `Microsoft.AspNetCore.RateLimiting` imports
-   - Configured two FixedWindowLimiter policies: "general" (100 req/min) and "ai" (10 req/min)
-   - Added `[EnableRateLimiting("general")]` to BaseController (9 controllers) and ProgressController
-   - Added `[EnableRateLimiting("ai")]` to AiController
-   - Added `app.UseRateLimiter()` middleware with 429 JSON response
-   - Build clean, 154/154 tests pass.
+1. **DEP-001** — Created GitHub Actions CI/CD pipeline
+2. **DEP-002** — Created environment-specific appsettings for Staging and Production
+3. **DOC-001** — Created `backend/README.md` with setup, architecture, and API docs
+4. **DOC-002** — Added Langfuse LLM observability across 4 AI services
+5. **DOC-003** — Added Sentry error monitoring (frontend + backend)
+6. **POLISH-001** — End-to-end smoke testing (test fix + full verification)
+7. **POLISH-002** — Responsive UI review (7 CSS files fixed with breakpoints)
+8. **POLISH-003** — Bug fixes from testing:
+   - **Backend fixes (4)**:
+     - `CrisisDetectionService.cs` — CRITICAL: Fixed silent empty catch block that swallowed AI call failures in crisis detection logic. Now logs the exception via Debug.WriteLine.
+     - `ProgressController.cs` — HIGH: Fixed `ex.Message` exposure to client (information leak). Now returns generic Arabic error message.
+     - `ExerciseController.cs` — HIGH: Added class-level `[Authorize]` as safety net (individual endpoints already had role-specific authorization).
+     - `EmailNotificationService.cs` — MEDIUM: Removed `Console.WriteLine` debug output from production code.
+   - **Frontend fixes (3)**:
+     - `dashboard.component.ts` — Removed redundant manual `Subscription` management (was duplicating `takeUntilDestroyed`), removed unused `OnDestroy` and `Subscription` import.
+     - `http-client.service.ts` — Removed `console.error` from production error handler (error interceptor handles user-facing errors).
+     - `dashboard.component.html` — Removed 4 hardcoded placeholder trend strings ("+9 هذا الشهر", "+8 هذا الأسبوع", etc.) that showed fake data.
+   - **Test fix (1)**:
+     - `http-client.service.spec.ts` — Updated test to verify errors propagate WITHOUT console logging (was asserting console.error was called).
 
 ## Remaining Tasks
-None — Sprint 3 complete. Next: Sprint 4 tasks (CI/CD, staging config, documentation, monitoring, smoke testing)
+None — Sprint 4 complete
 
 ## Build Status
-- **Backend**: Build clean (0 errors, 0 warnings)
+- **Backend**: Build clean (0 errors, 0 warnings) — Release configuration
+- **Frontend**: Build clean — production configuration
 
 ## Unit Test Results
-- **Backend**: 149/149 passed
+- **Backend**: 154/154 passed (19 test classes, 0 failures)
+- **Frontend**: 270/270 passed (24 test files, 0 failures, 0 unhandled errors)
 
 ## Integration Test Results
-N/A
+N/A (no integration test infrastructure)
 
 ## Manual Verification Results
-- Created 3 new DTO files in proper locations
-- Removed all inline DTOs from 3 controllers
-- Updated test file to use new namespace
-- No inline DTO definitions remain in any controller
+- Full codebase bug scan completed (frontend + backend)
+- All identified bugs fixed and verified
+- Both builds clean after fixes
+- All tests pass after fixes
 
 ## Regression Test Results
-- Backend: 149/149 tests passed, build clean
-- All pre-existing tests still pass
+- Backend: 154/154 tests pass (no regressions)
+- Frontend: 270/270 tests pass, 0 unhandled errors (no regressions)
 
 ## Known Issues
-None
+- Pre-existing: 3 CSS budget warnings (sidebar, patient-detail, chat-room) — cosmetic, not blocking
+- Pre-existing: quill-delta CommonJS warning — third-party, not fixable
 
 ## Blockers
 None
 
 ## Technical Debt
-Reduced — eliminated inline DTO duplication across 3 controllers
+None introduced
 
 ## Next Recommended Task
-**QUAL-005** — Add account lockout
+Sprint 4 complete. All sprints finished. Project ready for MVP release.

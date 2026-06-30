@@ -9,6 +9,7 @@ namespace Jalsa.API.Controllers;
 
 [ApiController]
 [Route("api/exercises")]
+[Authorize]
 public class ExerciseController : BaseController
 {
     private readonly IExerciseService _exerciseService;

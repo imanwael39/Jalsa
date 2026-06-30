@@ -42,7 +42,6 @@ export class HttpClientService {
     }
 
     private handleError(error: HttpErrorResponse): Observable<never> {
-        console.error('HTTP Error:', error);
         return throwError(() => error);
     }
 }

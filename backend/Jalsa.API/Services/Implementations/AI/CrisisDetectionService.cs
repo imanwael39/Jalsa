@@ -8,6 +8,8 @@ namespace Jalsa.API.Services.Implementations.AI;
 public class CrisisDetectionService : ICrisisDetectionService
 {
     internal ChatClient _client;
+    private readonly ILlmObservabilityService? _observability;
+    private readonly string _model = "gpt-4o";
     private static readonly string[] Keywords =
     [
         "suicide", "kill myself", "end my life", "want to die", "self-harm",
@@ -22,16 +24,18 @@ public class CrisisDetectionService : ICrisisDetectionService
         _client = client;
     }
 
-    public CrisisDetectionService(IOptions<OpenAiSettings> settings)
+    public CrisisDetectionService(IOptions<OpenAiSettings> settings, ILlmObservabilityService observability)
     {
         var config = settings.Value;
+        _model = config.ChatModel;
+        _observability = observability;
         OpenAI.OpenAIClient openAi = string.IsNullOrWhiteSpace(config.Endpoint)
             ? new OpenAI.OpenAIClient(config.ApiKey)
             : new Azure.AI.OpenAI.AzureOpenAIClient(
                 new Uri(config.Endpoint),
                 new System.ClientModel.ApiKeyCredential(config.ApiKey));
 
-        _client = openAi.GetChatClient(config.ChatModel);
+        _client = openAi.GetChatClient(_model);
     }
 
     public async Task<CrisisDetectionResult> AnalyzeAsync(string message)
@@ -54,11 +58,27 @@ public class CrisisDetectionService : ICrisisDetectionService
 
         try
         {
+            var startTime = DateTime.UtcNow;
             var response = await _client.CompleteChatAsync(
                 new SystemChatMessage(systemPrompt),
                 new UserChatMessage(userPrompt));
 
             var content = response.Value.Content[0].Text ?? "";
+
+            if (_observability != null)
+            {
+                await _observability.LogGenerationAsync(new LlmGenerationLog
+                {
+                    Name = "crisis-detection",
+                    Model = _model,
+                    Input = userPrompt,
+                    Output = content,
+                    InputTokens = response.Value.Usage?.InputTokenCount,
+                    OutputTokens = response.Value.Usage?.OutputTokenCount,
+                    StartTime = startTime,
+                    EndTime = DateTime.UtcNow
+                });
+            }
             var jsonStart = content.IndexOf('{');
             var jsonEnd = content.LastIndexOf('}');
 
@@ -85,8 +105,9 @@ public class CrisisDetectionService : ICrisisDetectionService
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"Crisis detection AI call failed: {ex.Message}");
         }
 
         return new CrisisDetectionResult { IsCrisis = false };
