@@ -1,0 +1,312 @@
+using System.Linq.Expressions;
+using FluentAssertions;
+using Jalsa.Application.DTOs.Patient;
+using Jalsa.Application.Interfaces.Repositores;
+using Jalsa.Application.Services;
+using Jalsa.Domain.Models.Clinic;
+using Jalsa.Domain.Models.Patient;
+using Moq;
+
+namespace Jalsa.Tests;
+
+public class PatientServiceTests
+{
+    private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IGenericRepository<Patient>> _patientRepoMock;
+    private readonly Mock<IGenericRepository<Therapist>> _therapistRepoMock;
+    private readonly PatientService _sut;
+
+    private readonly Guid _userId = Guid.NewGuid();
+    private readonly Guid _therapistId = Guid.NewGuid();
+    private readonly Guid _otherTherapistId = Guid.NewGuid();
+
+    public PatientServiceTests()
+    {
+        _unitOfWorkMock = new Mock<IUnitOfWork>();
+        _patientRepoMock = new Mock<IGenericRepository<Patient>>();
+        _therapistRepoMock = new Mock<IGenericRepository<Therapist>>();
+
+        _unitOfWorkMock.Setup(x => x.Repository<Patient>()).Returns(_patientRepoMock.Object);
+        _unitOfWorkMock.Setup(x => x.Repository<Therapist>()).Returns(_therapistRepoMock.Object);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+        _therapistRepoMock
+            .Setup(x => x.FindSingleAsync(It.IsAny<Expression<Func<Therapist, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Therapist { Id = _therapistId, UserId = _userId, FullName = "Dr. Test", LicenseNumber = "LIC-001" });
+
+        _sut = new PatientService(_unitOfWorkMock.Object);
+    }
+
+    private static PatientCreateDto MakeCreateDto(string name = "أحمد محمد") => new()
+    {
+        FullName = name,
+        DateOfBirth = new DateOnly(1990, 5, 15),
+        Gender = "ذكر",
+        Phone = "01012345678",
+        Email = "patient@test.com",
+        ChiefComplaint = "قلق عام"
+    };
+
+    private Patient MakePatient(Guid? id = null, Guid? therapistId = null, string status = "Active") => new()
+    {
+        Id = id ?? Guid.NewGuid(),
+        TherapistId = therapistId ?? _therapistId,
+        FullName = "أحمد محمد",
+        DateOfBirth = new DateOnly(1990, 5, 15),
+        Gender = "ذكر",
+        Phone = "01012345678",
+        Status = status,
+        CreatedAt = DateTime.UtcNow,
+        UpdatedAt = DateTime.UtcNow
+    };
+
+    // --- Create ---
+
+    [Fact]
+    public async Task CreateAsync_ValidDto_ReturnsPatientViewDto()
+    {
+        var dto = MakeCreateDto();
+
+        var result = await _sut.CreateAsync(dto, _userId);
+
+        result.FullName.Should().Be(dto.FullName);
+        result.TherapistId.Should().Be(_therapistId);
+        result.Status.Should().Be("Active");
+        _patientRepoMock.Verify(x => x.AddAsync(It.IsAny<Patient>(), It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateAsync_NoTherapistProfile_ThrowsUnauthorized()
+    {
+        var unknownUserId = Guid.NewGuid();
+        _therapistRepoMock
+            .Setup(x => x.FindSingleAsync(It.Is<Expression<Func<Therapist, bool>>>(e => true), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Therapist?)null);
+
+        var sut = new PatientService(_unitOfWorkMock.Object);
+
+        var act = () => sut.CreateAsync(MakeCreateDto(), unknownUserId);
+
+        await act.Should().ThrowAsync<UnauthorizedAccessException>();
+    }
+
+    // --- GetById ---
+
+    [Fact]
+    public async Task GetByIdAsync_OwnPatient_ReturnsDto()
+    {
+        var patientId = Guid.NewGuid();
+        var patient = MakePatient(id: patientId);
+
+        _patientRepoMock
+            .Setup(x => x.GetByIdAsync(patientId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(patient);
+
+        var result = await _sut.GetByIdAsync(patientId, _userId);
+
+        result.Id.Should().Be(patientId);
+        result.FullName.Should().Be(patient.FullName);
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_OtherTherapistPatient_ThrowsNotFound()
+    {
+        var patientId = Guid.NewGuid();
+        var patient = MakePatient(id: patientId, therapistId: _otherTherapistId);
+
+        _patientRepoMock
+            .Setup(x => x.GetByIdAsync(patientId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(patient);
+
+        var act = () => _sut.GetByIdAsync(patientId, _userId);
+
+        await act.Should().ThrowAsync<KeyNotFoundException>();
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_NonExistent_ThrowsNotFound()
+    {
+        _patientRepoMock
+            .Setup(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Patient?)null);
+
+        var act = () => _sut.GetByIdAsync(Guid.NewGuid(), _userId);
+
+        await act.Should().ThrowAsync<KeyNotFoundException>();
+    }
+
+    // --- GetAll ---
+
+    [Fact]
+    public async Task GetAllAsync_ReturnsOnlyOwnPatients()
+    {
+        var patients = new List<Patient>
+        {
+            MakePatient(therapistId: _therapistId),
+            MakePatient(therapistId: _therapistId),
+            MakePatient(therapistId: _otherTherapistId)
+        };
+
+        _patientRepoMock.Setup(x => x.Query()).Returns(patients.AsQueryable());
+
+        var result = await _sut.GetAllAsync(_userId);
+
+        result.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task GetAllAsync_WithStatusFilter_FiltersCorrectly()
+    {
+        var patients = new List<Patient>
+        {
+            MakePatient(therapistId: _therapistId, status: "Active"),
+            MakePatient(therapistId: _therapistId, status: "Archived")
+        };
+
+        _patientRepoMock.Setup(x => x.Query()).Returns(patients.AsQueryable());
+
+        var result = await _sut.GetAllAsync(_userId, new PatientFilterDto { Status = "Active" });
+
+        result.Should().HaveCount(1);
+        result.First().Status.Should().Be("Active");
+    }
+
+    [Fact]
+    public async Task GetAllAsync_WithSearchTerm_MatchesByName()
+    {
+        var patients = new List<Patient>
+        {
+            MakePatient(therapistId: _therapistId),
+            MakePatient(therapistId: _therapistId)
+        };
+        patients[1].FullName = "سارة علي";
+
+        _patientRepoMock.Setup(x => x.Query()).Returns(patients.AsQueryable());
+
+        var result = await _sut.GetAllAsync(_userId, new PatientFilterDto { SearchTerm = "سارة" });
+
+        result.Should().HaveCount(1);
+        result.First().FullName.Should().Be("سارة علي");
+    }
+
+    // --- Update ---
+
+    [Fact]
+    public async Task UpdateAsync_OwnPatient_UpdatesAndReturns()
+    {
+        var patientId = Guid.NewGuid();
+        var patient = MakePatient(id: patientId);
+
+        _patientRepoMock
+            .Setup(x => x.GetByIdAsync(patientId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(patient);
+
+        var updateDto = new PatientUpdateDto
+        {
+            FullName = "اسم جديد",
+            Gender = "ذكر"
+        };
+
+        var result = await _sut.UpdateAsync(patientId, updateDto, _userId);
+
+        result.FullName.Should().Be("اسم جديد");
+        _patientRepoMock.Verify(x => x.Update(It.IsAny<Patient>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_OtherTherapistPatient_ThrowsNotFound()
+    {
+        var patientId = Guid.NewGuid();
+        var patient = MakePatient(id: patientId, therapistId: _otherTherapistId);
+
+        _patientRepoMock
+            .Setup(x => x.GetByIdAsync(patientId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(patient);
+
+        var act = () => _sut.UpdateAsync(patientId, new PatientUpdateDto { FullName = "x" }, _userId);
+
+        await act.Should().ThrowAsync<KeyNotFoundException>();
+    }
+
+    // --- Archive / Restore ---
+
+    [Fact]
+    public async Task ArchiveAsync_OwnPatient_SetsStatusArchived()
+    {
+        var patientId = Guid.NewGuid();
+        var patient = MakePatient(id: patientId);
+
+        _patientRepoMock
+            .Setup(x => x.GetByIdAsync(patientId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(patient);
+
+        await _sut.ArchiveAsync(patientId, _userId);
+
+        patient.Status.Should().Be("Archived");
+        _patientRepoMock.Verify(x => x.Update(patient), Times.Once);
+    }
+
+    [Fact]
+    public async Task RestoreAsync_ArchivedPatient_SetsStatusActive()
+    {
+        var patientId = Guid.NewGuid();
+        var patient = MakePatient(id: patientId, status: "Archived");
+
+        _patientRepoMock
+            .Setup(x => x.GetByIdAsync(patientId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(patient);
+
+        await _sut.RestoreAsync(patientId, _userId);
+
+        patient.Status.Should().Be("Active");
+    }
+
+    [Fact]
+    public async Task ArchiveAsync_OtherTherapistPatient_ThrowsNotFound()
+    {
+        var patientId = Guid.NewGuid();
+        var patient = MakePatient(id: patientId, therapistId: _otherTherapistId);
+
+        _patientRepoMock
+            .Setup(x => x.GetByIdAsync(patientId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(patient);
+
+        var act = () => _sut.ArchiveAsync(patientId, _userId);
+
+        await act.Should().ThrowAsync<KeyNotFoundException>();
+    }
+
+    // --- Delete ---
+
+    [Fact]
+    public async Task DeleteAsync_OwnPatient_RemovesPatient()
+    {
+        var patientId = Guid.NewGuid();
+        var patient = MakePatient(id: patientId);
+
+        _patientRepoMock
+            .Setup(x => x.GetByIdAsync(patientId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(patient);
+
+        await _sut.DeleteAsync(patientId, _userId);
+
+        _patientRepoMock.Verify(x => x.Remove(patient), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_OtherTherapistPatient_ThrowsNotFound()
+    {
+        var patientId = Guid.NewGuid();
+        var patient = MakePatient(id: patientId, therapistId: _otherTherapistId);
+
+        _patientRepoMock
+            .Setup(x => x.GetByIdAsync(patientId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(patient);
+
+        var act = () => _sut.DeleteAsync(patientId, _userId);
+
+        await act.Should().ThrowAsync<KeyNotFoundException>();
+    }
+}

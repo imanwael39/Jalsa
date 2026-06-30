@@ -23,7 +23,8 @@ public class ExerciseController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var result = await _exerciseService.GetAllAsync();
+        var userId = GetCurrentUserId();
+        var result = await _exerciseService.GetAllAsync(userId);
         return Ok(result);
     }
 
@@ -31,7 +32,8 @@ public class ExerciseController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var result = await _exerciseService.GetByIdAsync(id);
+        var userId = GetCurrentUserId();
+        var result = await _exerciseService.GetByIdAsync(id, userId);
         return Ok(result);
     }
 
@@ -39,7 +41,8 @@ public class ExerciseController : ControllerBase
     [HttpGet("patient/{patientId:guid}")]
     public async Task<IActionResult> GetByPatientId(Guid patientId)
     {
-        var result = await _exerciseService.GetByPatientIdAsync(patientId);
+        var userId = GetCurrentUserId();
+        var result = await _exerciseService.GetByPatientIdAsync(patientId, userId);
         return Ok(result);
     }
 
@@ -47,7 +50,8 @@ public class ExerciseController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ExerciseCreateDto dto)
     {
-        var result = await _exerciseService.CreateAsync(dto);
+        var userId = GetCurrentUserId();
+        var result = await _exerciseService.CreateAsync(dto, userId);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
@@ -55,8 +59,9 @@ public class ExerciseController : ControllerBase
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] ExerciseUpdateDto dto)
     {
+        var userId = GetCurrentUserId();
         dto.Id = id;
-        var result = await _exerciseService.UpdateAsync(dto);
+        var result = await _exerciseService.UpdateAsync(dto, userId);
         return Ok(result);
     }
 
@@ -64,7 +69,8 @@ public class ExerciseController : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        await _exerciseService.DeleteAsync(id);
+        var userId = GetCurrentUserId();
+        await _exerciseService.DeleteAsync(id, userId);
         return NoContent();
     }
 
@@ -72,7 +78,8 @@ public class ExerciseController : ControllerBase
     [HttpPut("{id:guid}/extend")]
     public async Task<IActionResult> ExtendDueDate(Guid id, [FromBody] ExtendDueDateRequest request)
     {
-        await _exerciseService.ExtendDueDateAsync(id, request.NewDueDate);
+        var userId = GetCurrentUserId();
+        await _exerciseService.ExtendDueDateAsync(id, request.NewDueDate, userId);
         return NoContent();
     }
 
@@ -113,6 +120,13 @@ public class ExerciseController : ControllerBase
     }
 
     // ──────────────────────────── Helpers ────────────────────────────────────────
+
+    private Guid GetCurrentUserId()
+    {
+        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? throw new UnauthorizedAccessException("User ID claim not found.");
+        return Guid.Parse(claim);
+    }
 
     private Guid? GetPatientId()
     {

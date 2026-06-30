@@ -2,7 +2,9 @@ using Jalsa.Application.DTOs.Exercise;
 using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Application.Interfaces.Repositores;
 using Jalsa.Application.Interfaces.Services;
+using Jalsa.Domain.Models.Clinic;
 using Jalsa.Domain.Models.Exercise;
+using Jalsa.Domain.Models.Patient;
 
 namespace Jalsa.Application.Services;
 
@@ -22,8 +24,11 @@ public class ExerciseService : IExerciseService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ExerciseViewDto> CreateAsync(ExerciseCreateDto dto)
+    public async Task<ExerciseViewDto> CreateAsync(ExerciseCreateDto dto, Guid userId)
     {
+        var therapistId = await ResolveTherapistIdAsync(userId);
+        await ValidatePatientOwnershipAsync(dto.PatientId, therapistId);
+
         var exercise = new Exercise
         {
             Id = Guid.NewGuid(),
@@ -42,10 +47,14 @@ public class ExerciseService : IExerciseService
         return MapToViewDto(exercise);
     }
 
-    public async Task<ExerciseViewDto> UpdateAsync(ExerciseUpdateDto dto)
+    public async Task<ExerciseViewDto> UpdateAsync(ExerciseUpdateDto dto, Guid userId)
     {
+        var therapistId = await ResolveTherapistIdAsync(userId);
+
         var exercise = await _exerciseRepository.GetByIdAsync(dto.Id)
             ?? throw new KeyNotFoundException($"Exercise with ID {dto.Id} not found.");
+
+        await ValidatePatientOwnershipAsync(exercise.PatientId, therapistId);
 
         if (dto.Description is not null)
             exercise.Description = dto.Description;
@@ -64,26 +73,48 @@ public class ExerciseService : IExerciseService
         return MapToViewDto(exercise);
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id, Guid userId)
     {
+        var therapistId = await ResolveTherapistIdAsync(userId);
+
         var exercise = await _exerciseRepository.GetByIdAsync(id)
             ?? throw new KeyNotFoundException($"Exercise with ID {id} not found.");
+
+        await ValidatePatientOwnershipAsync(exercise.PatientId, therapistId);
 
         _exerciseRepository.Remove(exercise);
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<ExerciseViewDto> GetByIdAsync(Guid id)
+    public async Task<ExerciseViewDto> GetByIdAsync(Guid id, Guid userId)
     {
+        var therapistId = await ResolveTherapistIdAsync(userId);
+
         var exercise = await _exerciseRepository.GetByIdAsync(id)
             ?? throw new KeyNotFoundException($"Exercise with ID {id} not found.");
+
+        await ValidatePatientOwnershipAsync(exercise.PatientId, therapistId);
 
         return MapToViewDto(exercise);
     }
 
-    public async Task<IEnumerable<ExerciseViewDto>> GetAllAsync()
+    public async Task<IEnumerable<ExerciseViewDto>> GetAllAsync(Guid userId)
     {
+        var therapistId = await ResolveTherapistIdAsync(userId);
+        var patients = await _unitOfWork.Repository<Patient>()
+            .FindAsync(p => p.TherapistId == therapistId);
+        var patientIds = patients.Select(p => p.Id).ToHashSet();
+
         var exercises = await _exerciseRepository.GetAllAsync();
+        return exercises.Where(e => patientIds.Contains(e.PatientId)).Select(MapToViewDto);
+    }
+
+    public async Task<IEnumerable<ExerciseViewDto>> GetByPatientIdAsync(Guid patientId, Guid userId)
+    {
+        var therapistId = await ResolveTherapistIdAsync(userId);
+        await ValidatePatientOwnershipAsync(patientId, therapistId);
+
+        var exercises = await _exerciseRepository.GetByPatientIdAsync(patientId);
         return exercises.Select(MapToViewDto);
     }
 
@@ -93,10 +124,14 @@ public class ExerciseService : IExerciseService
         return exercises.Select(MapToViewDto);
     }
 
-    public async Task ExtendDueDateAsync(Guid id, DateOnly newDueDate)
+    public async Task ExtendDueDateAsync(Guid id, DateOnly newDueDate, Guid userId)
     {
+        var therapistId = await ResolveTherapistIdAsync(userId);
+
         var exercise = await _exerciseRepository.GetByIdAsync(id)
             ?? throw new KeyNotFoundException($"Exercise with ID {id} not found.");
+
+        await ValidatePatientOwnershipAsync(exercise.PatientId, therapistId);
 
         exercise.DueDate = newDueDate;
         exercise.UpdatedAt = DateTime.UtcNow;
@@ -158,4 +193,22 @@ public class ExerciseService : IExerciseService
         LoggedAt = log.LoggedAt,
         CreatedAt = log.CreatedAt
     };
+
+    private async Task<Guid> ResolveTherapistIdAsync(Guid userId)
+    {
+        var therapist = await _unitOfWork.Repository<Therapist>()
+            .FindSingleAsync(t => t.UserId == userId)
+            ?? throw new UnauthorizedAccessException("Therapist profile not found.");
+
+        return therapist.Id;
+    }
+
+    private async Task ValidatePatientOwnershipAsync(Guid patientId, Guid therapistId)
+    {
+        var patient = await _unitOfWork.Repository<Patient>().GetByIdAsync(patientId)
+            ?? throw new KeyNotFoundException("Patient not found.");
+
+        if (patient.TherapistId != therapistId)
+            throw new UnauthorizedAccessException("Patient does not belong to this therapist.");
+    }
 }
