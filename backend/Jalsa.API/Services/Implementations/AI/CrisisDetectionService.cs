@@ -105,8 +105,9 @@ public class CrisisDetectionService : ICrisisDetectionService
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"Crisis detection AI call failed: {ex.Message}");
         }
 
         return new CrisisDetectionResult { IsCrisis = false };

@@ -17,7 +17,7 @@ public class EmailNotificationService : INotificationService
 
     public async Task SendExerciseReminderAsync(Guid patientId, string exerciseDescription, DateOnly dueDate)
     {
-        Console.WriteLine($"Reminder: Patient {patientId} - Exercise '{exerciseDescription}' due {dueDate}");
+        // In-app notification created below; SMTP delivery not yet configured
 
         var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Id == patientId);
         if (patient?.UserId is not null)

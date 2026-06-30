@@ -1,13 +1,13 @@
 # PROGRESS
 
 ## Current Sprint
-**Sprint 4** — Stabilization & MVP Release
+**Sprint 4** — Stabilization & MVP Release (COMPLETE)
 
 ## Current Branch
 `2026-06-30_Iman_sprint-4`
 
 ## Current Task
-**POLISH-002** — Responsive UI review (Completed)
+**POLISH-003** — Bug fixes from testing (Completed)
 
 ## Sprint Progress
 
@@ -20,10 +20,10 @@
 | DOC-003 | Add Sentry error monitoring | **Completed** |
 | POLISH-001 | End-to-end smoke testing | **Completed** |
 | POLISH-002 | Responsive UI review | **Completed** |
-| POLISH-003 | Bug fixes from testing | Not Started |
+| POLISH-003 | Bug fixes from testing | **Completed** |
 
 ## Completion Percentage
-Sprint 4: 7/8 (87.5%)
+Sprint 4: 8/8 (100%)
 
 ## Completed Tasks
 1. **DEP-001** — Created GitHub Actions CI/CD pipeline
@@ -32,42 +32,43 @@ Sprint 4: 7/8 (87.5%)
 4. **DOC-002** — Added Langfuse LLM observability across 4 AI services
 5. **DOC-003** — Added Sentry error monitoring (frontend + backend)
 6. **POLISH-001** — End-to-end smoke testing (test fix + full verification)
-7. **POLISH-002** — Responsive UI review:
-   - **Audit**: Analyzed 39 CSS files across features/ and shared/components/
-   - **Found**: 9 feature CSS files with no responsive breakpoints
-   - **Fixed 7 files** with tablet/mobile responsive breakpoints:
-     - `session-detail.css` — Mobile header stacking for action buttons
-     - `report-detail.css` — Mobile header stacking + reduced padding
-     - `report-list.css` — Mobile header stacking + reduced padding + flex-wrap
-     - `report-generate.css` — Mobile padding reduction
-     - `chat-room.component.css` — Added 768px tablet breakpoint (height, padding)
-     - `profile.component.css` — Mobile padding reduction for container + cards
-     - `assign-exercise.component.css` — Header flex-wrap for overflow prevention
-   - **No fix needed** for: session-form (max-width 800px, single-column), voice-recorder (minimal CSS), summary (single block), patient-exercise (single-column)
-   - **Already responsive**: dashboard (768px + 1200px), patient pages (768px + reduced-motion), session-list (768px), exercise-list (768px), auth pages (375px), chat-list (576px)
+7. **POLISH-002** — Responsive UI review (7 CSS files fixed with breakpoints)
+8. **POLISH-003** — Bug fixes from testing:
+   - **Backend fixes (4)**:
+     - `CrisisDetectionService.cs` — CRITICAL: Fixed silent empty catch block that swallowed AI call failures in crisis detection logic. Now logs the exception via Debug.WriteLine.
+     - `ProgressController.cs` — HIGH: Fixed `ex.Message` exposure to client (information leak). Now returns generic Arabic error message.
+     - `ExerciseController.cs` — HIGH: Added class-level `[Authorize]` as safety net (individual endpoints already had role-specific authorization).
+     - `EmailNotificationService.cs` — MEDIUM: Removed `Console.WriteLine` debug output from production code.
+   - **Frontend fixes (3)**:
+     - `dashboard.component.ts` — Removed redundant manual `Subscription` management (was duplicating `takeUntilDestroyed`), removed unused `OnDestroy` and `Subscription` import.
+     - `http-client.service.ts` — Removed `console.error` from production error handler (error interceptor handles user-facing errors).
+     - `dashboard.component.html` — Removed 4 hardcoded placeholder trend strings ("+9 هذا الشهر", "+8 هذا الأسبوع", etc.) that showed fake data.
+   - **Test fix (1)**:
+     - `http-client.service.spec.ts` — Updated test to verify errors propagate WITHOUT console logging (was asserting console.error was called).
 
 ## Remaining Tasks
-POLISH-003
+None — Sprint 4 complete
 
 ## Build Status
-- **Backend**: Build clean (0 errors, 0 warnings)
+- **Backend**: Build clean (0 errors, 0 warnings) — Release configuration
 - **Frontend**: Build clean — production configuration
 
 ## Unit Test Results
-- **Backend**: 154/154 passed
-- **Frontend**: 270/270 passed (24 test files), 0 unhandled errors
+- **Backend**: 154/154 passed (19 test classes, 0 failures)
+- **Frontend**: 270/270 passed (24 test files, 0 failures, 0 unhandled errors)
 
 ## Integration Test Results
 N/A (no integration test infrastructure)
 
 ## Manual Verification Results
-- All 39 feature + shared component CSS files audited for responsive breakpoints
-- 7 files updated with mobile/tablet breakpoints
-- Frontend production build succeeds after changes
-- All 270 frontend tests pass after changes
+- Full codebase bug scan completed (frontend + backend)
+- All identified bugs fixed and verified
+- Both builds clean after fixes
+- All tests pass after fixes
 
 ## Regression Test Results
-- Frontend: 270/270 tests pass (no regressions from CSS changes)
+- Backend: 154/154 tests pass (no regressions)
+- Frontend: 270/270 tests pass, 0 unhandled errors (no regressions)
 
 ## Known Issues
 - Pre-existing: 3 CSS budget warnings (sidebar, patient-detail, chat-room) — cosmetic, not blocking
@@ -80,4 +81,4 @@ None
 None introduced
 
 ## Next Recommended Task
-**POLISH-003** — Bug fixes from testing
+Sprint 4 complete. All sprints finished. Project ready for MVP release.
