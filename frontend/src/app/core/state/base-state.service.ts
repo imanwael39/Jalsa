@@ -1,6 +1,6 @@
 import { signal, WritableSignal } from '@angular/core';
 import { Observable } from 'rxjs';
-import { catchError, finalize } from 'rxjs/operators';
+import { catchError, finalize, tap } from 'rxjs/operators';
 
 export class BaseStateService<T> {
     protected dataSignal: WritableSignal<T | null> = signal(null);
@@ -29,9 +29,10 @@ export class BaseStateService<T> {
         this.loadingSignal.set(false);
     }
 
-    protected handleObservable<R>(obs: Observable<R>, _onSuccess: (data: R) => void): Observable<R> {
+    protected handleObservable<R>(obs: Observable<R>, onSuccess: (data: R) => void): Observable<R> {
         this.startLoading();
         return obs.pipe(
+            tap(data => onSuccess(data)),
             catchError(err => {
                 this.setError(err.message || 'حدث خطأ غير متوقع');
                 this.stopLoading();

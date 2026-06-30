@@ -1,25 +1,15 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, DestroyRef, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { DatePipe } from '@angular/common';
 import { HttpClientService } from '../../../../core/api/http-client.service';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
-
-export interface ChatConversation {
-    id: string;
-    patientId: string;
-    patientName: string;
-    status: string;
-    lastActivityAt: string | null;
-    createdAt: string;
-    messageCount: number;
-}
+import { ChatConversation } from '../../../../core/models';
 
 @Component({
     selector: 'app-chat-list',
     standalone: true,
-    imports: [SpinnerComponent, EmptyStateComponent, DatePipe],
+    imports: [SpinnerComponent, EmptyStateComponent],
     templateUrl: './chat-list.component.html',
     styleUrl: './chat-list.component.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
