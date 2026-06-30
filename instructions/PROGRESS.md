@@ -7,7 +7,7 @@
 `2026-06-30_Iman_sprint-5`
 
 ## Current Task
-**Fix 1.2 — [A1]** — Fix BaseStateService.handleObservable callback (Completed)
+**Fix 1.3 — [Q1/Q2]** — Consolidate duplicate chat interfaces (Completed)
 
 ## Sprint Progress
 
@@ -15,14 +15,14 @@
 |---------|-----------|--------|
 | R1 | Remove duplicate error handling from HttpClientService | **Completed** |
 | A1 | Fix BaseStateService.handleObservable callback | **Completed** |
-| Q1/Q2 | Consolidate duplicate chat interfaces | Not Started |
+| Q1/Q2 | Consolidate duplicate chat interfaces | **Completed** |
 | P2 | Deduplicate Chart.registerables registration | Not Started |
 | P1 | Reduce initial bundle size below 900 kB warning | Not Started |
 | Q4 | Export StatusArPipe from barrel | Not Started |
 | Q5 | Extend BaseStateService in domain state services | Not Started |
 
 ## Completion Percentage
-Sprint 5: 2/7 (29%)
+Sprint 5: 3/7 (43%)
 
 ## Completed Tasks
 1. **R1** — Removed duplicate error handling from HttpClientService:
@@ -37,8 +37,13 @@ Sprint 5: 2/7 (29%)
    - Added `tap` to imports from `rxjs/operators`
    - No behavioral change yet (no current code calls `handleObservable`); enables Q5
 
+3. **Q1/Q2** — Consolidated duplicate chat interfaces:
+   - Updated `core/models/chat.model.ts`: added `patientName` and `messageCount` to `ChatConversation`; narrowed `senderType` from `string` to `'Patient' | 'AI' | 'Therapist'` on `ChatMessage`
+   - Removed local `ChatMessage` interface from `chat-room.component.ts`; imports from `core/models`
+   - Removed local `ChatConversation` interface from `chat-list.component.ts`; imports from `core/models`
+   - Added `tokensUsed: null, latencyMs: null` to inline ChatMessage construction in chat-room
+
 ## Remaining Tasks
-- Q1/Q2: Consolidate duplicate chat interfaces
 - P2: Deduplicate Chart.registerables registration
 - P1: Reduce initial bundle size below 900 kB warning
 - Q4: Export StatusArPipe from barrel
@@ -56,8 +61,9 @@ N/A (no integration test infrastructure)
 ## Manual Verification Results
 - Build passes with 0 errors
 - All 435 tests pass
-- `base-state.service.ts` now invokes `onSuccess` callback via `tap` operator
-- No behavioral change (method not yet called by any code — enables Q5)
+- `ChatMessage` and `ChatConversation` now defined only in `core/models/chat.model.ts`
+- Both chat-room and chat-list import from the shared model barrel
+- No local interface duplicates remain in chatbot feature
 
 ## Regression Test Results
 - Frontend: 435/435 tests pass (no regressions)
@@ -74,4 +80,4 @@ None
 None introduced
 
 ## Next Recommended Task
-**Fix 1.3 — [Q1/Q2]** — Consolidate duplicate chat interfaces
+**Fix 1.4 — [P2]** — Deduplicate Chart.registerables registration
