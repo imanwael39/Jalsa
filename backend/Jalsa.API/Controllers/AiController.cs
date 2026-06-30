@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using Jalsa.API.DTOs.AI;
 using Jalsa.API.Services.Interfaces.AI;
 
 namespace Jalsa.API.Controllers;
@@ -7,6 +9,7 @@ namespace Jalsa.API.Controllers;
 [ApiController]
 [Route("api/ai")]
 [Authorize(Roles = "Therapist")]
+[EnableRateLimiting("ai")]
 public class AiController : ControllerBase
 {
     private readonly ISummarizationService _summarizationService;
@@ -38,15 +41,4 @@ public class AiController : ControllerBase
             request?.Language ?? "ar");
         return Ok(new { draft });
     }
-}
-
-public class SummarizeRequest
-{
-    public string Language { get; set; } = "ar";
-}
-
-public class ReportDraftRequest
-{
-    public string? TherapistInstructions { get; set; }
-    public string Language { get; set; } = "ar";
 }

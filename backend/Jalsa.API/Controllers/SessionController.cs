@@ -1,7 +1,5 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Jalsa.API.Exceptions;
 using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.Application.DTOs.Session;
 using Jalsa.Application.Interfaces.Services;
@@ -11,7 +9,7 @@ namespace Jalsa.API.Controllers;
 [ApiController]
 [Route("api/sessions")]
 [Authorize(Roles = "Therapist")]
-public class SessionController : ControllerBase
+public class SessionController : BaseController
 {
     private readonly ISessionService _sessionService;
     private readonly ISttService _sttService;
@@ -109,16 +107,5 @@ public class SessionController : ControllerBase
 
         var result = await _sessionService.SaveVoiceMemoAsync(id, transcript, therapistId);
         return Ok(result);
-    }
-
-    private Guid GetCurrentUserId()
-    {
-        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                    ?? User.FindFirstValue("sub");
-
-        if (string.IsNullOrEmpty(claim) || !Guid.TryParse(claim, out var userId))
-            throw new ApiException(401, "Invalid authentication token");
-
-        return userId;
     }
 }

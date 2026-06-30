@@ -1,6 +1,5 @@
-using Jalsa.Application.DTOs.Exercise;
+﻿using Jalsa.Application.DTOs.Exercise;
 using Jalsa.Application.Interfaces.Repositories;
-using Jalsa.Application.Interfaces.Repositores;
 using Jalsa.Application.Interfaces.Services;
 using Jalsa.Domain.Models.Clinic;
 using Jalsa.Domain.Models.Exercise;

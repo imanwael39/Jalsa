@@ -1,8 +1,6 @@
-using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Jalsa.API.Exceptions;
 using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.Application.DTOs.Report;
 using Jalsa.Application.Interfaces.Services;
@@ -12,7 +10,7 @@ namespace Jalsa.API.Controllers;
 [ApiController]
 [Route("api/reports")]
 [Authorize(Roles = "Therapist")]
-public class ReportController : ControllerBase
+public class ReportController : BaseController
 {
     private readonly IReportService _reportService;
     private readonly IReportGenerationService _aiService;
@@ -116,16 +114,5 @@ public class ReportController : ControllerBase
             $"<div class=\"report-content\">{escaped}</div>" +
             "<div class=\"report-footer\">تم إنشاء هذا التقرير بواسطة نظام جلسة — للطباعة: Ctrl+P ← حفظ كـ PDF</div>" +
             "</body></html>";
-    }
-
-    private Guid GetCurrentUserId()
-    {
-        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                    ?? User.FindFirstValue("sub");
-
-        if (string.IsNullOrEmpty(claim) || !Guid.TryParse(claim, out var userId))
-            throw new ApiException(401, "Invalid authentication token");
-
-        return userId;
     }
 }

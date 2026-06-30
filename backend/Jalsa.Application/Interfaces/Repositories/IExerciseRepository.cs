@@ -1,4 +1,4 @@
-using Jalsa.Application.Interfaces.Repositores;
+﻿using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Domain.Models.Exercise;
 
 namespace Jalsa.Application.Interfaces.Repositories;

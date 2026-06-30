@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Threading.RateLimiting;
 
 using Jalsa.API.Configurations;
 using Jalsa.API.Exceptions;
@@ -11,10 +13,9 @@ using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.API.Services.Implementations.AI;
 using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using Jalsa.Application.Interfaces.Repositores;
+using Jalsa.Application.Interfaces.Repositories;
 using Hangfire;
 using Hangfire.SqlServer;
-using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Application.Interfaces.Services;
 using Jalsa.Application.Jobs;
 using Jalsa.Application.Services;
@@ -54,6 +55,35 @@ builder.Services.AddAuthentication(options =>
     };
 });
 builder.Services.AddAuthorization();
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddFixedWindowLimiter("general", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 100;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueLimit = 0;
+    });
+
+    options.AddFixedWindowLimiter("ai", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 10;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueLimit = 0;
+    });
+
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.ContentType = "application/json";
+        await context.HttpContext.Response.WriteAsJsonAsync(new
+        {
+            success = false,
+            message = "Too many requests. Please try again later."
+        }, cancellationToken);
+    };
+});
 
 builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("Email")
@@ -204,6 +234,7 @@ if (app.Environment.IsDevelopment())
 
 
 app.UseRouting();
+app.UseRateLimiter();
 app.UseCors("AngularPolicy");
 
 app.UseAuthentication();

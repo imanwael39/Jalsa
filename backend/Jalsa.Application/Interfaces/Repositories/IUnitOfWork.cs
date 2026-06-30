@@ -1,4 +1,4 @@
-namespace Jalsa.Application.Interfaces.Repositores;
+namespace Jalsa.Application.Interfaces.Repositories;
 public interface IUnitOfWork : IDisposable
 {
     IGenericRepository<T>Repository<T>() where T:class;

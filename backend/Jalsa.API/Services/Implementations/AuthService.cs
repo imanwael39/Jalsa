@@ -78,6 +78,9 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponseDto> LoginAsync(LoginDto dto)
     {
+        const int maxFailedAttempts = 5;
+        const int lockoutMinutes = 15;
+
         var user = await _context.Users
             .Include(u => u.UserRoles)
             .ThenInclude(ur => ur.Role)
@@ -86,13 +89,27 @@ public class AuthService : IAuthService
         if (user == null)
             throw new ApiException(401, "Invalid email or password!");
 
+        if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.UtcNow)
+            throw new ApiException(403, "Account is locked. Please try again later.");
+
         if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+        {
+            user.FailedLoginAttempts++;
+            if (user.FailedLoginAttempts >= maxFailedAttempts)
+                user.LockoutEnd = DateTime.UtcNow.AddMinutes(lockoutMinutes);
+
+            user.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
             throw new ApiException(401, "Invalid email or password!");
+        }
 
         if (!user.IsActive)
             throw new ApiException(403, "Account is inactive!");
 
+        user.FailedLoginAttempts = 0;
+        user.LockoutEnd = null;
         user.LastLoginAt = DateTime.UtcNow;
+        user.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
         return await BuildAuthResponse(user);
     }

@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace Jalsa.Application.Interfaces.Repositores;
+namespace Jalsa.Application.Interfaces.Repositories;
 public interface IGenericRepository<T>where T:class
 {
     Task<T?> GetByIdAsync(Guid id , CancellationToken cancellationToken=default);

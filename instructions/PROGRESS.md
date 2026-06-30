@@ -1,61 +1,76 @@
 # PROGRESS
 
 ## Current Sprint
-**Sprint 2** — High Priority
+**Sprint 3** — Quality & Hardening
 
 ## Current Branch
-`2026-06-29_Iman_sprint-2`
+`2026-06-29_Iman_sprint-3`
 
 ## Current Task
-**FIX-013** — Add missing DB indexes (Completed)
+**QUAL-006** — Add rate limiting (Completed)
 
 ## Sprint Progress
 
 | Task ID | Task Name | Status |
 |---------|-----------|--------|
-| SEC-001 | Fix CORS for staging/production | **Completed** |
-| SEC-002 | Protect Hangfire dashboard | **Completed** |
-| SEC-003 | Move JWT key to env vars | **Completed** |
-| TEST-001 | Write AuthService unit tests | **Completed** |
-| TEST-002 | Write PatientService unit tests | **Completed** |
-| TEST-003 | Write ChatController integration tests | **Completed** |
-| TEST-004 | Write NotificationController tests | **Completed** |
-| FIX-012 | Add therapist ownership check to ExerciseController | **Completed** |
-| FIX-013 | Add missing DB indexes | **Completed** |
+| TEST-005 | Write controller tests for all 11 controllers | **Completed** |
+| QUAL-001 | Add FluentValidation for all DTOs | **Completed** |
+| QUAL-002 | Fix namespace typo Repositores→Repositories | **Completed** |
+| QUAL-003 | Extract GetCurrentUserId to base controller | **Completed** |
+| QUAL-004 | Move inline DTOs to proper files | **Completed** |
+| QUAL-005 | Account lockout | **Completed** |
+| QUAL-006 | Rate limiting | **Completed** |
 
 ## Completion Percentage
-Sprint 2: 9/9 (100%) ✅
+Sprint 3: 7/7 (100%)
 
 ## Completed Tasks
-1. **SEC-001** — Replaced hardcoded `http://localhost:4200` CORS origin in `Program.cs` with configurable `CorsOrigins` array from `appsettings.json`. Added `CorsOrigins` section to `appsettings.json` with `http://localhost:4200` as default. Staging/production can now override origins via their own appsettings or environment variables.
-2. **SEC-002** — Created `HangfireAuthorizationFilter` implementing `IDashboardAuthorizationFilter` that requires authenticated users with Admin role. Applied filter to `UseHangfireDashboard` via `DashboardOptions.Authorization` in `Program.cs`.
-3. **SEC-003** — Removed hardcoded JWT key from `appsettings.Development.json`. Added `UserSecretsId` to `Jalsa.API.csproj` enabling `dotnet user-secrets`. JWT key must now come from environment variable (`Jwt__Key`), `.env` file (loaded via DotNetEnv), or user secrets. Base `appsettings.json` retains placeholder with startup validation.
-4. **TEST-001** — Created `AuthServiceTests.cs` with 15 unit tests using EF Core InMemory provider. Tests cover: Register (success, duplicate email, patient role, invalid role), Login (success, wrong password, non-existent user, inactive user), Refresh Token (valid rotation, invalid token, revoked token), Revoke Token (success, already revoked), JWT claims validation, BCrypt password hashing.
-5. **TEST-002** — Created `PatientServiceTests.cs` with 15 unit tests using Moq. Tests cover: Create (success, no therapist profile), GetById (own, other therapist, non-existent), GetAll (own patients only, status filter, search by name), Update (success, ownership check), Archive/Restore (success, ownership check), Delete (success, ownership check).
-6. **TEST-003** — Created `ChatControllerTests.cs` with 11 controller tests using Moq. Tests cover: GetConversations (returns list, filters by patientId), GetHistory (success, 404), CreateConversation (201 created, patient not found 404), CloseConversation (success, 404), Send (success with Therapist role, 404, Patient role sets correct senderType).
-7. **TEST-004** — Created `NotificationControllerTests.cs` with 7 controller tests using Moq. Tests cover: GetNotifications (returns list, unread filter, empty list), MarkAsRead (success, 404), MarkAllAsRead (returns count, zero unread).
-8. **FIX-012** — Added therapist ownership checks to all ExerciseController therapist endpoints. Updated `IExerciseService` to accept `Guid userId` on therapist methods (Create, Update, Delete, GetById, GetAll, GetByPatientId, ExtendDueDate). Added `ResolveTherapistIdAsync` and `ValidatePatientOwnershipAsync` to `ExerciseService` (same pattern as PatientService). `GetAllAsync` now filters exercises to only those belonging to the therapist's patients. Added `GetCurrentUserId()` helper to controller. Patient endpoints (my, log, my/logs) remain unchanged — they use the non-ownership overload. Updated ExerciseServiceTests from 6 to 15 tests covering ownership validation for all methods.
-9. **FIX-013** — Added explicit `HasIndex()` calls in `JalsaDbContext` Fluent API for `Sessions.PatientId`, `Exercises.PatientId`, `ChatMessages.ConversationId`, and `Notifications.RecipientUserId`. Investigation confirmed these indexes already exist in the database — EF Core created them automatically from FK relationships in the InitialCreate migration. The explicit Fluent API calls make the intent clear and ensure indexes survive convention changes. No new migration needed since indexes are already present in the database schema.
+1. **TEST-005** — Created 7 new controller test files covering all 11 controllers. Total test count: 150 (up from 108).
+2. **QUAL-001** — Created 11 new FluentValidation validators across 6 modules: Patient (PatientCreateDtoValidator, PatientUpdateDtoValidator), Session (SessionCreateDtoValidator, SessionUpdateDtoValidator, SessionNoteDtoValidator), Report (ReportGenerateDtoValidator, ReportUpdateDtoValidator), Intake (IntakeFormSaveDtoValidator), Assessment (AssessmentCreateDtoValidator), Chat (CreateConversationDtoValidator, SendMessageDtoValidator). All validators follow the existing pattern (Exercise validators). Auto-discovered by `AddValidatorsFromAssemblyContaining` in Program.cs. Total validators: 14 (3 existing Exercise + 11 new).
+3. **QUAL-002** — Verified namespace typo `Repositores` does NOT exist in the codebase. All 18+ repository-related files already use correct spelling `Repositories`. No changes needed. Build clean, 149/149 tests pass.
+4. **QUAL-003** — Created `BaseController.cs` with `GetCurrentUserId()` method. Updated 9 controllers to inherit from `BaseController` instead of `ControllerBase`: AuthController, PatientController, SessionController, ReportController, NotificationController, IntakeController, AssessmentController, ChatController, ExerciseController. Removed duplicate `GetCurrentUserId()` from all 9 controllers. Removed unused `using System.Security.Claims` and `using Jalsa.API.Exceptions` where no longer needed. Build clean, 149/149 tests pass.
+5. **QUAL-004** — Moved 4 inline DTOs from controllers to proper files:
+   - `ExtendDueDateRequest` → `Jalsa.Application/DTOs/Exercise/ExtendDueDateRequest.cs`
+   - `OcrRequest` → `Jalsa.Application/DTOs/Intake/OcrRequest.cs`
+   - `SummarizeRequest` → `Jalsa.API/DTOs/AI/AiRequestDtos.cs`
+   - `ReportDraftRequest` → `Jalsa.API/DTOs/AI/AiRequestDtos.cs`
+   Updated 3 controllers (ExerciseController, AiController, IntakeController) to use new DTOs. Updated AiControllerTests to use new namespace. Build clean, 149/149 tests pass.
+6. **QUAL-005** — Added account lockout to AuthService.LoginAsync:
+   - Added `FailedLoginAttempts` (int) and `LockoutEnd` (DateTime?) to User entity
+   - Created EF Core migration `AddAccountLockoutFields`
+   - Added Fluent API configuration in JalsaDbContext
+   - Implemented lockout logic: 5 failed attempts → 15 min lockout
+   - Successful login resets counter
+   - Added 5 tests: increment counter, lock after 5 attempts, locked returns 403, reset on success, expired lockout allows login
+   - Build clean, 154/154 tests pass.
+7. **QUAL-006** — Added rate limiting middleware:
+   - Added `Microsoft.AspNetCore.RateLimiting` imports
+   - Configured two FixedWindowLimiter policies: "general" (100 req/min) and "ai" (10 req/min)
+   - Added `[EnableRateLimiting("general")]` to BaseController (9 controllers) and ProgressController
+   - Added `[EnableRateLimiting("ai")]` to AiController
+   - Added `app.UseRateLimiter()` middleware with 429 JSON response
+   - Build clean, 154/154 tests pass.
 
 ## Remaining Tasks
-None — Sprint 2 is complete.
+None — Sprint 3 complete. Next: Sprint 4 tasks (CI/CD, staging config, documentation, monitoring, smoke testing)
 
 ## Build Status
 - **Backend**: Build clean (0 errors, 0 warnings)
 
 ## Unit Test Results
-- **Backend**: 108/108 passed
+- **Backend**: 149/149 passed
 
 ## Integration Test Results
 N/A
 
 ## Manual Verification Results
-- Verified InitialCreate migration already contains: IX_Sessions_PatientId (line 1095), IX_Exercises_PatientId (line 967), IX_ChatMessages_ConversationId (line 940), IX_Notifications_RecipientUserId (line 982)
-- DbContext Fluent API now explicitly declares all 4 indexes
-- No migration needed — indexes already exist in database
+- Created 3 new DTO files in proper locations
+- Removed all inline DTOs from 3 controllers
+- Updated test file to use new namespace
+- No inline DTO definitions remain in any controller
 
 ## Regression Test Results
-- Backend: 108/108 tests passed, build clean
+- Backend: 149/149 tests passed, build clean
 - All pre-existing tests still pass
 
 ## Known Issues
@@ -65,7 +80,7 @@ None
 None
 
 ## Technical Debt
-None introduced
+Reduced — eliminated inline DTO duplication across 3 controllers
 
 ## Next Recommended Task
-**Sprint 3** — Begin with TEST-005 (Write integration tests)
+**QUAL-005** — Add account lockout

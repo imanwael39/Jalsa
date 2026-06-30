@@ -1,7 +1,5 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Jalsa.API.Exceptions;
 using Jalsa.Application.DTOs.Chat;
 using Jalsa.Application.Interfaces.Services;
 
@@ -10,7 +8,7 @@ namespace Jalsa.API.Controllers;
 [ApiController]
 [Route("api/chat")]
 [Authorize]
-public class ChatController : ControllerBase
+public class ChatController : BaseController
 {
     private readonly IChatService _chatService;
 
@@ -70,13 +68,5 @@ public class ChatController : ControllerBase
             return NotFound(new { message = "المحادثة غير موجودة" });
 
         return Ok(result);
-    }
-
-    private Guid GetCurrentUserId()
-    {
-        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
-        if (string.IsNullOrEmpty(claim) || !Guid.TryParse(claim, out var userId))
-            throw new ApiException(401, "Invalid authentication token");
-        return userId;
     }
 }

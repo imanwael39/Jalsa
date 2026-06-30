@@ -3,12 +3,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Jalsa.Application.DTOs.Exercise;
 using Jalsa.Application.Interfaces.Services;
+using ExtendDueDateRequest = Jalsa.Application.DTOs.Exercise.ExtendDueDateRequest;
 
 namespace Jalsa.API.Controllers;
 
 [ApiController]
 [Route("api/exercises")]
-public class ExerciseController : ControllerBase
+public class ExerciseController : BaseController
 {
     private readonly IExerciseService _exerciseService;
 
@@ -121,18 +122,9 @@ public class ExerciseController : ControllerBase
 
     // ──────────────────────────── Helpers ────────────────────────────────────────
 
-    private Guid GetCurrentUserId()
-    {
-        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)
-            ?? throw new UnauthorizedAccessException("User ID claim not found.");
-        return Guid.Parse(claim);
-    }
-
     private Guid? GetPatientId()
     {
         var value = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         return value is null ? null : Guid.Parse(value);
     }
-
-    public record ExtendDueDateRequest(DateOnly NewDueDate);
 }
