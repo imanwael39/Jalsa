@@ -1,4 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit, DestroyRef } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -72,8 +73,8 @@ export class PatientForm implements OnInit {
                     this.state.selectPatient(patient);
                     this.loading.set(false);
                 },
-                error: err => {
-                    this.error.set(err?.message || 'فشل تحميل بيانات المريض');
+                error: (err: HttpErrorResponse) => {
+                    this.error.set(err.error?.message || err.error?.error || 'فشل تحميل بيانات المريض');
                     this.loading.set(false);
                 },
             });
@@ -122,8 +123,8 @@ export class PatientForm implements OnInit {
                         this.loading.set(false);
                         this.router.navigate(['/patients', this.patientId()]);
                     },
-                    error: err => {
-                        this.error.set(err?.message || 'فشل تحديث بيانات المريض');
+                    error: (err: HttpErrorResponse) => {
+                        this.error.set(err.error?.message || err.error?.error || 'فشل تحديث بيانات المريض');
                         this.loading.set(false);
                     },
                 });
@@ -138,8 +139,8 @@ export class PatientForm implements OnInit {
                         this.loading.set(false);
                         this.router.navigate(['/patients', patient.id]);
                     },
-                    error: err => {
-                        this.error.set(err?.message || 'فشل إنشاء المريض');
+                    error: (err: HttpErrorResponse) => {
+                        this.error.set(err.error?.message || err.error?.error || 'فشل إنشاء المريض');
                         this.loading.set(false);
                     },
                 });

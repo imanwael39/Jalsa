@@ -121,7 +121,7 @@ describe('IntakeForm', () => {
     });
 
     it('should handle upload error', (): void => {
-        setup({ uploadIntakeImageReturn: throwError((): Error => new Error('Upload failed')) });
+        setup({ uploadIntakeImageReturn: throwError(() => ({ error: { message: 'Upload failed' } })) });
         fixture.detectChanges();
         const mockFile = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
         const mockEvent = {
@@ -144,7 +144,7 @@ describe('IntakeForm', () => {
     });
 
     it('should handle submit error', (): void => {
-        setup({ saveIntakeFormReturn: throwError((): Error => new Error('Save failed')) });
+        setup({ saveIntakeFormReturn: throwError(() => ({ error: { message: 'Save failed' } })) });
         fixture.detectChanges();
         component.onSubmit();
         expect(component.error()).toBe('Save failed');

@@ -119,7 +119,7 @@ describe('ReportDetail', () => {
     });
 
     it('should set error when API call fails', (): void => {
-        setup({ getReportReturn: throwError((): Error => new Error('API Error')) });
+        setup({ getReportReturn: throwError(() => ({ error: { message: 'API Error' } })) });
         fixture.detectChanges();
         expect(component.error()).toBe('API Error');
     });

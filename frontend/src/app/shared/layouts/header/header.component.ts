@@ -11,6 +11,7 @@ import {
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { InAppNotificationService } from '../../../core/services/in-app-notification.service';
+import { AppStateService } from '../../../core/services/app-state.service';
 import { ClickOutsideDirective } from '../../directives/click-outside/click-outside.directive';
 
 @Component({
@@ -27,8 +28,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private authService = inject(AuthService);
     private router = inject(Router);
     readonly notifService = inject(InAppNotificationService);
+    private readonly appState = inject(AppStateService);
 
     user = this.authService.currentUser;
+    theme = this.appState.theme;
     isDropdownOpen = signal(false);
     isNotifOpen = signal(false);
     searchQuery = signal('');
@@ -75,6 +78,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
     onSearch(value: string): void {
         this.searchQuery.set(value);
+    }
+
+    toggleTheme(): void {
+        this.appState.toggleTheme();
     }
 
     getRoleLabel(): string {

@@ -8,6 +8,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { SessionList } from '../../../sessions/pages/session-list/session-list';
 import { PatientExerciseComponent } from '../../../exercises/pages/patient-exercise/patient-exercise.component';
 import { ReportList } from '../../../reports/pages/report-list/report-list';
@@ -75,8 +76,8 @@ export class PatientDetail implements OnInit, OnDestroy {
                     this.state.selectPatient(patient);
                     this.loading.set(false);
                 },
-                error: err => {
-                    this.error.set(err?.message || 'فشل تحميل بيانات المريض');
+                error: (err: HttpErrorResponse) => {
+                    this.error.set(err.error?.message || err.error?.error || 'فشل تحميل بيانات المريض');
                     this.loading.set(false);
                 },
             });
@@ -142,8 +143,8 @@ export class PatientDetail implements OnInit, OnDestroy {
                     this.closeArchiveModal();
                     this.actionLoading.set(false);
                 },
-                error: err => {
-                    this.notification.error(err?.message || 'فشل أرشفة المريض');
+                error: (err: HttpErrorResponse) => {
+                    this.notification.error(err.error?.message || err.error?.error || 'فشل أرشفة المريض');
                     this.actionLoading.set(false);
                 },
             });
@@ -164,8 +165,8 @@ export class PatientDetail implements OnInit, OnDestroy {
                     this.closeArchiveModal();
                     this.actionLoading.set(false);
                 },
-                error: err => {
-                    this.notification.error(err?.message || 'فشل استعادة المريض');
+                error: (err: HttpErrorResponse) => {
+                    this.notification.error(err.error?.message || err.error?.error || 'فشل استعادة المريض');
                     this.actionLoading.set(false);
                 },
             });
@@ -187,8 +188,8 @@ export class PatientDetail implements OnInit, OnDestroy {
                     this.closeDeleteModal();
                     this.router.navigate(['/patients']);
                 },
-                error: err => {
-                    this.notification.error(err?.message || 'فشل حذف المريض');
+                error: (err: HttpErrorResponse) => {
+                    this.notification.error(err.error?.message || err.error?.error || 'فشل حذف المريض');
                     this.actionLoading.set(false);
                 },
             });

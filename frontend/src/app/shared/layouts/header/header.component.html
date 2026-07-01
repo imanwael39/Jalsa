@@ -19,6 +19,19 @@
         </div>
     </div>
     <div class="header-right">
+        <button
+            class="theme-toggle-btn"
+            (click)="toggleTheme()"
+            [attr.aria-label]="theme() === 'dark' ? 'التبديل إلى الوضع الفاتح' : 'التبديل إلى الوضع الداكن'"
+            [attr.aria-pressed]="theme() === 'dark'"
+        >
+            @if (theme() === 'dark') {
+                <i class="bi bi-sun"></i>
+            } @else {
+                <i class="bi bi-moon-stars"></i>
+            }
+        </button>
+
         <!-- Notification Bell -->
         <div class="notif-wrapper" appClickOutside (appClickOutside)="closeNotif()">
             <button

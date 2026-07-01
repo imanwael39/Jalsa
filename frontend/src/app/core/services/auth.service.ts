@@ -1,6 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { Observable, tap, catchError, throwError } from 'rxjs';
-import { jwtDecode } from 'jwt-decode';
+import { Observable, tap, catchError, throwError, switchMap, map, of, firstValueFrom } from 'rxjs';
 import { HttpClientService } from '../api/http-client.service';
 import { API } from '../api/api-endpoints';
 import { NotificationService } from './notification.service';
@@ -14,16 +13,6 @@ import type {
     ResetPasswordRequest,
 } from '../models/auth.model';
 
-interface DecodedToken {
-    sub: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    roles: string[];
-    exp: number;
-    iat: number;
-}
-
 @Injectable({ providedIn: 'root' })
 export class AuthService {
     private readonly TOKEN_KEY = 'jalsa_token';
@@ -31,30 +20,63 @@ export class AuthService {
 
     private userSignal = signal<User | null>(null);
     private loadingSignal = signal<boolean>(false);
+    private initializedSignal = signal<boolean>(false);
 
     readonly currentUser = this.userSignal.asReadonly();
     readonly isLoading = this.loadingSignal.asReadonly();
+    readonly initialized = this.initializedSignal.asReadonly();
 
     readonly isAuthenticated = computed(() => this.userSignal() !== null && this.getToken() !== null);
 
     constructor(
         private http: HttpClientService,
-        private notification: NotificationService,
-    ) {
-        this.restoreSession();
+        private notification: NotificationService
+    ) {}
+
+    /**
+     * Restores the full user profile (including roles) from the backend on app bootstrap.
+     * The JWT only carries sub/email/jti/role claims, not a stable "roles" JSON key, so
+     * role information must come from GET /api/auth/profile rather than client-side decoding.
+     */
+    initializeAuth(): Promise<void> {
+        const token = this.getToken();
+        if (!token) {
+            this.initializedSignal.set(true);
+            return Promise.resolve();
+        }
+
+        return firstValueFrom(
+            this.getProfile().pipe(
+                tap(user => this.userSignal.set(user)),
+                catchError(() => {
+                    this.logout();
+                    return of(null);
+                })
+            )
+        ).then(() => {
+            this.initializedSignal.set(true);
+        });
     }
 
     login(credentials: LoginRequest): Observable<AuthResponse> {
         this.loadingSignal.set(true);
         return this.http.post<AuthResponse>(API.auth.login, credentials).pipe(
-            tap((response) => {
+            switchMap(response => {
                 this.handleAuthentication(response);
+                return this.getProfile().pipe(
+                    tap(user => this.userSignal.set(user)),
+                    catchError(() => of(null)),
+                    map(() => response)
+                );
+            }),
+            tap(() => {
+                this.loadingSignal.set(false);
                 this.notification.success('تم تسجيل الدخول بنجاح');
             }),
-            catchError((error) => {
+            catchError(error => {
                 this.loadingSignal.set(false);
                 return throwError(() => error);
-            }),
+            })
         );
     }
 
@@ -65,10 +87,10 @@ export class AuthService {
                 this.loadingSignal.set(false);
                 this.notification.success('تم إنشاء الحساب بنجاح');
             }),
-            catchError((error) => {
+            catchError(error => {
                 this.loadingSignal.set(false);
                 return throwError(() => error);
-            }),
+            })
         );
     }
 
@@ -82,9 +104,9 @@ export class AuthService {
     refreshToken(): Observable<AuthResponse> {
         const refreshToken = this.getRefreshToken();
         return this.http.post<AuthResponse>(API.auth.refresh, { refreshToken }).pipe(
-            tap((response) => {
+            tap(response => {
                 this.handleAuthentication(response);
-            }),
+            })
         );
     }
 
@@ -94,10 +116,10 @@ export class AuthService {
 
     updateProfile(data: UpdateProfileRequest): Observable<User> {
         return this.http.put<User>(API.auth.profile, data).pipe(
-            tap((user) => {
+            tap(user => {
                 this.userSignal.set(user);
                 this.notification.success('تم تحديث الملف الشخصي بنجاح');
-            }),
+            })
         );
     }
 
@@ -105,7 +127,7 @@ export class AuthService {
         return this.http.post(API.auth.profile + '/change-password', data).pipe(
             tap(() => {
                 this.notification.success('تم تغيير كلمة المرور بنجاح');
-            }),
+            })
         );
     }
 
@@ -113,7 +135,7 @@ export class AuthService {
         return this.http.post(API.auth.forgotPassword, { email }).pipe(
             tap(() => {
                 this.notification.success('تم إرسال رمز التحقق إلى بريدك الإلكتروني');
-            }),
+            })
         );
     }
 
@@ -121,7 +143,7 @@ export class AuthService {
         return this.http.post(API.auth.resetPassword, data).pipe(
             tap(() => {
                 this.notification.success('تم إعادة تعيين كلمة المرور بنجاح');
-            }),
+            })
         );
     }
 
@@ -161,37 +183,6 @@ export class AuthService {
         this.loadingSignal.set(false);
     }
 
-    private decodeToken(token: string): User | null {
-        try {
-            const decoded = jwtDecode<DecodedToken>(token);
-            return {
-                id: decoded.sub,
-                email: decoded.email,
-                firstName: decoded.firstName,
-                lastName: decoded.lastName,
-                roles: decoded.roles || [],
-                isActive: true,
-                lastLoginAt: null,
-                createdAt: '',
-                updatedAt: '',
-            };
-        } catch {
-            return null;
-        }
-    }
-
-    private restoreSession(): void {
-        const token = this.getToken();
-        if (token) {
-            const user = this.decodeToken(token);
-            if (user) {
-                this.userSignal.set(user);
-            } else {
-                this.logout();
-            }
-        }
-    }
-
     hasRole(role: string): boolean {
         const user = this.userSignal();
         return user?.roles?.includes(role) ?? false;
@@ -200,7 +191,7 @@ export class AuthService {
     hasAnyRole(roles: string[]): boolean {
         const user = this.userSignal();
         if (!user) return false;
-        return roles.some((role) => user.roles.includes(role));
+        return roles.some(role => user.roles.includes(role));
     }
 
     getCurrentUser(): User | null {

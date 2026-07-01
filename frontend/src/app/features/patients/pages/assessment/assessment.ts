@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, inject, signal, input, OnInit, Dest
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PatientService } from '../../../../core/services/patient.service';
 import { NotificationService } from '../../../../core/services/notification.service';
@@ -71,8 +72,8 @@ export class Assessment implements OnInit {
                     this.assessments.set(data);
                     this.loading.set(false);
                 },
-                error: err => {
-                    this.error.set(err?.message || 'فشل تحميل التقييمات');
+                error: (err: HttpErrorResponse) => {
+                    this.error.set(err.error?.message || err.error?.error || 'فشل تحميل التقييمات');
                     this.loading.set(false);
                 },
             });
@@ -111,8 +112,8 @@ export class Assessment implements OnInit {
                     });
                     this.loadAssessments();
                 },
-                error: err => {
-                    this.error.set(err?.message || 'فشل إضافة التقييم');
+                error: (err: HttpErrorResponse) => {
+                    this.error.set(err.error?.message || err.error?.error || 'فشل إضافة التقييم');
                     this.submitLoading.set(false);
                 },
             });

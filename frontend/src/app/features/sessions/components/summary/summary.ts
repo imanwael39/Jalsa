@@ -1,4 +1,5 @@
 import { Component, ChangeDetectionStrategy, input, signal, inject, OnInit, DestroyRef } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SessionService } from '../../../../core/services/session.service';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
@@ -37,8 +38,8 @@ export class Summary implements OnInit {
                     this.summary.set(result.summary);
                     this.loading.set(false);
                 },
-                error: err => {
-                    this.error.set(err.message || 'فشل تحميل الملخص');
+                error: (err: HttpErrorResponse) => {
+                    this.error.set(err.error?.message || err.error?.error || 'فشل تحميل الملخص');
                     this.loading.set(false);
                 },
             });

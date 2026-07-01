@@ -37,7 +37,7 @@ describe('errorInterceptor', () => {
         localStorage.clear();
     });
 
-    it('should handle 401 by logging out and redirecting', () => {
+    it('should handle 401 on a non-login request as session expiry', () => {
         const logoutSpy = vi.spyOn(authService, 'logout');
         const errorSpy = vi.spyOn(notificationService, 'error');
 
@@ -45,12 +45,38 @@ describe('errorInterceptor', () => {
             error: () => {
                 expect(logoutSpy).toHaveBeenCalled();
                 expect(mockRouter.navigate).toHaveBeenCalledWith(['/auth/login']);
-                expect(errorSpy).toHaveBeenCalledWith('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+                expect(errorSpy).toHaveBeenCalledWith('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى');
             },
         });
 
         const req = httpMock.expectOne('/api/data');
         req.flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
+    });
+
+    it('should handle 401 on the login request as invalid credentials', () => {
+        const errorSpy = vi.spyOn(notificationService, 'error');
+
+        http.get('/api/auth/login').subscribe({
+            error: () => {
+                expect(errorSpy).toHaveBeenCalledWith('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+            },
+        });
+
+        const req = httpMock.expectOne('/api/auth/login');
+        req.flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
+    });
+
+    it('should handle 429 with a rate limit message', () => {
+        const errorSpy = vi.spyOn(notificationService, 'error');
+
+        http.get('/api/data').subscribe({
+            error: () => {
+                expect(errorSpy).toHaveBeenCalledWith('عدد كبير جدًا من الطلبات، يرجى المحاولة لاحقًا');
+            },
+        });
+
+        const req = httpMock.expectOne('/api/data');
+        req.flush('Too Many Requests', { status: 429, statusText: 'Too Many Requests' });
     });
 
     it('should handle 403 with permission error', () => {

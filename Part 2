@@ -1,0 +1,561 @@
+###############################################################
+############ PROJECT DISCOVERY & BACKEND ANALYSIS ##############
+###############################################################
+
+# OBJECTIVE
+
+Before writing ANY frontend code, you must completely understand the backend.
+
+You are NOT allowed to implement a single Angular component until you fully understand the backend.
+
+You must reverse engineer the backend.
+
+The backend is the specification.
+
+The backend is the documentation.
+
+The backend is the source of truth.
+
+------------------------------------------------------------
+
+# STEP 1
+
+Read the entire backend recursively.
+
+Never skip files.
+
+Inspect every project.
+
+Inspect every folder.
+
+Inspect every source file.
+
+Read
+
+API
+
+Application
+
+Domain
+
+Infrastructure
+
+Shared
+
+Persistence
+
+Authentication
+
+Authorization
+
+AI
+
+SignalR
+
+Services
+
+Repositories
+
+Validators
+
+Configurations
+
+Middlewares
+
+Everything.
+
+------------------------------------------------------------
+
+# STEP 2
+
+Discover every API endpoint.
+
+For every controller identify
+
+Controller Name
+
+Route
+
+HTTP Method
+
+Authentication Required
+
+Roles Required
+
+Input DTO
+
+Output DTO
+
+Possible Errors
+
+Status Codes
+
+Validation Rules
+
+Pagination
+
+Sorting
+
+Filtering
+
+Searching
+
+Upload
+
+Download
+
+SignalR
+
+Streaming
+
+AI endpoints
+
+Export endpoints
+
+------------------------------------------------------------
+
+# STEP 3
+
+Generate an internal API Catalog.
+
+For every endpoint document
+
+Endpoint URL
+
+Method
+
+Description
+
+Request DTO
+
+Response DTO
+
+Authorization
+
+Business Purpose
+
+Dependencies
+
+Related Entities
+
+Related Features
+
+Frontend Consumer
+
+Never assume undocumented behavior.
+
+------------------------------------------------------------
+
+# STEP 4
+
+Analyze Authentication.
+
+Understand
+
+Login
+
+Register
+
+Refresh Token
+
+Logout
+
+Current User
+
+Role Management
+
+Permission Model
+
+JWT Structure
+
+Claims
+
+Identity
+
+Cookies (if any)
+
+Storage Strategy
+
+Authorization Flow
+
+Session Expiration
+
+Automatic Refresh
+
+401 Handling
+
+403 Handling
+
+------------------------------------------------------------
+
+# STEP 5
+
+Analyze the Domain.
+
+Discover every Entity.
+
+Identify
+
+Relationships
+
+Primary Keys
+
+Foreign Keys
+
+Enums
+
+Navigation Properties
+
+Soft Delete
+
+Audit Fields
+
+CreatedBy
+
+UpdatedBy
+
+CreatedAt
+
+UpdatedAt
+
+Status Fields
+
+------------------------------------------------------------
+
+# STEP 6
+
+Analyze DTOs.
+
+Identify
+
+Create DTOs
+
+Update DTOs
+
+Response DTOs
+
+Summary DTOs
+
+Details DTOs
+
+Search DTOs
+
+Pagination DTOs
+
+Filter DTOs
+
+Export DTOs
+
+Upload DTOs
+
+Never create new DTOs if backend already provides one.
+
+------------------------------------------------------------
+
+# STEP 7
+
+Analyze Business Logic.
+
+Understand
+
+Validation Rules
+
+Workflow
+
+State Transitions
+
+Business Restrictions
+
+Required Fields
+
+Optional Fields
+
+Calculated Fields
+
+Approval Flow
+
+AI Flow
+
+Report Flow
+
+Chat Flow
+
+Exercise Flow
+
+Session Flow
+
+Assessment Flow
+
+------------------------------------------------------------
+
+# STEP 8
+
+Analyze Database Mapping.
+
+Understand
+
+Entity Relationships
+
+Many-to-Many
+
+One-to-Many
+
+One-to-One
+
+Lookup Tables
+
+Reference Data
+
+Indexes
+
+Unique Constraints
+
+Nullable Columns
+
+Enum Mapping
+
+------------------------------------------------------------
+
+# STEP 9
+
+Analyze Infrastructure.
+
+Discover
+
+File Upload
+
+Storage
+
+Email
+
+Background Jobs
+
+SignalR
+
+AI Services
+
+PDF Generation
+
+Logging
+
+Caching
+
+Localization
+
+Configuration
+
+------------------------------------------------------------
+
+# STEP 10
+
+Generate Feature Inventory.
+
+Identify every implemented feature.
+
+Authentication
+
+Dashboard
+
+Patients
+
+Assessments
+
+Sessions
+
+Exercises
+
+Reports
+
+Chatbot
+
+Notifications
+
+Profile
+
+Settings
+
+Administration
+
+For every feature determine
+
+Implemented
+
+Partially Implemented
+
+Backend Only
+
+Frontend Only
+
+Missing
+
+------------------------------------------------------------
+
+# STEP 11
+
+Generate Dependency Graph.
+
+Identify
+
+Which services call which repositories.
+
+Which repositories use DbContext.
+
+Which handlers use services.
+
+Which APIs call which handlers.
+
+Never bypass architecture.
+
+------------------------------------------------------------
+
+# STEP 12
+
+Generate Route Map.
+
+Map every API route to
+
+Feature
+
+Entity
+
+Frontend Screen
+
+Expected Navigation
+
+Breadcrumb
+
+Required Permissions
+
+------------------------------------------------------------
+
+# STEP 13
+
+Generate Frontend Implementation Plan.
+
+Before coding create a complete implementation strategy.
+
+The strategy must include
+
+Feature Order
+
+Shared Components
+
+Core Components
+
+Layouts
+
+Navigation
+
+Guards
+
+Interceptors
+
+Services
+
+Models
+
+Signals
+
+Forms
+
+Tables
+
+Dialogs
+
+Charts
+
+Reports
+
+Uploads
+
+Notifications
+
+Error Handling
+
+State Management
+
+------------------------------------------------------------
+
+# STEP 14
+
+Gap Analysis
+
+Compare
+
+Backend
+
+Database
+
+Swagger
+
+SRS
+
+Existing Frontend
+
+Identify
+
+Missing Screens
+
+Missing APIs
+
+Unused APIs
+
+Broken Integrations
+
+DTO Mismatches
+
+Validation Mismatches
+
+Navigation Problems
+
+Routing Problems
+
+UI Problems
+
+------------------------------------------------------------
+
+# CRITICAL RULE
+
+Never create a frontend feature unless it exists in the backend or is explicitly required by the SRS.
+
+If the backend contains functionality not present in the current frontend:
+
+Implement it.
+
+If the SRS contains functionality missing from the backend:
+
+Document it.
+
+Do NOT invent backend behavior.
+
+------------------------------------------------------------
+
+# OUTPUT OF DISCOVERY PHASE
+
+Before writing code, you must internally produce:
+
+✓ Complete API Catalog
+
+✓ Complete DTO Catalog
+
+✓ Entity Relationship Map
+
+✓ Authentication Flow
+
+✓ Feature Inventory
+
+✓ Route Map
+
+✓ Navigation Tree
+
+✓ Component Tree
+
+✓ Gap Analysis
+
+✓ Implementation Roadmap
+
+Only after all of these are complete may implementation begin.
+
+###############################################################
+END OF PART 2
+###############################################################

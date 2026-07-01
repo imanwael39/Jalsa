@@ -112,7 +112,7 @@ describe('PatientForm', () => {
     it('should handle load error', (): void => {
         setup({
             patientId: '123e4567-e89b-12d3-a456-426614174000',
-            getPatientReturn: throwError((): Error => new Error('Load failed')),
+            getPatientReturn: throwError(() => ({ error: { message: 'Load failed' } })),
         });
         fixture.detectChanges();
         expect(component.error()).toBe('Load failed');
@@ -176,7 +176,7 @@ describe('PatientForm', () => {
     });
 
     it('should handle create error', (): void => {
-        setup({ createPatientReturn: throwError((): Error => new Error('Create failed')) });
+        setup({ createPatientReturn: throwError(() => ({ error: { message: 'Create failed' } })) });
         fixture.detectChanges();
         component.form.patchValue({
             fullName: 'New Patient',
@@ -188,7 +188,7 @@ describe('PatientForm', () => {
     it('should handle update error', (): void => {
         setup({
             patientId: '123e4567-e89b-12d3-a456-426614174000',
-            updatePatientReturn: throwError((): Error => new Error('Update failed')),
+            updatePatientReturn: throwError(() => ({ error: { message: 'Update failed' } })),
         });
         fixture.detectChanges();
         component.form.patchValue({

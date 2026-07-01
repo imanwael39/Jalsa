@@ -113,7 +113,7 @@ describe('PatientDetail', () => {
     });
 
     it('should set error when API call fails', (): void => {
-        setup({ getPatientReturn: throwError((): Error => new Error('API Error')) });
+        setup({ getPatientReturn: throwError(() => ({ error: { message: 'API Error' } })) });
         fixture.detectChanges();
         expect(component.error()).toBe('API Error');
         expect(component.loading()).toBe(false);
@@ -184,7 +184,7 @@ describe('PatientDetail', () => {
     });
 
     it('should handle archive error', (): void => {
-        setup({ archivePatientReturn: throwError((): Error => new Error('Archive failed')) });
+        setup({ archivePatientReturn: throwError(() => ({ error: { message: 'Archive failed' } })) });
         fixture.detectChanges();
         component.archivePatient();
         expect(notificationSpy['error']).toHaveBeenCalledWith('Archive failed');
@@ -203,7 +203,7 @@ describe('PatientDetail', () => {
     });
 
     it('should handle delete error', (): void => {
-        setup({ deletePatientReturn: throwError((): Error => new Error('Delete failed')) });
+        setup({ deletePatientReturn: throwError(() => ({ error: { message: 'Delete failed' } })) });
         fixture.detectChanges();
         component.deletePatient();
         expect(notificationSpy['error']).toHaveBeenCalledWith('Delete failed');

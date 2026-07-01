@@ -51,21 +51,16 @@ describe('RegisterComponent', () => {
         setup();
         expect(component.registerForm.invalid).toBe(true);
     });
-    it('should return required firstName error', () => {
+    it('should return required fullName error', () => {
         setup();
-        component.registerForm.get('firstName')!.markAsTouched();
-        expect(component.getFirstNameError()).toBe('الاسم الأول مطلوب');
+        component.registerForm.get('fullName')!.markAsTouched();
+        expect(component.getFullNameError()).toBe('الاسم الكامل مطلوب');
     });
-    it('should return minlength firstName error', () => {
+    it('should return minlength fullName error', () => {
         setup();
-        component.registerForm.patchValue({ firstName: 'A' });
-        component.registerForm.get('firstName')!.markAsTouched();
-        expect(component.getFirstNameError()).toBe('يجب أن يحتوي الاسم على حرفين على الأقل');
-    });
-    it('should return required lastName error', () => {
-        setup();
-        component.registerForm.get('lastName')!.markAsTouched();
-        expect(component.getLastNameError()).toBe('اسم العائلة مطلوب');
+        component.registerForm.patchValue({ fullName: 'A' });
+        component.registerForm.get('fullName')!.markAsTouched();
+        expect(component.getFullNameError()).toBe('يجب أن يحتوي الاسم على حرفين على الأقل');
     });
     it('should return required email error', () => {
         setup();
@@ -102,8 +97,7 @@ describe('RegisterComponent', () => {
     it('should call authService.register on valid submit', () => {
         setup();
         component.registerForm.patchValue({
-            firstName: 'Test',
-            lastName: 'User',
+            fullName: 'Test User',
             email: 't@t.com',
             password: '12345678',
             confirmPassword: '12345678',
@@ -115,8 +109,7 @@ describe('RegisterComponent', () => {
         const subj = new Subject<unknown>();
         setup({ registerReturn: subj });
         component.registerForm.patchValue({
-            firstName: 'Test',
-            lastName: 'User',
+            fullName: 'Test User',
             email: 't@t.com',
             password: '12345678',
             confirmPassword: '12345678',
@@ -129,8 +122,7 @@ describe('RegisterComponent', () => {
         const subj = new Subject<unknown>();
         setup({ registerReturn: subj });
         component.registerForm.patchValue({
-            firstName: 'Test',
-            lastName: 'User',
+            fullName: 'Test User',
             email: 't@t.com',
             password: '12345678',
             confirmPassword: '12345678',
@@ -142,5 +134,14 @@ describe('RegisterComponent', () => {
     it('should have default role as Therapist', () => {
         setup();
         expect(component.registerForm.get('role')!.value).toBe('Therapist');
+    });
+    it('should treat Therapist role as isTherapist true', () => {
+        setup();
+        expect(component.isTherapist()).toBe(true);
+    });
+    it('should treat Patient role as isTherapist false', () => {
+        setup();
+        component.registerForm.get('role')!.setValue('Patient');
+        expect(component.isTherapist()).toBe(false);
     });
 });

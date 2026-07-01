@@ -11,19 +11,26 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     const router = inject(Router);
 
     return next(req).pipe(
-        catchError((error) => {
+        catchError(error => {
             const serverMessage = error.error?.message || error.error?.error;
 
             if (error.status === 401) {
+                const isLoginRequest = error.url?.includes('/api/auth/login');
                 authService.logout();
                 router.navigate(['/auth/login']);
-                notification.error('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+                notification.error(
+                    isLoginRequest
+                        ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة'
+                        : 'انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى'
+                );
             } else if (error.status === 403) {
-                notification.error('ليس لديك صلاحية للقيام بهذه العملية');
+                notification.error(serverMessage || 'ليس لديك صلاحية للقيام بهذه العملية');
             } else if (error.status === 404) {
                 notification.error('المورد المطلوب غير موجود');
             } else if (error.status === 409) {
                 notification.error(serverMessage || 'يوجد حساب مسجل بالفعل بهذا البريد الإلكتروني');
+            } else if (error.status === 429) {
+                notification.error(serverMessage || 'عدد كبير جدًا من الطلبات، يرجى المحاولة لاحقًا');
             } else if (error.status >= 400 && error.status < 500) {
                 notification.error(serverMessage || 'البيانات المدخلة غير صحيحة');
             } else if (error.status >= 500) {

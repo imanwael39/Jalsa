@@ -1,0 +1,387 @@
+###############################################################
+############ QUALITY GATES & TESTING ##########################
+###############################################################
+
+# OBJECTIVE
+
+Never consider implementation complete simply because code exists.
+
+Code that compiles but fails in usage is incomplete.
+
+Every feature must pass quality gates.
+
+------------------------------------------------------------
+
+# BUILD VALIDATION
+
+After EVERY completed feature run:
+
+ng build
+
+If build fails:
+
+STOP
+
+Fix all errors
+
+Repeat build
+
+Continue only when successful
+
+Never postpone build fixes.
+
+------------------------------------------------------------
+
+# ESLINT VALIDATION
+
+Run:
+
+npm run lint
+
+Fix:
+
+Warnings
+
+Errors
+
+Unused imports
+
+Unused variables
+
+Duplicated logic
+
+Style violations
+
+Never ignore lint issues.
+
+------------------------------------------------------------
+
+# TYPESCRIPT VALIDATION
+
+Strict TypeScript is required.
+
+Never:
+
+use any
+
+disable strict mode
+
+disable template checks
+
+disable type checking
+
+------------------------------------------------------------
+
+# ROUTING VALIDATION
+
+Verify:
+
+All routes render
+
+All routes navigate correctly
+
+Lazy loading works
+
+Guards work
+
+Fallback routes work
+
+404 route works
+
+Navigation links work
+
+------------------------------------------------------------
+
+# AUTHENTICATION VALIDATION
+
+Verify:
+
+Login
+
+Logout
+
+Refresh token
+
+Unauthorized access
+
+Role restrictions
+
+Permission restrictions
+
+Session expiration
+
+Redirect flow
+
+------------------------------------------------------------
+
+# API VALIDATION
+
+For every endpoint verify:
+
+Request shape
+
+Response shape
+
+Error handling
+
+Retry handling
+
+Loading state
+
+Mapping
+
+State update
+
+UI update
+
+------------------------------------------------------------
+
+# FORM VALIDATION
+
+Verify:
+
+Required fields
+
+Optional fields
+
+Validation messages
+
+Async validation
+
+Disabled states
+
+Submission flow
+
+Error messages
+
+RTL layout
+
+------------------------------------------------------------
+
+# TABLE VALIDATION
+
+Verify:
+
+Pagination
+
+Filtering
+
+Sorting
+
+Search
+
+Selection
+
+Actions
+
+Responsive layout
+
+Loading
+
+Empty state
+
+------------------------------------------------------------
+
+# RESPONSIVE VALIDATION
+
+Verify:
+
+Desktop
+
+Laptop
+
+Tablet
+
+Mobile
+
+Small Mobile
+
+No horizontal scrolling
+
+No broken layouts
+
+------------------------------------------------------------
+
+# RTL VALIDATION
+
+Verify:
+
+Alignment
+
+Navigation
+
+Forms
+
+Tables
+
+Dialogs
+
+Icons
+
+Spacing
+
+Layout flow
+
+------------------------------------------------------------
+
+# ACCESSIBILITY VALIDATION
+
+Verify:
+
+Keyboard navigation
+
+Focus states
+
+ARIA labels
+
+Screen readers
+
+Contrast
+
+------------------------------------------------------------
+
+# PERFORMANCE VALIDATION
+
+Verify:
+
+Lazy loading works
+
+No unnecessary rerenders
+
+No unnecessary subscriptions
+
+No duplicate API calls
+
+Optimized images
+
+Fast navigation
+
+------------------------------------------------------------
+
+# SELF REVIEW
+
+After completing every feature:
+
+Review implementation.
+
+Check:
+
+Naming consistency
+
+Duplicate logic
+
+Performance
+
+Readability
+
+Accessibility
+
+Responsiveness
+
+Refactor if needed.
+
+------------------------------------------------------------
+
+# BUG RECOVERY
+
+If bugs are found:
+
+Fix immediately.
+
+Do NOT postpone.
+
+Do NOT document and ignore.
+
+Do NOT continue with known issues.
+
+------------------------------------------------------------
+
+# FINAL PROJECT AUDIT
+
+Before declaring project complete:
+
+Run:
+
+ng build
+
+npm run lint
+
+Run application
+
+Navigate every route
+
+Test all authentication flows
+
+Test all forms
+
+Test all tables
+
+Test all dialogs
+
+Test uploads
+
+Test notifications
+
+Test SignalR
+
+Test chatbot
+
+Test responsiveness
+
+Test RTL
+
+------------------------------------------------------------
+
+# FINAL ACCEPTANCE CRITERIA
+
+You MUST NOT say:
+
+"Project Completed"
+
+until ALL conditions below are TRUE:
+
+✓ Build successful
+
+✓ ESLint successful
+
+✓ Strict typing enabled
+
+✓ No TypeScript errors
+
+✓ No Angular warnings
+
+✓ No runtime errors
+
+✓ No console errors
+
+✓ No TODO comments
+
+✓ No placeholders
+
+✓ No mock data
+
+✓ No broken routes
+
+✓ No duplicated code
+
+✓ All APIs connected
+
+✓ Authentication works
+
+✓ Refresh token works
+
+✓ Guards work
+
+✓ Interceptors work
+
+✓ Responsive layouts verified
+
+✓ RTL verified
+
+✓ Accessibility verified
+
+✓ Production ready
+
+###############################################################
+END OF PART 7
+###############################################################

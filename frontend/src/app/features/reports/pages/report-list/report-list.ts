@@ -1,4 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, DestroyRef, input } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReportService } from '../../../../core/services/report.service';
@@ -62,8 +63,8 @@ export class ReportList implements OnInit {
                     this.state.setReports(data);
                     this.state.setLoading(false);
                 },
-                error: err => {
-                    this.state.setError(err.message || 'فشل في تحميل التقارير');
+                error: (err: HttpErrorResponse) => {
+                    this.state.setError(err.error?.message || err.error?.error || 'فشل في تحميل التقارير');
                     this.state.setLoading(false);
                 },
             });
@@ -91,8 +92,8 @@ export class ReportList implements OnInit {
                         this.state.removeReport(id);
                         this.notification.success('تم حذف التقرير بنجاح');
                     },
-                    error: err => {
-                        this.notification.error(err.message || 'فشل في حذف التقرير');
+                    error: (err: HttpErrorResponse) => {
+                        this.notification.error(err.error?.message || err.error?.error || 'فشل في حذف التقرير');
                     },
                 });
         }

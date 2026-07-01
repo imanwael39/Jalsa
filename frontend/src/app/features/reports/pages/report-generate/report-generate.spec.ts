@@ -103,7 +103,7 @@ describe('ReportGenerate', () => {
     });
 
     it('should handle generation error', (): void => {
-        setup({ generateReturn: throwError((): Error => new Error('Generation failed')) });
+        setup({ generateReturn: throwError(() => ({ error: { message: 'Generation failed' } })) });
         fixture.detectChanges();
         component.onSubmit();
         expect(component.error()).toBe('Generation failed');

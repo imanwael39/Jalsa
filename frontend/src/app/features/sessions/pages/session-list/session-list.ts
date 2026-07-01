@@ -1,4 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, DestroyRef, input } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SessionService } from '../../../../core/services/session.service';
@@ -65,8 +66,8 @@ export class SessionList implements OnInit {
                     this.state.setSessions(data);
                     this.state.setLoading(false);
                 },
-                error: err => {
-                    this.state.setError(err.message || 'فشل تحميل الجلسات');
+                error: (err: HttpErrorResponse) => {
+                    this.state.setError(err.error?.message || err.error?.error || 'فشل تحميل الجلسات');
                     this.state.setLoading(false);
                 },
             });
@@ -101,8 +102,8 @@ export class SessionList implements OnInit {
                         this.state.removeSession(id);
                         this.notification.success('تم حذف الجلسة بنجاح');
                     },
-                    error: err => {
-                        this.notification.error(err.message || 'فشل حذف الجلسة');
+                    error: (err: HttpErrorResponse) => {
+                        this.notification.error(err.error?.message || err.error?.error || 'فشل حذف الجلسة');
                     },
                 });
         }

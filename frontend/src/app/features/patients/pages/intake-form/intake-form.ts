@@ -1,4 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit, DestroyRef } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -118,9 +119,9 @@ export class IntakeForm implements OnInit {
                         this.notification.success('تم استخراج البيانات بنجاح');
                     }
                 },
-                error: err => {
+                error: (err: HttpErrorResponse) => {
                     this.ocrLoading.set(false);
-                    this.error.set(err?.message || 'فشل رفع الصورة');
+                    this.error.set(err.error?.message || err.error?.error || 'فشل رفع الصورة');
                     this.notification.error('فشل استخراج البيانات. يرجى إدخال البيانات يدوياً.');
                 },
             });
@@ -138,8 +139,8 @@ export class IntakeForm implements OnInit {
                     this.notification.success('تم حفظ استمارة الاستقبال بنجاح');
                     this.router.navigate(['/patients', this.patientId()]);
                 },
-                error: err => {
-                    this.error.set(err?.message || 'فشل حفظ استمارة الاستقبال');
+                error: (err: HttpErrorResponse) => {
+                    this.error.set(err.error?.message || err.error?.error || 'فشل حفظ استمارة الاستقبال');
                     this.loading.set(false);
                 },
             });

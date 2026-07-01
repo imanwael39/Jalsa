@@ -127,14 +127,27 @@
         </div>
     }
 
-    @if (totalItems > 0) {
-        <div class="mt-3">
-            <app-pagination
-                [totalItems]="totalItems"
-                [pageSize]="pageSize"
-                [currentPage]="currentPage"
-                (pageChange)="onPageChange($event)"
-            ></app-pagination>
+    @if (!error() && !(loading() && patients().length === 0) && (currentPage > 1 || hasNextPage)) {
+        <div class="mt-3 d-flex justify-content-center gap-2">
+            <app-button
+                variant="secondary"
+                size="sm"
+                [disabled]="currentPage <= 1"
+                (clicked)="onPageChange(currentPage - 1)"
+                ariaLabel="الصفحة السابقة"
+            >
+                <i class="bi bi-chevron-right" aria-hidden="true"></i> السابق
+            </app-button>
+            <span class="page-indicator">صفحة {{ currentPage }}</span>
+            <app-button
+                variant="secondary"
+                size="sm"
+                [disabled]="!hasNextPage"
+                (clicked)="onPageChange(currentPage + 1)"
+                ariaLabel="الصفحة التالية"
+            >
+                التالي <i class="bi bi-chevron-left" aria-hidden="true"></i>
+            </app-button>
         </div>
     }
 </div>

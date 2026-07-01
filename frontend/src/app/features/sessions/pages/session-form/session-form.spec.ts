@@ -144,7 +144,7 @@ describe('SessionForm', () => {
     });
 
     it('should handle create error', (): void => {
-        setup({ createSessionReturn: throwError((): Error => new Error('Create failed')) });
+        setup({ createSessionReturn: throwError(() => ({ error: { message: 'Create failed' } })) });
         fixture.detectChanges();
         component.form.patchValue({ sessionDate: '2024-02-01', content: 'test' });
         component.onSubmit();
@@ -152,7 +152,7 @@ describe('SessionForm', () => {
     });
 
     it('should handle update error', (): void => {
-        setup({ routeId: 'sess-1', updateSessionReturn: throwError((): Error => new Error('Update failed')) });
+        setup({ routeId: 'sess-1', updateSessionReturn: throwError(() => ({ error: { message: 'Update failed' } })) });
         fixture.detectChanges();
         component.form.patchValue({ sessionDate: '2024-02-01', content: 'test' });
         component.onSubmit();
