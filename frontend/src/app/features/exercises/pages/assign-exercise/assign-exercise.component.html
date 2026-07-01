@@ -18,9 +18,7 @@
 
         <form [formGroup]="form" (ngSubmit)="onSubmit()">
             <div class="form-group mb-3">
-                <label for="patientId" class="form-label">
-                    المريض <span class="text-danger">*</span>
-                </label>
+                <label for="patientId" class="form-label"> المريض <span class="text-danger">*</span> </label>
                 <select
                     id="patientId"
                     class="form-select"
@@ -43,7 +41,13 @@
                 type="text"
                 formControlName="description"
                 [required]="true"
-                [error]="f['description'].touched && f['description'].errors?.['required'] ? 'الوصف مطلوب.' : f['description'].errors?.['maxlength'] ? 'الوصف يجب ألا يتجاوز 1000 حرف.' : ''"
+                [error]="
+                    f['description'].touched && f['description'].errors?.['required']
+                        ? 'الوصف مطلوب.'
+                        : f['description'].errors?.['maxlength']
+                          ? 'الوصف يجب ألا يتجاوز 1000 حرف.'
+                          : ''
+                "
                 placeholder="صف التمارين للمريض"
             ></app-input>
 
@@ -55,16 +59,13 @@
                 helpText="كم مرة يجب على المريض أداء هذا التمرين"
             ></app-input>
 
-            <app-input
-                label="تاريخ البدء"
-                type="date"
-                formControlName="startDate"
-            ></app-input>
+            <app-input label="تاريخ البدء" type="date" formControlName="startDate"></app-input>
 
             <app-input
                 label="تاريخ الاستحقاق"
                 type="date"
                 formControlName="dueDate"
+                [error]="getDueDateError()"
             ></app-input>
 
             <div class="d-flex gap-2 mt-4">

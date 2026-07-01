@@ -36,6 +36,31 @@
             <ng-template appColumnCell="dueDate" let-row>
                 {{ formatDate(row.dueDate) }}
             </ng-template>
+            <ng-template appColumnCell="actions" let-row>
+                <div class="d-flex gap-1 justify-content-center">
+                    <app-button variant="danger" size="sm" (clicked)="openDeleteModal(row.id)" ariaLabel="حذف التمرين">
+                        <i class="bi bi-trash" aria-hidden="true"></i>
+                    </app-button>
+                </div>
+            </ng-template>
         </app-table>
     </div>
+
+    <app-modal
+        [showModal]="showDeleteModal()"
+        (showModalChange)="showDeleteModal.set($event)"
+        title="حذف التمرين"
+        size="sm"
+    >
+        <div modal-body>
+            <p>هل أنت متأكد من حذف هذا التمرين؟</p>
+            <p class="text-danger">
+                <i class="bi bi-exclamation-triangle" aria-hidden="true"></i> لا يمكن التراجع عن هذا الإجراء.
+            </p>
+        </div>
+        <div modal-footer>
+            <app-button variant="ghost" (clicked)="closeDeleteModal()">إلغاء</app-button>
+            <app-button variant="danger" (clicked)="deleteExercise()">حذف التمرين</app-button>
+        </div>
+    </app-modal>
 </div>

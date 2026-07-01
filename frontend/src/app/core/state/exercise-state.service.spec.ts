@@ -39,6 +39,41 @@ describe('ExerciseStateService', () => {
         expect(service.error()).toBeNull();
     });
 
+    it('should update an existing exercise in the list', () => {
+        const original = {
+            id: '1',
+            patientId: 'p1',
+            description: 'Test',
+            frequency: null,
+            startDate: null,
+            dueDate: null,
+            status: 'Pending',
+            createdAt: '',
+            updatedAt: '',
+        };
+        service.setExercises([original]);
+        const updated = { ...original, status: 'Completed' };
+        service.updateExercise(updated);
+        expect(service.exercises()).toEqual([updated]);
+    });
+
+    it('should remove an exercise from the list', () => {
+        const exercise = {
+            id: '1',
+            patientId: 'p1',
+            description: 'Test',
+            frequency: null,
+            startDate: null,
+            dueDate: null,
+            status: 'Pending',
+            createdAt: '',
+            updatedAt: '',
+        };
+        service.setExercises([exercise]);
+        service.removeExercise('1');
+        expect(service.exercises()).toEqual([]);
+    });
+
     it('should set loading state', () => {
         service.setLoading(true);
         expect(service.loading()).toBe(true);
