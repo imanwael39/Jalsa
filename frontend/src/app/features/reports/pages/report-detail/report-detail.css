@@ -7,3 +7,15 @@
     line-height: 1.8;
     font-size: var(--text-base);
 }
+
+@media (max-width: 768px) {
+    .report-detail {
+        padding: var(--space-3);
+    }
+
+    .report-detail .d-flex.justify-content-between {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-3);
+    }
+}

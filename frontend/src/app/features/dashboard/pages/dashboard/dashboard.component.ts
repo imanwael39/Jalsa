@@ -1,7 +1,7 @@
-import { Component, ChangeDetectionStrategy, computed, inject, OnInit, OnDestroy, DestroyRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { interval, Subscription } from 'rxjs';
-import { switchMap, filter } from 'rxjs/operators';
+import { interval } from 'rxjs';
+import { filter, switchMap } from 'rxjs/operators';
 import { ChartDataset } from 'chart.js';
 import { DashboardService } from '../../../../core/services/dashboard.service';
 import { DashboardStateService } from '../../../../core/state/dashboard-state.service';
@@ -20,12 +20,11 @@ const AUTO_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
     styleUrl: './dashboard.component.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DashboardComponent implements OnInit, OnDestroy {
+export class DashboardComponent implements OnInit {
     private dashboardService = inject(DashboardService);
     private state = inject(DashboardStateService);
     private authService = inject(AuthService);
     private destroyRef = inject(DestroyRef);
-    private autoRefreshSub: Subscription | null = null;
 
     summary = this.state.summary;
     loading = this.state.loading;
@@ -60,10 +59,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.startAutoRefresh();
     }
 
-    ngOnDestroy(): void {
-        this.stopAutoRefresh();
-    }
-
     loadDashboard(): void {
         this.state.setLoading(true);
         this.dashboardService
@@ -82,7 +77,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     private startAutoRefresh(): void {
-        this.autoRefreshSub = interval(AUTO_REFRESH_INTERVAL_MS)
+        interval(AUTO_REFRESH_INTERVAL_MS)
             .pipe(
                 takeUntilDestroyed(this.destroyRef),
                 filter(() => !this.loading()),
@@ -97,13 +92,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
                     this.state.setLoading(false);
                 },
             });
-    }
-
-    private stopAutoRefresh(): void {
-        if (this.autoRefreshSub) {
-            this.autoRefreshSub.unsubscribe();
-            this.autoRefreshSub = null;
-        }
     }
 
     private extractTrendLabels(trends: TrendDto[] | undefined): string[] {

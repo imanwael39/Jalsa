@@ -1,86 +1,83 @@
 # PROGRESS
 
 ## Current Sprint
-**Sprint 3** — Quality & Hardening
+**Sprint 5** — Frontend Quality & Architecture Fixes
 
 ## Current Branch
-`2026-06-29_Iman_sprint-3`
+`2026-06-30_Iman_sprint-5`
 
 ## Current Task
-**QUAL-006** — Add rate limiting (Completed)
+**Fix 1.3 — [Q1/Q2]** — Consolidate duplicate chat interfaces (Completed)
 
 ## Sprint Progress
 
 | Task ID | Task Name | Status |
 |---------|-----------|--------|
-| TEST-005 | Write controller tests for all 11 controllers | **Completed** |
-| QUAL-001 | Add FluentValidation for all DTOs | **Completed** |
-| QUAL-002 | Fix namespace typo Repositores→Repositories | **Completed** |
-| QUAL-003 | Extract GetCurrentUserId to base controller | **Completed** |
-| QUAL-004 | Move inline DTOs to proper files | **Completed** |
-| QUAL-005 | Account lockout | **Completed** |
-| QUAL-006 | Rate limiting | **Completed** |
+| R1 | Remove duplicate error handling from HttpClientService | **Completed** |
+| A1 | Fix BaseStateService.handleObservable callback | **Completed** |
+| Q1/Q2 | Consolidate duplicate chat interfaces | **Completed** |
+| P2 | Deduplicate Chart.registerables registration | Not Started |
+| P1 | Reduce initial bundle size below 900 kB warning | Not Started |
+| Q4 | Export StatusArPipe from barrel | Not Started |
+| Q5 | Extend BaseStateService in domain state services | Not Started |
 
 ## Completion Percentage
-Sprint 3: 7/7 (100%)
+Sprint 5: 3/7 (43%)
 
 ## Completed Tasks
-1. **TEST-005** — Created 7 new controller test files covering all 11 controllers. Total test count: 150 (up from 108).
-2. **QUAL-001** — Created 11 new FluentValidation validators across 6 modules: Patient (PatientCreateDtoValidator, PatientUpdateDtoValidator), Session (SessionCreateDtoValidator, SessionUpdateDtoValidator, SessionNoteDtoValidator), Report (ReportGenerateDtoValidator, ReportUpdateDtoValidator), Intake (IntakeFormSaveDtoValidator), Assessment (AssessmentCreateDtoValidator), Chat (CreateConversationDtoValidator, SendMessageDtoValidator). All validators follow the existing pattern (Exercise validators). Auto-discovered by `AddValidatorsFromAssemblyContaining` in Program.cs. Total validators: 14 (3 existing Exercise + 11 new).
-3. **QUAL-002** — Verified namespace typo `Repositores` does NOT exist in the codebase. All 18+ repository-related files already use correct spelling `Repositories`. No changes needed. Build clean, 149/149 tests pass.
-4. **QUAL-003** — Created `BaseController.cs` with `GetCurrentUserId()` method. Updated 9 controllers to inherit from `BaseController` instead of `ControllerBase`: AuthController, PatientController, SessionController, ReportController, NotificationController, IntakeController, AssessmentController, ChatController, ExerciseController. Removed duplicate `GetCurrentUserId()` from all 9 controllers. Removed unused `using System.Security.Claims` and `using Jalsa.API.Exceptions` where no longer needed. Build clean, 149/149 tests pass.
-5. **QUAL-004** — Moved 4 inline DTOs from controllers to proper files:
-   - `ExtendDueDateRequest` → `Jalsa.Application/DTOs/Exercise/ExtendDueDateRequest.cs`
-   - `OcrRequest` → `Jalsa.Application/DTOs/Intake/OcrRequest.cs`
-   - `SummarizeRequest` → `Jalsa.API/DTOs/AI/AiRequestDtos.cs`
-   - `ReportDraftRequest` → `Jalsa.API/DTOs/AI/AiRequestDtos.cs`
-   Updated 3 controllers (ExerciseController, AiController, IntakeController) to use new DTOs. Updated AiControllerTests to use new namespace. Build clean, 149/149 tests pass.
-6. **QUAL-005** — Added account lockout to AuthService.LoginAsync:
-   - Added `FailedLoginAttempts` (int) and `LockoutEnd` (DateTime?) to User entity
-   - Created EF Core migration `AddAccountLockoutFields`
-   - Added Fluent API configuration in JalsaDbContext
-   - Implemented lockout logic: 5 failed attempts → 15 min lockout
-   - Successful login resets counter
-   - Added 5 tests: increment counter, lock after 5 attempts, locked returns 403, reset on success, expired lockout allows login
-   - Build clean, 154/154 tests pass.
-7. **QUAL-006** — Added rate limiting middleware:
-   - Added `Microsoft.AspNetCore.RateLimiting` imports
-   - Configured two FixedWindowLimiter policies: "general" (100 req/min) and "ai" (10 req/min)
-   - Added `[EnableRateLimiting("general")]` to BaseController (9 controllers) and ProgressController
-   - Added `[EnableRateLimiting("ai")]` to AiController
-   - Added `app.UseRateLimiter()` middleware with 429 JSON response
-   - Build clean, 154/154 tests pass.
+1. **R1** — Removed duplicate error handling from HttpClientService:
+   - Removed `catchError(this.handleError)` from all 7 methods (get, post, put, patch, delete, upload, blob)
+   - Removed the `private handleError` method entirely
+   - Removed unused imports: `HttpErrorResponse`, `throwError`, `catchError`
+   - Error handling now flows exclusively through `errorInterceptor` (single handler)
+
+2. **A1** — Fixed BaseStateService.handleObservable callback:
+   - Added `tap(data => onSuccess(data))` operator to invoke the success callback
+   - Renamed `_onSuccess` parameter to `onSuccess` (removed underscore prefix for unused param)
+   - Added `tap` to imports from `rxjs/operators`
+   - No behavioral change yet (no current code calls `handleObservable`); enables Q5
+
+3. **Q1/Q2** — Consolidated duplicate chat interfaces:
+   - Updated `core/models/chat.model.ts`: added `patientName` and `messageCount` to `ChatConversation`; narrowed `senderType` from `string` to `'Patient' | 'AI' | 'Therapist'` on `ChatMessage`
+   - Removed local `ChatMessage` interface from `chat-room.component.ts`; imports from `core/models`
+   - Removed local `ChatConversation` interface from `chat-list.component.ts`; imports from `core/models`
+   - Added `tokensUsed: null, latencyMs: null` to inline ChatMessage construction in chat-room
 
 ## Remaining Tasks
-None — Sprint 3 complete. Next: Sprint 4 tasks (CI/CD, staging config, documentation, monitoring, smoke testing)
+- P2: Deduplicate Chart.registerables registration
+- P1: Reduce initial bundle size below 900 kB warning
+- Q4: Export StatusArPipe from barrel
+- Q5: Extend BaseStateService in domain state services
 
 ## Build Status
-- **Backend**: Build clean (0 errors, 0 warnings)
+- **Frontend**: Build clean (0 errors, pre-existing warnings: bundle budget, quill-delta CommonJS)
 
 ## Unit Test Results
-- **Backend**: 149/149 passed
+- **Frontend**: 435/435 passed (39 test files, 0 failures)
 
 ## Integration Test Results
-N/A
+N/A (no integration test infrastructure)
 
 ## Manual Verification Results
-- Created 3 new DTO files in proper locations
-- Removed all inline DTOs from 3 controllers
-- Updated test file to use new namespace
-- No inline DTO definitions remain in any controller
+- Build passes with 0 errors
+- All 435 tests pass
+- `ChatMessage` and `ChatConversation` now defined only in `core/models/chat.model.ts`
+- Both chat-room and chat-list import from the shared model barrel
+- No local interface duplicates remain in chatbot feature
 
 ## Regression Test Results
-- Backend: 149/149 tests passed, build clean
-- All pre-existing tests still pass
+- Frontend: 435/435 tests pass (no regressions)
 
 ## Known Issues
-None
+- Pre-existing: 3 CSS budget warnings (sidebar, patient-detail, chat-room) — cosmetic, not blocking
+- Pre-existing: quill-delta CommonJS warning — third-party, not fixable
+- Pre-existing: bundle size 901 kB exceeds 700 kB budget (addressed in P1)
 
 ## Blockers
 None
 
 ## Technical Debt
-Reduced — eliminated inline DTO duplication across 3 controllers
+None introduced
 
 ## Next Recommended Task
-**QUAL-005** — Add account lockout
+**Fix 1.4 — [P2]** — Deduplicate Chart.registerables registration

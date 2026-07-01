@@ -18,14 +18,7 @@ import { HttpClientService } from '../../../../core/api/http-client.service';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { API } from '../../../../core/api/api-endpoints';
 import { environment } from '../../../../../environments/environment';
-
-export interface ChatMessage {
-    id: string;
-    conversationId: string;
-    senderType: 'Patient' | 'AI' | 'Therapist';
-    content: string | null;
-    createdAt: string;
-}
+import { ChatMessage } from '../../../../core/models';
 
 interface ChatHistoryResponse {
     conversationId: string;
@@ -119,6 +112,8 @@ export class ChatRoomComponent implements OnInit, OnDestroy, AfterViewChecked {
                 conversationId: this.conversationId(),
                 senderType: sender === 'AI' ? 'AI' : 'Patient',
                 content,
+                tokensUsed: null,
+                latencyMs: null,
                 createdAt: new Date().toISOString(),
             };
             this.messages.update(prev => [...prev, incoming]);
@@ -146,6 +141,8 @@ export class ChatRoomComponent implements OnInit, OnDestroy, AfterViewChecked {
             conversationId: this.conversationId(),
             senderType: 'Therapist',
             content: text,
+            tokensUsed: null,
+            latencyMs: null,
             createdAt: new Date().toISOString(),
         };
 

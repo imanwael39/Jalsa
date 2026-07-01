@@ -6,4 +6,5 @@ export interface Environment {
     appName: string;
     enableMockApi: boolean;
     logLevel: 'debug' | 'info' | 'warn' | 'error';
+    sentryDsn: string;
 }

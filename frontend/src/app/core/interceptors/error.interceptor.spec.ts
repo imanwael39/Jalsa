@@ -45,7 +45,7 @@ describe('errorInterceptor', () => {
             error: () => {
                 expect(logoutSpy).toHaveBeenCalled();
                 expect(mockRouter.navigate).toHaveBeenCalledWith(['/auth/login']);
-                expect(errorSpy).toHaveBeenCalledWith('انتهت صلاحية جلستك، يرجى تسجيل الدخول مرة أخرى');
+                expect(errorSpy).toHaveBeenCalledWith('البريد الإلكتروني أو كلمة المرور غير صحيحة');
             },
         });
 

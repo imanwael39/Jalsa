@@ -15,96 +15,120 @@ public class ReportGenerationService : IReportGenerationService
     private readonly IEmbeddingService _embeddingService;
     private readonly string _model;
 
-<<<<<<< Updated upstream
-=======
     private readonly ILlmObservabilityService _observability;
     private readonly Services.Interfaces.IPromptService _prompts;
 
->>>>>>> Stashed changes
     public ReportGenerationService(
         IOptions<OpenAiSettings> settings,
         JalsaDbContext context,
         IVectorStore vectorStore,
-<<<<<<< Updated upstream
-        IEmbeddingService embeddingService)
-    {
-=======
         IEmbeddingService embeddingService,
         ILlmObservabilityService observability,
         Services.Interfaces.IPromptService prompts)
     {
         _observability = observability;
         _prompts = prompts;
->>>>>>> Stashed changes
+
         var config = settings.Value;
         _model = config.ChatModel;
         _context = context;
         _vectorStore = vectorStore;
         _embeddingService = embeddingService;
 
-        OpenAI.OpenAIClient openAi = string.IsNullOrWhiteSpace(config.Endpoint)
-            ? new OpenAI.OpenAIClient(config.ApiKey)
-            : new Azure.AI.OpenAI.AzureOpenAIClient(
-                new Uri(config.Endpoint),
-                new System.ClientModel.ApiKeyCredential(config.ApiKey));
+        OpenAI.OpenAIClient openAi =
+            string.IsNullOrWhiteSpace(config.Endpoint)
+                ? new OpenAI.OpenAIClient(config.ApiKey)
+                : new Azure.AI.OpenAI.AzureOpenAIClient(
+                    new Uri(config.Endpoint),
+                    new System.ClientModel.ApiKeyCredential(config.ApiKey));
 
         _client = openAi.GetChatClient(_model);
     }
 
-    public async Task<string> GenerateDraftAsync(Guid patientId, string? therapistInstructions = null, string language = "ar")
+    public async Task<string> GenerateDraftAsync(
+        Guid patientId,
+        string? therapistInstructions = null,
+        string language = "ar")
     {
         var patient = await _context.Patients
             .Include(p => p.IntakeForms)
-            .Include(p => p.Assessments).ThenInclude(a => a.Template)
+            .Include(p => p.Assessments)
+            .ThenInclude(a => a.Template)
             .FirstOrDefaultAsync(p => p.Id == patientId);
 
         if (patient == null)
             return "Patient not found.";
 
-        var queryVec = await _embeddingService.GenerateEmbeddingAsync(
-            _prompts.GetEmbeddingQuery("generate-report-draft", "ar").Replace("{patientName}", patient.FullName));
-        var ragContext = await _vectorStore.SearchAsync(queryVec, topK: 5);
+        var queryVec =
+            await _embeddingService.GenerateEmbeddingAsync(
+                _prompts.GetEmbeddingQuery(
+                    "generate-report-draft",
+                    "ar")
+                .Replace("{patientName}", patient.FullName));
 
-        var contextText = string.Join("\n\n", ragContext.Select(r => r.Text));
-        var instructions = !string.IsNullOrWhiteSpace(therapistInstructions)
-            ? (language == "ar" ? $"\nتعليمات المعالج: {therapistInstructions}" : $"\nTherapist instructions: {therapistInstructions}")
-            : "";
+        var ragContext =
+            await _vectorStore.SearchAsync(queryVec, topK: 5);
 
-        var userPrompt = _prompts.Get("generate-report-draft", language, new Dictionary<string, string>
-        {
-            ["patientName"] = patient.FullName,
-            ["dateOfBirth"] = patient.DateOfBirth?.ToString("d") ?? "",
-            ["gender"] = patient.Gender ?? "",
-            ["contextText"] = contextText,
-            ["instructions"] = instructions
-        });
+        var contextText =
+            string.Join("\n\n", ragContext.Select(r => r.Text));
+
+        var instructions =
+            !string.IsNullOrWhiteSpace(therapistInstructions)
+                ? (language == "ar"
+                    ? $"\nتعليمات المعالج: {therapistInstructions}"
+                    : $"\nTherapist instructions: {therapistInstructions}")
+                : "";
+
+        var userPrompt =
+            _prompts.Get(
+                "generate-report-draft",
+                language,
+                new Dictionary<string, string>
+                {
+                    ["patientName"] = patient.FullName,
+                    ["dateOfBirth"] =
+                        patient.DateOfBirth?.ToString("d") ?? "",
+                    ["gender"] = patient.Gender ?? "",
+                    ["contextText"] = contextText,
+                    ["instructions"] = instructions
+                });
 
         var messages = new List<ChatMessage>
         {
-            new SystemChatMessage(_prompts.Get("generate-report-draft", language)),
+            new SystemChatMessage(
+                _prompts.Get(
+                    "generate-report-draft",
+                    language)),
+
             new UserChatMessage(userPrompt)
         };
 
-        var result = await _client.CompleteChatAsync(messages);
-<<<<<<< Updated upstream
-        return result.Value.Content[0].Text;
-=======
-        var output = result.Value.Content[0].Text;
+        var startTime = DateTime.UtcNow;
 
-        await _observability.LogGenerationAsync(new LlmGenerationLog
-        {
-            Name = "generate-report-draft",
-            Model = _model,
-            Input = userPrompt,
-            Output = output,
-            InputTokens = result.Value.Usage?.InputTokenCount,
-            OutputTokens = result.Value.Usage?.OutputTokenCount,
-            StartTime = startTime,
-            EndTime = DateTime.UtcNow,
-            Metadata = new Dictionary<string, object> { ["patientId"] = patientId.ToString() }
-        });
+        var result =
+            await _client.CompleteChatAsync(messages);
+
+        var output =
+            result.Value.Content[0].Text;
+
+        await _observability.LogGenerationAsync(
+            new LlmGenerationLog
+            {
+                Name = "generate-report-draft",
+                Model = _model,
+                Input = userPrompt,
+                Output = output,
+                InputTokens = result.Value.Usage?.InputTokenCount,
+                OutputTokens = result.Value.Usage?.OutputTokenCount,
+                StartTime = startTime,
+                EndTime = DateTime.UtcNow,
+
+                Metadata = new Dictionary<string, object>
+                {
+                    ["patientId"] = patientId.ToString()
+                }
+            });
 
         return output;
->>>>>>> Stashed changes
     }
 }

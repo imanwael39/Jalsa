@@ -44,10 +44,11 @@ describe('HttpClientService', () => {
 
             service.get(endpoint, params).subscribe();
 
-            const req = httpMock.expectOne(r =>
-                r.url === `${environment.apiUrl}${endpoint}` &&
-                r.params.get('page') === '1' &&
-                r.params.get('limit') === '10'
+            const req = httpMock.expectOne(
+                r =>
+                    r.url === `${environment.apiUrl}${endpoint}` &&
+                    r.params.get('page') === '1' &&
+                    r.params.get('limit') === '10'
             );
             expect(req.request.method).toBe('GET');
             req.flush([]);
@@ -143,7 +144,7 @@ describe('HttpClientService', () => {
             const mockError = { status: 500, statusText: 'Server Error' };
 
             service.get(endpoint).subscribe({
-                error: (error) => {
+                error: error => {
                     expect(error.status).toBe(500);
                 },
             });
@@ -152,13 +153,14 @@ describe('HttpClientService', () => {
             req.flush('Server Error', mockError);
         });
 
-        it('should log error to console', () => {
+        it('should propagate error without logging to console', () => {
             const consoleSpy = vi.spyOn(console, 'error');
             const endpoint = '/patients';
 
             service.get(endpoint).subscribe({
-                error: () => {
-                    expect(consoleSpy).toHaveBeenCalled();
+                error: error => {
+                    expect(error.status).toBe(404);
+                    expect(consoleSpy).not.toHaveBeenCalled();
                 },
             });
 

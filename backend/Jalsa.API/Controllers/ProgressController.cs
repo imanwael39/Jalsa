@@ -26,9 +26,9 @@ public class ProgressController : ControllerBase
             var result = await _progressService.GetDashboardAsync();
             return Ok(result);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = "حدث خطأ أثناء تحميل بيانات لوحة التحكم" });
         }
     }
 }
