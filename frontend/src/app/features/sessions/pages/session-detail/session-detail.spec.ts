@@ -100,7 +100,7 @@ describe('SessionDetail', () => {
     });
 
     it('should set error when API call fails', (): void => {
-        setup({ getSessionReturn: throwError((): Error => new Error('API Error')) });
+        setup({ getSessionReturn: throwError(() => ({ error: { message: 'API Error' } })) });
         fixture.detectChanges();
         expect(component.error()).toBe('API Error');
     });

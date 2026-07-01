@@ -103,16 +103,16 @@
                     <i class="bi bi-person-check-fill"></i>
                 </div>
                 <div class="stat-content">
-                    <span class="stat-label">الحاضرون هذا الشهر</span>
+                    <span class="stat-label">المرضى النشطون</span>
                     <span class="stat-value">{{ summary()!.activePatients }}</span>
                 </div>
             </div>
             <div class="stat-card stat-info">
                 <div class="stat-icon">
-                    <i class="bi bi-clipboard-check-fill"></i>
+                    <i class="bi bi-calendar-check-fill"></i>
                 </div>
                 <div class="stat-content">
-                    <span class="stat-label">التمارين النشطة</span>
+                    <span class="stat-label">جلسات هذا الشهر</span>
                     <span class="stat-value">{{ summary()!.sessionsThisMonth }}</span>
                 </div>
             </div>
@@ -121,7 +121,7 @@
                     <i class="bi bi-graph-up"></i>
                 </div>
                 <div class="stat-content">
-                    <span class="stat-label">معدل التأثير</span>
+                    <span class="stat-label">معدل إنجاز التمارين</span>
                     <span class="stat-value">{{ summary()!.exerciseCompletionRate }}%</span>
                 </div>
             </div>

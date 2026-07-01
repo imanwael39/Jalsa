@@ -1,4 +1,5 @@
 import { Component, ChangeDetectionStrategy, input, output, signal, inject, DestroyRef } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SessionService } from '../../../../core/services/session.service';
 import { NotificationService } from '../../../../core/services/notification.service';
@@ -47,9 +48,9 @@ export class VoiceRecorder {
                     this.uploaded.emit(voiceMemo.audioUrl || '');
                     this.selectedFile.set(null);
                 },
-                error: err => {
+                error: (err: HttpErrorResponse) => {
                     this.uploading.set(false);
-                    this.notification.error(err.message || 'فشل رفع المذكرة الصوتية');
+                    this.notification.error(err.error?.message || err.error?.error || 'فشل رفع المذكرة الصوتية');
                 },
             });
     }

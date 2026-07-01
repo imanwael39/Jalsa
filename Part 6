@@ -1,0 +1,481 @@
+###############################################################
+############ API INTEGRATION & STATE MANAGEMENT ################
+###############################################################
+
+# OBJECTIVE
+
+Create a clean, scalable and strongly typed frontend integration layer.
+
+The frontend must adapt to the backend.
+
+Never modify backend behavior.
+
+------------------------------------------------------------
+
+# API SOURCE OF TRUTH
+
+API contracts must come ONLY from:
+
+Controllers
+
+Swagger
+
+DTOs
+
+Application Layer
+
+Validators
+
+Never invent request shapes.
+
+Never invent response shapes.
+
+------------------------------------------------------------
+
+# MODEL GENERATION
+
+Generate strongly typed:
+
+Interfaces
+
+DTOs
+
+Models
+
+Enums
+
+Request Objects
+
+Response Objects
+
+Filter Objects
+
+Pagination Objects
+
+Never use:
+
+any
+
+unknown
+
+dynamic structures
+
+------------------------------------------------------------
+
+# MODEL STRUCTURE
+
+Example:
+
+Feature
+
+↓
+
+DTO
+
+↓
+
+Model
+
+↓
+
+Mapper
+
+↓
+
+Component
+
+Never bind backend DTOs directly to UI components.
+
+Always create frontend models if transformation is needed.
+
+------------------------------------------------------------
+
+# API SERVICES
+
+Each feature must contain:
+
+Services
+
+Models
+
+Interfaces
+
+Error handling
+
+Loading state
+
+Mapping
+
+------------------------------------------------------------
+
+# SERVICE RULES
+
+Services should:
+
+Contain API logic only
+
+Contain mapping only
+
+Contain transformations
+
+Never contain UI logic.
+
+Never contain navigation.
+
+Never contain component state.
+
+------------------------------------------------------------
+
+# COMPONENT RULES
+
+Components should never:
+
+Call HttpClient directly
+
+Build URLs
+
+Transform API data
+
+Handle token logic
+
+------------------------------------------------------------
+
+# HTTP STRUCTURE
+
+Backend
+
+↓
+
+Http Client
+
+↓
+
+Interceptor
+
+↓
+
+API Service
+
+↓
+
+State
+
+↓
+
+Component
+
+------------------------------------------------------------
+
+# INTERCEPTORS
+
+Create reusable interceptors:
+
+Authentication Interceptor
+
+Refresh Token Interceptor
+
+Error Interceptor
+
+Loading Interceptor
+
+Request Tracking Interceptor
+
+------------------------------------------------------------
+
+# AUTHENTICATION INTERCEPTOR
+
+Responsibilities:
+
+Attach JWT
+
+Attach headers
+
+Attach authorization
+
+Never duplicate token logic.
+
+------------------------------------------------------------
+
+# REFRESH TOKEN INTERCEPTOR
+
+Responsibilities:
+
+Detect expiration
+
+Refresh automatically
+
+Retry request
+
+Logout if refresh fails
+
+------------------------------------------------------------
+
+# ERROR INTERCEPTOR
+
+Responsibilities:
+
+Handle:
+
+400
+
+401
+
+403
+
+404
+
+409
+
+422
+
+500
+
+Network errors
+
+Unexpected errors
+
+Display appropriate feedback
+
+------------------------------------------------------------
+
+# LOADING INTERCEPTOR
+
+Responsibilities:
+
+Track request count
+
+Show loading state
+
+Hide loading state
+
+Prevent flashing
+
+------------------------------------------------------------
+
+# SIGNALR
+
+Create reusable SignalR service.
+
+Support:
+
+Reconnect
+
+Connection state
+
+Retry
+
+Notifications
+
+Chat
+
+Real-time updates
+
+------------------------------------------------------------
+
+# STATE MANAGEMENT
+
+Preferred order:
+
+Signals
+
+↓
+
+Computed
+
+↓
+
+Effects
+
+↓
+
+RxJS if required
+
+------------------------------------------------------------
+
+# SIGNAL RULES
+
+Use signal():
+
+Local state
+
+UI state
+
+Feature state
+
+Use computed():
+
+Derived state
+
+Statistics
+
+Filters
+
+Use effect():
+
+Reactions
+
+Synchronization
+
+------------------------------------------------------------
+
+# RXJS USAGE
+
+RxJS allowed ONLY for:
+
+HTTP streams
+
+SignalR
+
+Complex async flows
+
+Debounce
+
+Search streams
+
+Never overuse RxJS.
+
+------------------------------------------------------------
+
+# STORE RULES
+
+Store should contain:
+
+State
+
+Actions
+
+Selectors
+
+Loading
+
+Errors
+
+Computed state
+
+------------------------------------------------------------
+
+# SEARCH STATE
+
+Support:
+
+Debounce
+
+Cancel previous request
+
+Pagination reset
+
+Filter reset
+
+------------------------------------------------------------
+
+# PAGINATION STATE
+
+Support:
+
+Current page
+
+Page size
+
+Total count
+
+Loading state
+
+------------------------------------------------------------
+
+# FILTER STATE
+
+Support:
+
+Search
+
+Status
+
+Date range
+
+Dynamic filters
+
+------------------------------------------------------------
+
+# ERROR HANDLING
+
+Every API request must support:
+
+Loading
+
+Error
+
+Retry
+
+Cancellation
+
+Unauthorized
+
+Forbidden
+
+Validation
+
+------------------------------------------------------------
+
+# FILE UPLOAD
+
+Create reusable upload service.
+
+Support:
+
+Single Upload
+
+Multiple Upload
+
+Progress
+
+Cancel
+
+Retry
+
+Validation
+
+Preview
+
+------------------------------------------------------------
+
+# CACHING
+
+Cache only where beneficial.
+
+Examples:
+
+Lookups
+
+Reference data
+
+Settings
+
+Avoid stale business data.
+
+------------------------------------------------------------
+
+# API COMPLETION RULE
+
+Integration is NOT complete unless:
+
+✓ Request typed
+
+✓ Response typed
+
+✓ Error handled
+
+✓ Loading handled
+
+✓ Retry handled
+
+✓ Authentication works
+
+✓ Refresh works
+
+✓ State updated
+
+✓ UI updated
+
+###############################################################
+END OF PART 6
+###############################################################

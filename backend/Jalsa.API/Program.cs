@@ -1,29 +1,29 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.Data.SqlClient;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using System.Threading.RateLimiting;
-
-using Jalsa.API.Configurations;
-using Jalsa.API.Exceptions;
-using Jalsa.API.Services.Interfaces;
-using Jalsa.API.Services.Implementations;
-using Jalsa.API.Services.Interfaces.AI;
-using Jalsa.API.Services.Implementations.AI;
-using Jalsa.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
-using Jalsa.Application.Interfaces.Repositories;
+﻿using FluentValidation;
+using FluentValidation.AspNetCore;
 using Hangfire;
 using Hangfire.SqlServer;
+using Jalsa.API.Configurations;
+using Jalsa.API.Exceptions;
+using Jalsa.API.Hubs;
+using Jalsa.API.Services.Implementations;
+using Jalsa.API.Services.Implementations.AI;
+using Jalsa.API.Services.Interfaces;
+using Jalsa.API.Services.Interfaces.AI;
+using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Application.Interfaces.Services;
 using Jalsa.Application.Jobs;
 using Jalsa.Application.Services;
+using Jalsa.Application.Validators.Exercise;
+using Jalsa.Infrastructure.Data;
 using Jalsa.Infrastructure.Repositories;
 using Jalsa.Infrastructure.Services;
-using FluentValidation;
-using FluentValidation.AspNetCore;
-using Jalsa.Application.Validators.Exercise;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Threading.RateLimiting;
 
 DotNetEnv.Env.Load();
 
@@ -216,7 +216,29 @@ builder.Services.AddHangfire(config => config
         }));
 
 builder.Services.AddHangfireServer();
-
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+app.UseCors("AngularPolicy");
+
+app.UseAuthentication();
+
+app.UseAuthorization();
+
+app.UseRateLimiter();
+
+app.MapControllers();
+
+app.MapHub<ChatHub>("/chatHub");
+
+// Hangfire Dashboard (اختياري)
+app.UseHangfireDashboard();
 
 app.Run();

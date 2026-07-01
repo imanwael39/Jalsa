@@ -17,10 +17,11 @@ export interface LoginResponse {
 }
 
 export interface RegisterRequest {
-    firstName: string;
-    lastName: string;
+    fullName: string;
     email: string;
     password: string;
+    licenseNumber?: string;
+    specialization?: string;
     role?: string;
 }
 

@@ -1,0 +1,451 @@
+###############################################################
+################ FEATURE SPECIFICATION ########################
+###############################################################
+
+# OBJECTIVE
+
+Implement all frontend features that are supported by:
+
+Backend
+
+SRS
+
+Swagger
+
+API Controllers
+
+Do NOT invent features.
+
+Do NOT create fake workflows.
+
+------------------------------------------------------------
+
+# FEATURE: AUTHENTICATION
+
+Implement:
+
+Login
+
+Register
+
+Forgot Password
+
+Reset Password
+
+Logout
+
+Refresh Token
+
+Current User
+
+Profile
+
+Change Password
+
+Role-based access
+
+Permission-based access
+
+Requirements:
+
+JWT support
+
+Token persistence
+
+Automatic refresh
+
+Unauthorized handling
+
+Forbidden handling
+
+Guards
+
+Interceptors
+
+Loading states
+
+Validation
+
+Error states
+
+Success feedback
+
+------------------------------------------------------------
+
+# FEATURE: APPLICATION LAYOUT
+
+Implement:
+
+Sidebar
+
+Top Navbar
+
+Breadcrumbs
+
+Global Search
+
+Notifications
+
+Profile Menu
+
+Theme Switch
+
+Language Switch (if available)
+
+Responsive Navigation
+
+------------------------------------------------------------
+
+# FEATURE: DASHBOARD
+
+Implement:
+
+Summary Cards
+
+Statistics
+
+Recent Activity
+
+Patient Metrics
+
+Session Metrics
+
+Exercise Metrics
+
+Charts
+
+Notifications
+
+Upcoming Sessions
+
+Quick Actions
+
+Analytics
+
+------------------------------------------------------------
+
+# FEATURE: PATIENTS
+
+Implement:
+
+Patient List
+
+Patient Details
+
+Create Patient
+
+Edit Patient
+
+Archive Patient
+
+Delete (if supported)
+
+Search
+
+Filters
+
+Pagination
+
+Sorting
+
+Status
+
+History
+
+Documents
+
+Notes
+
+------------------------------------------------------------
+
+# PATIENT DETAILS
+
+Support:
+
+Profile Information
+
+Medical Information
+
+Assessment History
+
+Sessions
+
+Exercises
+
+Reports
+
+Progress
+
+Timeline
+
+------------------------------------------------------------
+
+# FEATURE: ASSESSMENTS
+
+Implement:
+
+Assessment List
+
+Create Assessment
+
+Edit Assessment
+
+View Assessment
+
+Delete Assessment
+
+Assign Assessment
+
+Assessment Results
+
+Assessment Analytics
+
+------------------------------------------------------------
+
+# FEATURE: SESSIONS
+
+Implement:
+
+Session List
+
+Session Details
+
+Create Session
+
+Edit Session
+
+Notes
+
+Rich Text Notes
+
+Audio Recording
+
+Attachments
+
+Timeline
+
+Status Tracking
+
+------------------------------------------------------------
+
+# FEATURE: EXERCISES
+
+Implement:
+
+Exercise Library
+
+Exercise Details
+
+Assign Exercise
+
+Edit Exercise
+
+Delete Exercise
+
+Exercise Progress
+
+Exercise Analytics
+
+Completion Tracking
+
+------------------------------------------------------------
+
+# FEATURE: REPORTS
+
+Implement:
+
+Generate Report
+
+View Report
+
+Edit Report
+
+Approve Report
+
+Reject Report
+
+Export PDF
+
+Download
+
+Preview
+
+History
+
+------------------------------------------------------------
+
+# FEATURE: AI
+
+Implement ONLY if backend supports it.
+
+Possible features:
+
+Summarization
+
+Recommendations
+
+Suggestions
+
+AI Analysis
+
+Auto-generated content
+
+Never invent AI functionality.
+
+------------------------------------------------------------
+
+# FEATURE: CHATBOT
+
+Implement ONLY if backend supports it.
+
+Support:
+
+Real-time messages
+
+SignalR
+
+Message history
+
+Typing indicator
+
+Reconnect
+
+Notifications
+
+------------------------------------------------------------
+
+# FEATURE: NOTIFICATIONS
+
+Support:
+
+Real-time notifications
+
+Read/Unread
+
+Mark as Read
+
+Delete
+
+Notification History
+
+------------------------------------------------------------
+
+# FEATURE: PROFILE
+
+Support:
+
+View Profile
+
+Edit Profile
+
+Change Password
+
+Preferences
+
+Avatar Upload
+
+------------------------------------------------------------
+
+# FEATURE: SETTINGS
+
+Support:
+
+Theme
+
+Language
+
+Notifications
+
+Privacy
+
+Application Settings
+
+------------------------------------------------------------
+
+# SHARED FEATURE REQUIREMENTS
+
+Every feature must support:
+
+Loading State
+
+Error State
+
+Empty State
+
+Validation
+
+RTL
+
+Responsive Layout
+
+Accessibility
+
+------------------------------------------------------------
+
+# DATA TABLE REQUIREMENTS
+
+Every list screen must support:
+
+Search
+
+Sorting
+
+Filtering
+
+Pagination
+
+Actions
+
+Selection
+
+Export
+
+Loading State
+
+------------------------------------------------------------
+
+# FORM REQUIREMENTS
+
+Every form must support:
+
+Typed Reactive Forms
+
+Validation
+
+Error Messages
+
+Accessibility
+
+RTL
+
+Reusable Controls
+
+------------------------------------------------------------
+
+# FEATURE COMPLETION RULE
+
+A feature is NOT complete until:
+
+✓ API connected
+
+✓ Build succeeds
+
+✓ Route works
+
+✓ Navigation works
+
+✓ Validation works
+
+✓ Loading works
+
+✓ Error handling works
+
+✓ Responsive works
+
+✓ RTL works
+
+✓ Accessibility works
+
+###############################################################
+END OF PART 5
+###############################################################

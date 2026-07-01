@@ -2,9 +2,9 @@ import { Environment } from './environment.model';
 
 export const environment: Environment = {
     production: false,
-    apiUrl: 'http://localhost:5014',
-    signalRHubUrl: 'http://localhost:5014/chatHub',
-    aiServiceUrl: 'http://localhost:5001',
+    apiUrl: 'https://localhost:7051',
+    signalRHubUrl: 'https://localhost:7051/chatHub',
+    aiServiceUrl: 'https://localhost:5001',
     appName: 'Jalsa (Dev)',
     enableMockApi: false,
     logLevel: 'debug',

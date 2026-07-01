@@ -1,4 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit, OnDestroy, DestroyRef } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -56,8 +57,8 @@ export class AssignExerciseComponent implements OnInit, OnDestroy {
                     this.patients.set(data);
                     this.loading.set(false);
                 },
-                error: err => {
-                    this.error.set(err.message || 'فشل تحميل قائمة المرضى');
+                error: (err: HttpErrorResponse) => {
+                    this.error.set(err.error?.message || err.error?.error || 'فشل تحميل قائمة المرضى');
                     this.loading.set(false);
                 },
             });
@@ -90,8 +91,8 @@ export class AssignExerciseComponent implements OnInit, OnDestroy {
                     this.loading.set(false);
                     this.router.navigate(['/exercises']);
                 },
-                error: err => {
-                    this.error.set(err.message || 'فشل إنشاء التمرين');
+                error: (err: HttpErrorResponse) => {
+                    this.error.set(err.error?.message || err.error?.error || 'فشل إنشاء التمرين');
                     this.loading.set(false);
                 },
             });

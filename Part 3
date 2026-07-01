@@ -1,0 +1,695 @@
+###############################################################
+############### ANGULAR ENTERPRISE ARCHITECTURE ################
+###############################################################
+
+# OBJECTIVE
+
+Build a production-grade Angular application.
+
+This is NOT a CRUD application.
+
+This is an Enterprise Healthcare Platform.
+
+Every architectural decision must prioritize:
+
+Maintainability
+
+Scalability
+
+Performance
+
+Readability
+
+Reusability
+
+Accessibility
+
+Long-term development
+
+------------------------------------------------------------
+
+# ANGULAR VERSION
+
+Use the latest stable Angular version supported by the project.
+
+Use ONLY modern Angular APIs.
+
+Never use deprecated APIs.
+
+------------------------------------------------------------
+
+# STANDALONE
+
+Use Standalone Components ONLY.
+
+Do not create NgModules unless absolutely required by a third-party library.
+
+Application bootstrap must use:
+
+bootstrapApplication()
+
+ApplicationConfig
+
+provideRouter()
+
+provideHttpClient()
+
+Functional Providers
+
+------------------------------------------------------------
+
+# APPLICATION STRUCTURE
+
+Organize the project using Feature-Based Architecture.
+
+Never organize by component type.
+
+Correct:
+
+features/
+    auth/
+    dashboard/
+    patients/
+    assessments/
+    sessions/
+    exercises/
+    reports/
+    chatbot/
+    profile/
+    settings/
+
+Wrong:
+
+components/
+
+pages/
+
+services/
+
+misc/
+
+------------------------------------------------------------
+
+# ROOT STRUCTURE
+
+src/
+
+app/
+
+core/
+
+layout/
+
+shared/
+
+features/
+
+assets/
+
+environments/
+
+styles/
+
+------------------------------------------------------------
+
+# CORE LAYER
+
+Core contains ONLY global application logic.
+
+Core may include
+
+Authentication
+
+Guards
+
+Interceptors
+
+Global Services
+
+API Configuration
+
+Error Handler
+
+Application Configuration
+
+Environment
+
+Tokens
+
+Storage Services
+
+Logger
+
+Never place feature-specific logic inside Core.
+
+------------------------------------------------------------
+
+# SHARED LAYER
+
+Shared contains reusable UI.
+
+Examples
+
+Buttons
+
+Cards
+
+Dialogs
+
+Inputs
+
+Dropdowns
+
+Tables
+
+Badges
+
+Icons
+
+Avatar
+
+Charts
+
+Pipes
+
+Directives
+
+Validators
+
+Utility Components
+
+Shared must NEVER depend on Features.
+
+------------------------------------------------------------
+
+# FEATURE STRUCTURE
+
+Each Feature must have
+
+feature/
+
+pages/
+
+components/
+
+dialogs/
+
+services/
+
+models/
+
+interfaces/
+
+routes/
+
+state/
+
+guards/
+
+pipes/
+
+utils/
+
+------------------------------------------------------------
+
+# ROUTING
+
+Every feature must use Lazy Loading.
+
+Use loadComponent()
+
+or
+
+loadChildren()
+
+where appropriate.
+
+Never place all routes inside app.routes.ts.
+
+------------------------------------------------------------
+
+# ROUTE ORGANIZATION
+
+Routes must follow
+
+Authentication
+
+↓
+
+Main Layout
+
+↓
+
+Feature
+
+↓
+
+Child Pages
+
+↓
+
+Dialogs
+
+↓
+
+Fallback
+
+------------------------------------------------------------
+
+# ROUTE GUARDS
+
+Use
+
+Authentication Guard
+
+Authorization Guard
+
+Guest Guard
+
+Unsaved Changes Guard
+
+Role Guard
+
+Permission Guard
+
+Never duplicate guard logic.
+
+------------------------------------------------------------
+
+# LAYOUT SYSTEM
+
+Create reusable layouts.
+
+Public Layout
+
+Authentication Layout
+
+Dashboard Layout
+
+Admin Layout (if needed)
+
+Never duplicate navigation.
+
+------------------------------------------------------------
+
+# STATE MANAGEMENT
+
+Prefer Signals.
+
+Use computed()
+
+Use signal()
+
+Use effect()
+
+Use RxJS ONLY for
+
+HTTP
+
+Streams
+
+SignalR
+
+Complex async flows
+
+Avoid BehaviorSubject unless necessary.
+
+------------------------------------------------------------
+
+# DATA FLOW
+
+Backend
+
+↓
+
+API Service
+
+↓
+
+Repository (optional)
+
+↓
+
+State
+
+↓
+
+Component
+
+Never access HttpClient directly inside Components.
+
+------------------------------------------------------------
+
+# API LAYER
+
+Every Feature has
+
+Models
+
+Interfaces
+
+Services
+
+Mapping
+
+Validation
+
+Error Handling
+
+Loading State
+
+------------------------------------------------------------
+
+# COMPONENT DESIGN
+
+Components must be
+
+Small
+
+Focused
+
+Reusable
+
+Typed
+
+Stateless whenever possible
+
+Presentation components should not contain business logic.
+
+------------------------------------------------------------
+
+# SMART COMPONENTS
+
+Smart Components
+
+Handle
+
+API
+
+Navigation
+
+State
+
+Dialogs
+
+Notifications
+
+------------------------------------------------------------
+
+# DUMB COMPONENTS
+
+Receive Inputs
+
+Emit Outputs
+
+No HTTP
+
+No Business Logic
+
+No Routing
+
+------------------------------------------------------------
+
+# FORMS
+
+Use Typed Reactive Forms ONLY.
+
+Never use Template Driven Forms.
+
+Forms must support
+
+Validation
+
+Async Validation
+
+Dynamic Validation
+
+Error Messages
+
+RTL
+
+Accessibility
+
+------------------------------------------------------------
+
+# VALIDATION
+
+Validation Rules come ONLY from Backend.
+
+Do not invent validation.
+
+Do not duplicate inconsistent validation.
+
+------------------------------------------------------------
+
+# TABLES
+
+Create reusable data table.
+
+Support
+
+Pagination
+
+Sorting
+
+Filtering
+
+Searching
+
+Selection
+
+Bulk Actions
+
+Export
+
+Loading
+
+Empty State
+
+Responsive
+
+------------------------------------------------------------
+
+# DIALOGS
+
+Reusable dialog framework.
+
+Support
+
+Confirmation
+
+Delete
+
+Warning
+
+Error
+
+Success
+
+Edit
+
+Create
+
+Preview
+
+------------------------------------------------------------
+
+# ERROR HANDLING
+
+Every HTTP call must support
+
+Loading
+
+Retry
+
+Unauthorized
+
+Forbidden
+
+Validation Errors
+
+Network Failure
+
+Unexpected Error
+
+------------------------------------------------------------
+
+# INTERCEPTORS
+
+Authentication
+
+Refresh Token
+
+Error Handling
+
+Loading Indicator
+
+Request Correlation
+
+Never duplicate interceptor logic.
+
+------------------------------------------------------------
+
+# FILE UPLOAD
+
+Create reusable upload component.
+
+Support
+
+Drag & Drop
+
+Progress
+
+Cancel
+
+Retry
+
+Validation
+
+Preview
+
+Multiple Files
+
+------------------------------------------------------------
+
+# SIGNALR
+
+Create reusable SignalR service.
+
+Support
+
+Reconnect
+
+Auto Retry
+
+Connection Status
+
+Notifications
+
+Real-Time Chat
+
+------------------------------------------------------------
+
+# PERFORMANCE
+
+Use
+
+OnPush
+
+Signals
+
+trackBy
+
+Lazy Loading
+
+Deferrable Views
+
+Image Optimization
+
+Route Preloading (where beneficial)
+
+Avoid unnecessary subscriptions.
+
+------------------------------------------------------------
+
+# ACCESSIBILITY
+
+Every page must support
+
+Keyboard Navigation
+
+Focus Management
+
+Screen Readers
+
+ARIA Labels
+
+Color Contrast
+
+High Contrast Mode
+
+------------------------------------------------------------
+
+# RTL
+
+RTL must be native.
+
+Never hack RTL with CSS overrides.
+
+Support both
+
+Arabic
+
+English
+
+if localization exists.
+
+------------------------------------------------------------
+
+# RESPONSIVENESS
+
+Desktop
+
+Laptop
+
+Tablet
+
+Mobile
+
+Large Mobile
+
+Small Mobile
+
+No horizontal scrolling.
+
+------------------------------------------------------------
+
+# STYLING
+
+No inline styles.
+
+No duplicated CSS.
+
+Use Design Tokens.
+
+Use CSS Variables.
+
+Use reusable utility classes where appropriate.
+
+------------------------------------------------------------
+
+# CODE STYLE
+
+Strict TypeScript
+
+Strict Templates
+
+No any
+
+No console.log
+
+No dead code
+
+No commented code
+
+No duplicate logic
+
+------------------------------------------------------------
+
+# BUILD RULE
+
+Every architectural decision must preserve:
+
+Clean Architecture
+
+Feature Isolation
+
+Scalability
+
+Performance
+
+Maintainability
+
+###############################################################
+END OF PART 3
+###############################################################

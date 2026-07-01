@@ -1,4 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit, OnDestroy, DestroyRef } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SessionService } from '../../../../core/services/session.service';
@@ -58,8 +59,8 @@ export class SessionDetail implements OnInit, OnDestroy {
                     this.loading.set(false);
                     this.loadNote(id);
                 },
-                error: err => {
-                    this.error.set(err.message || 'فشل في تحميل الجلسة');
+                error: (err: HttpErrorResponse) => {
+                    this.error.set(err.error?.message || err.error?.error || 'فشل في تحميل الجلسة');
                     this.loading.set(false);
                 },
             });
@@ -109,8 +110,8 @@ export class SessionDetail implements OnInit, OnDestroy {
                     this.notification.success('تم حذف الجلسة بنجاح');
                     this.router.navigate(['/sessions/patient', s.patientId]);
                 },
-                error: err => {
-                    this.notification.error(err.message || 'فشل حذف الجلسة');
+                error: (err: HttpErrorResponse) => {
+                    this.notification.error(err.error?.message || err.error?.error || 'فشل حذف الجلسة');
                 },
             });
     }

@@ -8,6 +8,7 @@ import {
     OnDestroy,
     DestroyRef,
 } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ExerciseService } from '../../../../core/services/exercise.service';
@@ -62,19 +63,25 @@ export class PatientExerciseComponent implements OnInit, OnDestroy {
     loadExercises(): void {
         this.state.setLoading(true);
         this.state.setError(null);
-        this.exerciseService
-            .getExercisesByPatient(this.patientId)
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe({
-                next: data => {
-                    this.state.setExercises(data);
-                    this.state.setLoading(false);
-                },
-                error: err => {
-                    this.state.setError(err.message || 'فشل تحميل التمارين');
-                    this.state.setLoading(false);
-                },
-            });
+
+        // A Therapist viewing a specific patient's tab passes patientIdOverride and is
+        // authorized to fetch that patient's exercises. A Patient viewing their own
+        // exercises has no override and must use the "my" endpoint — the Therapist-only
+        // /api/exercises/patient/{id} endpoint would 403 for a Patient-role user.
+        const request$ = this.patientIdOverride()
+            ? this.exerciseService.getExercisesByPatient(this.patientId)
+            : this.exerciseService.getMyExercises();
+
+        request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+            next: data => {
+                this.state.setExercises(data);
+                this.state.setLoading(false);
+            },
+            error: (err: HttpErrorResponse) => {
+                this.state.setError(err.error?.message || err.error?.error || 'فشل تحميل التمارين');
+                this.state.setLoading(false);
+            },
+        });
     }
 
     loadLogs(): void {
@@ -100,7 +107,7 @@ export class PatientExerciseComponent implements OnInit, OnDestroy {
         this.exerciseService
             .logCompletion({
                 exerciseId: exercise.id,
-                patientId: this.patientId,
+                patientId: exercise.patientId,
                 completionStatus: status,
                 reflectionNote: reflection,
             })
@@ -110,8 +117,8 @@ export class PatientExerciseComponent implements OnInit, OnDestroy {
                     this.state.addLog(log);
                     this.loggingId.set(null);
                 },
-                error: err => {
-                    this.state.setError(err.message || 'فشل تسجيل الإنجاز');
+                error: (err: HttpErrorResponse) => {
+                    this.state.setError(err.error?.message || err.error?.error || 'فشل تسجيل الإنجاز');
                     this.loggingId.set(null);
                 },
             });

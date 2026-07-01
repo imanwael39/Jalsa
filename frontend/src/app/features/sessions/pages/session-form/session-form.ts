@@ -1,4 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit, DestroyRef } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -94,8 +95,8 @@ export class SessionForm implements OnInit {
                     this.patientId.set(session.patientId);
                     this.loadNote(id);
                 },
-                error: err => {
-                    this.error.set(err.message || 'فشل في تحميل الجلسة');
+                error: (err: HttpErrorResponse) => {
+                    this.error.set(err.error?.message || err.error?.error || 'فشل في تحميل الجلسة');
                     this.loading.set(false);
                 },
             });
@@ -149,8 +150,8 @@ export class SessionForm implements OnInit {
                         this.loading.set(false);
                         this.router.navigate(['/sessions', session.id]);
                     },
-                    error: err => {
-                        this.error.set(err.message || 'فشل في تحديث الجلسة');
+                    error: (err: HttpErrorResponse) => {
+                        this.error.set(err.error?.message || err.error?.error || 'فشل في تحديث الجلسة');
                         this.loading.set(false);
                     },
                 });
@@ -173,8 +174,8 @@ export class SessionForm implements OnInit {
                         this.loading.set(false);
                         this.router.navigate(['/sessions', session.id]);
                     },
-                    error: err => {
-                        this.error.set(err.message || 'فشل في إنشاء الجلسة');
+                    error: (err: HttpErrorResponse) => {
+                        this.error.set(err.error?.message || err.error?.error || 'فشل في إنشاء الجلسة');
                         this.loading.set(false);
                     },
                 });

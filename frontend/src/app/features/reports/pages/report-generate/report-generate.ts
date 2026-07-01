@@ -1,4 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit, DestroyRef } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -60,8 +61,8 @@ export class ReportGenerate implements OnInit {
                     this.generating.set(false);
                     this.router.navigate(['/reports', report.id]);
                 },
-                error: err => {
-                    this.error.set(err.message || 'فشل في إنشاء التقرير');
+                error: (err: HttpErrorResponse) => {
+                    this.error.set(err.error?.message || err.error?.error || 'فشل في إنشاء التقرير');
                     this.generating.set(false);
                 },
             });

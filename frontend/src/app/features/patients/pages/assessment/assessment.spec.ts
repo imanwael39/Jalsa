@@ -106,7 +106,7 @@ describe('Assessment', () => {
     });
 
     it('should handle load error', (): void => {
-        setup({ getAssessmentsReturn: throwError((): Error => new Error('Load failed')) });
+        setup({ getAssessmentsReturn: throwError(() => ({ error: { message: 'Load failed' } })) });
         fixture.detectChanges();
         expect(component.error()).toBe('Load failed');
     });
@@ -167,7 +167,7 @@ describe('Assessment', () => {
     });
 
     it('should handle submit error', (): void => {
-        setup({ addAssessmentReturn: throwError((): Error => new Error('Submit failed')) });
+        setup({ addAssessmentReturn: throwError(() => ({ error: { message: 'Submit failed' } })) });
         fixture.detectChanges();
         component.form.patchValue({
             templateId: 'phq-9',

@@ -1,4 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, DestroyRef } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ExerciseService } from '../../../../core/services/exercise.service';
@@ -53,8 +54,8 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
                     this.state.setExercises(data);
                     this.state.setLoading(false);
                 },
-                error: err => {
-                    this.state.setError(err.message || 'فشل تحميل التمارين');
+                error: (err: HttpErrorResponse) => {
+                    this.state.setError(err.error?.message || err.error?.error || 'فشل تحميل التمارين');
                     this.state.setLoading(false);
                 },
             });

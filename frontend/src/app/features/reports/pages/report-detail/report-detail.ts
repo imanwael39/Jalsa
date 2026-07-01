@@ -1,4 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit, OnDestroy, DestroyRef } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReportService } from '../../../../core/services/report.service';
@@ -55,8 +56,8 @@ export class ReportDetail implements OnInit, OnDestroy {
                     this.state.selectReport(report);
                     this.loading.set(false);
                 },
-                error: err => {
-                    this.error.set(err.message || 'فشل في تحميل التقرير');
+                error: (err: HttpErrorResponse) => {
+                    this.error.set(err.error?.message || err.error?.error || 'فشل في تحميل التقرير');
                     this.loading.set(false);
                 },
             });
@@ -77,8 +78,8 @@ export class ReportDetail implements OnInit, OnDestroy {
                     this.notification.success('تم اعتماد التقرير بنجاح');
                     this.approving.set(false);
                 },
-                error: err => {
-                    this.notification.error(err.message || 'فشل في اعتماد التقرير');
+                error: (err: HttpErrorResponse) => {
+                    this.notification.error(err.error?.message || err.error?.error || 'فشل في اعتماد التقرير');
                     this.approving.set(false);
                 },
             });
@@ -99,8 +100,8 @@ export class ReportDetail implements OnInit, OnDestroy {
                         this.notification.success('تم حذف التقرير بنجاح');
                         this.router.navigate(['/reports/patient', r.patientId]);
                     },
-                    error: err => {
-                        this.notification.error(err.message || 'فشل في حذف التقرير');
+                    error: (err: HttpErrorResponse) => {
+                        this.notification.error(err.error?.message || err.error?.error || 'فشل في حذف التقرير');
                     },
                 });
         }

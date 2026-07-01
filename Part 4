@@ -1,0 +1,572 @@
+###############################################################
+################ PREMIUM MEDICAL DESIGN SYSTEM ################
+###############################################################
+
+# OBJECTIVE
+
+Create a premium healthcare SaaS experience.
+
+The application should feel like a commercial product.
+
+Examples of quality level:
+
+Linear
+
+Notion
+
+Stripe Dashboard
+
+Modern Healthcare Platforms
+
+Vercel Dashboard
+
+Do NOT create generic Angular Material pages.
+
+------------------------------------------------------------
+
+# DESIGN PRINCIPLES
+
+Prioritize
+
+Clarity
+
+Consistency
+
+Whitespace
+
+Hierarchy
+
+Accessibility
+
+Minimalism
+
+Professional Appearance
+
+Trust
+
+Calmness
+
+------------------------------------------------------------
+
+# BRAND STYLE
+
+Theme:
+
+Professional Medical SaaS
+
+Mood:
+
+Clean
+
+Modern
+
+Friendly
+
+Calm
+
+Trustworthy
+
+Minimal
+
+------------------------------------------------------------
+
+# COLOR SYSTEM
+
+Primary:
+
+Blue Palette
+
+Use shades consistently
+
+Primary-50
+
+Primary-100
+
+Primary-200
+
+Primary-300
+
+Primary-400
+
+Primary-500
+
+Primary-600
+
+Primary-700
+
+Primary-800
+
+Primary-900
+
+Secondary:
+
+Soft Cyan
+
+Success:
+
+Green
+
+Warning:
+
+Orange
+
+Danger:
+
+Red
+
+Info:
+
+Blue
+
+Neutral:
+
+Gray Scale
+
+------------------------------------------------------------
+
+# NEVER
+
+Never use random colors.
+
+Never hardcode colors.
+
+Never mix unrelated color systems.
+
+Always use Design Tokens.
+
+------------------------------------------------------------
+
+# TYPOGRAPHY
+
+Create consistent typography scale.
+
+Display Large
+
+Display Medium
+
+Heading Large
+
+Heading Medium
+
+Heading Small
+
+Body Large
+
+Body Medium
+
+Body Small
+
+Caption
+
+Label
+
+------------------------------------------------------------
+
+# TYPOGRAPHY RULES
+
+Prefer:
+
+Readable
+
+Clean
+
+Professional
+
+High contrast
+
+Good spacing
+
+Avoid:
+
+Tiny fonts
+
+Crowded text
+
+Large paragraphs
+
+------------------------------------------------------------
+
+# SPACING SYSTEM
+
+Use spacing tokens only.
+
+Spacing:
+
+4
+8
+12
+16
+20
+24
+32
+40
+48
+64
+
+Never use arbitrary spacing.
+
+------------------------------------------------------------
+
+# BORDER RADIUS
+
+Use consistent radius:
+
+Small
+
+Medium
+
+Large
+
+Extra Large
+
+Cards and dialogs should have soft rounded corners.
+
+------------------------------------------------------------
+
+# SHADOW SYSTEM
+
+Soft shadows only.
+
+Avoid heavy shadows.
+
+Use elevation levels:
+
+Low
+
+Medium
+
+High
+
+Modal
+
+------------------------------------------------------------
+
+# CARD DESIGN
+
+Cards should:
+
+Have clear hierarchy
+
+Have padding
+
+Have subtle shadow
+
+Have rounded corners
+
+Support loading states
+
+Support empty states
+
+------------------------------------------------------------
+
+# BUTTON SYSTEM
+
+Create reusable button styles.
+
+Primary
+
+Secondary
+
+Ghost
+
+Outlined
+
+Danger
+
+Success
+
+Icon Button
+
+Loading Button
+
+------------------------------------------------------------
+
+# INPUT DESIGN
+
+Inputs must support:
+
+Label
+
+Placeholder
+
+Validation
+
+Icons
+
+Helper Text
+
+Error State
+
+Disabled State
+
+RTL
+
+Accessibility
+
+------------------------------------------------------------
+
+# TABLE DESIGN
+
+Professional healthcare data tables.
+
+Support:
+
+Search
+
+Filter
+
+Sort
+
+Pagination
+
+Actions
+
+Selection
+
+Export
+
+Loading
+
+Empty State
+
+Responsive View
+
+------------------------------------------------------------
+
+# EMPTY STATES
+
+Never leave empty pages.
+
+Each empty state should contain:
+
+Illustration
+
+Title
+
+Description
+
+Call To Action
+
+------------------------------------------------------------
+
+# LOADING STATES
+
+Never show blank screens.
+
+Use:
+
+Skeleton Loader
+
+Progress Indicators
+
+Shimmer Loading
+
+------------------------------------------------------------
+
+# ERROR STATES
+
+Error states must include:
+
+Icon
+
+Message
+
+Action Button
+
+Retry Option
+
+------------------------------------------------------------
+
+# SUCCESS FEEDBACK
+
+Support:
+
+Toast
+
+Snackbars
+
+Inline Success
+
+Confirmation Dialog
+
+------------------------------------------------------------
+
+# DIALOGS
+
+Dialogs must support:
+
+Create
+
+Edit
+
+Delete
+
+Preview
+
+Warning
+
+Confirmation
+
+Success
+
+------------------------------------------------------------
+
+# NAVIGATION
+
+Sidebar:
+
+Collapsible
+
+Icons
+
+Labels
+
+Active State
+
+Hover State
+
+Permissions Aware
+
+Responsive
+
+Top Navigation:
+
+Search
+
+Notifications
+
+Profile
+
+Settings
+
+------------------------------------------------------------
+
+# DASHBOARD DESIGN
+
+Dashboard should contain:
+
+Summary Cards
+
+Charts
+
+Quick Actions
+
+Recent Activity
+
+Notifications
+
+Upcoming Sessions
+
+Patient Overview
+
+Analytics
+
+------------------------------------------------------------
+
+# CHARTS
+
+Charts should support:
+
+Progress
+
+Sessions
+
+Assessments
+
+Exercises
+
+Reports
+
+Analytics
+
+Interactive Tooltips
+
+Responsive Layout
+
+------------------------------------------------------------
+
+# RESPONSIVENESS
+
+Desktop
+
+Laptop
+
+Tablet
+
+Mobile
+
+Small Mobile
+
+No horizontal scrolling.
+
+------------------------------------------------------------
+
+# RTL
+
+RTL must be native.
+
+No CSS hacks.
+
+Arabic layout should feel natural.
+
+------------------------------------------------------------
+
+# ANIMATIONS
+
+Use subtle animations only.
+
+Examples:
+
+Fade
+
+Slide
+
+Scale
+
+Loading Animation
+
+Hover Effects
+
+Page Transition
+
+Never over-animate.
+
+------------------------------------------------------------
+
+# ACCESSIBILITY
+
+Support:
+
+Keyboard Navigation
+
+Screen Readers
+
+Focus States
+
+ARIA Labels
+
+High Contrast
+
+------------------------------------------------------------
+
+# DARK MODE
+
+Create Dark Mode support.
+
+Use design tokens.
+
+Never duplicate styles.
+
+------------------------------------------------------------
+
+# FINAL DESIGN GOAL
+
+The application should look like:
+
+A premium healthcare platform used by real clinics.
+
+Not a student project.
+
+###############################################################
+END OF PART 4
+###############################################################

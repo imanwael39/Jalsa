@@ -1,37 +1,20 @@
 <h2 class="page-title">إنشاء حساب</h2>
 
 @if (success()) {
-    <div class="alert alert-success">
-        تم إنشاء الحساب بنجاح! جاري التحويل إلى صفحة تسجيل الدخول...
-    </div>
+    <div class="alert alert-success">تم إنشاء الحساب بنجاح! جاري التحويل إلى صفحة تسجيل الدخول...</div>
 }
 
 @if (!success()) {
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" novalidate>
-        <div class="row">
-            <div class="col">
-                <app-input
-                    label="الاسم الأول"
-                    type="text"
-                    placeholder="أدخل الاسم الأول"
-                    formControlName="firstName"
-                    [error]="getFirstNameError()"
-                    [required]="true"
-                    autocomplete="given-name"
-                ></app-input>
-            </div>
-            <div class="col">
-                <app-input
-                    label="اسم العائلة"
-                    type="text"
-                    placeholder="أدخل اسم العائلة"
-                    formControlName="lastName"
-                    [error]="getLastNameError()"
-                    [required]="true"
-                    autocomplete="family-name"
-                ></app-input>
-            </div>
-        </div>
+        <app-input
+            label="الاسم الكامل"
+            type="text"
+            placeholder="أدخل اسمك الكامل"
+            formControlName="fullName"
+            [error]="getFullNameError()"
+            [required]="true"
+            autocomplete="name"
+        ></app-input>
 
         <app-input
             label="البريد الإلكتروني"
@@ -74,18 +57,31 @@
             </select>
         </div>
 
+        @if (isTherapist()) {
+            <app-input
+                label="رقم الترخيص"
+                type="text"
+                placeholder="أدخل رقم الترخيص المهني"
+                formControlName="licenseNumber"
+                autocomplete="off"
+            ></app-input>
+
+            <app-input
+                label="التخصص"
+                type="text"
+                placeholder="أدخل مجال التخصص"
+                formControlName="specialization"
+                autocomplete="off"
+            ></app-input>
+        }
+
         @if (registerError()) {
             <div class="alert alert-error" role="alert">
                 {{ registerError() }}
             </div>
         }
 
-        <app-button
-            type="submit"
-            variant="primary"
-            [loading]="loading()"
-            class="submit-btn"
-        >
+        <app-button type="submit" variant="primary" [loading]="loading()" class="submit-btn">
             @if (loading()) {
                 جاري إنشاء الحساب...
             } @else {
