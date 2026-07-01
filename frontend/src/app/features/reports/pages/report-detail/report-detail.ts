@@ -7,12 +7,13 @@ import { ReportStateService } from '../../../../core/state/report-state.service'
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { StatusArPipe } from '../../../../shared/pipes/status-ar.pipe';
 
 @Component({
     selector: 'app-report-detail',
     standalone: true,
-    imports: [ButtonComponent, SpinnerComponent, StatusArPipe],
+    imports: [ButtonComponent, SpinnerComponent, ModalComponent, StatusArPipe],
     templateUrl: './report-detail.html',
     styleUrl: './report-detail.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,7 +30,9 @@ export class ReportDetail implements OnInit, OnDestroy {
     loading = signal(true);
     error = signal<string | null>(null);
     approving = signal(false);
+    rejecting = signal(false);
     exporting = signal(false);
+    showDeleteModal = signal(false);
 
     ngOnDestroy(): void {
         this.state.clearSelected();
@@ -85,26 +88,55 @@ export class ReportDetail implements OnInit, OnDestroy {
             });
     }
 
+    rejectReport(): void {
+        const r = this.report();
+        if (!r) return;
+
+        this.rejecting.set(true);
+        this.reportService
+            .rejectReport(r.id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: updated => {
+                    this.state.selectReport(updated);
+                    this.state.updateReport(updated);
+                    this.notification.success('تم رفض التقرير');
+                    this.rejecting.set(false);
+                },
+                error: (err: HttpErrorResponse) => {
+                    this.notification.error(err.error?.message || err.error?.error || 'فشل في رفض التقرير');
+                    this.rejecting.set(false);
+                },
+            });
+    }
+
+    openDeleteModal(): void {
+        this.showDeleteModal.set(true);
+    }
+
+    closeDeleteModal(): void {
+        this.showDeleteModal.set(false);
+    }
+
     deleteReport(): void {
         const r = this.report();
         if (!r) return;
 
-        if (confirm('هل أنت متأكد من حذف هذا التقرير؟')) {
-            this.reportService
-                .deleteReport(r.id)
-                .pipe(takeUntilDestroyed(this.destroyRef))
-                .subscribe({
-                    next: () => {
-                        this.state.removeReport(r.id);
-                        this.state.clearSelected();
-                        this.notification.success('تم حذف التقرير بنجاح');
-                        this.router.navigate(['/reports/patient', r.patientId]);
-                    },
-                    error: (err: HttpErrorResponse) => {
-                        this.notification.error(err.error?.message || err.error?.error || 'فشل في حذف التقرير');
-                    },
-                });
-        }
+        this.reportService
+            .deleteReport(r.id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: () => {
+                    this.state.removeReport(r.id);
+                    this.state.clearSelected();
+                    this.notification.success('تم حذف التقرير بنجاح');
+                    this.router.navigate(['/reports/patient', r.patientId]);
+                },
+                error: (err: HttpErrorResponse) => {
+                    this.notification.error(err.error?.message || err.error?.error || 'فشل في حذف التقرير');
+                    this.closeDeleteModal();
+                },
+            });
     }
 
     exportReport(): void {

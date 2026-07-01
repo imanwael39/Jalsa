@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, DestroyRef, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, OnInit, DestroyRef, input } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -9,12 +9,13 @@ import { ReferralReport } from '../../../../core/models';
 import { TableComponent, TableColumn } from '../../../../shared/components/table/table.component';
 import { ColumnCellDirective } from '../../../../shared/components/table/column-cell.directive';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { StatusArPipe } from '../../../../shared/pipes/status-ar.pipe';
 
 @Component({
     selector: 'app-report-list',
     standalone: true,
-    imports: [TableComponent, ColumnCellDirective, ButtonComponent, StatusArPipe],
+    imports: [TableComponent, ColumnCellDirective, ButtonComponent, ModalComponent, StatusArPipe],
     templateUrl: './report-list.html',
     styleUrl: './report-list.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,6 +34,9 @@ export class ReportList implements OnInit {
     reports = this.state.reports;
     loading = this.state.loading;
     error = this.state.error;
+
+    showDeleteModal = signal(false);
+    deletingReportId = signal<string | null>(null);
 
     columns: TableColumn[] = [
         { key: 'createdAt', label: 'التاريخ', sortable: true },
@@ -82,21 +86,33 @@ export class ReportList implements OnInit {
         this.router.navigate(['/reports', id]);
     }
 
-    deleteReport(id: string): void {
-        if (confirm('هل أنت متأكد من حذف هذا التقرير؟')) {
-            this.reportService
-                .deleteReport(id)
-                .pipe(takeUntilDestroyed(this.destroyRef))
-                .subscribe({
-                    next: () => {
-                        this.state.removeReport(id);
-                        this.notification.success('تم حذف التقرير بنجاح');
-                    },
-                    error: (err: HttpErrorResponse) => {
-                        this.notification.error(err.error?.message || err.error?.error || 'فشل في حذف التقرير');
-                    },
-                });
-        }
+    openDeleteModal(id: string): void {
+        this.deletingReportId.set(id);
+        this.showDeleteModal.set(true);
+    }
+
+    closeDeleteModal(): void {
+        this.showDeleteModal.set(false);
+        this.deletingReportId.set(null);
+    }
+
+    deleteReport(): void {
+        const id = this.deletingReportId();
+        if (!id) return;
+
+        this.reportService
+            .deleteReport(id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: () => {
+                    this.state.removeReport(id);
+                    this.notification.success('تم حذف التقرير بنجاح');
+                    this.closeDeleteModal();
+                },
+                error: (err: HttpErrorResponse) => {
+                    this.notification.error(err.error?.message || err.error?.error || 'فشل في حذف التقرير');
+                },
+            });
     }
 
     formatDate(date: string): string {
