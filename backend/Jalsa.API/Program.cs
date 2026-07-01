@@ -159,18 +159,22 @@ builder.Services.AddSignalR();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 var corsOrigins =
     builder.Configuration
     .GetSection("CorsOrigins")
     .Get<string[]>()
-    ?? new[] { "http://localhost:4200" };
+    ?? new[]
+    {
+        "http://localhost:4200",
+        "https://localhost:4200"
+    };
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AngularPolicy", policy =>
     {
-        policy.WithOrigins(corsOrigins)
+        policy
+            .WithOrigins(corsOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -205,17 +209,14 @@ builder.Services.AddHangfire(config => config
         builder.Configuration.GetConnectionString("DefaultConnection"),
         new SqlServerStorageOptions
         {
-            CommandBatchMaxTimeout =
-                TimeSpan.FromMinutes(5),
-            SlidingInvisibilityTimeout =
-                TimeSpan.FromMinutes(5),
-            QueuePollInterval =
-                TimeSpan.Zero,
-            UseRecommendedIsolationLevel =
-                true
+            CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+            SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+            QueuePollInterval = TimeSpan.Zero,
+            UseRecommendedIsolationLevel = true
         }));
 
 builder.Services.AddHangfireServer();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -225,6 +226,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseRouting();
 
 app.UseCors("AngularPolicy");
 
@@ -238,7 +241,6 @@ app.MapControllers();
 
 app.MapHub<ChatHub>("/chatHub");
 
-// Hangfire Dashboard (اختياري)
 app.UseHangfireDashboard();
 
 app.Run();
