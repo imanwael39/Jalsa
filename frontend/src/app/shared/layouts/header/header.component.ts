@@ -29,8 +29,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
     readonly notifService = inject(InAppNotificationService);
 
     user = this.authService.currentUser;
-    isDropdownOpen = false;
-    isNotifOpen = false;
+    isDropdownOpen = signal(false);
+    isNotifOpen = signal(false);
     searchQuery = signal('');
 
     ngOnInit(): void {
@@ -44,29 +44,33 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
 
     toggleDropdown(): void {
-        this.isDropdownOpen = !this.isDropdownOpen;
-        if (this.isDropdownOpen) this.isNotifOpen = false;
-    }
-
-    toggleNotif(): void {
-        this.isNotifOpen = !this.isNotifOpen;
-        if (this.isNotifOpen) this.isDropdownOpen = false;
+        this.isDropdownOpen.update(v => !v);
+        if (this.isDropdownOpen()) this.isNotifOpen.set(false);
     }
 
     closeDropdown(): void {
-        this.isDropdownOpen = false;
+        this.isDropdownOpen.set(false);
+    }
+
+    toggleNotif(): void {
+        this.isNotifOpen.update(v => !v);
+        if (this.isNotifOpen()) this.isDropdownOpen.set(false);
+    }
+
+    closeNotif(): void {
+        this.isNotifOpen.set(false);
     }
 
     logout(): void {
         this.notifService.stopPolling();
         this.authService.logout();
         this.router.navigate(['/auth/login']);
-        this.isDropdownOpen = false;
+        this.isDropdownOpen.set(false);
     }
 
     goToProfile(): void {
         this.router.navigate(['/auth/profile']);
-        this.isDropdownOpen = false;
+        this.isDropdownOpen.set(false);
     }
 
     onSearch(value: string): void {

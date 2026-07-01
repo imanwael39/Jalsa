@@ -7,16 +7,15 @@ import { DashboardService } from '../../../../core/services/dashboard.service';
 import { DashboardStateService } from '../../../../core/state/dashboard-state.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { TrendDto } from '../../../../core/models/dashboard.model';
-import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { LineChartComponent } from '../../../../shared/components/line-chart/line-chart.component';
 import { BarChartComponent } from '../../../../shared/components/bar-chart/bar-chart.component';
 
-const AUTO_REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+const AUTO_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 
 @Component({
     selector: 'app-dashboard',
     standalone: true,
-    imports: [SpinnerComponent, LineChartComponent, BarChartComponent],
+    imports: [LineChartComponent, BarChartComponent],
     templateUrl: './dashboard.component.html',
     styleUrl: './dashboard.component.css',
     changeDetection: ChangeDetectionStrategy.OnPush,

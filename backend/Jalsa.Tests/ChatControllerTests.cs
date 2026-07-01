@@ -64,7 +64,7 @@ public class ChatControllerTests
     public async Task GetConversations_ReturnsOkWithList()
     {
         var conversations = new[] { MakeConversationDto(), MakeConversationDto(Guid.NewGuid()) };
-        _chatServiceMock.Setup(x => x.GetConversationsAsync(null)).ReturnsAsync(conversations);
+        _chatServiceMock.Setup(x => x.GetConversationsAsync(_userId, null)).ReturnsAsync(conversations);
 
         var result = await _sut.GetConversations(null);
 
@@ -76,12 +76,12 @@ public class ChatControllerTests
     [Fact]
     public async Task GetConversations_WithPatientId_PassesFilterToService()
     {
-        _chatServiceMock.Setup(x => x.GetConversationsAsync(_patientId)).ReturnsAsync(new[] { MakeConversationDto() });
+        _chatServiceMock.Setup(x => x.GetConversationsAsync(_userId, _patientId)).ReturnsAsync(new[] { MakeConversationDto() });
 
         var result = await _sut.GetConversations(_patientId);
 
         var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-        _chatServiceMock.Verify(x => x.GetConversationsAsync(_patientId), Times.Once);
+        _chatServiceMock.Verify(x => x.GetConversationsAsync(_userId, _patientId), Times.Once);
     }
 
     // --- GetHistory ---
@@ -89,7 +89,7 @@ public class ChatControllerTests
     [Fact]
     public async Task GetHistory_ExistingConversation_ReturnsOk()
     {
-        _chatServiceMock.Setup(x => x.GetHistoryAsync(_conversationId)).ReturnsAsync(MakeHistoryDto());
+        _chatServiceMock.Setup(x => x.GetHistoryAsync(_userId, _conversationId)).ReturnsAsync(MakeHistoryDto());
 
         var result = await _sut.GetHistory(_conversationId);
 
@@ -102,7 +102,7 @@ public class ChatControllerTests
     [Fact]
     public async Task GetHistory_NonExistent_Returns404()
     {
-        _chatServiceMock.Setup(x => x.GetHistoryAsync(It.IsAny<Guid>())).ReturnsAsync((ChatHistoryDto?)null);
+        _chatServiceMock.Setup(x => x.GetHistoryAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).ReturnsAsync((ChatHistoryDto?)null);
 
         var result = await _sut.GetHistory(Guid.NewGuid());
 
@@ -115,7 +115,7 @@ public class ChatControllerTests
     public async Task CreateConversation_ValidPatient_Returns201()
     {
         var dto = MakeConversationDto();
-        _chatServiceMock.Setup(x => x.CreateConversationAsync(_patientId)).ReturnsAsync(dto);
+        _chatServiceMock.Setup(x => x.CreateConversationAsync(_userId, _patientId)).ReturnsAsync(dto);
 
         var result = await _sut.CreateConversation(new CreateConversationDto(_patientId));
 
@@ -128,7 +128,7 @@ public class ChatControllerTests
     [Fact]
     public async Task CreateConversation_PatientNotFound_Returns404()
     {
-        _chatServiceMock.Setup(x => x.CreateConversationAsync(It.IsAny<Guid>()))
+        _chatServiceMock.Setup(x => x.CreateConversationAsync(It.IsAny<Guid>(), It.IsAny<Guid>()))
             .ThrowsAsync(new KeyNotFoundException("Patient not found"));
 
         var result = await _sut.CreateConversation(new CreateConversationDto(Guid.NewGuid()));
@@ -143,7 +143,7 @@ public class ChatControllerTests
     {
         var dto = MakeConversationDto();
         dto.Status = "Closed";
-        _chatServiceMock.Setup(x => x.CloseConversationAsync(_conversationId)).ReturnsAsync(dto);
+        _chatServiceMock.Setup(x => x.CloseConversationAsync(_userId, _conversationId)).ReturnsAsync(dto);
 
         var result = await _sut.CloseConversation(_conversationId);
 
@@ -155,7 +155,7 @@ public class ChatControllerTests
     [Fact]
     public async Task CloseConversation_NonExistent_Returns404()
     {
-        _chatServiceMock.Setup(x => x.CloseConversationAsync(It.IsAny<Guid>())).ReturnsAsync((ConversationViewDto?)null);
+        _chatServiceMock.Setup(x => x.CloseConversationAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).ReturnsAsync((ConversationViewDto?)null);
 
         var result = await _sut.CloseConversation(Guid.NewGuid());
 
@@ -175,7 +175,7 @@ public class ChatControllerTests
             Content = "كيف حالك اليوم؟",
             CreatedAt = DateTime.UtcNow
         };
-        _chatServiceMock.Setup(x => x.SendMessageAsync(_conversationId, "كيف حالك اليوم؟", "Therapist"))
+        _chatServiceMock.Setup(x => x.SendMessageAsync(_userId, _conversationId, "كيف حالك اليوم؟", "Therapist"))
             .ReturnsAsync(messageDto);
 
         var result = await _sut.Send(new SendMessageDto(_conversationId, "كيف حالك اليوم؟"));
@@ -189,7 +189,7 @@ public class ChatControllerTests
     [Fact]
     public async Task Send_NonExistentConversation_Returns404()
     {
-        _chatServiceMock.Setup(x => x.SendMessageAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+        _chatServiceMock.Setup(x => x.SendMessageAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync((ChatMessageViewDto?)null);
 
         var result = await _sut.Send(new SendMessageDto(Guid.NewGuid(), "test"));
@@ -200,9 +200,10 @@ public class ChatControllerTests
     [Fact]
     public async Task Send_PatientRole_SetsSenderTypePatient()
     {
+        var patientUserId = Guid.NewGuid();
         var patientClaims = new List<Claim>
         {
-            new(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()),
+            new(ClaimTypes.NameIdentifier, patientUserId.ToString()),
             new(ClaimTypes.Role, "Patient")
         };
         _sut.ControllerContext = new ControllerContext
@@ -210,12 +211,12 @@ public class ChatControllerTests
             HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(patientClaims, "Test")) }
         };
 
-        _chatServiceMock.Setup(x => x.SendMessageAsync(_conversationId, "مرحبا", "Patient"))
+        _chatServiceMock.Setup(x => x.SendMessageAsync(patientUserId, _conversationId, "مرحبا", "Patient"))
             .ReturnsAsync(new ChatMessageViewDto { Id = Guid.NewGuid(), ConversationId = _conversationId, SenderType = "Patient", Content = "مرحبا", CreatedAt = DateTime.UtcNow });
 
         var result = await _sut.Send(new SendMessageDto(_conversationId, "مرحبا"));
 
         var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-        _chatServiceMock.Verify(x => x.SendMessageAsync(_conversationId, "مرحبا", "Patient"), Times.Once);
+        _chatServiceMock.Verify(x => x.SendMessageAsync(patientUserId, _conversationId, "مرحبا", "Patient"), Times.Once);
     }
 }

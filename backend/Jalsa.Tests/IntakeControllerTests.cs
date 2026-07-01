@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using System.Text;
 using FluentAssertions;
 using Jalsa.API.Controllers;
 using Jalsa.API.Services.Interfaces.AI;
@@ -123,8 +124,8 @@ public class IntakeControllerTests
     [Fact]
     public async Task RunOcr_ExistingIntakeForm_ReturnsOkWithOcrResult()
     {
+        var patientId = Guid.NewGuid();
         var intakeFormId = Guid.NewGuid();
-        var request = new OcrRequest { ImageUrl = "https://example.com/image.png" };
         var intakeForm = new IntakeForm { Id = intakeFormId };
         var ocrResult = new OcrResult
         {
@@ -134,12 +135,20 @@ public class IntakeControllerTests
             ModelUsed = "gpt-4o"
         };
 
+        var fileBytes = Encoding.UTF8.GetBytes("test-image-content");
+        var stream = new MemoryStream(fileBytes);
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(_ => _.OpenReadStream()).Returns(stream);
+        fileMock.Setup(_ => _.FileName).Returns("test.jpg");
+        fileMock.Setup(_ => _.Length).Returns(stream.Length);
+        fileMock.Setup(_ => _.ContentType).Returns("image/jpeg");
+
         _intakeFormRepoMock
             .Setup(x => x.GetByIdAsync(intakeFormId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(intakeForm);
 
         _ocrServiceMock
-            .Setup(x => x.ExtractFromImageAsync(request.ImageUrl))
+            .Setup(x => x.ExtractFromImageAsync(It.IsAny<string>()))
             .ReturnsAsync(ocrResult);
 
         _ocrExtractionRepoMock
@@ -150,10 +159,16 @@ public class IntakeControllerTests
             .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
-        var result = await _sut.RunOcr(intakeFormId, request);
+        var result = await _sut.RunOcr(patientId, intakeFormId, fileMock.Object);
 
         var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-        ok.Value.Should().BeEquivalentTo(ocrResult);
+        var response = ok.Value!;
+        var responseType = response.GetType();
+        var imageUrl = responseType.GetProperty("imageUrl")!.GetValue(response) as string;
+        var extractedData = responseType.GetProperty("extractedData")!.GetValue(response) as Dictionary<string, string>;
+        imageUrl.Should().StartWith("data:image/jpeg;base64,");
+        extractedData.Should().ContainKey("name");
+        extractedData!["name"].Should().Be("test");
         _ocrExtractionRepoMock.Verify(x => x.AddAsync(It.IsAny<IntakeFormOcrExtraction>(), It.IsAny<CancellationToken>()), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }

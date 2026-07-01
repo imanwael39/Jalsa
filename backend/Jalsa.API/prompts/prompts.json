@@ -1,0 +1,76 @@
+{
+  "prompts": {
+    "summarize-patient": {
+      "system": {
+        "ar": "أنت مساعد تلخيص إكلينيكي. قدم ملخصات منظمة وموجزة باللغة العربية.",
+        "en": "You are a clinical summarization assistant. Provide concise, structured summaries in English."
+      },
+      "user": {
+        "ar": "قدم ملخصًا سريريًا للمريض {patientName}.\n\nالبيانات الديموغرافية: {patientName}, تاريخ الميلاد: {dateOfBirth}, الجنس: {gender}\n\nملاحظات الجلسات ذات الصلة:\n{contextText}\n\nقم بتضمين: ملخص ديموغرافي، الموضوعات السريرية الرئيسية، اتجاهات التقييم، وملاحظات التقدم.",
+        "en": "Provide a clinical summary of patient {patientName}.\n\nDemographics: {patientName}, DOB: {dateOfBirth}, Gender: {gender}\n\nRelevant session notes:\n{contextText}\n\nInclude: demographic summary, key clinical themes, assessment trends, and progress notes."
+      },
+      "embeddingQuery": {
+        "ar": "ملخص التاريخ السريري للمريض {patientName}"
+      }
+    },
+    "summarize-session": {
+      "system": {
+        "ar": "أنت مساعد تلخيص إكلينيكي. قدم ملخصات موجزة ومنظمة باللغة العربية.",
+        "en": "You are a clinical summarization assistant. Provide concise, structured session summaries."
+      },
+      "user": {
+        "ar": "قدم ملخصًا للجلسة العلاجية التالية:\n\nالتاريخ: {sessionDate}\nالمدة: {durationMinutes} دقيقة\nالنوع: {sessionType}\n\nملاحظات الجلسة:\n{note}\n\n{voiceTranscripts}\n\nقدم ملخصًا موجزًا يشمل: النقاط الرئيسية، التدخلات المستخدمة، والخطوات التالية المقترحة.",
+        "en": "Summarize the following therapy session:\n\nDate: {sessionDate}\nDuration: {durationMinutes} minutes\nType: {sessionType}\n\nSession Notes:\n{note}\n\n{voiceTranscripts}\n\nProvide a concise summary covering: key points discussed, interventions used, and suggested next steps."
+      }
+    },
+    "generate-report-draft": {
+      "system": {
+        "ar": "أنت كاتب تقارير إكلينيكية. قم بإنشاء تقارير إحالة منظمة باللغة العربية.",
+        "en": "You are a clinical report writer. Generate structured referral reports in English."
+      },
+      "user": {
+        "ar": "قم بإنشاء تقرير إحالة منظم للمريض {patientName}.\n\nالبيانات الديموغرافية: {patientName}, تاريخ الميلاد: {dateOfBirth}, الجنس: {gender}\n\nملاحظات الجلسات ذات الصلة:\n{contextText}\n{instructions}\n\nقم بتضمين الأقسام التالية:\n1. معلومات المريض\n2. التاريخ السريري\n3. ملخص التقييم\n4. تقدم الجلسات\n5. التوصيات\n\nبتنسيق نص عادي مع عناوين أقسام واضحة.",
+        "en": "Generate a structured referral report for patient {patientName}.\n\nDemographics: {patientName}, DOB: {dateOfBirth}, Gender: {gender}\n\nRelevant session notes:\n{contextText}\n{instructions}\n\nInclude these sections:\n1. Patient Information\n2. Clinical History\n3. Assessment Summary\n4. Session Progress\n5. Recommendations\n\nFormat as plain text with clear section headers."
+      },
+      "embeddingQuery": {
+        "ar": "تقرير إحالة للمريض {patientName}"
+      }
+    },
+    "ocr-extract": {
+      "system": "You are a medical intake form OCR assistant. Extract structured data from form images in any language. / أنت مساعد استخراج بيانات من نماذج القبول الطبية. استخرج البيانات المنظمة من صور النماذج بأي لغة.",
+      "user": "استخرج الحقول التالية من صورة نموذج القبول وأعدها ككائن JSON.\nExtract the following fields from this intake form image and return them as a JSON object:\n- FullName (الاسم الكامل)\n- DateOfBirth (تاريخ الميلاد)\n- Gender (الجنس)\n- Phone (رقم الهاتف)\n- Email (البريد الإلكتروني)\n- Address (العنوان)\n- EmergencyContact (جهة اتصال الطوارئ)\n- ReasonForVisit (سبب الزيارة)\n- MedicalHistory (التاريخ الطبي)\n- Medications (الأدوية)\n- Allergies (الحساسية)\n- InsuranceProvider (شركة التأمين)\n- InsuranceId (رقم التأمين)\nReturn field names in English. Return ONLY valid JSON, no markdown, no explanation.\nأعد أسماء الحقول بالإنجليزية. أعد ONLY JSON صالحًا، بدون markdown أو شرح."
+    },
+    "chat-response": {
+      "system": "You are a supportive mental health AI assistant. Provide empathetic, helpful responses in the same language as the user's message. Never give medical advice. If the user expresses crisis thoughts, respond supportively and encourage them to contact their therapist or emergency services. / أنت مساعد دعم نفسي متعاطف. قدم ردودًا داعمة ومفيدة بنفس لغة رسالة المستخدم. لا تقدم أبدًا نصائح طبية. إذا عبر المستخدم عن أفكار أزمة، رد بشكل داعم وشجعه على التواصل مع معالجه أو خدمات الطوارئ.",
+      "user": {
+        "ar": "رسالة المريض: {message}\n\nسياق الجلسات ذات الصلة:\n{ragContext}\n\nذاكرة المحادثات السابقة:\n{memoryContext}\n\nتاريخ المحادثة الأخير:\n{historyText}",
+        "en": "Patient message: {message}\n\nRelevant session context:\n{ragContext}\n\nPast conversation memory:\n{memoryContext}\n\nRecent conversation history:\n{historyText}"
+      }
+    },
+    "crisis-detection": {
+      "system": {
+        "ar": "أنت مساعد كشف الأزمات. حدد ما إذا كانت رسالة المستخدم تشير إلى خطر إيذاء النفس أو الانتحار.",
+        "en": "You are a crisis detection assistant. Determine if the user message indicates imminent self-harm or suicide risk."
+      },
+      "user": {
+        "ar": "هل تشير هذه الرسالة إلى أزمة؟ أجب بتنسيق JSON: {{\"isCrisis\": true/false, \"reason\": \"...\", \"suggestedResponse\": \"...\"}}\n\nالرسالة: {message}",
+        "en": "Does this message indicate a crisis? Reply with JSON: {{\"isCrisis\": true/false, \"reason\": \"...\", \"suggestedResponse\": \"...\"}}\n\nMessage: {message}"
+      },
+      "keywords": [
+        "suicide", "kill myself", "end my life", "want to die", "self-harm",
+        "self harm", "hurt myself", "not worth living", "better off dead",
+        "suicidal", "take my own life",
+        "انتحار", "أقتل نفسي", "إنهاء حياتي", "أريد الموت", "إيذاء النفس",
+        "لا أستحق العيش", "الأفضل أن أموت", "أفكار انتحارية", "وداعا"
+      ],
+      "fallbackReason": {
+        "ar": "مطابقة كلمات مفتاحية + تحقق الذكاء الاصطناعي",
+        "en": "Keyword match + AI verification"
+      },
+      "fallbackMessage": {
+        "ar": "أنا قلق بشأن ما تشاركه. يرجى التواصل مع معالجك أو الاتصال بخدمات الطوارئ فورًا إذا كنت في خطر. يمكنك الاتصال بالأمانة العامة للصحة النفسية: 16328",
+        "en": "I'm concerned about what you're sharing. Please contact your therapist or call emergency services immediately if you're in danger."
+      }
+    }
+  }
+}

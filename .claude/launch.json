@@ -1,0 +1,20 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Angular Frontend",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["ng", "serve", "--port", "0"],
+      "cwd": "frontend",
+      "port": 4200,
+      "autoPort": true
+    },
+    {
+      "name": "ASP.NET Core Backend",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "backend/Jalsa.API/Jalsa.API.csproj"],
+      "port": 5014
+    }
+  ],
+    "includeCoAuthoredBy": false
+}

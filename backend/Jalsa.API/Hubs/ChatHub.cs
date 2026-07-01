@@ -35,14 +35,18 @@ public class ChatHub : Hub
         var userIdClaim = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier)
                           ?? Context.User?.FindFirstValue("sub");
 
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out _))
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             throw new HubException("Unauthorized: invalid user identity.");
 
         var conversation = await _context.ChatConversations
+            .Include(c => c.Patient)
             .FirstOrDefaultAsync(c => c.Id == conversationId);
 
         if (conversation == null)
             throw new HubException("Conversation not found.");
+
+        if (conversation.Patient.TherapistId != userId && conversation.Patient.UserId != userId)
+            throw new HubException("غير مصرح لك بالوصول إلى هذه المحادثة");
 
         var patientMsg = new ChatMessage
         {
@@ -119,8 +123,21 @@ public class ChatHub : Hub
         var userIdClaim = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier)
                           ?? Context.User?.FindFirstValue("sub");
 
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out _))
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             throw new HubException("Unauthorized: invalid user identity.");
+
+        if (!Guid.TryParse(conversationId, out var convGuid))
+            throw new HubException("Invalid conversation ID.");
+
+        var conversation = await _context.ChatConversations
+            .Include(c => c.Patient)
+            .FirstOrDefaultAsync(c => c.Id == convGuid);
+
+        if (conversation == null)
+            throw new HubException("Conversation not found.");
+
+        if (conversation.Patient.TherapistId != userId && conversation.Patient.UserId != userId)
+            throw new HubException("غير مصرح لك بالوصول إلى هذه المحادثة");
 
         await Groups.AddToGroupAsync(Context.ConnectionId, conversationId);
     }

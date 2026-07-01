@@ -20,14 +20,16 @@ public class ChatController : BaseController
     [HttpGet("conversations")]
     public async Task<IActionResult> GetConversations([FromQuery] Guid? patientId)
     {
-        var conversations = await _chatService.GetConversationsAsync(patientId);
+        var userId = GetCurrentUserId();
+        var conversations = await _chatService.GetConversationsAsync(userId, patientId);
         return Ok(conversations);
     }
 
     [HttpGet("{conversationId:guid}/history")]
     public async Task<IActionResult> GetHistory(Guid conversationId)
     {
-        var history = await _chatService.GetHistoryAsync(conversationId);
+        var userId = GetCurrentUserId();
+        var history = await _chatService.GetHistoryAsync(userId, conversationId);
         if (history is null)
             return NotFound(new { message = "المحادثة غير موجودة" });
 
@@ -39,7 +41,8 @@ public class ChatController : BaseController
     {
         try
         {
-            var result = await _chatService.CreateConversationAsync(dto.PatientId);
+            var userId = GetCurrentUserId();
+            var result = await _chatService.CreateConversationAsync(userId, dto.PatientId);
             return CreatedAtAction(nameof(GetHistory), new { conversationId = result.Id }, result);
         }
         catch (KeyNotFoundException ex)
@@ -51,7 +54,8 @@ public class ChatController : BaseController
     [HttpPatch("conversations/{conversationId:guid}/close")]
     public async Task<IActionResult> CloseConversation(Guid conversationId)
     {
-        var result = await _chatService.CloseConversationAsync(conversationId);
+        var userId = GetCurrentUserId();
+        var result = await _chatService.CloseConversationAsync(userId, conversationId);
         if (result is null)
             return NotFound(new { message = "المحادثة غير موجودة" });
 
@@ -61,8 +65,9 @@ public class ChatController : BaseController
     [HttpPost("send")]
     public async Task<IActionResult> Send([FromBody] SendMessageDto dto)
     {
+        var userId = GetCurrentUserId();
         var senderType = User.IsInRole("Patient") ? "Patient" : "Therapist";
-        var result = await _chatService.SendMessageAsync(dto.ConversationId, dto.Content, senderType);
+        var result = await _chatService.SendMessageAsync(userId, dto.ConversationId, dto.Content, senderType);
 
         if (result is null)
             return NotFound(new { message = "المحادثة غير موجودة" });

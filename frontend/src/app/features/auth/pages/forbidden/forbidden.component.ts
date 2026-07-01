@@ -53,7 +53,7 @@ import { AuthService } from '../../../../core/services/auth.service';
                 margin-bottom: 1.5rem;
             }
             .btn-home {
-                background: var(--primary, #0f6e56);
+                background: var(--primary, #2563eb);
                 color: #fff;
                 border: none;
                 border-radius: 8px;

@@ -4,9 +4,9 @@
         <div class="welcome-content">
             <h1 class="welcome-title">
                 @if (user(); as u) {
-                    مرحباً بك {{ u.firstName }} 👋
+                    مرحباً بك، {{ u.firstName }}
                 } @else {
-                    مرحباً بك 👋
+                    مرحباً بك
                 }
             </h1>
             <p class="welcome-subtitle">إليك نظرة عامة على نشاطات اليوم</p>

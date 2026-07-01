@@ -15,12 +15,27 @@ public class ReportGenerationService : IReportGenerationService
     private readonly IEmbeddingService _embeddingService;
     private readonly string _model;
 
+<<<<<<< Updated upstream
+=======
+    private readonly ILlmObservabilityService _observability;
+    private readonly Services.Interfaces.IPromptService _prompts;
+
+>>>>>>> Stashed changes
     public ReportGenerationService(
         IOptions<OpenAiSettings> settings,
         JalsaDbContext context,
         IVectorStore vectorStore,
+<<<<<<< Updated upstream
         IEmbeddingService embeddingService)
     {
+=======
+        IEmbeddingService embeddingService,
+        ILlmObservabilityService observability,
+        Services.Interfaces.IPromptService prompts)
+    {
+        _observability = observability;
+        _prompts = prompts;
+>>>>>>> Stashed changes
         var config = settings.Value;
         _model = config.ChatModel;
         _context = context;
@@ -47,62 +62,49 @@ public class ReportGenerationService : IReportGenerationService
             return "Patient not found.";
 
         var queryVec = await _embeddingService.GenerateEmbeddingAsync(
-            $"تقرير إحالة للمريض {patient.FullName}");
+            _prompts.GetEmbeddingQuery("generate-report-draft", "ar").Replace("{patientName}", patient.FullName));
         var ragContext = await _vectorStore.SearchAsync(queryVec, topK: 5);
 
         var contextText = string.Join("\n\n", ragContext.Select(r => r.Text));
-        var isArabic = language == "ar";
         var instructions = !string.IsNullOrWhiteSpace(therapistInstructions)
-            ? (isArabic ? $"\nتعليمات المعالج: {therapistInstructions}" : $"\nTherapist instructions: {therapistInstructions}")
+            ? (language == "ar" ? $"\nتعليمات المعالج: {therapistInstructions}" : $"\nTherapist instructions: {therapistInstructions}")
             : "";
 
-        var prompt = isArabic
-            ? $"""
-            قم بإنشاء تقرير إحالة منظم للمريض {patient.FullName}.
-            
-            البيانات الديموغرافية: {patient.FullName}, تاريخ الميلاد: {patient.DateOfBirth}, الجنس: {patient.Gender}
-            
-            ملاحظات الجلسات ذات الصلة:
-            {contextText}
-            {instructions}
-            
-            قم بتضمين الأقسام التالية:
-            1. معلومات المريض
-            2. التاريخ السريري
-            3. ملخص التقييم
-            4. تقدم الجلسات
-            5. التوصيات
-            
-            بتنسيق نص عادي مع عناوين أقسام واضحة.
-            """
-            : $"""
-            Generate a structured referral report for patient {patient.FullName}.
-            
-            Demographics: {patient.FullName}, DOB: {patient.DateOfBirth}, Gender: {patient.Gender}
-            
-            Relevant session notes:
-            {contextText}
-            {instructions}
-            
-            Include these sections:
-            1. Patient Information
-            2. Clinical History
-            3. Assessment Summary
-            4. Session Progress
-            5. Recommendations
-            
-            Format as plain text with clear section headers.
-            """;
+        var userPrompt = _prompts.Get("generate-report-draft", language, new Dictionary<string, string>
+        {
+            ["patientName"] = patient.FullName,
+            ["dateOfBirth"] = patient.DateOfBirth?.ToString("d") ?? "",
+            ["gender"] = patient.Gender ?? "",
+            ["contextText"] = contextText,
+            ["instructions"] = instructions
+        });
 
         var messages = new List<ChatMessage>
         {
-            new SystemChatMessage(isArabic
-                ? "أنت كاتب تقارير إكلينيكية. قم بإنشاء تقارير إحالة منظمة باللغة العربية."
-                : "You are a clinical report writer. Generate structured referral reports in English."),
-            new UserChatMessage(prompt)
+            new SystemChatMessage(_prompts.Get("generate-report-draft", language)),
+            new UserChatMessage(userPrompt)
         };
 
         var result = await _client.CompleteChatAsync(messages);
+<<<<<<< Updated upstream
         return result.Value.Content[0].Text;
+=======
+        var output = result.Value.Content[0].Text;
+
+        await _observability.LogGenerationAsync(new LlmGenerationLog
+        {
+            Name = "generate-report-draft",
+            Model = _model,
+            Input = userPrompt,
+            Output = output,
+            InputTokens = result.Value.Usage?.InputTokenCount,
+            OutputTokens = result.Value.Usage?.OutputTokenCount,
+            StartTime = startTime,
+            EndTime = DateTime.UtcNow,
+            Metadata = new Dictionary<string, object> { ["patientId"] = patientId.ToString() }
+        });
+
+        return output;
+>>>>>>> Stashed changes
     }
 }

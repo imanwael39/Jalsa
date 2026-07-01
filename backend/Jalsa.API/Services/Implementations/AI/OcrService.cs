@@ -9,9 +9,11 @@ public class OcrService : IOcrService
 {
     private readonly ChatClient _client;
     private readonly string _model;
+    private readonly Services.Interfaces.IPromptService _prompts;
 
-    public OcrService(IOptions<OpenAiSettings> settings)
+    public OcrService(IOptions<OpenAiSettings> settings, Services.Interfaces.IPromptService prompts)
     {
+        _prompts = prompts;
         var config = settings.Value;
         _model = config.VisionModel;
 
@@ -26,29 +28,11 @@ public class OcrService : IOcrService
 
     public async Task<OcrResult> ExtractFromImageAsync(string imageUrl)
     {
-        var prompt = """
-            استخرج الحقول التالية من صورة نموذج القبول وأعدها ككائن JSON.
-            Extract the following fields from this intake form image and return them as a JSON object:
-            - FullName (الاسم الكامل)
-            - DateOfBirth (تاريخ الميلاد)
-            - Gender (الجنس)
-            - Phone (رقم الهاتف)
-            - Email (البريد الإلكتروني)
-            - Address (العنوان)
-            - EmergencyContact (جهة اتصال الطوارئ)
-            - ReasonForVisit (سبب الزيارة)
-            - MedicalHistory (التاريخ الطبي)
-            - Medications (الأدوية)
-            - Allergies (الحساسية)
-            - InsuranceProvider (شركة التأمين)
-            - InsuranceId (رقم التأمين)
-            Return field names in English. Return ONLY valid JSON, no markdown, no explanation.
-            أعد أسماء الحقول بالإنجليزية. أعد ONLY JSON صالحًا، بدون markdown أو شرح.
-            """;
+        var prompt = _prompts.Get("ocr-extract", "ar");
 
         var messages = new List<ChatMessage>
         {
-            new SystemChatMessage("You are a medical intake form OCR assistant. Extract structured data from form images in any language. / أنت مساعد استخراج بيانات من نماذج القبول الطبية. استخرج البيانات المنظمة من صور النماذج بأي لغة."),
+            new SystemChatMessage(_prompts.Get("ocr-extract")),
             new UserChatMessage(
                 ChatMessageContentPart.CreateTextPart(prompt),
                 ChatMessageContentPart.CreateImagePart(new Uri(imageUrl), ChatImageDetailLevel.High)

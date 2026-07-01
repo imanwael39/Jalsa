@@ -1,4 +1,5 @@
 ﻿using Jalsa.API.Configurations;
+using Jalsa.API.Services.Interfaces;
 using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -13,17 +14,35 @@ public class SummarizationService : ISummarizationService
     private readonly JalsaDbContext _context;
     private readonly IVectorStore _vectorStore;
     private readonly IEmbeddingService _embeddingService;
+<<<<<<< Updated upstream
+=======
+    private readonly ILlmObservabilityService _observability;
+    private readonly IPromptService _prompts;
+    private readonly string _model;
+>>>>>>> Stashed changes
 
     public SummarizationService(
         IOptions<OpenAiSettings> settings,
         JalsaDbContext context,
         IVectorStore vectorStore,
+<<<<<<< Updated upstream
         IEmbeddingService embeddingService)
+=======
+        IEmbeddingService embeddingService,
+        ILlmObservabilityService observability,
+        IPromptService prompts)
+>>>>>>> Stashed changes
     {
         var config = settings.Value;
         _context = context;
         _vectorStore = vectorStore;
         _embeddingService = embeddingService;
+<<<<<<< Updated upstream
+=======
+        _observability = observability;
+        _prompts = prompts;
+        _model = config.ChatModel;
+>>>>>>> Stashed changes
 
         OpenAI.OpenAIClient openAi = string.IsNullOrWhiteSpace(config.Endpoint)
             ? new OpenAI.OpenAIClient(config.ApiKey)
@@ -45,45 +64,46 @@ public class SummarizationService : ISummarizationService
             return "Patient not found.";
 
         var queryVec = await _embeddingService.GenerateEmbeddingAsync(
-            $"ملخص التاريخ السريري للمريض {patient.FullName}");
+            _prompts.GetEmbeddingQuery("summarize-patient", "ar").Replace("{patientName}", patient.FullName));
         var ragContext = await _vectorStore.SearchAsync(queryVec, topK: 5, metadataFilter: null);
 
         var contextText = string.Join("\n\n", ragContext.Select(r => r.Text));
 
-        var isArabic = language == "ar";
-
-        var prompt = isArabic
-            ? $"""
-            قدم ملخصًا سريريًا للمريض {patient.FullName}.
-            
-            البيانات الديموغرافية: {patient.FullName}, تاريخ الميلاد: {patient.DateOfBirth}, الجنس: {patient.Gender}
-            
-            ملاحظات الجلسات ذات الصلة:
-            {contextText}
-            
-            قم بتضمين: ملخص ديموغرافي، الموضوعات السريرية الرئيسية، اتجاهات التقييم، وملاحظات التقدم.
-            """
-            : $"""
-            Provide a clinical summary of patient {patient.FullName}.
-            
-            Demographics: {patient.FullName}, DOB: {patient.DateOfBirth}, Gender: {patient.Gender}
-            
-            Relevant session notes:
-            {contextText}
-            
-            Include: demographic summary, key clinical themes, assessment trends, and progress notes.
-            """;
+        var userPrompt = _prompts.Get("summarize-patient", language, new Dictionary<string, string>
+        {
+            ["patientName"] = patient.FullName,
+            ["dateOfBirth"] = patient.DateOfBirth?.ToString("d") ?? "",
+            ["gender"] = patient.Gender ?? "",
+            ["contextText"] = contextText
+        });
 
         var messages = new List<ChatMessage>
         {
-            new SystemChatMessage(isArabic
-                ? "أنت مساعد تلخيص إكلينيكي. قدم ملخصات منظمة وموجزة باللغة العربية."
-                : "You are a clinical summarization assistant. Provide concise, structured summaries in English."),
-            new UserChatMessage(prompt)
+            new SystemChatMessage(_prompts.Get("summarize-patient", language)),
+            new UserChatMessage(userPrompt)
         };
 
         var result = await _client.CompleteChatAsync(messages);
+<<<<<<< Updated upstream
         return result.Value.Content[0].Text;
+=======
+        var output = result.Value.Content[0].Text;
+
+        await _observability.LogGenerationAsync(new LlmGenerationLog
+        {
+            Name = "summarize-patient",
+            Model = _model,
+            Input = userPrompt,
+            Output = output,
+            InputTokens = result.Value.Usage?.InputTokenCount,
+            OutputTokens = result.Value.Usage?.OutputTokenCount,
+            StartTime = startTime,
+            EndTime = DateTime.UtcNow,
+            Metadata = new Dictionary<string, object> { ["patientId"] = patientId.ToString() }
+        });
+
+        return output;
+>>>>>>> Stashed changes
     }
 
     public async Task<string> SummarizeSessionAsync(Guid sessionId, string language = "ar")
@@ -106,48 +126,45 @@ public class SummarizationService : ISummarizationService
                 n.NextGoals is not null ? $"الأهداف التالية: {n.NextGoals}" : null
             }.Where(x => x is not null));
         var voiceTranscripts = string.Join("\n", session.VoiceMemos.Select(v => v.Transcript ?? string.Empty));
+        var voiceSection = string.IsNullOrWhiteSpace(voiceTranscripts)
+            ? ""
+            : (language == "ar" ? $"نصوص التسجيلات الصوتية:\n{voiceTranscripts}" : $"Voice Transcripts:\n{voiceTranscripts}");
 
-        var isArabic = language == "ar";
-
-        var prompt = isArabic
-            ? $"""
-            قدم ملخصًا للجلسة العلاجية التالية:
-
-            التاريخ: {session.SessionDate:dd/MM/yyyy}
-            المدة: {session.DurationMinutes} دقيقة
-            النوع: {session.SessionType}
-
-            ملاحظات الجلسة:
-            {note}
-
-            {(string.IsNullOrWhiteSpace(voiceTranscripts) ? "" : $"نصوص التسجيلات الصوتية:\n{voiceTranscripts}")}
-
-            قدم ملخصًا موجزًا يشمل: النقاط الرئيسية، التدخلات المستخدمة، والخطوات التالية المقترحة.
-            """
-            : $"""
-            Summarize the following therapy session:
-
-            Date: {session.SessionDate:dd/MM/yyyy}
-            Duration: {session.DurationMinutes} minutes
-            Type: {session.SessionType}
-
-            Session Notes:
-            {note}
-
-            {(string.IsNullOrWhiteSpace(voiceTranscripts) ? "" : $"Voice Transcripts:\n{voiceTranscripts}")}
-
-            Provide a concise summary covering: key points discussed, interventions used, and suggested next steps.
-            """;
+        var userPrompt = _prompts.Get("summarize-session", language, new Dictionary<string, string>
+        {
+            ["sessionDate"] = session.SessionDate.ToString("dd/MM/yyyy"),
+            ["durationMinutes"] = session.DurationMinutes?.ToString() ?? "",
+            ["sessionType"] = session.SessionType ?? "",
+            ["note"] = note,
+            ["voiceTranscripts"] = voiceSection
+        });
 
         var messages = new List<ChatMessage>
         {
-            new SystemChatMessage(isArabic
-                ? "أنت مساعد تلخيص إكلينيكي. قدم ملخصات موجزة ومنظمة باللغة العربية."
-                : "You are a clinical summarization assistant. Provide concise, structured session summaries."),
-            new UserChatMessage(prompt)
+            new SystemChatMessage(_prompts.Get("summarize-session", language)),
+            new UserChatMessage(userPrompt)
         };
 
         var result = await _client.CompleteChatAsync(messages);
+<<<<<<< Updated upstream
         return result.Value.Content[0].Text;
+=======
+        var output = result.Value.Content[0].Text;
+
+        await _observability.LogGenerationAsync(new LlmGenerationLog
+        {
+            Name = "summarize-session",
+            Model = _model,
+            Input = userPrompt,
+            Output = output,
+            InputTokens = result.Value.Usage?.InputTokenCount,
+            OutputTokens = result.Value.Usage?.OutputTokenCount,
+            StartTime = startTime,
+            EndTime = DateTime.UtcNow,
+            Metadata = new Dictionary<string, object> { ["sessionId"] = sessionId.ToString() }
+        });
+
+        return output;
+>>>>>>> Stashed changes
     }
 }

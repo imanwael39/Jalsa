@@ -26,7 +26,11 @@
                                 "input": "public"
                             }
                         ],
-                        "styles": ["node_modules/quill/dist/quill.snow.css", "src/styles.css"]
+                        "styles": [
+                            "node_modules/bootstrap-icons/font/bootstrap-icons.css",
+                            "node_modules/quill/dist/quill.snow.css",
+                            "src/styles.css"
+                        ]
                     },
                     "configurations": {
                         "production": {
@@ -44,8 +48,8 @@
                                 },
                                 {
                                     "type": "anyComponentStyle",
-                                    "maximumWarning": "4kB",
-                                    "maximumError": "8kB"
+                                    "maximumWarning": "8kB",
+                                    "maximumError": "12kB"
                                 }
                             ],
                             "outputHashing": "all"

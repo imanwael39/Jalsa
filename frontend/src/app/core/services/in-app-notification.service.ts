@@ -35,6 +35,9 @@ export class InAppNotificationService {
                 this.notificationsSignal.set(res.notifications);
                 this.unreadCountSignal.set(res.unreadCount);
             },
+            error: () => {
+                /* silent — polling retries automatically */
+            },
         });
     }
 
@@ -51,20 +54,18 @@ export class InAppNotificationService {
     }
 
     markRead(id: string): void {
+        this.notificationsSignal.update(list => list.map(n => (n.id === id ? { ...n, isRead: true } : n)));
+        this.unreadCountSignal.update(c => Math.max(0, c - 1));
         this.http.patch<{ id: string; isRead: boolean }>(API.notifications.markRead(id), {}).subscribe({
-            next: () => {
-                this.notificationsSignal.update(list => list.map(n => (n.id === id ? { ...n, isRead: true } : n)));
-                this.unreadCountSignal.update(c => Math.max(0, c - 1));
-            },
+            error: () => this.load(),
         });
     }
 
     markAllRead(): void {
+        this.notificationsSignal.update(list => list.map(n => ({ ...n, isRead: true })));
+        this.unreadCountSignal.set(0);
         this.http.patch<{ markedRead: number }>(API.notifications.markAllRead, {}).subscribe({
-            next: () => {
-                this.notificationsSignal.update(list => list.map(n => ({ ...n, isRead: true })));
-                this.unreadCountSignal.set(0);
-            },
+            error: () => this.load(),
         });
     }
 }

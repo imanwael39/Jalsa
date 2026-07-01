@@ -110,7 +110,7 @@
     background: var(--danger-light);
     color: var(--danger);
     font-size: var(--text-sm);
-    border-bottom: 1px solid #fecaca;
+    border-bottom: 1px solid var(--danger);
     flex-shrink: 0;
 }
 

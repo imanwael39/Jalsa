@@ -14,12 +14,12 @@ public class ChatService : IChatService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<IEnumerable<ConversationViewDto>> GetConversationsAsync(Guid? patientId)
+    public async Task<IEnumerable<ConversationViewDto>> GetConversationsAsync(Guid userId, Guid? patientId)
     {
         var repo = _unitOfWork.Repository<ChatConversation>();
         var conversations = patientId.HasValue
-            ? await repo.FindAsync(c => c.PatientId == patientId.Value)
-            : await repo.GetAllAsync();
+            ? await repo.FindAsync(c => c.PatientId == patientId.Value && (c.Patient.TherapistId == userId || c.Patient.UserId == userId))
+            : await repo.FindAsync(c => c.Patient.TherapistId == userId || c.Patient.UserId == userId);
 
         return conversations
             .OrderByDescending(c => c.LastActivityAt ?? c.CreatedAt)
@@ -35,10 +35,10 @@ public class ChatService : IChatService
             });
     }
 
-    public async Task<ChatHistoryDto?> GetHistoryAsync(Guid conversationId)
+    public async Task<ChatHistoryDto?> GetHistoryAsync(Guid userId, Guid conversationId)
     {
         var repo = _unitOfWork.Repository<ChatConversation>();
-        var conversation = await repo.FindSingleAsync(c => c.Id == conversationId);
+        var conversation = await repo.FindSingleAsync(c => c.Id == conversationId && (c.Patient.TherapistId == userId || c.Patient.UserId == userId));
 
         if (conversation is null)
             return null;
@@ -64,11 +64,11 @@ public class ChatService : IChatService
         };
     }
 
-    public async Task<ConversationViewDto> CreateConversationAsync(Guid patientId)
+    public async Task<ConversationViewDto> CreateConversationAsync(Guid userId, Guid patientId)
     {
         var patientRepo = _unitOfWork.Repository<Domain.Models.Patient.Patient>();
-        var patientExists = await patientRepo.AnyAsync(p => p.Id == patientId);
-        if (!patientExists)
+        var patient = await patientRepo.FindSingleAsync(p => p.Id == patientId && (p.TherapistId == userId || p.UserId == userId));
+        if (patient is null)
             throw new KeyNotFoundException("المريض غير موجود");
 
         var repo = _unitOfWork.Repository<ChatConversation>();
@@ -111,10 +111,10 @@ public class ChatService : IChatService
         };
     }
 
-    public async Task<ConversationViewDto?> CloseConversationAsync(Guid conversationId)
+    public async Task<ConversationViewDto?> CloseConversationAsync(Guid userId, Guid conversationId)
     {
         var repo = _unitOfWork.Repository<ChatConversation>();
-        var conversation = await repo.GetByIdAsync(conversationId);
+        var conversation = await repo.FindSingleAsync(c => c.Id == conversationId && (c.Patient.TherapistId == userId || c.Patient.UserId == userId));
 
         if (conversation is null)
             return null;
@@ -134,10 +134,10 @@ public class ChatService : IChatService
         };
     }
 
-    public async Task<ChatMessageViewDto?> SendMessageAsync(Guid conversationId, string content, string senderType)
+    public async Task<ChatMessageViewDto?> SendMessageAsync(Guid userId, Guid conversationId, string content, string senderType)
     {
         var repo = _unitOfWork.Repository<ChatConversation>();
-        var conversation = await repo.GetByIdAsync(conversationId);
+        var conversation = await repo.FindSingleAsync(c => c.Id == conversationId && (c.Patient.TherapistId == userId || c.Patient.UserId == userId));
 
         if (conversation is null)
             return null;

@@ -20,8 +20,13 @@
     </div>
     <div class="header-right">
         <!-- Notification Bell -->
-        <div class="notif-wrapper" appClickOutside (appClickOutside)="isNotifOpen = false">
-            <button class="notif-btn" (click)="toggleNotif()" aria-label="الإشعارات" [attr.aria-expanded]="isNotifOpen">
+        <div class="notif-wrapper" appClickOutside (appClickOutside)="closeNotif()">
+            <button
+                class="notif-btn"
+                (click)="toggleNotif()"
+                aria-label="الإشعارات"
+                [attr.aria-expanded]="isNotifOpen()"
+            >
                 <i class="bi bi-bell"></i>
                 @if (notifService.unreadCount() > 0) {
                     <span class="notif-badge">{{
@@ -29,7 +34,7 @@
                     }}</span>
                 }
             </button>
-            @if (isNotifOpen) {
+            @if (isNotifOpen()) {
                 <div class="notif-dropdown" role="dialog" aria-label="الإشعارات">
                     <div class="notif-header">
                         <span class="notif-title">الإشعارات</span>
@@ -50,6 +55,7 @@
                                 (click)="notifService.markRead(n.id)"
                                 role="button"
                                 tabindex="0"
+                                (keydown.enter)="notifService.markRead(n.id)"
                             >
                                 <div class="notif-icon">
                                     @if (n.type === 'ExerciseReminder') {
@@ -75,46 +81,48 @@
         </div>
 
         <!-- User Menu -->
-        <div
-            class="user-menu"
-            (click)="toggleDropdown()"
-            (keydown.enter)="toggleDropdown()"
-            tabindex="0"
-            role="button"
-            [attr.aria-expanded]="isDropdownOpen"
-            aria-haspopup="true"
-        >
-            <div class="user-details">
-                <span class="user-name">{{ user()?.firstName }} {{ user()?.lastName }}</span>
-                <span class="user-role">{{ getRoleLabel() }}</span>
+        <div class="user-wrapper" appClickOutside (appClickOutside)="closeDropdown()">
+            <div
+                class="user-menu"
+                (click)="toggleDropdown()"
+                (keydown.enter)="toggleDropdown()"
+                tabindex="0"
+                role="button"
+                [attr.aria-expanded]="isDropdownOpen()"
+                aria-haspopup="true"
+            >
+                <div class="user-details">
+                    <span class="user-name">{{ user()?.firstName }} {{ user()?.lastName }}</span>
+                    <span class="user-role">{{ getRoleLabel() }}</span>
+                </div>
+                <i class="bi bi-person-circle"></i>
+                <i class="bi bi-chevron-down" [class.rotated]="isDropdownOpen()"></i>
             </div>
-            <i class="bi bi-person-circle"></i>
-            <i class="bi bi-chevron-down" [class.rotated]="isDropdownOpen"></i>
+            @if (isDropdownOpen()) {
+                <div class="dropdown-menu" role="menu">
+                    <a
+                        class="dropdown-item"
+                        (click)="goToProfile()"
+                        (keydown.enter)="goToProfile()"
+                        role="menuitem"
+                        tabindex="0"
+                    >
+                        <i class="bi bi-person"></i>
+                        الملف الشخصي
+                    </a>
+                    <hr class="dropdown-divider" />
+                    <a
+                        class="dropdown-item text-danger"
+                        (click)="logout()"
+                        (keydown.enter)="logout()"
+                        role="menuitem"
+                        tabindex="0"
+                    >
+                        <i class="bi bi-box-arrow-right"></i>
+                        تسجيل الخروج
+                    </a>
+                </div>
+            }
         </div>
-        @if (isDropdownOpen) {
-            <div class="dropdown-menu" role="menu">
-                <a
-                    class="dropdown-item"
-                    (click)="goToProfile()"
-                    (keydown.enter)="goToProfile()"
-                    role="menuitem"
-                    tabindex="0"
-                >
-                    <i class="bi bi-person"></i>
-                    الملف الشخصي
-                </a>
-                <hr class="dropdown-divider" />
-                <a
-                    class="dropdown-item text-danger"
-                    (click)="logout()"
-                    (keydown.enter)="logout()"
-                    role="menuitem"
-                    tabindex="0"
-                >
-                    <i class="bi bi-box-arrow-right"></i>
-                    تسجيل الخروج
-                </a>
-            </div>
-        }
     </div>
 </header>

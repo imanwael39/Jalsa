@@ -212,6 +212,19 @@ public class AuthService : IAuthService
         await _context.SaveChangesAsync();
     }
 
+    public async Task ChangePasswordAsync(Guid userId, ChangePasswordDto dto)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId)
+            ?? throw new ApiException(404, "User not found");
+
+        if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
+            throw new ApiException(400, "Current password is incorrect");
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        user.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+    }
+
     public async Task RevokeTokenAsync(RevokeTokenRequestDto dto)
     {
         var tokenHash = ComputeSha256(dto.RefreshToken);

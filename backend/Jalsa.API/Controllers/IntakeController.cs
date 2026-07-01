@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.Application.DTOs.Intake;
@@ -47,15 +48,34 @@ public class IntakeController : BaseController
         return Ok(result);
     }
 
-    [HttpPost("api/intake/{intakeFormId:guid}/ocr")]
-    public async Task<IActionResult> RunOcr(Guid intakeFormId, [FromBody] OcrRequest request)
+    [HttpPost("api/patient/{patientId:guid}/intake/{intakeFormId:guid}/ocr")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> RunOcr(Guid patientId, Guid intakeFormId, IFormFile file)
     {
         var intakeFormRepo = _unitOfWork.Repository<IntakeForm>();
         var intakeForm = await intakeFormRepo.GetByIdAsync(intakeFormId);
         if (intakeForm == null)
             return NotFound(new { error = "Intake form not found" });
 
-        var result = await _ocrService.ExtractFromImageAsync(request.ImageUrl);
+        using var ms = new MemoryStream();
+        await file.OpenReadStream().CopyToAsync(ms);
+        var bytes = ms.ToArray();
+        var base64 = Convert.ToBase64String(bytes);
+        var contentType = file.ContentType ?? "image/jpeg";
+        var dataUri = $"data:{contentType};base64,{base64}";
+
+        var result = await _ocrService.ExtractFromImageAsync(dataUri);
+
+        var extractedData = new Dictionary<string, string>();
+        if (!string.IsNullOrWhiteSpace(result.ExtractedJson))
+        {
+            try
+            {
+                extractedData = JsonSerializer.Deserialize<Dictionary<string, string>>(result.ExtractedJson)
+                    ?? new Dictionary<string, string>();
+            }
+            catch { /* fallback to empty dict */ }
+        }
 
         var extractionRepo = _unitOfWork.Repository<IntakeFormOcrExtraction>();
         await extractionRepo.AddAsync(new IntakeFormOcrExtraction
@@ -72,6 +92,10 @@ public class IntakeController : BaseController
 
         await _unitOfWork.SaveChangesAsync();
 
-        return Ok(result);
+        return Ok(new
+        {
+            imageUrl = dataUri,
+            extractedData
+        });
     }
 }

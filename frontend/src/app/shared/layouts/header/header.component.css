@@ -191,7 +191,7 @@
     width: 32px;
     height: 32px;
     border-radius: var(--radius-full);
-    background: var(--primary-100, #e8f5f1);
+    background: var(--primary-100);
     color: var(--primary);
     display: flex;
     align-items: center;

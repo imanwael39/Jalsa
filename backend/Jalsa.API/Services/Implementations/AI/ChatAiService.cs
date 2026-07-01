@@ -15,13 +15,28 @@ public class ChatAiService : IChatAiService
     private readonly IConversationMemoryService _memory;
     private readonly string _model;
 
+<<<<<<< Updated upstream
+=======
+    private readonly ILlmObservabilityService _observability;
+    private readonly Services.Interfaces.IPromptService _prompts;
+
+>>>>>>> Stashed changes
     public ChatAiService(
         IOptions<OpenAiSettings> settings,
         JalsaDbContext context,
         IVectorStore vectorStore,
         IEmbeddingService embeddingService,
+<<<<<<< Updated upstream
         IConversationMemoryService memory)
     {
+=======
+        IConversationMemoryService memory,
+        ILlmObservabilityService observability,
+        Services.Interfaces.IPromptService prompts)
+    {
+        _observability = observability;
+        _prompts = prompts;
+>>>>>>> Stashed changes
         var config = settings.Value;
         _model = config.ChatModel;
         _context = context;
@@ -57,40 +72,27 @@ public class ChatAiService : IChatAiService
 
         var historyText = string.Join("\n", history.Select(m =>
         {
-            var sender = lang == "ar" ? (m.SenderType == "Patient" ? "المريض" : m.SenderType == "AI" ? "المساعد" : m.SenderType) : m.SenderType;
+            var sender = m.SenderType switch
+            {
+                "Patient" when lang == "ar" => "المريض",
+                "AI" when lang == "ar" => "المساعد",
+                _ => m.SenderType
+            };
             return $"{sender}: {m.Content}";
         }));
 
-        var prompt = lang == "ar"
-            ? $"""
-            رسالة المريض: {message}
-
-            سياق الجلسات ذات الصلة:
-            {ragContext}
-
-            ذاكرة المحادثات السابقة:
-            {memoryContext}
-
-            تاريخ المحادثة الأخير:
-            {historyText}
-            """
-            : $"""
-            Patient message: {message}
-
-            Relevant session context:
-            {ragContext}
-
-            Past conversation memory:
-            {memoryContext}
-
-            Recent conversation history:
-            {historyText}
-            """;
+        var userPrompt = _prompts.Get("chat-response", lang, new Dictionary<string, string>
+        {
+            ["message"] = message,
+            ["ragContext"] = ragContext,
+            ["memoryContext"] = memoryContext,
+            ["historyText"] = historyText
+        });
 
         var messages = new List<OpenAI.Chat.ChatMessage>
         {
-            new OpenAI.Chat.SystemChatMessage("You are a supportive mental health AI assistant. Provide empathetic, helpful responses in the same language as the user's message. Never give medical advice. If the user expresses crisis thoughts, respond supportively and encourage them to contact their therapist or emergency services. / أنت مساعد دعم نفسي متعاطف. قدم ردودًا داعمة ومفيدة بنفس لغة رسالة المستخدم. لا تقدم أبدًا نصائح طبية. إذا عبر المستخدم عن أفكار أزمة، رد بشكل داعم وشجعه على التواصل مع معالجه أو خدمات الطوارئ."),
-            new OpenAI.Chat.UserChatMessage(prompt)
+            new OpenAI.Chat.SystemChatMessage(_prompts.Get("chat-response")),
+            new OpenAI.Chat.UserChatMessage(userPrompt)
         };
 
         var result = await _client.CompleteChatAsync(messages);

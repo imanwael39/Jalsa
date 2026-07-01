@@ -100,6 +100,15 @@ public class AuthController : BaseController
         });
     }
 
+    [HttpPost("profile/change-password")]
+    [Authorize]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+    {
+        var userId = GetCurrentUserId();
+        await _authService.ChangePasswordAsync(userId, dto);
+        return Ok(new { message = "Password changed successfully." });
+    }
+
     [HttpPut("profile")]
     [Authorize]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)

@@ -1,4 +1,5 @@
 using Jalsa.API.Configurations;
+using Jalsa.API.Services.Interfaces;
 using Jalsa.API.Services.Interfaces.AI;
 using Microsoft.Extensions.Options;
 using OpenAI.Chat;
@@ -8,6 +9,7 @@ namespace Jalsa.API.Services.Implementations.AI;
 public class CrisisDetectionService : ICrisisDetectionService
 {
     internal ChatClient _client;
+<<<<<<< Updated upstream
     private static readonly string[] Keywords =
     [
         "suicide", "kill myself", "end my life", "want to die", "self-harm",
@@ -16,15 +18,30 @@ public class CrisisDetectionService : ICrisisDetectionService
         "انتحار", "أقتل نفسي", "إنهاء حياتي", "أريد الموت", "إيذاء النفس",
         "لا أستحق العيش", "الأفضل أن أموت", "أفكار انتحارية", "وداعا"
     ];
+=======
+    private readonly ILlmObservabilityService? _observability;
+    private readonly IPromptService _prompts;
+    private readonly string _model = "gpt-4o";
+>>>>>>> Stashed changes
 
     internal CrisisDetectionService(ChatClient client)
     {
         _client = client;
+        _prompts = null!;
     }
 
+<<<<<<< Updated upstream
     public CrisisDetectionService(IOptions<OpenAiSettings> settings)
     {
         var config = settings.Value;
+=======
+    public CrisisDetectionService(IOptions<OpenAiSettings> settings, ILlmObservabilityService observability, IPromptService prompts)
+    {
+        var config = settings.Value;
+        _model = config.ChatModel;
+        _observability = observability;
+        _prompts = prompts;
+>>>>>>> Stashed changes
         OpenAI.OpenAIClient openAi = string.IsNullOrWhiteSpace(config.Endpoint)
             ? new OpenAI.OpenAIClient(config.ApiKey)
             : new Azure.AI.OpenAI.AzureOpenAIClient(
@@ -37,20 +54,19 @@ public class CrisisDetectionService : ICrisisDetectionService
     public async Task<CrisisDetectionResult> AnalyzeAsync(string message)
     {
         var lower = message.ToLowerInvariant();
-        var keywordHit = Keywords.Any(k => lower.Contains(k));
+        var keywordHit = _prompts.GetKeywords("crisis-detection").Any(k => lower.Contains(k));
 
         if (!keywordHit)
             return new CrisisDetectionResult { IsCrisis = false };
 
         var lang = message.Any(c => c >= 0x0600 && c <= 0x06FF) ? "ar" : "en";
 
-        var systemPrompt = lang == "ar"
-            ? "أنت مساعد كشف الأزمات. حدد ما إذا كانت رسالة المستخدم تشير إلى خطر إيذاء النفس أو الانتحار."
-            : "You are a crisis detection assistant. Determine if the user message indicates imminent self-harm or suicide risk.";
+        var systemPrompt = _prompts.Get("crisis-detection", lang);
 
-        var userPrompt = lang == "ar"
-            ? $"هل تشير هذه الرسالة إلى أزمة؟ أجب بتنسيق JSON: {{\"isCrisis\": true/false, \"reason\": \"...\", \"suggestedResponse\": \"...\"}}\n\nالرسالة: {message}"
-            : $"Does this message indicate a crisis? Reply with JSON: {{\"isCrisis\": true/false, \"reason\": \"...\", \"suggestedResponse\": \"...\"}}\n\nMessage: {message}";
+        var userPrompt = _prompts.Get("crisis-detection", lang, new Dictionary<string, string>
+        {
+            ["message"] = message
+        });
 
         try
         {
@@ -75,12 +91,8 @@ public class CrisisDetectionService : ICrisisDetectionService
                     return new CrisisDetectionResult
                     {
                         IsCrisis = true,
-                        Reason = reason ?? (lang == "ar"
-                            ? "مطابقة كلمات مفتاحية + تحقق الذكاء الاصطناعي"
-                            : "Keyword match + AI verification"),
-                        SuggestedMessage = suggested ?? (lang == "ar"
-                            ? "أنا قلق بشأن ما تشاركه. يرجى التواصل مع معالجك أو الاتصال بخدمات الطوارئ فورًا إذا كنت في خطر. يمكنك الاتصال بالأمانة العامة للصحة النفسية: 16328"
-                            : "I'm concerned about what you're sharing. Please contact your therapist or call emergency services immediately if you're in danger.")
+                        Reason = reason ?? _prompts.GetFallbackReason("crisis-detection", lang),
+                        SuggestedMessage = suggested ?? _prompts.GetFallbackMessage("crisis-detection", lang)
                     };
                 }
             }
