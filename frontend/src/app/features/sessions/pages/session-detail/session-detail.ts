@@ -8,13 +8,14 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { SessionNote } from '../../../../core/models';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { Summary } from '../../components/summary/summary';
 import { StatusArPipe } from '../../../../shared/pipes/status-ar.pipe';
 
 @Component({
     selector: 'app-session-detail',
     standalone: true,
-    imports: [ButtonComponent, SpinnerComponent, Summary, StatusArPipe],
+    imports: [ButtonComponent, SpinnerComponent, ModalComponent, Summary, StatusArPipe],
     templateUrl: './session-detail.html',
     styleUrl: './session-detail.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -32,6 +33,7 @@ export class SessionDetail implements OnInit, OnDestroy {
     noteLoading = signal(false);
     loading = signal(true);
     error = signal<string | null>(null);
+    showDeleteModal = signal(false);
 
     ngOnDestroy(): void {
         this.state.clearSelected();
@@ -96,6 +98,14 @@ export class SessionDetail implements OnInit, OnDestroy {
         }
     }
 
+    openDeleteModal(): void {
+        this.showDeleteModal.set(true);
+    }
+
+    closeDeleteModal(): void {
+        this.showDeleteModal.set(false);
+    }
+
     deleteSession(): void {
         const s = this.session();
         if (!s) return;
@@ -112,6 +122,7 @@ export class SessionDetail implements OnInit, OnDestroy {
                 },
                 error: (err: HttpErrorResponse) => {
                     this.notification.error(err.error?.message || err.error?.error || 'فشل حذف الجلسة');
+                    this.closeDeleteModal();
                 },
             });
     }

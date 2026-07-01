@@ -2,13 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpClientService } from '../api/http-client.service';
 import { API } from '../api/api-endpoints';
-import {
-    Session,
-    SessionNote,
-    VoiceMemo,
-    CreateSessionRequest,
-    UpdateSessionRequest,
-} from '../models';
+import { Session, SessionNote, VoiceMemo, CreateSessionRequest, UpdateSessionRequest } from '../models';
 
 @Injectable({
     providedIn: 'root',
@@ -38,7 +32,9 @@ export class SessionService {
 
     uploadVoiceMemo(sessionId: string, file: File): Observable<VoiceMemo> {
         const formData = new FormData();
-        formData.append('file', file);
+        // The backend's UploadVoiceMemo action binds this parameter as `IFormFile audio` —
+        // any other field name binds to null and the request always fails with 400.
+        formData.append('audio', file);
         return this.http.upload<VoiceMemo>(API.sessions.voice(sessionId), formData);
     }
 
@@ -52,13 +48,5 @@ export class SessionService {
 
     saveSessionNote(sessionId: string, note: Partial<SessionNote>): Observable<SessionNote> {
         return this.http.post<SessionNote>(`${API.sessions.byId(sessionId)}/note`, note);
-    }
-
-    getVoiceMemos(sessionId: string): Observable<VoiceMemo[]> {
-        return this.http.get<VoiceMemo[]>(`${API.sessions.byId(sessionId)}/voice`);
-    }
-
-    deleteVoiceMemo(sessionId: string, voiceMemoId: string): Observable<void> {
-        return this.http.delete<void>(`${API.sessions.byId(sessionId)}/voice/${voiceMemoId}`);
     }
 }

@@ -43,7 +43,7 @@ describe('AuthService', () => {
         localStorage.setItem('jalsa_token', 'stored-token');
 
         const initPromise = service.initializeAuth();
-        const req = httpMock.expectOne('http://localhost:5014/api/auth/profile');
+        const req = httpMock.expectOne('https://localhost:7051/api/auth/profile');
         req.flush(profileResponse);
         await initPromise;
 
@@ -57,7 +57,7 @@ describe('AuthService', () => {
         localStorage.setItem('jalsa_refresh_token', 'stale-refresh');
 
         const initPromise = service.initializeAuth();
-        const req = httpMock.expectOne('http://localhost:5014/api/auth/profile');
+        const req = httpMock.expectOne('https://localhost:7051/api/auth/profile');
         req.flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
         await initPromise;
 
@@ -69,7 +69,7 @@ describe('AuthService', () => {
         let result: unknown;
         service.login({ email: 't@t.com', password: 'secret' }).subscribe(res => (result = res));
 
-        const loginReq = httpMock.expectOne('http://localhost:5014/api/auth/login');
+        const loginReq = httpMock.expectOne('https://localhost:7051/api/auth/login');
         loginReq.flush({
             token: 'new-token',
             expiresAt: '2026-01-01T01:00:00Z',
@@ -79,7 +79,7 @@ describe('AuthService', () => {
             roles: ['Therapist'],
         });
 
-        const profileReq = httpMock.expectOne('http://localhost:5014/api/auth/profile');
+        const profileReq = httpMock.expectOne('https://localhost:7051/api/auth/profile');
         profileReq.flush(profileResponse);
 
         expect(service.currentUser()).toEqual(profileResponse);

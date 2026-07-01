@@ -15,11 +15,9 @@ const mockSessions: Session[] = [
         intakeFormId: null,
         sessionNumber: 1,
         sessionDate: '2024-01-15T10:00:00Z',
-        content: 'First session',
         durationMinutes: 50,
         sessionType: 'Individual',
         status: 'Completed',
-        voiceMemoUrl: null,
         createdAt: '2024-01-15T10:00:00Z',
         updatedAt: '2024-01-15T11:00:00Z',
     },
@@ -29,11 +27,9 @@ const mockSessions: Session[] = [
         intakeFormId: null,
         sessionNumber: 2,
         sessionDate: '2024-01-22T10:00:00Z',
-        content: 'Second session',
         durationMinutes: 45,
         sessionType: 'Individual',
         status: 'Scheduled',
-        voiceMemoUrl: null,
         createdAt: '2024-01-22T10:00:00Z',
         updatedAt: '2024-01-22T11:00:00Z',
     },
@@ -157,24 +153,26 @@ describe('SessionList', () => {
         expect(routerSpy['navigate']).toHaveBeenCalledWith(['/sessions', 'sess-1']);
     });
 
-    it('should delete session with confirmation', (): void => {
-        const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    it('should delete session after confirming via the modal', (): void => {
         setup();
         fixture.detectChanges();
-        component.deleteSession('sess-1');
+        component.openDeleteModal('sess-1');
+        expect(component.showDeleteModal()).toBe(true);
+        component.deleteSession();
         expect(sessionServiceSpy['deleteSession']).toHaveBeenCalledWith('sess-1');
         expect(stateSpy['removeSession']).toHaveBeenCalledWith('sess-1');
         expect(notificationSpy['success']).toHaveBeenCalled();
-        confirmSpy.mockRestore();
+        expect(component.showDeleteModal()).toBe(false);
     });
 
-    it('should not delete when confirmation is cancelled', (): void => {
-        const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    it('should not delete when the modal is closed without confirming', (): void => {
         setup();
         fixture.detectChanges();
-        component.deleteSession('sess-1');
+        component.openDeleteModal('sess-1');
+        component.closeDeleteModal();
+        expect(component.showDeleteModal()).toBe(false);
+        component.deleteSession();
         expect(sessionServiceSpy['deleteSession']).not.toHaveBeenCalled();
-        confirmSpy.mockRestore();
     });
 
     it('should format duration', (): void => {

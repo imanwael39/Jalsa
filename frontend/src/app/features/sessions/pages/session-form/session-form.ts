@@ -44,7 +44,7 @@ export class SessionForm implements OnInit {
     loading = signal(false);
     isEdit = signal(false);
     error = signal<string | null>(null);
-    voiceMemoUrl = signal<string | null>(null);
+    voiceTranscript = signal<string | null>(null);
 
     form = this.fb.group({
         sessionDate: [new Date().toISOString().split('T')[0], [Validators.required]],
@@ -117,8 +117,8 @@ export class SessionForm implements OnInit {
             });
     }
 
-    onVoiceUploaded(url: string): void {
-        this.voiceMemoUrl.set(url);
+    onVoiceUploaded(transcript: string): void {
+        this.voiceTranscript.set(transcript || 'تم رفع الملاحظة الصوتية');
     }
 
     onSubmit(): void {

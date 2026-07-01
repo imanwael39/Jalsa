@@ -4,11 +4,9 @@ export interface Session {
     intakeFormId: string | null;
     sessionNumber: number;
     sessionDate: string;
-    content: string | null;
     durationMinutes: number | null;
     sessionType: string | null;
     status: string;
-    voiceMemoUrl: string | null;
     createdAt: string;
     updatedAt: string;
 }
@@ -28,9 +26,7 @@ export interface SessionNote {
 export interface VoiceMemo {
     id: string;
     sessionId: string;
-    audioUrl: string | null;
     transcript: string | null;
-    durationSeconds: number | null;
     createdAt: string;
 }
 
@@ -38,14 +34,12 @@ export interface CreateSessionRequest {
     patientId: string;
     intakeFormId?: string;
     sessionDate: string;
-    content?: string;
     durationMinutes?: number;
     sessionType?: string;
 }
 
 export interface UpdateSessionRequest {
     sessionDate?: string;
-    content?: string;
     durationMinutes?: number;
     sessionType?: string;
     status?: string;

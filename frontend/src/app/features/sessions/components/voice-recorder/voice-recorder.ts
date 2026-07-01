@@ -16,6 +16,7 @@ import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.
 })
 export class VoiceRecorder {
     sessionId = input<string | null>(null);
+    /** Emits the Whisper-transcribed text once the recording finishes uploading. */
     uploaded = output<string>();
 
     private sessionService = inject(SessionService);
@@ -45,7 +46,7 @@ export class VoiceRecorder {
                 next: voiceMemo => {
                     this.uploading.set(false);
                     this.notification.success('تم رفع المذكرة الصوتية بنجاح');
-                    this.uploaded.emit(voiceMemo.audioUrl || '');
+                    this.uploaded.emit(voiceMemo.transcript || '');
                     this.selectedFile.set(null);
                 },
                 error: (err: HttpErrorResponse) => {
