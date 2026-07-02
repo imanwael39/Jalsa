@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PatientService } from '../../../../core/services/patient.service';
 import { PatientStateService } from '../../../../core/state/patient-state.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { AiService } from '../../../../core/services/ai.service';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
@@ -40,6 +41,7 @@ export class PatientDetail implements OnInit, OnDestroy {
     private patientService = inject(PatientService);
     private state = inject(PatientStateService);
     private notification = inject(NotificationService);
+    private aiService = inject(AiService);
     private destroyRef = inject(DestroyRef);
 
     patient = this.state.selectedPatient;
@@ -50,6 +52,10 @@ export class PatientDetail implements OnInit, OnDestroy {
     showArchiveModal = signal(false);
     showDeleteModal = signal(false);
     actionLoading = signal(false);
+
+    aiSummary = signal<string | null>(null);
+    aiSummaryLoading = signal(false);
+    aiSummaryError = signal<string | null>(null);
 
     ngOnDestroy(): void {
         this.state.clearSelected();
@@ -191,6 +197,27 @@ export class PatientDetail implements OnInit, OnDestroy {
                 error: (err: HttpErrorResponse) => {
                     this.notification.error(err.error?.message || err.error?.error || 'فشل حذف المريض');
                     this.actionLoading.set(false);
+                },
+            });
+    }
+
+    generateAiSummary(): void {
+        const p = this.patient();
+        if (!p) return;
+
+        this.aiSummaryLoading.set(true);
+        this.aiSummaryError.set(null);
+        this.aiService
+            .summarizePatient(p.id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: result => {
+                    this.aiSummary.set(result.summary);
+                    this.aiSummaryLoading.set(false);
+                },
+                error: (err: HttpErrorResponse) => {
+                    this.aiSummaryError.set(err.error?.message || err.error?.error || 'فشل توليد الملخص');
+                    this.aiSummaryLoading.set(false);
                 },
             });
     }
