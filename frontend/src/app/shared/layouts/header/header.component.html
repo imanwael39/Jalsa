@@ -65,13 +65,16 @@
                             <div
                                 class="notif-item"
                                 [class.unread]="!n.isRead"
+                                [class.notif-item-crisis]="n.type === 'CrisisAlert'"
                                 (click)="notifService.markRead(n.id)"
                                 role="button"
                                 tabindex="0"
                                 (keydown.enter)="notifService.markRead(n.id)"
                             >
-                                <div class="notif-icon">
-                                    @if (n.type === 'ExerciseReminder') {
+                                <div class="notif-icon" [class.notif-icon-crisis]="n.type === 'CrisisAlert'">
+                                    @if (n.type === 'CrisisAlert') {
+                                        <i class="bi bi-exclamation-triangle-fill"></i>
+                                    } @else if (n.type === 'ExerciseReminder') {
                                         <i class="bi bi-clipboard-check"></i>
                                     } @else {
                                         <i class="bi bi-bell"></i>
