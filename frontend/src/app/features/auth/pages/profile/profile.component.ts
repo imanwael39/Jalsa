@@ -4,12 +4,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { InputComponent } from '../../../../shared/components/input/input.component';
+import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { passwordMatchValidator } from '../../../../shared/validators/password-match.validator';
 
 @Component({
     selector: 'app-profile',
     standalone: true,
-    imports: [ReactiveFormsModule, ButtonComponent, InputComponent],
+    imports: [ReactiveFormsModule, ButtonComponent, InputComponent, SpinnerComponent],
     templateUrl: './profile.component.html',
     styleUrls: ['./profile.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush,
