@@ -4,7 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { SessionService } from '../../../../core/services/session.service';
 import { SessionStateService } from '../../../../core/state/session-state.service';
 import { NotificationService } from '../../../../core/services/notification.service';
@@ -182,7 +182,7 @@ export class SessionForm implements OnInit {
         }
     }
 
-    private saveNoteIfNeeded(session: Session, content: string | null | undefined) {
+    private saveNoteIfNeeded(session: Session, content: string | null | undefined): Observable<Session> {
         if (!content) return of(session);
         return this.sessionService
             .saveSessionNote(session.id, {

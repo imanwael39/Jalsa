@@ -7,14 +7,14 @@ export class LoadingService {
 
     private loadingCount = 0;
 
-    show() {
+    show(): void {
         this.loadingCount++;
         if (this.loadingCount === 1) {
             this.loadingSignal.set(true);
         }
     }
 
-    hide() {
+    hide(): void {
         this.loadingCount--;
         if (this.loadingCount <= 0) {
             this.loadingCount = 0;
@@ -22,7 +22,7 @@ export class LoadingService {
         }
     }
 
-    reset() {
+    reset(): void {
         this.loadingCount = 0;
         this.loadingSignal.set(false);
     }
