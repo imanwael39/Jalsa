@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, inject, OnInit, DestroyRef, signal 
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClientService } from '../../../../core/api/http-client.service';
+import { API } from '../../../../core/api/api-endpoints';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { ChatConversation } from '../../../../core/models';
@@ -32,7 +33,7 @@ export class ChatListComponent implements OnInit {
         this.error.set(null);
 
         this.http
-            .get<ChatConversation[]>('/api/chat/conversations')
+            .get<ChatConversation[]>(API.chat.conversations)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: data => {
