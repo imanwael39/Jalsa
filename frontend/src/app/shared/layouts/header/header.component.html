@@ -6,17 +6,20 @@
         <span class="header-title">جلسة</span>
     </div>
     <div class="header-center">
-        <div class="search-box">
-            <i class="bi bi-search search-icon"></i>
-            <input
-                type="search"
-                class="search-input"
-                placeholder="ابحث هنا..."
-                [value]="searchQuery()"
-                (input)="onSearch($any($event.target).value)"
-                aria-label="بحث"
-            />
-        </div>
+        @if (canSearchPatients()) {
+            <div class="search-box">
+                <i class="bi bi-search search-icon"></i>
+                <input
+                    type="search"
+                    class="search-input"
+                    placeholder="ابحث عن مريض..."
+                    [value]="searchQuery()"
+                    (input)="onSearch($any($event.target).value)"
+                    (keydown.enter)="onSearchSubmit()"
+                    aria-label="ابحث عن مريض"
+                />
+            </div>
+        }
     </div>
     <div class="header-right">
         <button
