@@ -5,9 +5,7 @@ export const DASHBOARD_ROUTES: Routes = [
     {
         path: '',
         canActivate: [authGuard, roleGuard(['Therapist', 'Admin'])],
-        loadComponent: () =>
-            import('./pages/dashboard/dashboard.component').then(
-                (m) => m.DashboardComponent
-            ),
+        data: { breadcrumb: 'لوحة التحكم' },
+        loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
     },
 ];
