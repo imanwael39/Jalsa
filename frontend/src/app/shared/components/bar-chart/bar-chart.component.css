@@ -8,6 +8,7 @@
     padding: 1.25rem;
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-card);
+    direction: rtl;
 }
 
 .chart-header {
@@ -48,11 +49,6 @@
 .chart-empty i {
     font-size: 2.5rem;
     opacity: 0.5;
-}
-
-/* RTL support */
-[dir="rtl"] .bar-chart {
-    direction: rtl;
 }
 
 /* Reduced motion support */

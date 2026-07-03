@@ -3,11 +3,12 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SessionService } from '../../../../core/services/session.service';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { AiDisclaimerComponent } from '../../../../shared/components/ai-disclaimer/ai-disclaimer.component';
 
 @Component({
     selector: 'app-summary',
     standalone: true,
-    imports: [SpinnerComponent],
+    imports: [SpinnerComponent, AiDisclaimerComponent],
     templateUrl: './summary.html',
     styleUrl: './summary.css',
     changeDetection: ChangeDetectionStrategy.OnPush,

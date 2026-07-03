@@ -48,13 +48,28 @@ public class IntakeController : BaseController
         return Ok(result);
     }
 
+    private static readonly HashSet<string> AllowedOcrContentTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "image/jpeg", "image/png", "application/pdf"
+    };
+    private const long MaxOcrFileSizeBytes = 10 * 1024 * 1024; // 10 MB, matches the frontend's declared limit
+
     [HttpPost("api/patient/{patientId:guid}/intake/{intakeFormId:guid}/ocr")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> RunOcr(Guid patientId, Guid intakeFormId, IFormFile file)
     {
-        var intakeFormRepo = _unitOfWork.Repository<IntakeForm>();
-        var intakeForm = await intakeFormRepo.GetByIdAsync(intakeFormId);
-        if (intakeForm == null)
+        if (file is null || file.Length == 0)
+            return BadRequest(new { error = "لم يتم إرفاق ملف" });
+
+        if (file.Length > MaxOcrFileSizeBytes)
+            return BadRequest(new { error = "حجم الملف يتجاوز الحد الأقصى المسموح به (10 ميجابايت)" });
+
+        if (string.IsNullOrWhiteSpace(file.ContentType) || !AllowedOcrContentTypes.Contains(file.ContentType))
+            return BadRequest(new { error = "نوع الملف غير مدعوم" });
+
+        var therapistId = GetCurrentUserId();
+        var intake = await _intakeService.GetByPatientIdAsync(patientId, therapistId);
+        if (intake.Id != intakeFormId)
             return NotFound(new { error = "Intake form not found" });
 
         using var ms = new MemoryStream();

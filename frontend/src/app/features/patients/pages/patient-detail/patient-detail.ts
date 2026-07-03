@@ -15,6 +15,7 @@ import { PatientExerciseComponent } from '../../../exercises/pages/patient-exerc
 import { ReportList } from '../../../reports/pages/report-list/report-list';
 import { Assessment } from '../assessment/assessment';
 import { StatusArPipe } from '../../../../shared/pipes/status-ar.pipe';
+import { AiDisclaimerComponent } from '../../../../shared/components/ai-disclaimer/ai-disclaimer.component';
 
 @Component({
     selector: 'app-patient-detail',
@@ -30,6 +31,7 @@ import { StatusArPipe } from '../../../../shared/pipes/status-ar.pipe';
         ReportList,
         Assessment,
         StatusArPipe,
+        AiDisclaimerComponent,
     ],
     templateUrl: './patient-detail.html',
     styleUrl: './patient-detail.css',

@@ -8,7 +8,7 @@ namespace Jalsa.API.Controllers;
 [ApiController]
 [Route("api/progress")]
 [EnableRateLimiting("general")]
-public class ProgressController : ControllerBase
+public class ProgressController : BaseController
 {
     private readonly IProgressService _progressService;
 
@@ -23,7 +23,7 @@ public class ProgressController : ControllerBase
     {
         try
         {
-            var result = await _progressService.GetDashboardAsync();
+            var result = await _progressService.GetDashboardAsync(GetCurrentUserId());
             return Ok(result);
         }
         catch (Exception)

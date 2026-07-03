@@ -17,6 +17,7 @@ import * as signalR from '@microsoft/signalr';
 import { HttpClientService } from '../../../../core/api/http-client.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { AiDisclaimerComponent } from '../../../../shared/components/ai-disclaimer/ai-disclaimer.component';
 import { API } from '../../../../core/api/api-endpoints';
 import { environment } from '../../../../../environments/environment';
 import { ChatMessage } from '../../../../core/models';
@@ -31,7 +32,7 @@ interface ChatHistoryResponse {
 @Component({
     selector: 'app-chat-room',
     standalone: true,
-    imports: [FormsModule, SpinnerComponent],
+    imports: [FormsModule, SpinnerComponent, AiDisclaimerComponent],
     templateUrl: './chat-room.component.html',
     styleUrl: './chat-room.component.css',
     changeDetection: ChangeDetectionStrategy.OnPush,

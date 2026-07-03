@@ -22,8 +22,9 @@ public class ReportService : IReportService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ReportViewDto> CreateWithAiContentAsync(Guid patientId, string aiContent, Guid therapistId)
+    public async Task<ReportViewDto> CreateWithAiContentAsync(Guid patientId, string aiContent, Guid userId)
     {
+        var therapistId = await ResolveTherapistIdAsync(userId);
         await EnsurePatientBelongsToTherapist(patientId, therapistId);
 
         var reportId = Guid.NewGuid();
@@ -59,9 +60,9 @@ public class ReportService : IReportService
         return MapToViewDto(report);
     }
 
-    public async Task<ReportViewDto> UpdateAsync(Guid id, ReportUpdateDto dto, Guid therapistId)
+    public async Task<ReportViewDto> UpdateAsync(Guid id, ReportUpdateDto dto, Guid userId)
     {
-        var report = await GetReportWithOwnershipCheck(id, therapistId);
+        var (report, therapistId) = await GetReportWithOwnershipCheck(id, userId);
 
         var nextVersion = (report.Versions?.Count ?? 0) + 1;
         var version = new ReportVersion
@@ -75,6 +76,11 @@ public class ReportService : IReportService
             CreatedAt = DateTime.UtcNow
         };
 
+        // The version's Id is a client-assigned, non-default GUID, so EF Core's automatic
+        // graph-fixup can't distinguish it from an existing entity and would mark it Modified
+        // instead of Added. It must be added explicitly to avoid a DbUpdateException.
+        await _unitOfWork.Repository<ReportVersion>().AddAsync(version);
+
         report.Versions ??= new List<ReportVersion>();
         report.Versions.Add(version);
         report.CurrentVersionId = version.Id;
@@ -82,15 +88,14 @@ public class ReportService : IReportService
         report.Status = "Draft";
         report.UpdatedAt = DateTime.UtcNow;
 
-        _reportRepository.Update(report);
         await _unitOfWork.SaveChangesAsync();
 
         return MapToViewDto(report);
     }
 
-    public async Task<ReportViewDto> ApproveAsync(Guid id, Guid therapistId)
+    public async Task<ReportViewDto> ApproveAsync(Guid id, Guid userId)
     {
-        var report = await GetReportWithOwnershipCheck(id, therapistId);
+        var (report, _) = await GetReportWithOwnershipCheck(id, userId);
 
         if (report.CurrentVersion is not null)
             report.CurrentVersion.ApprovedAt = DateTime.UtcNow;
@@ -104,9 +109,9 @@ public class ReportService : IReportService
         return MapToViewDto(report);
     }
 
-    public async Task<ReportViewDto> RejectAsync(Guid id, Guid therapistId)
+    public async Task<ReportViewDto> RejectAsync(Guid id, Guid userId)
     {
-        var report = await GetReportWithOwnershipCheck(id, therapistId);
+        var (report, _) = await GetReportWithOwnershipCheck(id, userId);
 
         report.Status = "Rejected";
         report.UpdatedAt = DateTime.UtcNow;
@@ -117,25 +122,27 @@ public class ReportService : IReportService
         return MapToViewDto(report);
     }
 
-    public async Task DeleteAsync(Guid id, Guid therapistId)
+    public async Task DeleteAsync(Guid id, Guid userId)
     {
-        var report = await GetReportWithOwnershipCheck(id, therapistId);
+        var (report, _) = await GetReportWithOwnershipCheck(id, userId);
         _reportRepository.Remove(report);
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<ReportViewDto> GetByIdAsync(Guid id, Guid therapistId)
+    public async Task<ReportViewDto> GetByIdAsync(Guid id, Guid userId)
     {
         var report = await _reportRepository.GetByIdWithVersionsAsync(id)
             ?? throw new KeyNotFoundException($"Report with ID {id} not found.");
 
+        var therapistId = await ResolveTherapistIdAsync(userId);
         await EnsurePatientBelongsToTherapist(report.PatientId, therapistId);
 
         return MapToViewDto(report);
     }
 
-    public async Task<IEnumerable<ReportViewDto>> GetByPatientIdAsync(Guid patientId, Guid therapistId)
+    public async Task<IEnumerable<ReportViewDto>> GetByPatientIdAsync(Guid patientId, Guid userId)
     {
+        var therapistId = await ResolveTherapistIdAsync(userId);
         await EnsurePatientBelongsToTherapist(patientId, therapistId);
 
         var reports = await _reportRepository.GetByPatientIdAsync(patientId);
@@ -143,27 +150,33 @@ public class ReportService : IReportService
         return reports.Select(MapToViewDto);
     }
 
-    private async Task<ReferralReport> GetReportWithOwnershipCheck(Guid reportId, Guid therapistId)
+    private async Task<(ReferralReport Report, Guid TherapistId)> GetReportWithOwnershipCheck(Guid reportId, Guid userId)
     {
         var report = await _reportRepository.GetByIdWithVersionsAsync(reportId)
             ?? throw new KeyNotFoundException($"Report with ID {reportId} not found.");
 
+        var therapistId = await ResolveTherapistIdAsync(userId);
         await EnsurePatientBelongsToTherapist(report.PatientId, therapistId);
 
-        return report;
+        return (report, therapistId);
     }
 
-    private async Task EnsurePatientBelongsToTherapist(Guid patientId, Guid userId)
+    private async Task EnsurePatientBelongsToTherapist(Guid patientId, Guid therapistId)
+    {
+        var patient = await _patientRepository.GetByIdAsync(patientId)
+            ?? throw new KeyNotFoundException($"Patient with ID {patientId} not found.");
+
+        if (patient.TherapistId != therapistId)
+            throw new UnauthorizedAccessException("You do not have access to this patient's data.");
+    }
+
+    private async Task<Guid> ResolveTherapistIdAsync(Guid userId)
     {
         var therapist = await _unitOfWork.Repository<Therapist>()
             .FindSingleAsync(t => t.UserId == userId)
             ?? throw new UnauthorizedAccessException("Therapist profile not found.");
 
-        var patient = await _patientRepository.GetByIdAsync(patientId)
-            ?? throw new KeyNotFoundException($"Patient with ID {patientId} not found.");
-
-        if (patient.TherapistId != therapist.Id)
-            throw new UnauthorizedAccessException("You do not have access to this patient's data.");
+        return therapist.Id;
     }
 
     private static ReportViewDto MapToViewDto(ReferralReport report) => new()

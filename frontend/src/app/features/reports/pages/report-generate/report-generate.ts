@@ -8,11 +8,12 @@ import { ReportStateService } from '../../../../core/state/report-state.service'
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { AiDisclaimerComponent } from '../../../../shared/components/ai-disclaimer/ai-disclaimer.component';
 
 @Component({
     selector: 'app-report-generate',
     standalone: true,
-    imports: [ReactiveFormsModule, ButtonComponent, SpinnerComponent],
+    imports: [ReactiveFormsModule, ButtonComponent, SpinnerComponent, AiDisclaimerComponent],
     templateUrl: './report-generate.html',
     styleUrl: './report-generate.css',
     changeDetection: ChangeDetectionStrategy.OnPush,

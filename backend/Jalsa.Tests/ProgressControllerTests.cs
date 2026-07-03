@@ -1,7 +1,9 @@
+using System.Security.Claims;
 using FluentAssertions;
 using Jalsa.Application.DTOs.Dashboard;
 using Jalsa.Application.Interfaces.Services;
 using Jalsa.API.Controllers;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
@@ -11,11 +13,21 @@ public class ProgressControllerTests
 {
     private readonly Mock<IProgressService> _progressServiceMock;
     private readonly ProgressController _sut;
+    private readonly Guid _therapistUserId;
 
     public ProgressControllerTests()
     {
         _progressServiceMock = new Mock<IProgressService>();
         _sut = new ProgressController(_progressServiceMock.Object);
+
+        _therapistUserId = Guid.NewGuid();
+        var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, _therapistUserId.ToString()) };
+        var identity = new ClaimsIdentity(claims, "Test");
+        var principal = new ClaimsPrincipal(identity);
+        _sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = principal }
+        };
     }
 
     [Fact]
@@ -36,7 +48,7 @@ public class ProgressControllerTests
         };
 
         _progressServiceMock
-            .Setup(x => x.GetDashboardAsync())
+            .Setup(x => x.GetDashboardAsync(It.IsAny<Guid>()))
             .ReturnsAsync(dto);
 
         // Act
@@ -52,7 +64,7 @@ public class ProgressControllerTests
     {
         // Arrange
         _progressServiceMock
-            .Setup(x => x.GetDashboardAsync())
+            .Setup(x => x.GetDashboardAsync(It.IsAny<Guid>()))
             .ThrowsAsync(new Exception("Database connection failed"));
 
         // Act

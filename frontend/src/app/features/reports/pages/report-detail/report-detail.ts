@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, inject, signal, OnInit, OnDestroy, 
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import html2pdf from 'html2pdf.js';
 import { ReportService } from '../../../../core/services/report.service';
 import { ReportStateService } from '../../../../core/state/report-state.service';
 import { NotificationService } from '../../../../core/services/notification.service';
@@ -148,14 +149,31 @@ export class ReportDetail implements OnInit, OnDestroy {
             .exportReport(r.id)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
-                next: blob => {
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `report-${r.id}.html`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                    this.exporting.set(false);
+                next: async blob => {
+                    const html = await blob.text();
+                    const container = document.createElement('div');
+                    container.innerHTML = html;
+                    container.style.position = 'fixed';
+                    container.style.insetInlineStart = '-9999px';
+                    container.style.width = '210mm';
+                    document.body.appendChild(container);
+
+                    try {
+                        await html2pdf()
+                            .set({
+                                margin: 10,
+                                filename: `report-${r.id}.pdf`,
+                                html2canvas: { scale: 2, useCORS: true },
+                                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                            })
+                            .from(container)
+                            .save();
+                    } catch {
+                        this.notification.error('فشل في تصدير التقرير كملف PDF');
+                    } finally {
+                        document.body.removeChild(container);
+                        this.exporting.set(false);
+                    }
                 },
                 error: () => {
                     this.notification.error('فشل في تصدير التقرير');

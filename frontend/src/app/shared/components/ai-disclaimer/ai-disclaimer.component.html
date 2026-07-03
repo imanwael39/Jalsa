@@ -1,0 +1,16 @@
+<div class="ai-disclaimer" [class.blocked]="blocked()" role="note">
+    <i class="bi" [class.bi-exclamation-triangle-fill]="blocked()" [class.bi-info-circle-fill]="!blocked()"></i>
+    <div class="ai-disclaimer-text">
+        <p class="ai-disclaimer-main">
+            هذا المحتوى مُولَّد بواسطة الذكاء الاصطناعي وقد يحتوي على أخطاء. يجب على المعالج مراجعة النتائج والتحقق منها
+            قبل الاعتماد عليها في القرارات السريرية.
+        </p>
+        @if (blocked()) {
+            <p class="ai-disclaimer-blocked">
+                {{
+                    message() || 'هذه الميزة غير متاحة حالياً بسبب تعذّر التحقق من مزود خدمة الذكاء الاصطناعي الخارجي.'
+                }}
+            </p>
+        }
+    </div>
+</div>

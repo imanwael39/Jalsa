@@ -216,6 +216,11 @@
                                 </app-button>
                             </div>
 
+                            <app-ai-disclaimer
+                                [blocked]="!!aiSummaryError()"
+                                [message]="aiSummaryError() || ''"
+                            ></app-ai-disclaimer>
+
                             @if (aiSummaryLoading()) {
                                 <div class="text-center py-4">
                                     <app-spinner size="md" label="جاري توليد الملخص..."></app-spinner>

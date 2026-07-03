@@ -31,7 +31,7 @@
                             "node_modules/quill/dist/quill.snow.css",
                             "src/styles.css"
                         ],
-                        "allowedCommonJsDependencies": ["quill-delta"]
+                        "allowedCommonJsDependencies": ["quill-delta", "html2pdf.js"]
                     },
                     "configurations": {
                         "production": {

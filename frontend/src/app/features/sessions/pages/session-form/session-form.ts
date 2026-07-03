@@ -3,7 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { switchMap } from 'rxjs/operators';
+import { switchMap, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { SessionService } from '../../../../core/services/session.service';
 import { SessionStateService } from '../../../../core/state/session-state.service';
@@ -46,6 +46,11 @@ export class SessionForm implements OnInit {
     error = signal<string | null>(null);
     voiceTranscript = signal<string | null>(null);
 
+    autoSaving = signal(false);
+    lastAutoSavedAt = signal<Date | null>(null);
+    autoSaveError = signal<string | null>(null);
+    private noteLoaded = false;
+
     form = this.fb.group({
         sessionDate: [new Date().toISOString().split('T')[0], [Validators.required]],
         content: ['', [Validators.required]],
@@ -77,6 +82,31 @@ export class SessionForm implements OnInit {
             this.isEdit.set(true);
             this.loadSession(id);
         }
+
+        this.form
+            .get('content')!
+            .valueChanges.pipe(debounceTime(2000), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+            .subscribe(content => this.autoSaveNote(content));
+    }
+
+    private autoSaveNote(content: string | null | undefined): void {
+        if (!this.noteLoaded || !this.isEdit() || !this.sessionId() || !content) return;
+
+        this.autoSaving.set(true);
+        this.autoSaveError.set(null);
+        this.sessionService
+            .saveSessionNote(this.sessionId()!, { observations: content })
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: () => {
+                    this.autoSaving.set(false);
+                    this.lastAutoSavedAt.set(new Date());
+                },
+                error: () => {
+                    this.autoSaving.set(false);
+                    this.autoSaveError.set('تعذّر الحفظ التلقائي للملاحظة');
+                },
+            });
     }
 
     loadSession(id: string): void {
@@ -110,9 +140,11 @@ export class SessionForm implements OnInit {
                 next: note => {
                     this.form.patchValue({ content: note.observations });
                     this.loading.set(false);
+                    this.noteLoaded = true;
                 },
                 error: () => {
                     this.loading.set(false);
+                    this.noteLoaded = true;
                 },
             });
     }

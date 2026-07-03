@@ -1,8 +1,9 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using FluentAssertions;
 using Jalsa.Application.DTOs.Dashboard;
 using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Application.Interfaces.Services;
+using Jalsa.Domain.Models.Clinic;
 using Jalsa.Domain.Models.Crisis;
 using Jalsa.Domain.Models.Exercise;
 using Jalsa.Domain.Models.Patient;
@@ -20,7 +21,10 @@ public class ProgressServiceTests
     private readonly Mock<IAssessmentRepository> _assessmentRepoMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IGenericRepository<CrisisAlert>> _crisisAlertRepoMock;
+    private readonly Mock<IGenericRepository<Therapist>> _therapistRepoMock;
     private readonly ProgressService _sut;
+    private readonly Guid _userId;
+    private readonly Guid _therapistId;
 
     public ProgressServiceTests()
     {
@@ -30,10 +34,21 @@ public class ProgressServiceTests
         _assessmentRepoMock = new Mock<IAssessmentRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _crisisAlertRepoMock = new Mock<IGenericRepository<CrisisAlert>>();
+        _therapistRepoMock = new Mock<IGenericRepository<Therapist>>();
+
+        _userId = Guid.NewGuid();
+        _therapistId = Guid.NewGuid();
 
         _unitOfWorkMock
             .Setup(x => x.Repository<CrisisAlert>())
             .Returns(_crisisAlertRepoMock.Object);
+        _unitOfWorkMock
+            .Setup(x => x.Repository<Therapist>())
+            .Returns(_therapistRepoMock.Object);
+
+        _therapistRepoMock
+            .Setup(x => x.FindSingleAsync(It.IsAny<Expression<Func<Therapist, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Therapist { Id = _therapistId, UserId = _userId });
 
         SetupEmptyQueryables();
 
@@ -51,10 +66,15 @@ public class ProgressServiceTests
         // Arrange
         var patients = new List<Patient>
         {
-            new() { Id = Guid.NewGuid(), Status = "Active" },
-            new() { Id = Guid.NewGuid(), Status = "Active" },
-            new() { Id = Guid.NewGuid(), Status = "Archived" }
+            new() { Id = Guid.NewGuid(), TherapistId = _therapistId, Status = "Active" },
+            new() { Id = Guid.NewGuid(), TherapistId = _therapistId, Status = "Active" },
+            new() { Id = Guid.NewGuid(), TherapistId = _therapistId, Status = "Archived" },
+            new() { Id = Guid.NewGuid(), TherapistId = Guid.NewGuid(), Status = "Active" } // other therapist
         };
+
+        _patientRepoMock
+            .Setup(x => x.Query())
+            .Returns(new AsyncQueryProvider<Patient>(patients.AsQueryable()));
 
         _patientRepoMock
             .Setup(x => x.CountAsync(It.IsAny<Expression<Func<Patient, bool>>>(), It.IsAny<CancellationToken>()))
@@ -62,7 +82,7 @@ public class ProgressServiceTests
                 Task.FromResult(patients.AsQueryable().Count(pred)));
 
         // Act
-        var result = await _sut.GetDashboardAsync();
+        var result = await _sut.GetDashboardAsync(_userId);
 
         // Assert
         result.TotalPatients.Should().Be(3);
@@ -74,12 +94,17 @@ public class ProgressServiceTests
     public async Task GetDashboardAsync_ExerciseCompletionRate_CalculatesCorrectly()
     {
         // Arrange
+        var patient = new Patient { Id = Guid.NewGuid(), TherapistId = _therapistId, Status = "Active" };
+        _patientRepoMock
+            .Setup(x => x.Query())
+            .Returns(new AsyncQueryProvider<Patient>(new List<Patient> { patient }.AsQueryable()));
+
         var exercises = new List<Exercise>
         {
-            new() { Id = Guid.NewGuid(), Status = "Complete" },
-            new() { Id = Guid.NewGuid(), Status = "Complete" },
-            new() { Id = Guid.NewGuid(), Status = "Partial" },
-            new() { Id = Guid.NewGuid(), Status = "Skipped" }
+            new() { Id = Guid.NewGuid(), PatientId = patient.Id, Status = "Complete" },
+            new() { Id = Guid.NewGuid(), PatientId = patient.Id, Status = "Complete" },
+            new() { Id = Guid.NewGuid(), PatientId = patient.Id, Status = "Partial" },
+            new() { Id = Guid.NewGuid(), PatientId = patient.Id, Status = "Skipped" }
         };
 
         _exerciseRepoMock
@@ -92,7 +117,7 @@ public class ProgressServiceTests
             .Returns(new AsyncQueryProvider<Exercise>(exercises.AsQueryable()));
 
         // Act
-        var result = await _sut.GetDashboardAsync();
+        var result = await _sut.GetDashboardAsync(_userId);
 
         // Assert
         result.ExerciseCompletionRate.Should().Be(50);
@@ -107,7 +132,7 @@ public class ProgressServiceTests
         // Arrange — all mocks return defaults (empty / zero)
 
         // Act
-        var result = await _sut.GetDashboardAsync();
+        var result = await _sut.GetDashboardAsync(_userId);
 
         // Assert
         result.TotalPatients.Should().Be(0);
@@ -123,8 +148,31 @@ public class ProgressServiceTests
         result.Analytics.SessionFrequency.Should().NotBeNull();
     }
 
+    [Fact]
+    public async Task GetDashboardAsync_UserWithNoTherapistProfile_Throws()
+    {
+        // Arrange
+        _therapistRepoMock
+            .Setup(x => x.FindSingleAsync(It.IsAny<Expression<Func<Therapist, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Therapist?)null);
+
+        // Act
+        var act = () => _sut.GetDashboardAsync(_userId);
+
+        // Assert
+        await act.Should().ThrowAsync<UnauthorizedAccessException>();
+    }
+
     private void SetupEmptyQueryables()
     {
+        _patientRepoMock
+            .Setup(x => x.Query())
+            .Returns(new AsyncQueryProvider<Patient>(new List<Patient>().AsQueryable()));
+
+        _patientRepoMock
+            .Setup(x => x.CountAsync(It.IsAny<Expression<Func<Patient, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(0);
+
         _sessionRepoMock
             .Setup(x => x.CountAsync(It.IsAny<Expression<Func<Session, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(0);

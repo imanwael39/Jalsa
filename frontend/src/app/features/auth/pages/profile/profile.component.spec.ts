@@ -133,16 +133,24 @@ describe('ProfileComponent', () => {
     });
     it('should call changePassword on valid password submit', () => {
         setup();
-        component.passwordForm.patchValue({ currentPassword: 'old', newPassword: 'new123', confirmPassword: 'new123' });
+        component.passwordForm.patchValue({
+            currentPassword: 'old',
+            newPassword: 'NewPassw0rd',
+            confirmPassword: 'NewPassw0rd',
+        });
         component.changePassword();
         expect(authServiceSpy['changePassword']).toHaveBeenCalledWith({
             currentPassword: 'old',
-            newPassword: 'new123',
+            newPassword: 'NewPassw0rd',
         });
     });
     it('should reset password form on changePassword success', () => {
         setup();
-        component.passwordForm.patchValue({ currentPassword: 'old', newPassword: 'new123', confirmPassword: 'new123' });
+        component.passwordForm.patchValue({
+            currentPassword: 'old',
+            newPassword: 'NewPassw0rd',
+            confirmPassword: 'NewPassw0rd',
+        });
         component.changePassword();
         expect(component.passwordForm.get('currentPassword')!.value).toBe('');
     });
@@ -150,8 +158,8 @@ describe('ProfileComponent', () => {
         setup({ changePasswordReturn: throwError(() => ({ error: { message: 'كلمة مرور حالية غير صحيحة' } })) });
         component.passwordForm.patchValue({
             currentPassword: 'wrong',
-            newPassword: 'new123',
-            confirmPassword: 'new123',
+            newPassword: 'NewPassw0rd',
+            confirmPassword: 'NewPassw0rd',
         });
         component.changePassword();
         expect(component.passwordError()).toBe('كلمة مرور حالية غير صحيحة');
