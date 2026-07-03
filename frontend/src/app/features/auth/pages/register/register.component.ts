@@ -29,7 +29,14 @@ export class RegisterComponent {
         {
             fullName: ['', [Validators.required, Validators.minLength(2)]],
             email: ['', [Validators.required, Validators.email]],
-            password: ['', [Validators.required, Validators.minLength(8)]],
+            password: [
+                '',
+                [
+                    Validators.required,
+                    Validators.minLength(8),
+                    Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/),
+                ],
+            ],
             confirmPassword: ['', [Validators.required]],
             role: ['Therapist', [Validators.required]],
             licenseNumber: [''],
@@ -65,6 +72,7 @@ export class RegisterComponent {
         if (!c?.errors || !c.touched) return '';
         if (c.errors['required']) return 'كلمة المرور مطلوبة';
         if (c.errors['minlength']) return 'يجب ألا تقل كلمة المرور عن 8 أحرف';
+        if (c.errors['pattern']) return 'يجب أن تحتوي كلمة المرور على حرف كبير وحرف صغير ورقم';
         return '';
     }
 

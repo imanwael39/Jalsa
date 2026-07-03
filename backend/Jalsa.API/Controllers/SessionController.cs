@@ -93,12 +93,20 @@ public class SessionController : BaseController
         return Ok(new { sessionId = id, summary });
     }
 
+    private const long MaxVoiceMemoFileSizeBytes = 25 * 1024 * 1024; // 25 MB, matches Whisper's own file size limit
+
     [HttpPost("{id:guid}/voice")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> UploadVoiceMemo(Guid id, IFormFile audio)
     {
         if (audio is null || audio.Length == 0)
             return BadRequest(new { message = "الملف الصوتي مطلوب" });
+
+        if (audio.Length > MaxVoiceMemoFileSizeBytes)
+            return BadRequest(new { message = "حجم الملف الصوتي يتجاوز الحد الأقصى المسموح به (25 ميجابايت)" });
+
+        if (string.IsNullOrWhiteSpace(audio.ContentType) || !audio.ContentType.StartsWith("audio/", StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { message = "نوع الملف غير مدعوم" });
 
         var therapistId = GetCurrentUserId();
 

@@ -126,7 +126,7 @@ public class IntakeControllerTests
     {
         var patientId = Guid.NewGuid();
         var intakeFormId = Guid.NewGuid();
-        var intakeForm = new IntakeForm { Id = intakeFormId };
+        var intakeFormDto = new IntakeFormViewDto { Id = intakeFormId, PatientId = patientId };
         var ocrResult = new OcrResult
         {
             ExtractedJson = "{\"name\":\"test\"}",
@@ -143,9 +143,9 @@ public class IntakeControllerTests
         fileMock.Setup(_ => _.Length).Returns(stream.Length);
         fileMock.Setup(_ => _.ContentType).Returns("image/jpeg");
 
-        _intakeFormRepoMock
-            .Setup(x => x.GetByIdAsync(intakeFormId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(intakeForm);
+        _intakeServiceMock
+            .Setup(x => x.GetByPatientIdAsync(patientId, _therapistUserId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(intakeFormDto);
 
         _ocrServiceMock
             .Setup(x => x.ExtractFromImageAsync(It.IsAny<string>()))
@@ -171,5 +171,72 @@ public class IntakeControllerTests
         extractedData!["name"].Should().Be("test");
         _ocrExtractionRepoMock.Verify(x => x.AddAsync(It.IsAny<IntakeFormOcrExtraction>(), It.IsAny<CancellationToken>()), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RunOcr_IntakeFormIdBelongsToDifferentForm_ReturnsNotFound()
+    {
+        // Guards against IDOR: a therapist must not be able to run OCR against an
+        // intakeFormId that doesn't match the patient's actual intake form.
+        var patientId = Guid.NewGuid();
+        var requestedIntakeFormId = Guid.NewGuid();
+        var actualIntakeFormDto = new IntakeFormViewDto { Id = Guid.NewGuid(), PatientId = patientId };
+
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(_ => _.Length).Returns(100);
+        fileMock.Setup(_ => _.ContentType).Returns("image/jpeg");
+
+        _intakeServiceMock
+            .Setup(x => x.GetByPatientIdAsync(patientId, _therapistUserId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(actualIntakeFormDto);
+
+        var result = await _sut.RunOcr(patientId, requestedIntakeFormId, fileMock.Object);
+
+        result.Should().BeOfType<NotFoundObjectResult>();
+        _ocrServiceMock.Verify(x => x.ExtractFromImageAsync(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task RunOcr_NoFile_ReturnsBadRequest()
+    {
+        var patientId = Guid.NewGuid();
+        var intakeFormId = Guid.NewGuid();
+
+        var result = await _sut.RunOcr(patientId, intakeFormId, null!);
+
+        result.Should().BeOfType<BadRequestObjectResult>();
+    }
+
+    [Fact]
+    public async Task RunOcr_FileExceedsSizeLimit_ReturnsBadRequest()
+    {
+        var patientId = Guid.NewGuid();
+        var intakeFormId = Guid.NewGuid();
+
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(_ => _.Length).Returns(11 * 1024 * 1024); // 11 MB, over the 10 MB limit
+        fileMock.Setup(_ => _.ContentType).Returns("image/jpeg");
+
+        var result = await _sut.RunOcr(patientId, intakeFormId, fileMock.Object);
+
+        result.Should().BeOfType<BadRequestObjectResult>();
+        _intakeServiceMock.Verify(
+            x => x.GetByPatientIdAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task RunOcr_UnsupportedContentType_ReturnsBadRequest()
+    {
+        var patientId = Guid.NewGuid();
+        var intakeFormId = Guid.NewGuid();
+
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(_ => _.Length).Returns(100);
+        fileMock.Setup(_ => _.ContentType).Returns("application/x-msdownload");
+
+        var result = await _sut.RunOcr(patientId, intakeFormId, fileMock.Object);
+
+        result.Should().BeOfType<BadRequestObjectResult>();
     }
 }

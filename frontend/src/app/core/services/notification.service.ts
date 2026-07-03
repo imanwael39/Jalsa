@@ -12,7 +12,7 @@ export class NotificationService {
     private notificationsSignal = signal<Notification[]>([]);
     readonly notifications = this.notificationsSignal.asReadonly();
 
-    show(message: string, type: Notification['type'] = 'info', duration: number = 5000) {
+    show(message: string, type: Notification['type'] = 'info', duration: number = 5000): void {
         const id = Date.now().toString(36) + Math.random().toString(36).slice(2);
         const notification: Notification = { id, message, type, duration };
         this.notificationsSignal.update(list => [...list, notification]);
@@ -22,27 +22,27 @@ export class NotificationService {
         }
     }
 
-    success(message: string, duration?: number) {
+    success(message: string, duration?: number): void {
         this.show(message, 'success', duration);
     }
 
-    error(message: string, duration?: number) {
+    error(message: string, duration?: number): void {
         this.show(message, 'error', duration);
     }
 
-    warning(message: string, duration?: number) {
+    warning(message: string, duration?: number): void {
         this.show(message, 'warning', duration);
     }
 
-    info(message: string, duration?: number) {
+    info(message: string, duration?: number): void {
         this.show(message, 'info', duration);
     }
 
-    dismiss(id: string) {
+    dismiss(id: string): void {
         this.notificationsSignal.update(list => list.filter(n => n.id !== id));
     }
 
-    clear() {
+    clear(): void {
         this.notificationsSignal.set([]);
     }
 }

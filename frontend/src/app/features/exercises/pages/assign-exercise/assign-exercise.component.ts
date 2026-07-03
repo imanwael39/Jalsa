@@ -6,6 +6,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ExerciseService } from '../../../../core/services/exercise.service';
 import { PatientService } from '../../../../core/services/patient.service';
 import { ExerciseStateService } from '../../../../core/state/exercise-state.service';
+import { futureDateValidator } from '../../../../shared/validators/future-date.validator';
 import { Patient } from '../../../../core/models';
 import { InputComponent } from '../../../../shared/components/input/input.component';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
@@ -36,8 +37,15 @@ export class AssignExerciseComponent implements OnInit, OnDestroy {
         description: ['', [Validators.required, Validators.maxLength(1000)]],
         frequency: [''],
         startDate: [''],
-        dueDate: [''],
+        dueDate: ['', [futureDateValidator]],
     });
+
+    getDueDateError(): string {
+        const control = this.form.get('dueDate');
+        if (!control?.errors || !control.touched) return '';
+        if (control.errors['notFutureDate']) return 'يجب أن يكون تاريخ الاستحقاق بعد اليوم';
+        return '';
+    }
 
     ngOnInit(): void {
         this.loadPatients();

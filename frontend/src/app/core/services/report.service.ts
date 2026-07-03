@@ -41,6 +41,10 @@ export class ReportService {
         return this.http.post<ReferralReport>(API.reports.approve(id), null);
     }
 
+    rejectReport(id: string): Observable<ReferralReport> {
+        return this.http.post<ReferralReport>(API.reports.reject(id), null);
+    }
+
     deleteReport(id: string): Observable<void> {
         return this.http.delete<void>(API.reports.byId(id));
     }

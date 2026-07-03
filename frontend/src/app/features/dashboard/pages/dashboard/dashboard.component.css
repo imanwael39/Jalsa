@@ -79,7 +79,7 @@
    ================================================================ */
 .skeleton-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
     gap: var(--space-4);
     margin-bottom: var(--space-7);
 }
@@ -254,7 +254,7 @@
    ================================================================ */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
     gap: var(--space-4);
     margin-bottom: var(--space-7);
 }
@@ -303,6 +303,10 @@
 
 .stat-warning .stat-icon {
     background: var(--warning);
+}
+
+.stat-accent .stat-icon {
+    background: var(--accent);
 }
 
 .stat-content {

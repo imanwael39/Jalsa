@@ -14,11 +14,9 @@ const mockSession: Session = {
     intakeFormId: null,
     sessionNumber: 1,
     sessionDate: '2024-01-15T10:00:00Z',
-    content: 'Session content',
     durationMinutes: 50,
     sessionType: 'Individual',
     status: 'Draft',
-    voiceMemoUrl: null,
     createdAt: '2024-01-15T10:00:00Z',
     updatedAt: '2024-01-15T11:00:00Z',
 };
@@ -175,10 +173,17 @@ describe('SessionForm', () => {
         expect(routerSpy['navigate']).toHaveBeenCalledWith(['/sessions/patient', 'pat-1']);
     });
 
-    it('should handle voice upload', (): void => {
+    it('should handle voice upload and display the transcribed text', (): void => {
         setup();
         fixture.detectChanges();
-        component.onVoiceUploaded('http://example.com/voice.mp3');
-        expect(component.voiceMemoUrl()).toBe('http://example.com/voice.mp3');
+        component.onVoiceUploaded('المريض يشعر بتحسن ملحوظ');
+        expect(component.voiceTranscript()).toBe('المريض يشعر بتحسن ملحوظ');
+    });
+
+    it('should show a generic confirmation when the transcript is empty', (): void => {
+        setup();
+        fixture.detectChanges();
+        component.onVoiceUploaded('');
+        expect(component.voiceTranscript()).toBe('تم رفع الملاحظة الصوتية');
     });
 });

@@ -5,17 +5,19 @@ import { SessionService } from '../../../../core/services/session.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { AiDisclaimerComponent } from '../../../../shared/components/ai-disclaimer/ai-disclaimer.component';
 
 @Component({
     selector: 'app-voice-recorder',
     standalone: true,
-    imports: [ButtonComponent, SpinnerComponent],
+    imports: [ButtonComponent, SpinnerComponent, AiDisclaimerComponent],
     templateUrl: './voice-recorder.html',
     styleUrl: './voice-recorder.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VoiceRecorder {
     sessionId = input<string | null>(null);
+    /** Emits the Whisper-transcribed text once the recording finishes uploading. */
     uploaded = output<string>();
 
     private sessionService = inject(SessionService);
@@ -24,6 +26,7 @@ export class VoiceRecorder {
 
     uploading = signal(false);
     selectedFile = signal<File | null>(null);
+    uploadError = signal<string | null>(null);
 
     onFileSelected(event: Event): void {
         const input = event.target as HTMLInputElement;
@@ -38,6 +41,7 @@ export class VoiceRecorder {
         if (!file || !sid) return;
 
         this.uploading.set(true);
+        this.uploadError.set(null);
         this.sessionService
             .uploadVoiceMemo(sid, file)
             .pipe(takeUntilDestroyed(this.destroyRef))
@@ -45,12 +49,14 @@ export class VoiceRecorder {
                 next: voiceMemo => {
                     this.uploading.set(false);
                     this.notification.success('تم رفع المذكرة الصوتية بنجاح');
-                    this.uploaded.emit(voiceMemo.audioUrl || '');
+                    this.uploaded.emit(voiceMemo.transcript || '');
                     this.selectedFile.set(null);
                 },
                 error: (err: HttpErrorResponse) => {
                     this.uploading.set(false);
-                    this.notification.error(err.error?.message || err.error?.error || 'فشل رفع المذكرة الصوتية');
+                    const message = err.error?.message || err.error?.error || 'فشل رفع المذكرة الصوتية';
+                    this.uploadError.set(message);
+                    this.notification.error(message);
                 },
             });
     }

@@ -45,11 +45,29 @@
                     <app-button variant="primary" size="sm" (clicked)="navigateToEdit(row.id)" ariaLabel="تعديل الجلسة">
                         <i class="bi bi-pencil" aria-hidden="true"></i>
                     </app-button>
-                    <app-button variant="danger" size="sm" (clicked)="deleteSession(row.id)" ariaLabel="حذف الجلسة">
+                    <app-button variant="danger" size="sm" (clicked)="openDeleteModal(row.id)" ariaLabel="حذف الجلسة">
                         <i class="bi bi-trash" aria-hidden="true"></i>
                     </app-button>
                 </div>
             </ng-template>
         </app-table>
     </div>
+
+    <app-modal
+        [showModal]="showDeleteModal()"
+        (showModalChange)="showDeleteModal.set($event)"
+        title="حذف الجلسة"
+        size="sm"
+    >
+        <div modal-body>
+            <p>هل أنت متأكد من حذف هذه الجلسة؟</p>
+            <p class="text-danger">
+                <i class="bi bi-exclamation-triangle" aria-hidden="true"></i> لا يمكن التراجع عن هذا الإجراء.
+            </p>
+        </div>
+        <div modal-footer>
+            <app-button variant="ghost" (clicked)="closeDeleteModal()">إلغاء</app-button>
+            <app-button variant="danger" (clicked)="deleteSession()">حذف الجلسة</app-button>
+        </div>
+    </app-modal>
 </div>

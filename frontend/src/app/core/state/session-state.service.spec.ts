@@ -11,11 +11,9 @@ describe('SessionStateService', () => {
         intakeFormId: null,
         sessionNumber: 1,
         sessionDate: '2024-01-15',
-        content: 'Test session content',
         durationMinutes: 50,
         sessionType: 'Individual',
         status: 'Completed',
-        voiceMemoUrl: null,
         createdAt: '2024-01-15T10:00:00Z',
         updatedAt: '2024-01-15T10:00:00Z',
     };

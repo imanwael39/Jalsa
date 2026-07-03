@@ -106,7 +106,7 @@ public class SessionService : ISessionService
 
         if (session.SessionNote is null)
         {
-            session.SessionNote = new SessionNote
+            var note = new SessionNote
             {
                 Id = Guid.NewGuid(),
                 SessionId = sessionId,
@@ -118,6 +118,12 @@ public class SessionService : ISessionService
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
+
+            // The Id is a client-assigned, non-default GUID, so EF Core's automatic
+            // graph-fixup cannot tell this note apart from an existing tracked entity and
+            // would mark it Modified instead of Added. Adding it explicitly avoids that.
+            await _unitOfWork.Repository<SessionNote>().AddAsync(note);
+            session.SessionNote = note;
         }
         else
         {
@@ -130,7 +136,6 @@ public class SessionService : ISessionService
         }
 
         session.UpdatedAt = DateTime.UtcNow;
-        _sessionRepository.Update(session);
         await _unitOfWork.SaveChangesAsync();
 
         return MapToNoteViewDto(session.SessionNote);

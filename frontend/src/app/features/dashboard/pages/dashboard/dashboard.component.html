@@ -19,7 +19,7 @@
     <!-- Skeleton Loading State -->
     @if (loading()) {
         <div class="skeleton-grid">
-            @for (i of [1, 2, 3, 4]; track i) {
+            @for (i of [1, 2, 3, 4, 5]; track i) {
                 <div class="skeleton-card">
                     <div class="skeleton-icon"></div>
                     <div class="skeleton-lines">
@@ -123,6 +123,15 @@
                 <div class="stat-content">
                     <span class="stat-label">معدل إنجاز التمارين</span>
                     <span class="stat-value">{{ summary()!.exerciseCompletionRate }}%</span>
+                </div>
+            </div>
+            <div class="stat-card stat-accent">
+                <div class="stat-icon">
+                    <i class="bi bi-clipboard-data-fill"></i>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-label">متوسط درجة التقييم</span>
+                    <span class="stat-value">{{ summary()!.averageAssessmentScore }}</span>
                 </div>
             </div>
         </div>

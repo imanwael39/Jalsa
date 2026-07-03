@@ -48,6 +48,10 @@ export const API = {
         markRead: (id: string) => `/api/notifications/${id}/read`,
         markAllRead: '/api/notifications/read-all',
     },
+    ai: {
+        summarize: (patientId: string) => `/api/ai/summarize/${patientId}`,
+        reportDraft: (patientId: string) => `/api/ai/report-draft/${patientId}`,
+    },
     chat: {
         conversations: '/api/chat/conversations',
         conversation: (conversationId: string) => `/api/chat/conversations/${conversationId}`,

@@ -154,24 +154,25 @@ describe('ReportList', () => {
         expect(routerSpy['navigate']).toHaveBeenCalledWith(['/reports', 'rep-1']);
     });
 
-    it('should delete report with confirmation', (): void => {
-        const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    it('should delete report after confirming via the modal', (): void => {
         setup();
         fixture.detectChanges();
-        component.deleteReport('rep-1');
+        component.openDeleteModal('rep-1');
+        expect(component.showDeleteModal()).toBe(true);
+        component.deleteReport();
         expect(reportServiceSpy['deleteReport']).toHaveBeenCalledWith('rep-1');
         expect(stateSpy['removeReport']).toHaveBeenCalledWith('rep-1');
         expect(notificationSpy['success']).toHaveBeenCalled();
-        confirmSpy.mockRestore();
+        expect(component.showDeleteModal()).toBe(false);
     });
 
-    it('should not delete when confirmation cancelled', (): void => {
-        const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    it('should not delete when the modal is closed without confirming', (): void => {
         setup();
         fixture.detectChanges();
-        component.deleteReport('rep-1');
+        component.openDeleteModal('rep-1');
+        component.closeDeleteModal();
+        component.deleteReport();
         expect(reportServiceSpy['deleteReport']).not.toHaveBeenCalled();
-        confirmSpy.mockRestore();
     });
 
     it('should return version count', (): void => {

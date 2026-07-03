@@ -20,13 +20,13 @@
 }
 
 /* ================================================================
-   RTL: Sidebar on right in RTL mode
+   RTL: Sidebar on right (app is RTL-only, dir="rtl" is fixed in index.html)
    ================================================================ */
-[dir='rtl'] .sidebar {
+.app-layout ::ng-deep .sidebar {
     order: 2;
 }
 
-[dir='rtl'] .app-main {
+.app-main {
     order: 1;
 }
 
@@ -60,26 +60,18 @@
         pointer-events: auto;
     }
 
-    .sidebar {
+    /* RTL-only app: sidebar slides in from the right */
+    .app-layout ::ng-deep .sidebar {
         position: fixed;
         top: 0;
         bottom: 0;
         z-index: var(--z-index-modal);
         width: 280px;
-        transform: translateX(-100%);
+        transform: translateX(100%);
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .mobile-sidebar-open .sidebar {
-        transform: translateX(0);
-    }
-
-    /* RTL: slide from right instead of left */
-    [dir='rtl'] .sidebar {
-        transform: translateX(100%);
-    }
-
-    [dir='rtl'] .mobile-sidebar-open .sidebar {
+    .app-layout.mobile-sidebar-open ::ng-deep .sidebar {
         transform: translateX(0);
     }
 
@@ -98,25 +90,25 @@
    Sidebar collapses to icon-only mode automatically
    ================================================================ */
 @media (min-width: 769px) and (max-width: 1024px) {
-    .sidebar {
+    .app-layout ::ng-deep .sidebar {
         width: 64px;
     }
 
-    .sidebar .sidebar-brand span {
+    .app-layout ::ng-deep .sidebar .sidebar-brand span {
         display: none;
     }
 
-    .sidebar .sidebar-header {
+    .app-layout ::ng-deep .sidebar .sidebar-header {
         justify-content: center;
         padding-inline: var(--space-2);
     }
 
-    .sidebar .sidebar-nav .nav-link {
+    .app-layout ::ng-deep .sidebar .sidebar-nav .nav-link {
         justify-content: center;
         padding: var(--space-3);
     }
 
-    .sidebar .sidebar-nav .nav-link span {
+    .app-layout ::ng-deep .sidebar .sidebar-nav .nav-link span {
         display: none;
     }
 }

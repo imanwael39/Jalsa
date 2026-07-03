@@ -85,7 +85,7 @@ describe('RegisterComponent', () => {
     });
     it('should return mismatch error when passwords differ', () => {
         setup();
-        component.registerForm.patchValue({ password: '12345678', confirmPassword: 'different' });
+        component.registerForm.patchValue({ password: 'Passw0rd123', confirmPassword: 'different' });
         component.registerForm.get('confirmPassword')!.markAsTouched();
         expect(component.getPasswordMismatchError()).toBe('كلمتا المرور غير متطابقتين');
     });
@@ -99,8 +99,8 @@ describe('RegisterComponent', () => {
         component.registerForm.patchValue({
             fullName: 'Test User',
             email: 't@t.com',
-            password: '12345678',
-            confirmPassword: '12345678',
+            password: 'Passw0rd123',
+            confirmPassword: 'Passw0rd123',
         });
         component.onSubmit();
         expect(authServiceSpy['register']).toHaveBeenCalled();
@@ -111,8 +111,8 @@ describe('RegisterComponent', () => {
         component.registerForm.patchValue({
             fullName: 'Test User',
             email: 't@t.com',
-            password: '12345678',
-            confirmPassword: '12345678',
+            password: 'Passw0rd123',
+            confirmPassword: 'Passw0rd123',
         });
         component.onSubmit();
         subj.next({});
@@ -124,8 +124,8 @@ describe('RegisterComponent', () => {
         component.registerForm.patchValue({
             fullName: 'Test User',
             email: 't@t.com',
-            password: '12345678',
-            confirmPassword: '12345678',
+            password: 'Passw0rd123',
+            confirmPassword: 'Passw0rd123',
         });
         component.onSubmit();
         subj.error({ error: { message: 'فشل التسجيل' } });

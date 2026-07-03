@@ -2,6 +2,7 @@
 using Jalsa.Application.DTOs.Dashboard;
 using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Application.Interfaces.Services;
+using Jalsa.Domain.Models.Clinic;
 using Jalsa.Domain.Models.Crisis;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,29 +30,41 @@ public class ProgressService : IProgressService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<DashboardSummaryDto> GetDashboardAsync()
+    public async Task<DashboardSummaryDto> GetDashboardAsync(Guid userId)
     {
+        var therapistId = await ResolveTherapistIdAsync(userId);
+
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var thirtyDaysAgo = today.AddDays(-30);
         var sixMonthsAgo = today.AddMonths(-6);
         var eightWeeksAgo = today.AddDays(-56);
 
-        var totalPatients = await _patientRepository.CountAsync(_ => true);
-        var activePatients = await _patientRepository.CountAsync(p => p.Status != "Archived");
-        var archivedPatients = await _patientRepository.CountAsync(p => p.Status == "Archived");
+        var patientIds = await _patientRepository.Query()
+            .AsNoTracking()
+            .Where(p => p.TherapistId == therapistId)
+            .Select(p => p.Id)
+            .ToListAsync();
 
-        var totalSessions = await _sessionRepository.CountAsync(_ => true);
-        var sessionsThisMonth = await _sessionRepository.CountAsync(s => s.SessionDate >= thirtyDaysAgo);
+        var totalPatients = patientIds.Count;
+        var activePatients = await _patientRepository.CountAsync(
+            p => p.TherapistId == therapistId && p.Status != "Archived");
+        var archivedPatients = await _patientRepository.CountAsync(
+            p => p.TherapistId == therapistId && p.Status == "Archived");
 
-        var totalExercises = await _exerciseRepository.CountAsync(_ => true);
-        var completedExercises = await _exerciseRepository.CountAsync(e => e.Status == "Complete");
+        var totalSessions = await _sessionRepository.CountAsync(s => patientIds.Contains(s.PatientId));
+        var sessionsThisMonth = await _sessionRepository.CountAsync(
+            s => patientIds.Contains(s.PatientId) && s.SessionDate >= thirtyDaysAgo);
+
+        var totalExercises = await _exerciseRepository.CountAsync(e => patientIds.Contains(e.PatientId));
+        var completedExercises = await _exerciseRepository.CountAsync(
+            e => patientIds.Contains(e.PatientId) && e.Status == "Complete");
         var exerciseCompletionRate = totalExercises > 0
             ? (double)completedExercises / totalExercises * 100
             : 0;
 
         var assessmentScores = await _assessmentRepository.Query()
             .AsNoTracking()
-            .Where(a => a.TotalScore.HasValue)
+            .Where(a => patientIds.Contains(a.PatientId) && a.TotalScore.HasValue)
             .Select(a => a.TotalScore!.Value)
             .ToListAsync();
         var averageAssessmentScore = assessmentScores.Count > 0
@@ -60,14 +73,15 @@ public class ProgressService : IProgressService
 
         var recentAlerts = await _unitOfWork.Repository<CrisisAlert>().Query()
             .AsNoTracking()
+            .Where(a => patientIds.Contains(a.PatientId))
             .OrderByDescending(a => a.CreatedAt)
             .Take(5)
             .Select(a => $"[{a.Severity}] Alert for patient {a.PatientId} — {a.Status}")
             .ToListAsync();
 
-        var assessmentTrend = await GetAssessmentTrendAsync(sixMonthsAgo, today);
-        var exerciseCompletion = await GetExerciseCompletionBreakdownAsync();
-        var sessionFrequency = await GetSessionFrequencyAsync(eightWeeksAgo, today);
+        var assessmentTrend = await GetAssessmentTrendAsync(patientIds, sixMonthsAgo, today);
+        var exerciseCompletion = await GetExerciseCompletionBreakdownAsync(patientIds);
+        var sessionFrequency = await GetSessionFrequencyAsync(patientIds, eightWeeksAgo, today);
 
         return new DashboardSummaryDto
         {
@@ -88,11 +102,12 @@ public class ProgressService : IProgressService
         };
     }
 
-    private async Task<List<TrendDto>> GetAssessmentTrendAsync(DateOnly fromDate, DateOnly toDate)
+    private async Task<List<TrendDto>> GetAssessmentTrendAsync(List<Guid> patientIds, DateOnly fromDate, DateOnly toDate)
     {
         var assessments = await _assessmentRepository.Query()
             .AsNoTracking()
-            .Where(a => a.AssessmentDate.HasValue
+            .Where(a => patientIds.Contains(a.PatientId)
+                && a.AssessmentDate.HasValue
                 && a.AssessmentDate.Value >= fromDate
                 && a.AssessmentDate.Value <= toDate
                 && a.TotalScore.HasValue)
@@ -129,10 +144,11 @@ public class ProgressService : IProgressService
         return result;
     }
 
-    private async Task<ExerciseCompletionBreakdownDto> GetExerciseCompletionBreakdownAsync()
+    private async Task<ExerciseCompletionBreakdownDto> GetExerciseCompletionBreakdownAsync(List<Guid> patientIds)
     {
         var exercises = await _exerciseRepository.Query()
             .AsNoTracking()
+            .Where(e => patientIds.Contains(e.PatientId))
             .Select(e => e.Status)
             .ToListAsync();
 
@@ -144,11 +160,11 @@ public class ProgressService : IProgressService
         };
     }
 
-    private async Task<List<TrendDto>> GetSessionFrequencyAsync(DateOnly fromDate, DateOnly toDate)
+    private async Task<List<TrendDto>> GetSessionFrequencyAsync(List<Guid> patientIds, DateOnly fromDate, DateOnly toDate)
     {
         var sessions = await _sessionRepository.Query()
             .AsNoTracking()
-            .Where(s => s.SessionDate >= fromDate && s.SessionDate <= toDate)
+            .Where(s => patientIds.Contains(s.PatientId) && s.SessionDate >= fromDate && s.SessionDate <= toDate)
             .Select(s => s.SessionDate)
             .ToListAsync();
 
@@ -180,5 +196,14 @@ public class ProgressService : IProgressService
         var diff = (int)date.DayOfWeek - (int)DayOfWeek.Monday;
         if (diff < 0) diff += 7;
         return date.AddDays(-diff);
+    }
+
+    private async Task<Guid> ResolveTherapistIdAsync(Guid userId)
+    {
+        var therapist = await _unitOfWork.Repository<Therapist>()
+            .FindSingleAsync(t => t.UserId == userId)
+            ?? throw new UnauthorizedAccessException("Therapist profile not found.");
+
+        return therapist.Id;
     }
 }

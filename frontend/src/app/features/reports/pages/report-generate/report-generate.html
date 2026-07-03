@@ -1,9 +1,7 @@
 <div class="report-generate">
     <h2>إنشاء تقرير إحالة بالذكاء الاصطناعي</h2>
 
-    @if (error()) {
-        <div class="alert alert-danger" role="alert">{{ error() }}</div>
-    }
+    <app-ai-disclaimer [blocked]="!!error()" [message]="error() || ''"></app-ai-disclaimer>
 
     @if (generating()) {
         <div class="generating-state text-center py-5">

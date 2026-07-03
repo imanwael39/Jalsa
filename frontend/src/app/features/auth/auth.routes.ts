@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '../../core/guards/auth.guard';
 import { AuthLayoutComponent } from '../../shared/layouts/auth-layout/auth-layout.component';
+import { MainLayoutComponent } from '../../shared/layouts/main-layout/main-layout.component';
 
 export const AUTH_ROUTES: Routes = [
     {
@@ -34,7 +35,14 @@ export const AUTH_ROUTES: Routes = [
     },
     {
         path: 'profile',
+        component: MainLayoutComponent,
         canActivate: [authGuard],
-        loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent),
+        data: { breadcrumb: 'الملف الشخصي' },
+        children: [
+            {
+                path: '',
+                loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent),
+            },
+        ],
     },
 ];

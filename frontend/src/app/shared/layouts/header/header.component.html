@@ -6,17 +6,20 @@
         <span class="header-title">جلسة</span>
     </div>
     <div class="header-center">
-        <div class="search-box">
-            <i class="bi bi-search search-icon"></i>
-            <input
-                type="search"
-                class="search-input"
-                placeholder="ابحث هنا..."
-                [value]="searchQuery()"
-                (input)="onSearch($any($event.target).value)"
-                aria-label="بحث"
-            />
-        </div>
+        @if (canSearchPatients()) {
+            <div class="search-box">
+                <i class="bi bi-search search-icon"></i>
+                <input
+                    type="search"
+                    class="search-input"
+                    placeholder="ابحث عن مريض..."
+                    [value]="searchQuery()"
+                    (input)="onSearch($any($event.target).value)"
+                    (keydown.enter)="onSearchSubmit()"
+                    aria-label="ابحث عن مريض"
+                />
+            </div>
+        }
     </div>
     <div class="header-right">
         <button
@@ -65,13 +68,16 @@
                             <div
                                 class="notif-item"
                                 [class.unread]="!n.isRead"
+                                [class.notif-item-crisis]="n.type === 'CrisisAlert'"
                                 (click)="notifService.markRead(n.id)"
                                 role="button"
                                 tabindex="0"
                                 (keydown.enter)="notifService.markRead(n.id)"
                             >
-                                <div class="notif-icon">
-                                    @if (n.type === 'ExerciseReminder') {
+                                <div class="notif-icon" [class.notif-icon-crisis]="n.type === 'CrisisAlert'">
+                                    @if (n.type === 'CrisisAlert') {
+                                        <i class="bi bi-exclamation-triangle-fill"></i>
+                                    } @else if (n.type === 'ExerciseReminder') {
                                         <i class="bi bi-clipboard-check"></i>
                                     } @else {
                                         <i class="bi bi-bell"></i>

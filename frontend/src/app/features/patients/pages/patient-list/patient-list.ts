@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, DestroyRef } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, Subject, debounceTime, distinctUntilChanged, switchMap, map } from 'rxjs';
@@ -26,6 +26,7 @@ export class PatientList implements OnInit {
     private state = inject(PatientStateService);
     private notification = inject(NotificationService);
     private router = inject(Router);
+    private route = inject(ActivatedRoute);
     private destroyRef = inject(DestroyRef);
 
     patients = this.state.patients;
@@ -56,6 +57,11 @@ export class PatientList implements OnInit {
     ];
 
     ngOnInit(): void {
+        const searchFromUrl = this.route.snapshot.queryParamMap.get('search');
+        if (searchFromUrl) {
+            this.searchTerm = searchFromUrl;
+        }
+
         this.loadPatients();
 
         this.searchSubject

@@ -4,12 +4,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { InputComponent } from '../../../../shared/components/input/input.component';
+import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { passwordMatchValidator } from '../../../../shared/validators/password-match.validator';
 
 @Component({
     selector: 'app-profile',
     standalone: true,
-    imports: [ReactiveFormsModule, ButtonComponent, InputComponent],
+    imports: [ReactiveFormsModule, ButtonComponent, InputComponent, SpinnerComponent],
     templateUrl: './profile.component.html',
     styleUrls: ['./profile.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,7 +36,14 @@ export class ProfileComponent implements OnInit {
     passwordForm = this.fb.group(
         {
             currentPassword: ['', [Validators.required]],
-            newPassword: ['', [Validators.required, Validators.minLength(6)]],
+            newPassword: [
+                '',
+                [
+                    Validators.required,
+                    Validators.minLength(8),
+                    Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/),
+                ],
+            ],
             confirmPassword: ['', [Validators.required]],
         },
         { validators: passwordMatchValidator }
@@ -128,7 +136,10 @@ export class ProfileComponent implements OnInit {
             return 'كلمة المرور الجديدة مطلوبة';
         }
         if (control.errors['minlength']) {
-            return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+            return 'كلمة المرور يجب أن تكون 8 أحرف على الأقل';
+        }
+        if (control.errors['pattern']) {
+            return 'يجب أن تحتوي كلمة المرور على حرف كبير وحرف صغير ورقم';
         }
         return '';
     }

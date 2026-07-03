@@ -38,8 +38,12 @@
                 } @else if (selectedFileName()) {
                     <i class="bi bi-file-earmark-check" aria-hidden="true"></i>
                     <span>{{ selectedFileName() }}</span>
-                    <button type="button" class="btn-clear" (click)="clearFileSelection(); $event.preventDefault()"
-                            ariaLabel="إزالة الملف المحدد">
+                    <button
+                        type="button"
+                        class="btn-clear"
+                        (click)="clearFileSelection(); $event.preventDefault()"
+                        aria-label="إزالة الملف المحدد"
+                    >
                         <i class="bi bi-x-circle" aria-hidden="true"></i>
                     </button>
                 } @else {
@@ -48,10 +52,14 @@
                     <span class="upload-hint">الصيغ المدعومة: JPG, PNG, PDF (حد أقصى 10 ميجابايت)</span>
                 }
             </label>
-            <input type="file" id="fileInput" class="file-input"
-                   (change)="onFileSelected($event)"
-                   accept="image/*,.pdf"
-                   ariaLabel="رفع صورة استمارة الاستقبال">
+            <input
+                type="file"
+                id="fileInput"
+                class="file-input"
+                (change)="onFileSelected($event)"
+                accept="image/*,.pdf"
+                aria-label="رفع صورة استمارة الاستقبال"
+            />
         </div>
 
         @if (ocrSuccess()) {
@@ -75,7 +83,8 @@
                             formControlName="presentingProblem"
                             name="presentingProblem"
                             rows="3"
-                            placeholder="صف السبب الرئيسي للزيارة"></textarea>
+                            placeholder="صف السبب الرئيسي للزيارة"
+                        ></textarea>
                     </div>
                     <div class="form-field full-width">
                         <label for="psychiatricHistory" class="form-label">التاريخ النفسي</label>
@@ -85,7 +94,8 @@
                             formControlName="psychiatricHistory"
                             name="psychiatricHistory"
                             rows="3"
-                            placeholder="التشخيصات والعلاجات النفسية السابقة، التنقلات المستشفية"></textarea>
+                            placeholder="التشخيصات والعلاجات النفسية السابقة، التنقلات المستشفية"
+                        ></textarea>
                     </div>
                     <div class="form-field full-width">
                         <label for="familyHistory" class="form-label">التاريخ العائلي</label>
@@ -95,7 +105,8 @@
                             formControlName="familyHistory"
                             name="familyHistory"
                             rows="3"
-                            placeholder="التاريخ الطبي/النفسي العائلي ذي الصلة"></textarea>
+                            placeholder="التاريخ الطبي/النفسي العائلي ذي الصلة"
+                        ></textarea>
                     </div>
                     <div class="form-field full-width">
                         <label for="medications" class="form-label">الأدوية الحالية</label>
@@ -105,7 +116,8 @@
                             formControlName="medications"
                             name="medications"
                             rows="2"
-                            placeholder="أدخل الأدوية الحالية والجرعات"></textarea>
+                            placeholder="أدخل الأدوية الحالية والجرعات"
+                        ></textarea>
                     </div>
                     <div class="form-field full-width">
                         <label for="socialHistory" class="form-label">التاريخ الاجتماعي / معلومات أخرى</label>
@@ -115,17 +127,14 @@
                             formControlName="socialHistory"
                             name="socialHistory"
                             rows="3"
-                            placeholder="التاريخ الاجتماعي، معايشة، مهنة، إلخ."></textarea>
+                            placeholder="التاريخ الاجتماعي، معايشة، مهنة، إلخ."
+                        ></textarea>
                     </div>
                 </div>
             </div>
 
             <div class="form-actions">
-                <app-button
-                    type="submit"
-                    variant="primary"
-                    [loading]="loading()"
-                    ariaLabel="حفظ استمارة الاستقبال">
+                <app-button type="submit" variant="primary" [loading]="loading()" ariaLabel="حفظ استمارة الاستقبال">
                     حفظ استمارة الاستقبال
                 </app-button>
                 <app-button
@@ -133,7 +142,8 @@
                     variant="secondary"
                     (clicked)="goBack()"
                     [disabled]="loading()"
-                    ariaLabel="إلغاء والعودة">
+                    ariaLabel="إلغاء والعودة"
+                >
                     إلغاء
                 </app-button>
             </div>

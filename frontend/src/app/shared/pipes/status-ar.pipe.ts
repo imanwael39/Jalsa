@@ -6,6 +6,7 @@ const STATUS_MAP: Record<string, string> = {
     Draft: 'مسودة',
     Completed: 'مكتمل',
     Approved: 'معتمد',
+    Rejected: 'مرفوض',
     Submitted: 'مُقدَّم',
     NotStarted: 'لم يبدأ',
     InProgress: 'قيد التنفيذ',

@@ -35,6 +35,14 @@ export class ExerciseStateService {
         this.exercisesSignal.update(list => [...list, exercise]);
     }
 
+    updateExercise(updated: Exercise): void {
+        this.exercisesSignal.update(list => list.map(e => (e.id === updated.id ? updated : e)));
+    }
+
+    removeExercise(id: string): void {
+        this.exercisesSignal.update(list => list.filter(e => e.id !== id));
+    }
+
     setLogs(logs: ExerciseLog[]): void {
         this.logsSignal.set(logs);
     }

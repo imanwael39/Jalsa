@@ -80,6 +80,17 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.searchQuery.set(value);
     }
 
+    onSearchSubmit(): void {
+        const query = this.searchQuery().trim();
+        if (!query) return;
+
+        this.router.navigate(['/patients'], { queryParams: { search: query } });
+    }
+
+    canSearchPatients(): boolean {
+        return this.authService.hasAnyRole(['Therapist', 'Admin']);
+    }
+
     toggleTheme(): void {
         this.appState.toggleTheme();
     }
