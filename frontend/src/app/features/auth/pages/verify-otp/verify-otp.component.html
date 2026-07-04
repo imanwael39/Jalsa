@@ -1,0 +1,32 @@
+<h2 class="page-title">رمز التحقق</h2>
+
+<p class="subtitle">أدخل رمز التحقق المرسل إلى بريدك الإلكتروني.</p>
+
+<form [formGroup]="otpForm" (ngSubmit)="onSubmit()" novalidate>
+    <app-input
+        label="رمز التحقق"
+        type="text"
+        placeholder="أدخل رمز التحقق"
+        formControlName="otp"
+        [error]="getOtpError()"
+        [required]="true"
+    ></app-input>
+
+    @if (error()) {
+        <div class="alert alert-error" role="alert">
+            {{ error() }}
+        </div>
+    }
+
+    <app-button type="submit" variant="primary" [loading]="loading()" class="submit-btn">
+        @if (loading()) {
+            جاري التحقق...
+        } @else {
+            تحقق
+        }
+    </app-button>
+
+    <div class="text-center">
+        <a routerLink="/auth/login" class="back-link">العودة إلى تسجيل الدخول</a>
+    </div>
+</form>

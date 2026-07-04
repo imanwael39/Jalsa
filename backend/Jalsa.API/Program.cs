@@ -219,6 +219,8 @@ builder.Services.AddHangfireServer();
 
 var app = builder.Build();
 
+app.UseMiddleware<Jalsa.API.Middleware.ExceptionHandlingMiddleware>();
+
 app.Use(async (context, next) =>
 {
     context.Response.Headers["X-Content-Type-Options"] = "nosniff";
