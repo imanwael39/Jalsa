@@ -15,14 +15,12 @@ export const API = {
         archive: (id: string) => `/api/patient/${id}/archive`,
         restore: (id: string) => `/api/patient/${id}/restore`,
         intake: (id: string) => `/api/patient/${id}/intake`,
-        intakeOcr: (id: string, intakeFormId: string) => `/api/patient/${id}/intake/${intakeFormId}/ocr`,
         assessments: (id: string) => `/api/patient/${id}/assessments`,
     },
     sessions: {
         base: '/api/sessions',
         byPatient: (patientId: string) => `/api/sessions/patient/${patientId}`,
         byId: (id: string) => `/api/sessions/${id}`,
-        voice: (id: string) => `/api/sessions/${id}/voice`,
         summary: (id: string) => `/api/sessions/${id}/summary`,
     },
     exercises: {

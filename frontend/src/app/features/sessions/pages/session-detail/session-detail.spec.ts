@@ -18,7 +18,6 @@ const mockSession: Session = {
     durationMinutes: 50,
     sessionType: 'Individual',
     status: 'Completed',
-    voiceMemoUrl: null,
     createdAt: '2024-01-15T10:00:00Z',
     updatedAt: '2024-01-15T11:00:00Z',
 };

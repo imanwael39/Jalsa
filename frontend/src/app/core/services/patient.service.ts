@@ -54,19 +54,6 @@ export class PatientService {
         return this.http.post<IntakeForm>(API.patients.intake(patientId), data);
     }
 
-    uploadIntakeImage(
-        patientId: string,
-        intakeFormId: string,
-        file: File
-    ): Observable<{ imageUrl: string; extractedData: Record<string, string> }> {
-        const formData = new FormData();
-        formData.append('file', file);
-        return this.http.upload<{ imageUrl: string; extractedData: Record<string, string> }>(
-            API.patients.intakeOcr(patientId, intakeFormId),
-            formData
-        );
-    }
-
     getAssessments(patientId: string): Observable<Assessment[]> {
         return this.http.get<Assessment[]>(API.patients.assessments(patientId));
     }

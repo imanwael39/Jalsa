@@ -8,7 +8,6 @@ export interface Session {
     durationMinutes: number | null;
     sessionType: string | null;
     status: string;
-    voiceMemoUrl: string | null;
     createdAt: string;
     updatedAt: string;
 }
@@ -23,15 +22,6 @@ export interface SessionNote {
     nextGoals: string | null;
     createdAt: string;
     updatedAt: string;
-}
-
-export interface VoiceMemo {
-    id: string;
-    sessionId: string;
-    audioUrl: string | null;
-    transcript: string | null;
-    durationSeconds: number | null;
-    createdAt: string;
 }
 
 export interface CreateSessionRequest {

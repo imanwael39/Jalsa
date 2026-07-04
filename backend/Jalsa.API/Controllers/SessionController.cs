@@ -12,16 +12,13 @@ namespace Jalsa.API.Controllers;
 public class SessionController : BaseController
 {
     private readonly ISessionService _sessionService;
-    private readonly ISttService _sttService;
     private readonly ISummarizationService _summarizationService;
 
     public SessionController(
         ISessionService sessionService,
-        ISttService sttService,
         ISummarizationService summarizationService)
     {
         _sessionService = sessionService;
-        _sttService = sttService;
         _summarizationService = summarizationService;
     }
 
@@ -91,21 +88,5 @@ public class SessionController : BaseController
 
         var summary = await _summarizationService.SummarizeSessionAsync(id, language);
         return Ok(new { sessionId = id, summary });
-    }
-
-    [HttpPost("{id:guid}/voice")]
-    [Consumes("multipart/form-data")]
-    public async Task<IActionResult> UploadVoiceMemo(Guid id, IFormFile audio)
-    {
-        if (audio is null || audio.Length == 0)
-            return BadRequest(new { message = "الملف الصوتي مطلوب" });
-
-        var therapistId = GetCurrentUserId();
-
-        using var stream = audio.OpenReadStream();
-        var transcript = await _sttService.TranscribeAsync(stream, audio.FileName);
-
-        var result = await _sessionService.SaveVoiceMemoAsync(id, transcript, therapistId);
-        return Ok(result);
     }
 }

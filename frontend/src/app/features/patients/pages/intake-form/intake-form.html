@@ -8,7 +8,7 @@
         </div>
     </div>
 
-    @if (loading() && !ocrLoading()) {
+    @if (loading()) {
         <div class="loading-container">
             <app-spinner size="lg" label="جاري تحميل استمارة الاستقبال..."></app-spinner>
         </div>
@@ -21,48 +21,7 @@
         </div>
     }
 
-    <div class="upload-section">
-        <h2 class="section-title">
-            <i class="bi bi-cloud-upload" aria-hidden="true"></i>
-            رفع صورة استمارة الاستقبال
-        </h2>
-        <p class="section-description">
-            ارفع صورة ممسوحة لاستمارة الاستقبال لاستخراج البيانات تلقائياً باستخدام التعرف الضوئي.
-        </p>
-
-        <div class="upload-area">
-            <label for="fileInput" class="upload-label" [class.has-file]="selectedFileName()">
-                @if (ocrLoading()) {
-                    <app-spinner size="sm" label="جاري معالجة التعرف الضوئي..."></app-spinner>
-                    <span>جاري معالجة التعرف الضوئي...</span>
-                } @else if (selectedFileName()) {
-                    <i class="bi bi-file-earmark-check" aria-hidden="true"></i>
-                    <span>{{ selectedFileName() }}</span>
-                    <button type="button" class="btn-clear" (click)="clearFileSelection(); $event.preventDefault()"
-                            ariaLabel="إزالة الملف المحدد">
-                        <i class="bi bi-x-circle" aria-hidden="true"></i>
-                    </button>
-                } @else {
-                    <i class="bi bi-cloud-arrow-up" aria-hidden="true"></i>
-                    <span>اضغط للرفع أو اسحب وأفلت</span>
-                    <span class="upload-hint">الصيغ المدعومة: JPG, PNG, PDF (حد أقصى 10 ميجابايت)</span>
-                }
-            </label>
-            <input type="file" id="fileInput" class="file-input"
-                   (change)="onFileSelected($event)"
-                   accept="image/*,.pdf"
-                   ariaLabel="رفع صورة استمارة الاستقبال">
-        </div>
-
-        @if (ocrSuccess()) {
-            <div class="ocr-success" role="status">
-                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-                تم استخراج البيانات بنجاح. راجع وعدل الحقول أدناه.
-            </div>
-        }
-    </div>
-
-    @if (!loading() || ocrLoading()) {
+    @if (!loading()) {
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-content" novalidate>
             <div class="form-section">
                 <h2 class="section-title">المعلومات السريرية</h2>

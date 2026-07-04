@@ -146,36 +146,6 @@ public class SessionService : ISessionService
         return session.SessionNote is null ? null : MapToNoteViewDto(session.SessionNote);
     }
 
-    public async Task<VoiceMemoViewDto> SaveVoiceMemoAsync(Guid sessionId, string? transcript, Guid therapistId)
-    {
-        var session = await _sessionRepository.GetByIdAsync(sessionId)
-            ?? throw new KeyNotFoundException($"Session with ID {sessionId} not found.");
-
-        await EnsurePatientBelongsToTherapist(session.PatientId, therapistId);
-
-        var memo = new VoiceMemo
-        {
-            Id = Guid.NewGuid(),
-            SessionId = sessionId,
-            AudioUrl = null,
-            Transcript = transcript,
-            DurationSeconds = null,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        var memoRepo = _unitOfWork.Repository<VoiceMemo>();
-        await memoRepo.AddAsync(memo);
-        await _unitOfWork.SaveChangesAsync();
-
-        return new VoiceMemoViewDto
-        {
-            Id = memo.Id,
-            SessionId = memo.SessionId,
-            Transcript = memo.Transcript,
-            CreatedAt = memo.CreatedAt
-        };
-    }
-
     private async Task<Session> GetSessionWithOwnershipCheck(Guid sessionId, Guid therapistId)
     {
         var session = await _sessionRepository.GetByIdAsync(sessionId)

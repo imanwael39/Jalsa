@@ -13,7 +13,6 @@ namespace Jalsa.Tests;
 public class SessionControllerTests
 {
     private readonly Mock<ISessionService> _sessionServiceMock;
-    private readonly Mock<ISttService> _sttServiceMock;
     private readonly Mock<ISummarizationService> _summarizationServiceMock;
     private readonly SessionController _sut;
     private readonly Guid _therapistUserId;
@@ -21,12 +20,10 @@ public class SessionControllerTests
     public SessionControllerTests()
     {
         _sessionServiceMock = new Mock<ISessionService>();
-        _sttServiceMock = new Mock<ISttService>();
         _summarizationServiceMock = new Mock<ISummarizationService>();
 
         _sut = new SessionController(
             _sessionServiceMock.Object,
-            _sttServiceMock.Object,
             _summarizationServiceMock.Object);
 
         _therapistUserId = Guid.NewGuid();

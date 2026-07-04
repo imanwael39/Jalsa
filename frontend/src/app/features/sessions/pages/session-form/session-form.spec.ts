@@ -18,7 +18,6 @@ const mockSession: Session = {
     durationMinutes: 50,
     sessionType: 'Individual',
     status: 'Draft',
-    voiceMemoUrl: null,
     createdAt: '2024-01-15T10:00:00Z',
     updatedAt: '2024-01-15T11:00:00Z',
 };
@@ -173,12 +172,5 @@ describe('SessionForm', () => {
         fixture.detectChanges();
         component.cancel();
         expect(routerSpy['navigate']).toHaveBeenCalledWith(['/sessions/patient', 'pat-1']);
-    });
-
-    it('should handle voice upload', (): void => {
-        setup();
-        fixture.detectChanges();
-        component.onVoiceUploaded('http://example.com/voice.mp3');
-        expect(component.voiceMemoUrl()).toBe('http://example.com/voice.mp3');
     });
 });

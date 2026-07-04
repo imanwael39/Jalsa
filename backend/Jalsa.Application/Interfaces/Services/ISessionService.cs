@@ -11,5 +11,4 @@ public interface ISessionService
     Task<IEnumerable<SessionViewDto>> GetByPatientIdAsync(Guid patientId, Guid therapistId);
     Task<SessionNoteViewDto> SaveNoteAsync(Guid sessionId, SessionNoteDto dto, Guid therapistId);
     Task<SessionNoteViewDto?> GetNoteAsync(Guid sessionId, Guid therapistId);
-    Task<VoiceMemoViewDto> SaveVoiceMemoAsync(Guid sessionId, string? transcript, Guid therapistId);
 }

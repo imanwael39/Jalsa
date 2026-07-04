@@ -24,7 +24,6 @@ interface SetupOptions {
     patientId?: string | null;
     getIntakeFormReturn?: Observable<unknown>;
     saveIntakeFormReturn?: Observable<unknown>;
-    uploadIntakeImageReturn?: Observable<unknown>;
 }
 
 describe('IntakeForm', () => {
@@ -35,21 +34,11 @@ describe('IntakeForm', () => {
     let routerSpy: Record<string, ReturnType<typeof vi.fn>>;
 
     const setup = (opts: SetupOptions = {}): void => {
-        const { patientId = 'patient-123', getIntakeFormReturn, saveIntakeFormReturn, uploadIntakeImageReturn } = opts;
+        const { patientId = 'patient-123', getIntakeFormReturn, saveIntakeFormReturn } = opts;
 
         patientServiceSpy = {
             getIntakeForm: vi.fn().mockReturnValue(getIntakeFormReturn ?? of(mockIntakeForm)),
             saveIntakeForm: vi.fn().mockReturnValue(saveIntakeFormReturn ?? of(mockIntakeForm)),
-            uploadIntakeImage: vi.fn().mockReturnValue(
-                uploadIntakeImageReturn ??
-                    of({
-                        imageUrl: 'http://example.com/image.jpg',
-                        extractedData: {
-                            presentingProblem: 'Extracted problem',
-                            psychiatricHistory: 'Extracted history',
-                        },
-                    })
-            ),
         };
         notificationSpy = { success: vi.fn(), error: vi.fn() };
         routerSpy = { navigate: vi.fn() };
@@ -108,29 +97,6 @@ describe('IntakeForm', () => {
         expect(component.loading()).toBe(false);
     });
 
-    it('should upload image and pre-fill form', (): void => {
-        setup();
-        fixture.detectChanges();
-        const mockFile = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
-        const mockEvent = {
-            target: { files: [mockFile] },
-        } as unknown as Event;
-        component.onFileSelected(mockEvent);
-        expect(patientServiceSpy['uploadIntakeImage']).toHaveBeenCalled();
-        expect(component.ocrSuccess()).toBe(true);
-    });
-
-    it('should handle upload error', (): void => {
-        setup({ uploadIntakeImageReturn: throwError(() => ({ error: { message: 'Upload failed' } })) });
-        fixture.detectChanges();
-        const mockFile = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
-        const mockEvent = {
-            target: { files: [mockFile] },
-        } as unknown as Event;
-        component.onFileSelected(mockEvent);
-        expect(component.error()).toBe('Upload failed');
-    });
-
     it('should submit form successfully', (): void => {
         setup();
         fixture.detectChanges();
@@ -155,17 +121,5 @@ describe('IntakeForm', () => {
         fixture.detectChanges();
         component.goBack();
         expect(routerSpy['navigate']).toHaveBeenCalledWith(['/patients', 'patient-123']);
-    });
-
-    it('should clear file selection', (): void => {
-        setup();
-        fixture.detectChanges();
-        component.onFileSelected({
-            target: { files: [new File(['test'], 'test.jpg', { type: 'image/jpeg' })] },
-        } as unknown as Event);
-        expect(component.selectedFileName()).toBeTruthy();
-        component.clearFileSelection();
-        expect(component.selectedFileName()).toBeNull();
-        expect(component.ocrSuccess()).toBe(false);
     });
 });
