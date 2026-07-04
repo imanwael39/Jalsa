@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Jalsa.Application.DTOs.Chat;
 using Jalsa.Application.Interfaces.Services;
+using Jalsa.API.Hubs;
 
 namespace Jalsa.API.Controllers;
 
@@ -11,10 +13,12 @@ namespace Jalsa.API.Controllers;
 public class ChatController : BaseController
 {
     private readonly IChatService _chatService;
+    private readonly IHubContext<ChatHub> _chatHub;
 
-    public ChatController(IChatService chatService)
+    public ChatController(IChatService chatService, IHubContext<ChatHub> chatHub)
     {
         _chatService = chatService;
+        _chatHub = chatHub;
     }
 
     [HttpGet("conversations")]
@@ -71,6 +75,8 @@ public class ChatController : BaseController
 
         if (result is null)
             return NotFound(new { message = "المحادثة غير موجودة" });
+
+        await _chatHub.Clients.Group(dto.ConversationId.ToString()).SendAsync("ReceiveHumanMessage", result);
 
         return Ok(result);
     }
