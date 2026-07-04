@@ -14,7 +14,6 @@ const mockSession: Session = {
     intakeFormId: null,
     sessionNumber: 1,
     sessionDate: '2024-01-15T10:00:00Z',
-    content: 'Session content',
     durationMinutes: 50,
     sessionType: 'Individual',
     status: 'Completed',
@@ -126,6 +125,16 @@ describe('SessionDetail', () => {
         expect(stateSpy['removeSession']).toHaveBeenCalled();
         expect(stateSpy['clearSelected']).toHaveBeenCalled();
         expect(notificationSpy['success']).toHaveBeenCalled();
+    });
+
+    it('should require the delete modal to be opened before showing the confirmation', (): void => {
+        setup();
+        fixture.detectChanges();
+        expect(component.showDeleteModal()).toBe(false);
+        component.openDeleteModal();
+        expect(component.showDeleteModal()).toBe(true);
+        component.closeDeleteModal();
+        expect(component.showDeleteModal()).toBe(false);
     });
 
     it('should format date', (): void => {

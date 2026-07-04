@@ -14,7 +14,6 @@ const mockSession: Session = {
     intakeFormId: null,
     sessionNumber: 1,
     sessionDate: '2024-01-15T10:00:00Z',
-    content: 'Session content',
     durationMinutes: 50,
     sessionType: 'Individual',
     status: 'Draft',

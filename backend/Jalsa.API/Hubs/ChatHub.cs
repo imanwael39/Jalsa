@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.Domain.Models.Chat;
+using Jalsa.Domain.Models.Clinic;
 using Jalsa.Domain.Models.Crisis;
 using Jalsa.Domain.Models.Notification;
 using Jalsa.Infrastructure.Data;
@@ -38,6 +39,8 @@ public class ChatHub : Hub
         if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             throw new HubException("Unauthorized: invalid user identity.");
 
+        var therapistId = await TryResolveTherapistIdAsync(userId);
+
         var conversation = await _context.ChatConversations
             .Include(c => c.Patient)
             .FirstOrDefaultAsync(c => c.Id == conversationId);
@@ -45,7 +48,7 @@ public class ChatHub : Hub
         if (conversation == null)
             throw new HubException("Conversation not found.");
 
-        if (conversation.Patient.TherapistId != userId && conversation.Patient.UserId != userId)
+        if (conversation.Patient.TherapistId != therapistId && conversation.Patient.UserId != userId)
             throw new HubException("غير مصرح لك بالوصول إلى هذه المحادثة");
 
         var patientMsg = new ChatMessage
@@ -129,6 +132,8 @@ public class ChatHub : Hub
         if (!Guid.TryParse(conversationId, out var convGuid))
             throw new HubException("Invalid conversation ID.");
 
+        var therapistId = await TryResolveTherapistIdAsync(userId);
+
         var conversation = await _context.ChatConversations
             .Include(c => c.Patient)
             .FirstOrDefaultAsync(c => c.Id == convGuid);
@@ -136,9 +141,15 @@ public class ChatHub : Hub
         if (conversation == null)
             throw new HubException("Conversation not found.");
 
-        if (conversation.Patient.TherapistId != userId && conversation.Patient.UserId != userId)
+        if (conversation.Patient.TherapistId != therapistId && conversation.Patient.UserId != userId)
             throw new HubException("غير مصرح لك بالوصول إلى هذه المحادثة");
 
         await Groups.AddToGroupAsync(Context.ConnectionId, conversationId);
+    }
+
+    private async Task<Guid?> TryResolveTherapistIdAsync(Guid userId)
+    {
+        var therapist = await _context.Therapists.FirstOrDefaultAsync(t => t.UserId == userId);
+        return therapist?.Id;
     }
 }

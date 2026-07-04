@@ -5,11 +5,17 @@ export const CHATBOT_ROUTES: Routes = [
     {
         path: '',
         canActivate: [authGuard],
-        loadComponent: () => import('./pages/chat-list/chat-list.component').then(m => m.ChatListComponent),
-    },
-    {
-        path: ':id',
-        canActivate: [authGuard],
-        loadComponent: () => import('./pages/chat-room/chat-room.component').then(m => m.ChatRoomComponent),
+        data: { breadcrumb: 'المحادثات' },
+        children: [
+            {
+                path: '',
+                loadComponent: () => import('./pages/chat-list/chat-list.component').then(m => m.ChatListComponent),
+            },
+            {
+                path: ':id',
+                data: { breadcrumb: 'المحادثة' },
+                loadComponent: () => import('./pages/chat-room/chat-room.component').then(m => m.ChatRoomComponent),
+            },
+        ],
     },
 ];

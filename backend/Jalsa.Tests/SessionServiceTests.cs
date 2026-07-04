@@ -16,6 +16,7 @@ public class SessionServiceTests
     private readonly Mock<IPatientRepository> _patientRepoMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IGenericRepository<Therapist>> _therapistRepoMock;
+    private readonly Mock<IGenericRepository<SessionNote>> _sessionNoteRepoMock;
     private readonly SessionService _sut;
 
     private readonly Guid _therapistUserId = Guid.NewGuid();
@@ -28,10 +29,15 @@ public class SessionServiceTests
         _patientRepoMock = new Mock<IPatientRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _therapistRepoMock = new Mock<IGenericRepository<Therapist>>();
+        _sessionNoteRepoMock = new Mock<IGenericRepository<SessionNote>>();
 
         _unitOfWorkMock
             .Setup(x => x.Repository<Therapist>())
             .Returns(_therapistRepoMock.Object);
+
+        _unitOfWorkMock
+            .Setup(x => x.Repository<SessionNote>())
+            .Returns(_sessionNoteRepoMock.Object);
 
         _unitOfWorkMock
             .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
@@ -256,7 +262,11 @@ public class SessionServiceTests
         result.Observations.Should().Be(dto.Observations);
         result.Interventions.Should().Be(dto.Interventions);
         result.SessionId.Should().Be(sessionId);
-        _sessionRepoMock.Verify(x => x.Update(session), Times.Once);
+        // The note's Id is a client-assigned, non-default GUID, so EF Core's automatic
+        // graph-fixup can't distinguish it from an existing entity and would mark it Modified
+        // instead of Added. It must be added explicitly to avoid a DbUpdateConcurrencyException.
+        _sessionNoteRepoMock.Verify(x => x.AddAsync(It.IsAny<SessionNote>(), It.IsAny<CancellationToken>()), Times.Once);
+        _sessionRepoMock.Verify(x => x.Update(It.IsAny<Session>()), Times.Never);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 

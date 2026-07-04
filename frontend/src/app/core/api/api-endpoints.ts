@@ -15,6 +15,7 @@ export const API = {
         archive: (id: string) => `/api/patient/${id}/archive`,
         restore: (id: string) => `/api/patient/${id}/restore`,
         intake: (id: string) => `/api/patient/${id}/intake`,
+        intakeOcr: (id: string, intakeFormId: string) => `/api/patient/${id}/intake/${intakeFormId}/ocr`,
         assessments: (id: string) => `/api/patient/${id}/assessments`,
     },
     sessions: {
@@ -45,6 +46,10 @@ export const API = {
         base: '/api/notifications',
         markRead: (id: string) => `/api/notifications/${id}/read`,
         markAllRead: '/api/notifications/read-all',
+    },
+    ai: {
+        summarize: (patientId: string) => `/api/ai/summarize/${patientId}`,
+        reportDraft: (patientId: string) => `/api/ai/report-draft/${patientId}`,
     },
     chat: {
         conversations: '/api/chat/conversations',

@@ -41,7 +41,10 @@ describe('LoginComponent', () => {
                 { provide: AuthService, useValue: authServiceSpy },
                 { provide: NotificationService, useValue: notificationSpy },
                 { provide: Router, useValue: routerSpy },
-                { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => null }, queryParams: {} } } },
+                {
+                    provide: ActivatedRoute,
+                    useValue: { snapshot: { paramMap: { get: (): null => null }, queryParams: {} } },
+                },
             ],
         });
 

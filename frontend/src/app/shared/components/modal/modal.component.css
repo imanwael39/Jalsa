@@ -42,17 +42,13 @@
 
 .btn-close {
     padding: var(--space-1);
-    margin: calc(-1 * var(--space-1)) calc(-1 * var(--space-1)) calc(-1 * var(--space-1)) auto;
+    margin: calc(-1 * var(--space-1)) auto calc(-1 * var(--space-1)) calc(-1 * var(--space-1));
     border-radius: var(--radius-sm);
     transition: background-color var(--transition-fast);
 }
 
 .btn-close:hover {
     background-color: var(--gray-200);
-}
-
-[dir='rtl'] .btn-close {
-    margin: calc(-1 * var(--space-1)) auto calc(-1 * var(--space-1)) calc(-1 * var(--space-1));
 }
 
 .modal-body-scrollable {

@@ -2,6 +2,7 @@
 using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Application.Interfaces.Services;
 using Jalsa.Domain.Models.Chat;
+using Jalsa.Domain.Models.Clinic;
 
 namespace Jalsa.Application.Services;
 
@@ -16,10 +17,11 @@ public class ChatService : IChatService
 
     public async Task<IEnumerable<ConversationViewDto>> GetConversationsAsync(Guid userId, Guid? patientId)
     {
+        var therapistId = await TryResolveTherapistIdAsync(userId);
         var repo = _unitOfWork.Repository<ChatConversation>();
         var conversations = patientId.HasValue
-            ? await repo.FindAsync(c => c.PatientId == patientId.Value && (c.Patient.TherapistId == userId || c.Patient.UserId == userId))
-            : await repo.FindAsync(c => c.Patient.TherapistId == userId || c.Patient.UserId == userId);
+            ? await repo.FindAsync(c => c.PatientId == patientId.Value && (c.Patient.TherapistId == therapistId || c.Patient.UserId == userId))
+            : await repo.FindAsync(c => c.Patient.TherapistId == therapistId || c.Patient.UserId == userId);
 
         return conversations
             .OrderByDescending(c => c.LastActivityAt ?? c.CreatedAt)
@@ -37,8 +39,9 @@ public class ChatService : IChatService
 
     public async Task<ChatHistoryDto?> GetHistoryAsync(Guid userId, Guid conversationId)
     {
+        var therapistId = await TryResolveTherapistIdAsync(userId);
         var repo = _unitOfWork.Repository<ChatConversation>();
-        var conversation = await repo.FindSingleAsync(c => c.Id == conversationId && (c.Patient.TherapistId == userId || c.Patient.UserId == userId));
+        var conversation = await repo.FindSingleAsync(c => c.Id == conversationId && (c.Patient.TherapistId == therapistId || c.Patient.UserId == userId));
 
         if (conversation is null)
             return null;
@@ -66,8 +69,9 @@ public class ChatService : IChatService
 
     public async Task<ConversationViewDto> CreateConversationAsync(Guid userId, Guid patientId)
     {
+        var therapistId = await TryResolveTherapistIdAsync(userId);
         var patientRepo = _unitOfWork.Repository<Domain.Models.Patient.Patient>();
-        var patient = await patientRepo.FindSingleAsync(p => p.Id == patientId && (p.TherapistId == userId || p.UserId == userId));
+        var patient = await patientRepo.FindSingleAsync(p => p.Id == patientId && (p.TherapistId == therapistId || p.UserId == userId));
         if (patient is null)
             throw new KeyNotFoundException("المريض غير موجود");
 
@@ -113,8 +117,9 @@ public class ChatService : IChatService
 
     public async Task<ConversationViewDto?> CloseConversationAsync(Guid userId, Guid conversationId)
     {
+        var therapistId = await TryResolveTherapistIdAsync(userId);
         var repo = _unitOfWork.Repository<ChatConversation>();
-        var conversation = await repo.FindSingleAsync(c => c.Id == conversationId && (c.Patient.TherapistId == userId || c.Patient.UserId == userId));
+        var conversation = await repo.FindSingleAsync(c => c.Id == conversationId && (c.Patient.TherapistId == therapistId || c.Patient.UserId == userId));
 
         if (conversation is null)
             return null;
@@ -136,8 +141,9 @@ public class ChatService : IChatService
 
     public async Task<ChatMessageViewDto?> SendMessageAsync(Guid userId, Guid conversationId, string content, string senderType)
     {
+        var therapistId = await TryResolveTherapistIdAsync(userId);
         var repo = _unitOfWork.Repository<ChatConversation>();
-        var conversation = await repo.FindSingleAsync(c => c.Id == conversationId && (c.Patient.TherapistId == userId || c.Patient.UserId == userId));
+        var conversation = await repo.FindSingleAsync(c => c.Id == conversationId && (c.Patient.TherapistId == therapistId || c.Patient.UserId == userId));
 
         if (conversation is null)
             return null;
@@ -166,5 +172,11 @@ public class ChatService : IChatService
             Content = message.Content,
             CreatedAt = message.CreatedAt
         };
+    }
+
+    private async Task<Guid?> TryResolveTherapistIdAsync(Guid userId)
+    {
+        var therapist = await _unitOfWork.Repository<Therapist>().FindSingleAsync(t => t.UserId == userId);
+        return therapist?.Id;
     }
 }

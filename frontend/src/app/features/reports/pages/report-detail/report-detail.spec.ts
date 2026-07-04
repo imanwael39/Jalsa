@@ -45,6 +45,7 @@ interface SetupOptions {
     routeId?: string | null;
     getReportReturn?: Observable<unknown>;
     approveReportReturn?: Observable<unknown>;
+    rejectReportReturn?: Observable<unknown>;
     deleteReportReturn?: Observable<unknown>;
 }
 
@@ -57,11 +58,18 @@ describe('ReportDetail', () => {
     let routerSpy: Record<string, ReturnType<typeof vi.fn>>;
 
     const setup = (opts: SetupOptions = {}): void => {
-        const { routeId = 'rep-1', getReportReturn, approveReportReturn, deleteReportReturn } = opts;
+        const {
+            routeId = 'rep-1',
+            getReportReturn,
+            approveReportReturn,
+            rejectReportReturn,
+            deleteReportReturn,
+        } = opts;
 
         reportServiceSpy = {
             getReport: vi.fn().mockReturnValue(getReportReturn ?? of(mockReport)),
             approveReport: vi.fn().mockReturnValue(approveReportReturn ?? of({ ...mockReport, status: 'Approved' })),
+            rejectReport: vi.fn().mockReturnValue(rejectReportReturn ?? of({ ...mockReport, status: 'Rejected' })),
             deleteReport: vi.fn().mockReturnValue(deleteReportReturn ?? of(undefined)),
             exportReport: vi.fn().mockReturnValue(of(new Blob(['test'], { type: 'text/html' }))),
         };
@@ -135,14 +143,40 @@ describe('ReportDetail', () => {
     });
 
     it('should handle approve error', (): void => {
-        setup({ approveReportReturn: throwError((): Error => new Error('Approve failed')) });
+        setup({ approveReportReturn: throwError(() => ({ error: { message: 'Approve failed' } })) });
         fixture.detectChanges();
         component.approveReport();
         expect(component.approving()).toBe(false);
     });
 
-    it('should delete report with confirmation', (): void => {
-        const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    it('should reject report', (): void => {
+        setup();
+        fixture.detectChanges();
+        component.rejectReport();
+        expect(reportServiceSpy['rejectReport']).toHaveBeenCalledWith('rep-1');
+        expect(stateSpy['selectReport']).toHaveBeenCalledWith(expect.objectContaining({ status: 'Rejected' }));
+        expect(stateSpy['updateReport']).toHaveBeenCalledWith(expect.objectContaining({ status: 'Rejected' }));
+        expect(notificationSpy['success']).toHaveBeenCalled();
+    });
+
+    it('should handle reject error', (): void => {
+        setup({ rejectReportReturn: throwError(() => ({ error: { message: 'Reject failed' } })) });
+        fixture.detectChanges();
+        component.rejectReport();
+        expect(component.rejecting()).toBe(false);
+        expect(notificationSpy['error']).toHaveBeenCalledWith('Reject failed');
+    });
+
+    it('should open and close the delete modal', (): void => {
+        setup();
+        fixture.detectChanges();
+        component.openDeleteModal();
+        expect(component.showDeleteModal()).toBe(true);
+        component.closeDeleteModal();
+        expect(component.showDeleteModal()).toBe(false);
+    });
+
+    it('should delete report when confirmed via the modal', (): void => {
         setup();
         fixture.detectChanges();
         component.deleteReport();
@@ -150,16 +184,6 @@ describe('ReportDetail', () => {
         expect(stateSpy['removeReport']).toHaveBeenCalled();
         expect(stateSpy['clearSelected']).toHaveBeenCalled();
         expect(notificationSpy['success']).toHaveBeenCalled();
-        confirmSpy.mockRestore();
-    });
-
-    it('should not delete when confirmation cancelled', (): void => {
-        const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
-        setup();
-        fixture.detectChanges();
-        component.deleteReport();
-        expect(reportServiceSpy['deleteReport']).not.toHaveBeenCalled();
-        confirmSpy.mockRestore();
     });
 
     it('should export report and call service', (): void => {

@@ -132,4 +132,26 @@ describe('ChatRoomComponent', () => {
         setup();
         expect(typeof component.formatTime('2024-01-15T10:00:00Z')).toBe('string');
     });
+
+    it('should send via the REST endpoint with the correct payload when not connected via SignalR', async () => {
+        setup();
+        fixture.detectChanges();
+        component.updateMessageText('مرحباً');
+        await component.sendMessage();
+
+        expect(httpSpy['post']).toHaveBeenCalledWith('/api/chat/send', {
+            conversationId: 'conv-1',
+            content: 'مرحباً',
+        });
+    });
+
+    it('should optimistically append the outgoing message and clear the input', async () => {
+        setup();
+        fixture.detectChanges();
+        component.updateMessageText('مرحباً');
+        await component.sendMessage();
+
+        expect(component.messages()).toEqual(expect.arrayContaining([expect.objectContaining({ content: 'مرحباً' })]));
+        expect(component.messageText()).toBe('');
+    });
 });

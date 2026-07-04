@@ -29,6 +29,9 @@ export class IntakeForm implements OnInit {
     intakeFormId = signal<string | null>(null);
     loading = signal(false);
     error = signal<string | null>(null);
+    ocrLoading = signal(false);
+    ocrSuccess = signal(false);
+    selectedFileName = signal<string | null>(null);
 
     form = this.fb.group({
         presentingProblem: [''],
@@ -72,6 +75,58 @@ export class IntakeForm implements OnInit {
             });
     }
 
+    onFileSelected(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        if (input.files && input.files.length > 0) {
+            const file = input.files[0];
+            this.selectedFileName.set(file.name);
+            this.uploadImage(file);
+        }
+    }
+
+    uploadImage(file: File): void {
+        this.ocrLoading.set(true);
+        this.ocrSuccess.set(false);
+        this.error.set(null);
+        const formId = this.intakeFormId();
+        if (!formId) {
+            this.error.set('يرجى حفظ الاستمارة أولاً قبل رفع الصورة');
+            this.ocrLoading.set(false);
+            return;
+        }
+        this.patientService
+            .uploadIntakeImage(this.patientId(), formId, file)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: result => {
+                    this.ocrLoading.set(false);
+                    this.ocrSuccess.set(true);
+                    if (result.extractedData) {
+                        this.form.patchValue({
+                            presentingProblem:
+                                result.extractedData['presentingProblem'] ??
+                                result.extractedData['reasonForVisit'] ??
+                                '',
+                            psychiatricHistory:
+                                result.extractedData['psychiatricHistory'] ??
+                                result.extractedData['medicalHistory'] ??
+                                '',
+                            familyHistory: result.extractedData['familyHistory'] ?? '',
+                            medications: result.extractedData['medications'] ?? '',
+                            socialHistory:
+                                result.extractedData['socialHistory'] ?? result.extractedData['otherInfo'] ?? '',
+                        });
+                        this.notification.success('تم استخراج البيانات بنجاح');
+                    }
+                },
+                error: (err: HttpErrorResponse) => {
+                    this.ocrLoading.set(false);
+                    this.error.set(err.error?.message || err.error?.error || 'فشل رفع الصورة');
+                    this.notification.error('فشل استخراج البيانات. يرجى إدخال البيانات يدوياً.');
+                },
+            });
+    }
+
     onSubmit(): void {
         this.loading.set(true);
         this.error.set(null);
@@ -93,5 +148,10 @@ export class IntakeForm implements OnInit {
 
     goBack(): void {
         this.router.navigate(['/patients', this.patientId()]);
+    }
+
+    clearFileSelection(): void {
+        this.selectedFileName.set(null);
+        this.ocrSuccess.set(false);
     }
 }

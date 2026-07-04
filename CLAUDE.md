@@ -22,11 +22,11 @@
 
 - **Frontend**: Core/Shared/Features structure with lazy-loaded routes
 - **Backend**: Clean Architecture — Domain → Application → Infrastructure → API
-- **State**: Angular Signals + BaseStateService pattern (no NgRx)
+- **State**: Angular Signals, hand-rolled per-domain state services (list + selected-item + loading + error + computed); no NgRx, no shared base class
 - **Styling**: Bootstrap 5.3 RTL + Tailwind CSS 4.1 + CSS custom properties (design tokens in `styles/variables.css`)
 - **Components**: All standalone, `OnPush` change detection
 - **Font**: Tajawal (primary Arabic), Cairo + IBM Plex Sans Arabic (fallbacks)
-- **Color Palette**: Healthcare Green (#0F6E56 primary)
+- **Color Palette**: Professional Blue (#2563eb primary)
 
 ## Key Directories
 

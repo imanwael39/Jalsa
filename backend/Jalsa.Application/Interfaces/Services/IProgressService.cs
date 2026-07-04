@@ -4,5 +4,5 @@ namespace Jalsa.Application.Interfaces.Services;
 
 public interface IProgressService
 {
-    Task<DashboardSummaryDto> GetDashboardAsync();
+    Task<DashboardSummaryDto> GetDashboardAsync(Guid userId);
 }

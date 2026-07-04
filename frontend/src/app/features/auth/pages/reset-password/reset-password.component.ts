@@ -25,12 +25,22 @@ export class ResetPasswordComponent {
     success = signal(false);
     error = signal<string | null>(null);
 
-    resetForm = this.fb.group({
-        email: ['', [Validators.required, Validators.email]],
-        otp: ['', [Validators.required, Validators.minLength(6)]],
-        password: ['', [Validators.required, Validators.minLength(8)]],
-        confirmPassword: ['', [Validators.required]],
-    }, { validators: passwordMatchValidator });
+    resetForm = this.fb.group(
+        {
+            email: ['', [Validators.required, Validators.email]],
+            otp: ['', [Validators.required, Validators.minLength(6)]],
+            password: [
+                '',
+                [
+                    Validators.required,
+                    Validators.minLength(8),
+                    Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/),
+                ],
+            ],
+            confirmPassword: ['', [Validators.required]],
+        },
+        { validators: passwordMatchValidator }
+    );
 
     getEmailError(): string {
         const c = this.resetForm.get('email');
@@ -53,6 +63,7 @@ export class ResetPasswordComponent {
         if (!c?.errors || !c.touched) return '';
         if (c.errors['required']) return 'كلمة المرور مطلوبة';
         if (c.errors['minlength']) return 'يجب ألا تقل كلمة المرور عن 8 أحرف';
+        if (c.errors['pattern']) return 'يجب أن تحتوي كلمة المرور على حرف كبير وحرف صغير ورقم';
         return '';
     }
 
@@ -81,22 +92,21 @@ export class ResetPasswordComponent {
 
         const { email, otp, password } = this.resetForm.getRawValue();
 
-        this.authService.resetPassword({ email, otp, newPassword: password }).pipe(
-            takeUntilDestroyed(this.destroyRef),
-        ).subscribe({
-            next: () => {
-                this.loading.set(false);
-                this.success.set(true);
-                setTimeout(() => {
-                    this.router.navigate(['/auth/login']);
-                }, 3000);
-            },
-            error: (err) => {
-                this.loading.set(false);
-                this.error.set(
-                    err.error?.message || err.error?.error || 'حدث خطأ، يرجى المحاولة مرة أخرى',
-                );
-            },
-        });
+        this.authService
+            .resetPassword({ email, otp, newPassword: password })
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: () => {
+                    this.loading.set(false);
+                    this.success.set(true);
+                    setTimeout(() => {
+                        this.router.navigate(['/auth/login']);
+                    }, 3000);
+                },
+                error: err => {
+                    this.loading.set(false);
+                    this.error.set(err.error?.message || err.error?.error || 'حدث خطأ، يرجى المحاولة مرة أخرى');
+                },
+            });
     }
 }

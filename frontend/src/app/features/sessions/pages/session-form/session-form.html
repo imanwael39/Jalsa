@@ -26,7 +26,20 @@
             </div>
 
             <div class="form-group mb-3">
-                <label class="form-label">ملاحظات الجلسة (نص منسق)</label>
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-label mb-0">ملاحظات الجلسة (نص منسق)</label>
+                    @if (isEdit()) {
+                        <span class="auto-save-status" role="status">
+                            @if (autoSaving()) {
+                                <i class="bi bi-arrow-repeat spin" aria-hidden="true"></i> جاري الحفظ التلقائي...
+                            } @else if (autoSaveError()) {
+                                <span class="text-danger">{{ autoSaveError() }}</span>
+                            } @else if (lastAutoSavedAt()) {
+                                <i class="bi bi-check-circle" aria-hidden="true"></i> تم الحفظ التلقائي
+                            }
+                        </span>
+                    }
+                </div>
                 <quill-editor
                     formControlName="content"
                     [modules]="quillConfig"
@@ -45,11 +58,7 @@
                 placeholder="مثال: فردية، جماعية، متابعة"
             ></app-input>
 
-            <app-input
-                label="المدة (بالدقائق)"
-                type="number"
-                formControlName="durationMinutes"
-            ></app-input>
+            <app-input label="المدة (بالدقائق)" type="number" formControlName="durationMinutes"></app-input>
 
             <div class="form-group mb-3">
                 <label class="form-label" for="status">الحالة</label>
@@ -64,9 +73,7 @@
                 <app-button type="submit" variant="primary" [disabled]="loading()">
                     {{ isEdit() ? 'تحديث' : 'إنشاء' }} الجلسة
                 </app-button>
-                <app-button type="button" variant="secondary" (clicked)="cancel()">
-                    إلغاء
-                </app-button>
+                <app-button type="button" variant="secondary" (clicked)="cancel()"> إلغاء </app-button>
             </div>
         </form>
     }

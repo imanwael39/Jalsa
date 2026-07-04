@@ -104,8 +104,8 @@ export class TableComponent<T = Record<string, unknown>> {
         return record[column.key];
     }
 
-    getCellTemplate(column: ColumnCellDirective): ColumnCellDirective | undefined {
-        return this.cellTemplates?.find(tpl => tpl.columnKey === column.columnKey);
+    getCellTemplate(column: TableColumn): ColumnCellDirective | undefined {
+        return this.cellTemplates?.find(tpl => tpl.columnKey === column.key);
     }
 
     trackByRow: TrackByFunction<T> = (index: number, item: T): unknown => {

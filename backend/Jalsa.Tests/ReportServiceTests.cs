@@ -16,6 +16,7 @@ public class ReportServiceTests
     private readonly Mock<IPatientRepository> _patientRepoMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IGenericRepository<Therapist>> _therapistRepoMock;
+    private readonly Mock<IGenericRepository<ReportVersion>> _reportVersionRepoMock;
     private readonly ReportService _sut;
 
     private readonly Guid _therapistUserId = Guid.NewGuid();
@@ -28,10 +29,15 @@ public class ReportServiceTests
         _patientRepoMock = new Mock<IPatientRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _therapistRepoMock = new Mock<IGenericRepository<Therapist>>();
+        _reportVersionRepoMock = new Mock<IGenericRepository<ReportVersion>>();
 
         _unitOfWorkMock
             .Setup(x => x.Repository<Therapist>())
             .Returns(_therapistRepoMock.Object);
+
+        _unitOfWorkMock
+            .Setup(x => x.Repository<ReportVersion>())
+            .Returns(_reportVersionRepoMock.Object);
 
         _unitOfWorkMock
             .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
@@ -104,6 +110,11 @@ public class ReportServiceTests
         result.CurrentVersion.Should().NotBeNull();
         result.CurrentVersion!.VersionNumber.Should().Be(1);
         result.CurrentVersion.Content.Should().Be("محتوى التقرير المولّد بالذكاء الاصطناعي");
+        // TherapistId/GeneratedByTherapistId are FKs to Therapists.Id, not Users.Id — must be the
+        // resolved Therapist profile id, never the raw auth user id passed into the service.
+        result.TherapistId.Should().Be(_therapistProfileId);
+        result.GeneratedByTherapistId.Should().Be(_therapistProfileId);
+        result.CurrentVersion.CreatedByTherapistId.Should().Be(_therapistProfileId);
         _reportRepoMock.Verify(x => x.AddAsync(It.IsAny<ReferralReport>(), It.IsAny<CancellationToken>()), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -150,7 +161,14 @@ public class ReportServiceTests
         result.Status.Should().Be("Draft");
         result.CurrentVersion!.VersionNumber.Should().Be(2);
         result.CurrentVersion.Content.Should().Be("محتوى محدث");
-        _reportRepoMock.Verify(x => x.Update(report), Times.Once);
+        // CreatedByTherapistId is a FK to Therapists.Id, not Users.Id — must be the resolved
+        // Therapist profile id, never the raw auth user id passed into the service.
+        result.CurrentVersion.CreatedByTherapistId.Should().Be(_therapistProfileId);
+        result.CurrentVersion.CreatedByTherapistId.Should().NotBe(_therapistUserId);
+        // The new version's Id is a client-assigned, non-default GUID, so EF Core's automatic
+        // graph-fixup can't distinguish it from an existing entity and would mark it Modified
+        // instead of Added. It must be added explicitly instead of relying on Update(report).
+        _reportVersionRepoMock.Verify(x => x.AddAsync(It.IsAny<ReportVersion>(), It.IsAny<CancellationToken>()), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 

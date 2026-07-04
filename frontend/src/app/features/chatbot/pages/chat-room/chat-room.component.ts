@@ -15,7 +15,9 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import * as signalR from '@microsoft/signalr';
 import { HttpClientService } from '../../../../core/api/http-client.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { AiDisclaimerComponent } from '../../../../shared/components/ai-disclaimer/ai-disclaimer.component';
 import { API } from '../../../../core/api/api-endpoints';
 import { environment } from '../../../../../environments/environment';
 import { ChatMessage } from '../../../../core/models';
@@ -30,7 +32,7 @@ interface ChatHistoryResponse {
 @Component({
     selector: 'app-chat-room',
     standalone: true,
-    imports: [FormsModule, SpinnerComponent],
+    imports: [FormsModule, SpinnerComponent, AiDisclaimerComponent],
     templateUrl: './chat-room.component.html',
     styleUrl: './chat-room.component.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,6 +41,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy, AfterViewChecked {
     private route = inject(ActivatedRoute);
     private router = inject(Router);
     private http = inject(HttpClientService);
+    private authService = inject(AuthService);
     private destroyRef = inject(DestroyRef);
 
     private messagesEndRef = viewChild<ElementRef<HTMLDivElement>>('messagesEnd');
@@ -106,14 +109,12 @@ export class ChatRoomComponent implements OnInit, OnDestroy, AfterViewChecked {
             .withAutomaticReconnect()
             .build();
 
-        this.hubConnection.on('ReceiveMessage', (sender: string, content: string) => {
+        this.hubConnection.on('ReceiveMessage', (_sender: string, content: string) => {
             const incoming: ChatMessage = {
                 id: crypto.randomUUID(),
                 conversationId: this.conversationId(),
-                senderType: sender === 'AI' ? 'AI' : 'Patient',
+                senderType: 'AI',
                 content,
-                tokensUsed: null,
-                latencyMs: null,
                 createdAt: new Date().toISOString(),
             };
             this.messages.update(prev => [...prev, incoming]);
@@ -136,13 +137,13 @@ export class ChatRoomComponent implements OnInit, OnDestroy, AfterViewChecked {
 
         this.sending.set(true);
 
+        const isPatient = this.authService.hasRole('Patient');
+
         const outgoing: ChatMessage = {
             id: crypto.randomUUID(),
             conversationId: this.conversationId(),
-            senderType: 'Therapist',
+            senderType: isPatient ? 'Patient' : 'Therapist',
             content: text,
-            tokensUsed: null,
-            latencyMs: null,
             createdAt: new Date().toISOString(),
         };
 
@@ -151,14 +152,17 @@ export class ChatRoomComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.shouldScrollToBottom = true;
 
         try {
-            if (this.hubConnection?.state === signalR.HubConnectionState.Connected) {
+            // The backend's ChatHub.SendMessage always records the sender as "Patient" and
+            // triggers an AI auto-reply — it's designed only for the Patient side of the
+            // conversation. A Therapist must always go through the REST endpoint, which
+            // correctly attributes senderType from the caller's role and does not trigger AI.
+            if (isPatient && this.hubConnection?.state === signalR.HubConnectionState.Connected) {
                 await this.hubConnection.invoke('SendMessage', this.conversationId(), this.patientId(), text);
             } else {
                 await this.http
                     .post<void>(API.chat.send, {
                         conversationId: this.conversationId(),
-                        patientId: this.patientId(),
-                        message: text,
+                        content: text,
                     })
                     .toPromise();
             }

@@ -28,13 +28,7 @@
         }
     </div>
 
-    <!-- Error Banner -->
-    @if (error()) {
-        <div class="error-banner" role="alert">
-            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
-            {{ error() }}
-        </div>
-    }
+    <app-ai-disclaimer [blocked]="!!error()" [message]="error() || ''"></app-ai-disclaimer>
 
     <!-- Messages Area -->
     <div class="messages-area">

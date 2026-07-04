@@ -41,6 +41,12 @@
     font-size: var(--text-xs);
     opacity: 0.4;
     transition: opacity var(--transition-fast);
+    margin-inline-start: var(--space-1);
+    margin-inline-end: 0;
+}
+
+.table th .d-flex {
+    flex-direction: row-reverse;
 }
 
 .table th.sorted .bi,
@@ -74,15 +80,6 @@
     overflow: hidden;
     border: 1px solid var(--border-color);
     background-color: var(--surface);
-}
-
-[dir='rtl'] .table th .bi {
-    margin-inline-start: var(--space-1);
-    margin-inline-end: 0;
-}
-
-[dir='rtl'] .table th .d-flex {
-    flex-direction: row-reverse;
 }
 
 .spinner-border {

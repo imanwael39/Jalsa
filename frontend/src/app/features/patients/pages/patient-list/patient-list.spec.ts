@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Component, signal } from '@angular/core';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { PatientList } from './patient-list';
 import { PatientService } from '../../../../core/services/patient.service';
@@ -40,7 +41,7 @@ describe('PatientList', () => {
     let stateSpy: Record<string, ReturnType<typeof vi.fn> | ReturnType<typeof signal>>;
     let notificationSpy: Record<string, ReturnType<typeof vi.fn>>;
 
-    const setup = (getPatientsReturn?: unknown): void => {
+    const setup = (getPatientsReturn?: unknown, searchQueryParam: string | null = null): void => {
         patientServiceSpy = {
             getPatients: vi.fn().mockReturnValue(getPatientsReturn ?? of(makePatients(10))),
             archivePatient: vi.fn().mockReturnValue(of(undefined)),
@@ -61,6 +62,14 @@ describe('PatientList', () => {
                 { provide: PatientService, useValue: patientServiceSpy },
                 { provide: PatientStateService, useValue: stateSpy },
                 { provide: NotificationService, useValue: notificationSpy },
+                {
+                    provide: ActivatedRoute,
+                    useValue: {
+                        snapshot: {
+                            queryParamMap: convertToParamMap(searchQueryParam ? { search: searchQueryParam } : {}),
+                        },
+                    },
+                },
             ],
         });
 
@@ -122,6 +131,14 @@ describe('PatientList', () => {
 
         expect(patientServiceSpy['archivePatient']).toHaveBeenCalledWith('patient-0');
         expect(notificationSpy['success']).toHaveBeenCalled();
+    });
+
+    it('should pre-fill and apply the search term from the "search" query param', () => {
+        setup(of(makePatients(10)), 'أحمد');
+        fixture.detectChanges();
+
+        expect(component.searchTerm).toBe('أحمد');
+        expect(patientServiceSpy['getPatients']).toHaveBeenCalledWith(expect.objectContaining({ searchTerm: 'أحمد' }));
     });
 
     it('should move to the next page when onPageChange is called', () => {

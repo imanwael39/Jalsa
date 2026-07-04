@@ -85,7 +85,7 @@ describe('ResetPasswordComponent', () => {
     });
     it('should return mismatch error when passwords differ', () => {
         setup();
-        component.resetForm.patchValue({ password: '12345678', confirmPassword: 'different' });
+        component.resetForm.patchValue({ password: 'Passw0rd123', confirmPassword: 'different' });
         component.resetForm.get('confirmPassword')!.markAsTouched();
         expect(component.getPasswordMismatchError()).toBe('كلمتا المرور غير متطابقتين');
     });
@@ -99,14 +99,14 @@ describe('ResetPasswordComponent', () => {
         component.resetForm.patchValue({
             email: 't@t.com',
             otp: '123456',
-            password: '12345678',
-            confirmPassword: '12345678',
+            password: 'Passw0rd123',
+            confirmPassword: 'Passw0rd123',
         });
         component.onSubmit();
         expect(authServiceSpy['resetPassword']).toHaveBeenCalledWith({
             email: 't@t.com',
             otp: '123456',
-            newPassword: '12345678',
+            newPassword: 'Passw0rd123',
         });
     });
     it('should set success on reset success', () => {
@@ -114,8 +114,8 @@ describe('ResetPasswordComponent', () => {
         component.resetForm.patchValue({
             email: 't@t.com',
             otp: '123456',
-            password: '12345678',
-            confirmPassword: '12345678',
+            password: 'Passw0rd123',
+            confirmPassword: 'Passw0rd123',
         });
         component.onSubmit();
         expect(component.success()).toBe(true);
@@ -125,8 +125,8 @@ describe('ResetPasswordComponent', () => {
         component.resetForm.patchValue({
             email: 't@t.com',
             otp: '000000',
-            password: '12345678',
-            confirmPassword: '12345678',
+            password: 'Passw0rd123',
+            confirmPassword: 'Passw0rd123',
         });
         component.onSubmit();
         expect(component.error()).toBe('رمز غير صحيح');
@@ -136,8 +136,8 @@ describe('ResetPasswordComponent', () => {
         component.resetForm.patchValue({
             email: 't@t.com',
             otp: '123456',
-            password: '12345678',
-            confirmPassword: '12345678',
+            password: 'Passw0rd123',
+            confirmPassword: 'Passw0rd123',
         });
         component.onSubmit();
         expect(component.loading()).toBe(false);

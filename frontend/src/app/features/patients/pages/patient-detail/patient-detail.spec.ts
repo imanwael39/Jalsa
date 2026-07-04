@@ -6,6 +6,7 @@ import { PatientDetail } from './patient-detail';
 import { PatientService } from '../../../../core/services/patient.service';
 import { PatientStateService } from '../../../../core/state/patient-state.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { AiService } from '../../../../core/services/ai.service';
 import { Patient } from '../../../../core/models';
 
 const mockPatient: Patient = {
@@ -32,6 +33,7 @@ interface SetupOptions {
     getPatientReturn?: Observable<unknown>;
     archivePatientReturn?: Observable<unknown>;
     deletePatientReturn?: Observable<unknown>;
+    summarizePatientReturn?: Observable<unknown>;
 }
 
 describe('PatientDetail', () => {
@@ -41,6 +43,7 @@ describe('PatientDetail', () => {
     let stateServiceSpy: Record<string, unknown>;
     let notificationSpy: Record<string, ReturnType<typeof vi.fn>>;
     let routerSpy: Record<string, ReturnType<typeof vi.fn>>;
+    let aiServiceSpy: Record<string, ReturnType<typeof vi.fn>>;
 
     const setup = (opts: SetupOptions = {}): void => {
         const {
@@ -49,6 +52,7 @@ describe('PatientDetail', () => {
             getPatientReturn,
             archivePatientReturn,
             deletePatientReturn,
+            summarizePatientReturn,
         } = opts;
 
         const patient = { ...mockPatient, status: patientStatus };
@@ -68,6 +72,9 @@ describe('PatientDetail', () => {
         };
         notificationSpy = { success: vi.fn(), error: vi.fn() };
         routerSpy = { navigate: vi.fn() };
+        aiServiceSpy = {
+            summarizePatient: vi.fn().mockReturnValue(summarizePatientReturn ?? of({ summary: 'ملخص تجريبي' })),
+        };
 
         TestBed.configureTestingModule({
             providers: [
@@ -75,6 +82,7 @@ describe('PatientDetail', () => {
                 { provide: PatientService, useValue: patientServiceSpy },
                 { provide: PatientStateService, useValue: stateServiceSpy },
                 { provide: NotificationService, useValue: notificationSpy },
+                { provide: AiService, useValue: aiServiceSpy },
                 { provide: Router, useValue: routerSpy },
                 {
                     provide: ActivatedRoute,
@@ -219,5 +227,22 @@ describe('PatientDetail', () => {
         setup();
         expect(component.formatDate('2024-01-15')).toBeTruthy();
         expect(component.formatDate(null)).toBe('غير متوفر');
+    });
+
+    it('should generate an AI summary for the patient', (): void => {
+        setup();
+        fixture.detectChanges();
+        component.generateAiSummary();
+        expect(aiServiceSpy['summarizePatient']).toHaveBeenCalledWith(mockPatient.id);
+        expect(component.aiSummary()).toBe('ملخص تجريبي');
+        expect(component.aiSummaryLoading()).toBe(false);
+    });
+
+    it('should surface an error when AI summary generation fails', (): void => {
+        setup({ summarizePatientReturn: throwError(() => ({ error: { message: 'فشل توليد الملخص' } })) });
+        fixture.detectChanges();
+        component.generateAiSummary();
+        expect(component.aiSummaryError()).toBe('فشل توليد الملخص');
+        expect(component.aiSummaryLoading()).toBe(false);
     });
 });

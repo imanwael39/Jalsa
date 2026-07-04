@@ -50,15 +50,17 @@
                 @for (row of data; track trackByRow($index, row)) {
                     <tr (click)="onRowClick(row)" class="table-row">
                         @for (column of columns; track column.key) {
+                            @let cellTemplate = getCellTemplate(column);
                             <td [style.text-align]="column.align || 'start'">
-                                <ng-container
-                                    *ngTemplateOutlet="
-                                        getCellTemplate($any(column))?.templateRef;
-                                        context: { $implicit: getCellValue(row, column), row: row, column: column }
-                                    "
-                                >
-                                </ng-container>
-                                @if (!getCellTemplate($any(column))) {
+                                @if (cellTemplate) {
+                                    <ng-container
+                                        *ngTemplateOutlet="
+                                            cellTemplate.templateRef;
+                                            context: { $implicit: row, row: row, column: column }
+                                        "
+                                    >
+                                    </ng-container>
+                                } @else {
                                     {{ getCellValue(row, column) }}
                                 }
                             </td>
