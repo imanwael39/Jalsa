@@ -12,7 +12,7 @@ export type {
     UpdateProfileRequest,
 } from './auth.model';
 export type { Patient, CreatePatientRequest, UpdatePatientRequest, PatientFilter, IntakeForm, Assessment } from './patient.model';
-export type { Session, SessionNote, VoiceMemo, CreateSessionRequest, UpdateSessionRequest } from './session.model';
+export type { Session, SessionNote, CreateSessionRequest, UpdateSessionRequest } from './session.model';
 export type { Exercise, ExerciseLog, CreateExerciseRequest, UpdateExerciseRequest, LogExerciseRequest, ExtendDueDateRequest, ExerciseAssignment, AssignExerciseRequest, UpdateExerciseStatusRequest } from './exercise.model';
 export type { ReferralReport, ReportVersion } from './report.model';
 export type { ChatConversation, ChatMessage, SendMessageRequest } from './chat.model';

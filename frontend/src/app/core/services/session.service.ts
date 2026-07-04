@@ -2,7 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpClientService } from '../api/http-client.service';
 import { API } from '../api/api-endpoints';
-import { Session, SessionNote, VoiceMemo, CreateSessionRequest, UpdateSessionRequest } from '../models';
+import {
+    Session,
+    SessionNote,
+    CreateSessionRequest,
+    UpdateSessionRequest,
+} from '../models';
 
 @Injectable({
     providedIn: 'root',
@@ -28,14 +33,6 @@ export class SessionService {
 
     deleteSession(id: string): Observable<void> {
         return this.http.delete<void>(API.sessions.byId(id));
-    }
-
-    uploadVoiceMemo(sessionId: string, file: File): Observable<VoiceMemo> {
-        const formData = new FormData();
-        // The backend's UploadVoiceMemo action binds this parameter as `IFormFile audio` —
-        // any other field name binds to null and the request always fails with 400.
-        formData.append('audio', file);
-        return this.http.upload<VoiceMemo>(API.sessions.voice(sessionId), formData);
     }
 
     getSummary(sessionId: string): Observable<{ summary: string }> {

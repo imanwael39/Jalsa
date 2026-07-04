@@ -4,13 +4,12 @@ using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using OpenAI.Chat;
 
 namespace Jalsa.API.Services.Implementations.AI;
 
 public class SummarizationService : ISummarizationService
 {
-    private readonly ChatClient _client;
+    private readonly IGatewayClient _client;
     private readonly JalsaDbContext _context;
     private readonly IVectorStore _vectorStore;
     private readonly IEmbeddingService _embeddingService;
@@ -19,30 +18,21 @@ public class SummarizationService : ISummarizationService
     private readonly string _model;
 
     public SummarizationService(
-        IOptions<OpenAiSettings> settings,
+        IOptions<GatewaySettings> settings,
+        IGatewayClient client,
         JalsaDbContext context,
         IVectorStore vectorStore,
         IEmbeddingService embeddingService,
         ILlmObservabilityService observability,
         IPromptService prompts)
     {
-        var config = settings.Value;
-
+        _client = client;
         _context = context;
         _vectorStore = vectorStore;
         _embeddingService = embeddingService;
         _observability = observability;
         _prompts = prompts;
-        _model = config.ChatModel;
-
-        OpenAI.OpenAIClient openAi =
-            string.IsNullOrWhiteSpace(config.Endpoint)
-                ? new OpenAI.OpenAIClient(config.ApiKey)
-                : new Azure.AI.OpenAI.AzureOpenAIClient(
-                    new Uri(config.Endpoint),
-                    new System.ClientModel.ApiKeyCredential(config.ApiKey));
-
-        _client = openAi.GetChatClient(config.ChatModel);
+        _model = settings.Value.ChatModelId;
     }
 
     public async Task<string> SummarizePatientAsync(
@@ -87,23 +77,15 @@ public class SummarizationService : ISummarizationService
                     ["contextText"] = contextText
                 });
 
-        var messages = new List<ChatMessage>
-        {
-            new SystemChatMessage(
-                _prompts.Get(
-                    "summarize-patient",
-                    language)),
-
-            new UserChatMessage(userPrompt)
-        };
+        var systemPrompt =
+            _prompts.Get(
+                "summarize-patient",
+                language);
 
         var startTime = DateTime.UtcNow;
 
-        var result =
-            await _client.CompleteChatAsync(messages);
-
         var output =
-            result.Value.Content[0].Text;
+            await _client.ChatAsync(systemPrompt, userPrompt);
 
         await _observability.LogGenerationAsync(
             new LlmGenerationLog
@@ -112,8 +94,6 @@ public class SummarizationService : ISummarizationService
                 Model = _model,
                 Input = userPrompt,
                 Output = output,
-                InputTokens = result.Value.Usage?.InputTokenCount,
-                OutputTokens = result.Value.Usage?.OutputTokenCount,
                 StartTime = startTime,
                 EndTime = DateTime.UtcNow,
                 Metadata = new Dictionary<string, object>
@@ -184,23 +164,15 @@ public class SummarizationService : ISummarizationService
                     ["voiceTranscripts"] = voiceSection
                 });
 
-        var messages = new List<ChatMessage>
-        {
-            new SystemChatMessage(
-                _prompts.Get(
-                    "summarize-session",
-                    language)),
-
-            new UserChatMessage(userPrompt)
-        };
+        var systemPrompt =
+            _prompts.Get(
+                "summarize-session",
+                language);
 
         var startTime = DateTime.UtcNow;
 
-        var result =
-            await _client.CompleteChatAsync(messages);
-
         var output =
-            result.Value.Content[0].Text;
+            await _client.ChatAsync(systemPrompt, userPrompt);
 
         await _observability.LogGenerationAsync(
             new LlmGenerationLog
@@ -209,8 +181,6 @@ public class SummarizationService : ISummarizationService
                 Model = _model,
                 Input = userPrompt,
                 Output = output,
-                InputTokens = result.Value.Usage?.InputTokenCount,
-                OutputTokens = result.Value.Usage?.OutputTokenCount,
                 StartTime = startTime,
                 EndTime = DateTime.UtcNow,
                 Metadata = new Dictionary<string, object>

@@ -22,7 +22,6 @@ export const API = {
         base: '/api/sessions',
         byPatient: (patientId: string) => `/api/sessions/patient/${patientId}`,
         byId: (id: string) => `/api/sessions/${id}`,
-        voice: (id: string) => `/api/sessions/${id}/voice`,
         summary: (id: string) => `/api/sessions/${id}/summary`,
     },
     exercises: {

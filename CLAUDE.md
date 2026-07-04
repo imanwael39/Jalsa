@@ -11,7 +11,7 @@
 | Frontend | Angular 21.2 (Standalone Components), TypeScript 5.9, Bootstrap 5.3 RTL, Tailwind CSS 4.1, Chart.js + ng2-charts, ngx-quill, SignalR client (@microsoft/signalr 10) |
 | Backend | ASP.NET Core 8 (net8.0), C# 12, Entity Framework Core, FluentValidation, Hangfire |
 | Database | SQL Server (34 tables, 1 migration) |
-| AI | Azure OpenAI SDK (GPT-4o chat, Whisper STT, text-embedding-ada-002), raw SDK calls (no Semantic Kernel) |
+| AI | ITI student AI Gateway (proxies Bedrock Claude 3 Haiku for chat, Titan Embed Text v2 for embeddings), raw HTTP calls via `IGatewayClient` (no Semantic Kernel). Langfuse for LLM observability. OCR and Whisper STT removed (gateway has no vision/audio proxy). |
 | Auth | JWT Bearer (HS256, 1h access + 7d refresh token rotation), BCrypt password hashing |
 | Real-time | SignalR WebSockets (ChatHub) |
 | Testing | Frontend: Vitest 4.0 + @analogjs/vite-plugin-angular; Backend: xUnit + Moq + FluentAssertions |
@@ -51,8 +51,8 @@ backend/
 | Module | Frontend | Backend | Overall |
 |--------|----------|---------|---------|
 | Auth | Done (login, register, profile, forgot/reset pwd, /forbidden page) | Done (8 endpoints + JWT + refresh) | 98% |
-| Patients | Done (list, CRUD, detail, intake, assessments) | Done (CRUD + intake + assessments + OCR) | 90% |
-| Sessions | Done (list, CRUD, detail + notes + voice recorder) | Done (CRUD + notes + Whisper STT + AI summary) | 95% |
+| Patients | Done (list, CRUD, detail, intake, assessments) | Done (CRUD + intake + assessments; OCR removed) | 90% |
+| Sessions | Done (list, CRUD, detail + notes) | Done (CRUD + notes + AI summary via Gateway; voice memo/STT removed) | 95% |
 | Exercises | Done (list, assign, my-exercises) | Done (CRUD + logs + extend + reminder job) | 90% |
 | Dashboard | Done (charts, stats cards) | Done (ProgressController) | 90% |
 | AI Reports | Done (list, generate, detail, export HTML, reject) | Done (generate, CRUD, approve, reject, export) | 95% |
@@ -72,7 +72,6 @@ backend/
 
 | # | Issue | Severity | Details |
 |---|-------|----------|---------|
-| 1 | **Intake image endpoint mismatch** | Low | Frontend: `/api/patient/{id}/intake/image` vs Backend: `/api/patient/{id}/intake/{intakeFormId}/ocr` (different URL shape) |
 | 2 | **Only Exercise validators** | Low | FluentValidation only covers 3 Exercise DTOs; all other DTOs use DataAnnotations only |
 | 3 | **No integration/E2E tests** | Medium | Backend tests are unit-only (mocked); no controller or integration tests |
 | 4 | **Mock API still enabled in dev** | Low | `environment.ts` has `enableMockApi: true` — may mask real API issues during development |
@@ -115,12 +114,15 @@ backend/
 31. ~~`/forbidden` route missing~~ — Fixed: `ForbiddenComponent` registered at `/forbidden`, also role-aware `goHome()`
 32. ~~Empty test file (UnitTest1.cs)~~ — Fixed: Deleted placeholder
 33. ~~Backend tests at 28~~ — Fixed: Added SessionServiceTests + SessionControllerTests → 51 tests
+34. ~~Azure OpenAI dependency~~ — Fixed: Replaced with `IGatewayClient` calling the ITI student AI Gateway (Bedrock Claude 3 Haiku chat + Titan Embed v2), added Langfuse observability (`ILlmObservabilityService`) and `IPromptService` for versioned prompts
+35. ~~OCR (`OcrService`/`IOcrService`) and intake image endpoint~~ — Removed: gateway has no vision proxy; `POST /api/patient/{id}/intake/{intakeFormId}/ocr` and `OcrRequest` DTO deleted
+36. ~~Whisper STT (`SttService`/`ISttService`) and voice memo~~ — Removed: gateway has no audio proxy; `POST /api/sessions/{id}/voice`, `VoiceMemoViewDto`, `SaveVoiceMemoAsync`, and the `voice-recorder` component deleted
 
 </details>
 
 ## What Ships
 
-**Completed MVP + Post-MVP**: Login/Register/Profile, Patient CRUD + Intake + Assessments, Session CRUD + Notes + Voice STT + AI Summary, Exercise CRUD + Logging, Dashboard with charts + stats, AI Report generation + approval + reject + HTML export, Role-based access (with working `/forbidden` page), Chatbot UI + REST API + SignalR real-time, In-app notification bell + polling
+**Completed MVP + Post-MVP**: Login/Register/Profile, Patient CRUD + Intake + Assessments, Session CRUD + Notes + AI Summary (via Gateway), Exercise CRUD + Logging, Dashboard with charts + stats, AI Report generation + approval + reject + HTML export, Role-based access (with working `/forbidden` page), Chatbot UI + REST API + SignalR real-time, In-app notification bell + polling
 
 **Remaining (Post-MVP)**: Admin panel, Semantic search UI, Account lockout, Rate limiting, Binary PDF export (HTML export shipped instead)
 
@@ -132,23 +134,17 @@ backend/
 |-----------|-------|------|-----------|
 | AuthController | `/api/auth` | Mixed | `POST register`, `POST login`, `POST refresh`, `POST revoke`, `POST forgot-password`, `POST reset-password`, `GET profile` ★, `PUT profile` ★ |
 | PatientController | `/api/patient` | ★ | `GET`, `GET /{id}`, `POST`, `PUT /{id}`, `PATCH /{id}/archive`, `PATCH /{id}/restore`, `DELETE /{id}` |
-| SessionController | `/api/sessions` | ★ Therapist | `POST`, `GET /{id}`, `GET /patient/{patientId}`, `PUT /{id}`, `DELETE /{id}`, `POST /{id}/note`, `GET /{id}/note`, `POST /{id}/voice` (Whisper STT), `GET /{id}/summary` (GPT-4o) |
+| SessionController | `/api/sessions` | ★ Therapist | `POST`, `GET /{id}`, `GET /patient/{patientId}`, `PUT /{id}`, `DELETE /{id}`, `POST /{id}/note`, `GET /{id}/note`, `GET /{id}/summary` (Gateway chat) |
 | ExerciseController | `/api/exercises` | ★ | Therapist: `GET`, `GET /{id}`, `GET /patient/{patientId}`, `POST`, `PUT /{id}`, `DELETE /{id}`, `PUT /{id}/extend`; Patient: `GET /my`, `POST /log`, `GET /my/logs` |
 | ReportController | `/api/reports` | ★ Therapist | `POST /generate`, `GET /{id}`, `GET /patient/{patientId}`, `PUT /{id}`, `POST /{id}/approve`, `POST /{id}/reject`, `GET /{id}/export`, `DELETE /{id}` |
 | AssessmentController | `/api/patient/{id}/assessments` | ★ Therapist | `GET`, `POST` (template auto-resolution) |
-| IntakeController | `/api/patient/{id}/intake` | ★ Therapist | `GET`, `POST` (save), `POST /submit`, `POST /{intakeFormId}/ocr` |
+| IntakeController | `/api/patient/{id}/intake` | ★ Therapist | `GET`, `POST` (save), `POST /submit` |
 | AiController | `/api/ai` | ★ Therapist | `POST /summarize/{patientId}`, `POST /report-draft/{patientId}` |
 | ProgressController | `/api/progress` | ★ Therapist | `GET /dashboard` |
 | ChatController | `/api/chat` | ★ | `GET /conversations`, `GET /{conversationId}/history`, `POST /conversations` (idempotent), `PATCH /conversations/{conversationId}/close`, `POST /send` |
 | NotificationController | `/api/notifications` | ★ | `GET` (last 50 + unreadCount), `PATCH /{id}/read`, `PATCH /read-all` |
 
 ★ = `[Authorize]` required
-
-### Remaining Frontend→Backend Gaps
-
-| Frontend Endpoint | Status |
-|-------------------|--------|
-| `POST /api/patient/{id}/intake/image` | Mismatch — backend is `POST /api/patient/{id}/intake/{intakeFormId}/ocr` |
 
 ### SignalR Hubs
 
@@ -175,15 +171,16 @@ backend/
 |---------|---------|
 | AuthService | JWT generation, password hashing, refresh tokens |
 | EmailService | SMTP email delivery |
-| SttService | Whisper STT transcription via Azure OpenAI AudioClient |
-| ChatAiService | OpenAI conversation generation |
+| GatewayClient | HTTP client for the ITI student AI Gateway — chat (Claude 3 Haiku) + embed (Titan Embed v2) |
+| ChatAiService | Gateway-based conversation generation |
 | ConversationMemoryService | Conversation context storage |
 | CrisisDetectionService | Crisis keyword/pattern detection |
-| EmbeddingService | OpenAI embedding API |
+| EmbeddingService | Gateway embedding calls |
 | VectorStore | SQL-based vector search |
-| OcrService | Azure Computer Vision OCR |
-| ReportGenerationService | AI report drafting |
-| SummarizationService | Patient note + session summarization (GPT-4o) |
+| ReportGenerationService | AI report drafting (RAG context + Gateway chat) |
+| SummarizationService | Patient note + session summarization (Gateway chat) |
+| PromptService | Versioned prompt templates (system/user prompts per task + language) |
+| LangfuseObservabilityService | Logs LLM generations (input/output/timing) to Langfuse |
 
 ### Domain Model (33 entities, 34 DbSets)
 
@@ -207,7 +204,7 @@ backend/
 |---------|-------|----------------|
 | Auth | login, register, forgot-password, reset-password, profile, **forbidden** | — |
 | Patients | patient-list, patient-form, patient-detail, intake-form, assessment | — |
-| Sessions | session-landing, session-list, session-form, session-detail | summary, voice-recorder |
+| Sessions | session-landing, session-list, session-form, session-detail | summary |
 | Exercises | exercise-list, assign-exercise, patient-exercise | — |
 | Reports | report-landing, report-list, report-generate, report-detail | — |
 | Dashboard | dashboard | — |
@@ -306,8 +303,8 @@ The SRS defines 7 modules. Current implementation status vs spec:
 | SRS Module | Specified Features | Implemented | Gap |
 |------------|-------------------|-------------|-----|
 | 1. Auth | Register, login, JWT, refresh, roles, lockout, profile | All except lockout; /forbidden page added | Account lockout (Post-MVP) |
-| 2. Patient Mgmt | CRUD, intake, assessments (PHQ-9/GAD-7/BDI), OCR, search, archive | All core features | Summary chips partial |
-| 3. Session Notes | Linked sessions, structured fields, Whisper STT, auto-save, embeddings, semantic search | CRUD + notes + **Whisper STT** + **AI summary** | Auto-save, embeddings, semantic search (Post-MVP) |
+| 2. Patient Mgmt | CRUD, intake, assessments (PHQ-9/GAD-7/BDI), OCR, search, archive | Core features (OCR removed — gateway has no vision proxy) | Summary chips partial |
+| 3. Session Notes | Linked sessions, structured fields, voice STT, auto-save, embeddings, semantic search | CRUD + notes + **AI summary via Gateway** (voice STT removed — gateway has no audio proxy) | Auto-save, embeddings, semantic search (Post-MVP) |
 | 4. Exercise Tracking | Assign, log status, reflections, progress bars, notifications, deactivate/extend | All + **in-app notifications** | — |
 | 5. Dashboard | Assessment line charts, session bar charts, exercise donut, today's stats | All implemented | — |
 | 6. AI Reports | One-click generate, context agent, structured Arabic report, edit, PDF, versioning | Generate + edit + versioning + **reject** + **HTML export** | Binary PDF (Post-MVP) |

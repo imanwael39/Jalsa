@@ -12,7 +12,6 @@ import { Session } from '../../../../core/models';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { InputComponent } from '../../../../shared/components/input/input.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
-import { VoiceRecorder } from '../../components/voice-recorder/voice-recorder';
 import { QuillEditorComponent } from 'ngx-quill';
 
 @Component({
@@ -23,7 +22,6 @@ import { QuillEditorComponent } from 'ngx-quill';
         ButtonComponent,
         InputComponent,
         SpinnerComponent,
-        VoiceRecorder,
         QuillEditorComponent,
     ],
     templateUrl: './session-form.html',
@@ -44,8 +42,6 @@ export class SessionForm implements OnInit {
     loading = signal(false);
     isEdit = signal(false);
     error = signal<string | null>(null);
-    voiceTranscript = signal<string | null>(null);
-
     autoSaving = signal(false);
     lastAutoSavedAt = signal<Date | null>(null);
     autoSaveError = signal<string | null>(null);
@@ -147,10 +143,6 @@ export class SessionForm implements OnInit {
                     this.noteLoaded = true;
                 },
             });
-    }
-
-    onVoiceUploaded(transcript: string): void {
-        this.voiceTranscript.set(transcript || 'تم رفع الملاحظة الصوتية');
     }
 
     onSubmit(): void {

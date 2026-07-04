@@ -172,18 +172,4 @@ describe('SessionForm', () => {
         component.cancel();
         expect(routerSpy['navigate']).toHaveBeenCalledWith(['/sessions/patient', 'pat-1']);
     });
-
-    it('should handle voice upload and display the transcribed text', (): void => {
-        setup();
-        fixture.detectChanges();
-        component.onVoiceUploaded('المريض يشعر بتحسن ملحوظ');
-        expect(component.voiceTranscript()).toBe('المريض يشعر بتحسن ملحوظ');
-    });
-
-    it('should show a generic confirmation when the transcript is empty', (): void => {
-        setup();
-        fixture.detectChanges();
-        component.onVoiceUploaded('');
-        expect(component.voiceTranscript()).toBe('تم رفع الملاحظة الصوتية');
-    });
 });
