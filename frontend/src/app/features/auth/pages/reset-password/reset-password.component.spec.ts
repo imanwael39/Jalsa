@@ -6,9 +6,12 @@ import { of, throwError } from 'rxjs';
 import { ResetPasswordComponent } from './reset-password.component';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { PasswordResetStateService } from '../../../../core/services/password-reset-state.service';
 
 interface SetupOptions {
     resetPasswordReturn?: ReturnType<typeof of> | ReturnType<typeof throwError>;
+    email?: string | null;
+    otp?: string | null;
 }
 
 describe('ResetPasswordComponent', () => {
@@ -17,9 +20,10 @@ describe('ResetPasswordComponent', () => {
     let authServiceSpy: Record<string, ReturnType<typeof vi.fn> | ReturnType<typeof signal>>;
     let routerSpy: Record<string, ReturnType<typeof vi.fn>>;
     let notificationSpy: Record<string, ReturnType<typeof vi.fn>>;
+    let passwordResetStateSpy: Record<string, ReturnType<typeof vi.fn>>;
 
     const setup = (opts: SetupOptions = {}): void => {
-        const { resetPasswordReturn } = opts;
+        const { resetPasswordReturn, email = 'saved@test.com', otp = '123456' } = opts;
 
         authServiceSpy = {
             resetPassword: vi.fn().mockReturnValue(resetPasswordReturn ?? of({})),
@@ -27,6 +31,13 @@ describe('ResetPasswordComponent', () => {
         };
         routerSpy = { navigate: vi.fn() };
         notificationSpy = { success: vi.fn(), error: vi.fn() };
+        passwordResetStateSpy = {
+            getEmail: vi.fn().mockReturnValue(email),
+            getOtp: vi.fn().mockReturnValue(otp),
+            setEmail: vi.fn(),
+            setOtp: vi.fn(),
+            clear: vi.fn(),
+        };
 
         TestBed.configureTestingModule({
             imports: [ReactiveFormsModule, ResetPasswordComponent],
@@ -36,6 +47,7 @@ describe('ResetPasswordComponent', () => {
                 { provide: AuthService, useValue: authServiceSpy },
                 { provide: NotificationService, useValue: notificationSpy },
                 { provide: Router, useValue: routerSpy },
+                { provide: PasswordResetStateService, useValue: passwordResetStateSpy },
             ],
         });
 
@@ -51,27 +63,15 @@ describe('ResetPasswordComponent', () => {
         setup();
         expect(component.resetForm.invalid).toBe(true);
     });
-    it('should return required email error', () => {
-        setup();
-        component.resetForm.get('email')!.markAsTouched();
-        expect(component.getEmailError()).toBe('البريد الإلكتروني مطلوب');
+    it('should redirect to forgot-password when email/otp missing', () => {
+        setup({ email: null });
+        component.ngOnInit();
+        expect(routerSpy['navigate']).toHaveBeenCalledWith(['/auth/forgot-password']);
     });
-    it('should return invalid email error', () => {
+    it('should not redirect when email and otp are present', () => {
         setup();
-        component.resetForm.patchValue({ email: 'bad' });
-        component.resetForm.get('email')!.markAsTouched();
-        expect(component.getEmailError()).toBe('يرجى إدخال بريد إلكتروني صحيح');
-    });
-    it('should return required otp error', () => {
-        setup();
-        component.resetForm.get('otp')!.markAsTouched();
-        expect(component.getOtpError()).toBe('رمز التحقق مطلوب');
-    });
-    it('should return minlength otp error', () => {
-        setup();
-        component.resetForm.patchValue({ otp: '12' });
-        component.resetForm.get('otp')!.markAsTouched();
-        expect(component.getOtpError()).toBe('يجب أن يحتوي الرمز على 6 أحرف على الأقل');
+        component.ngOnInit();
+        expect(routerSpy['navigate']).not.toHaveBeenCalled();
     });
     it('should return required password error', () => {
         setup();
@@ -94,11 +94,9 @@ describe('ResetPasswordComponent', () => {
         component.onSubmit();
         expect(authServiceSpy['resetPassword']).not.toHaveBeenCalled();
     });
-    it('should call authService.resetPassword on valid submit', () => {
-        setup();
+    it('should call authService.resetPassword with the stored email/otp on valid submit', () => {
+        setup({ email: 't@t.com', otp: '123456' });
         component.resetForm.patchValue({
-            email: 't@t.com',
-            otp: '123456',
             password: 'Passw0rd123',
             confirmPassword: 'Passw0rd123',
         });
@@ -109,22 +107,19 @@ describe('ResetPasswordComponent', () => {
             newPassword: 'Passw0rd123',
         });
     });
-    it('should set success on reset success', () => {
+    it('should set success and clear state on reset success', () => {
         setup();
         component.resetForm.patchValue({
-            email: 't@t.com',
-            otp: '123456',
             password: 'Passw0rd123',
             confirmPassword: 'Passw0rd123',
         });
         component.onSubmit();
         expect(component.success()).toBe(true);
+        expect(passwordResetStateSpy['clear']).toHaveBeenCalled();
     });
     it('should show error on reset failure', () => {
         setup({ resetPasswordReturn: throwError(() => ({ error: { message: 'رمز غير صحيح' } })) });
         component.resetForm.patchValue({
-            email: 't@t.com',
-            otp: '000000',
             password: 'Passw0rd123',
             confirmPassword: 'Passw0rd123',
         });
@@ -134,8 +129,6 @@ describe('ResetPasswordComponent', () => {
     it('should set loading back to false after error', () => {
         setup({ resetPasswordReturn: throwError(() => new Error('fail')) });
         component.resetForm.patchValue({
-            email: 't@t.com',
-            otp: '123456',
             password: 'Passw0rd123',
             confirmPassword: 'Passw0rd123',
         });

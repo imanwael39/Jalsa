@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal, DestroyRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, DestroyRef, OnInit } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -8,14 +8,14 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
 import { InputComponent } from '../../../../shared/components/input/input.component';
 
 @Component({
-    selector: 'app-forgot-password',
+    selector: 'app-verify-otp',
     standalone: true,
     imports: [ReactiveFormsModule, ButtonComponent, InputComponent, RouterLink],
-    templateUrl: './forgot-password.component.html',
-    styleUrls: ['./forgot-password.component.css'],
+    templateUrl: './verify-otp.component.html',
+    styleUrls: ['./verify-otp.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ForgotPasswordComponent {
+export class VerifyOtpComponent implements OnInit {
     private fb = inject(NonNullableFormBuilder);
     private authService = inject(AuthService);
     private passwordResetState = inject(PasswordResetStateService);
@@ -23,43 +23,51 @@ export class ForgotPasswordComponent {
     private destroyRef = inject(DestroyRef);
 
     loading = signal(false);
-    submitted = signal(false);
     error = signal<string | null>(null);
 
-    forgotForm = this.fb.group({
-        email: ['', [Validators.required, Validators.email]],
+    otpForm = this.fb.group({
+        otp: ['', [Validators.required, Validators.minLength(6)]],
     });
 
-    getEmailError(): string {
-        const c = this.forgotForm.get('email');
+    ngOnInit(): void {
+        if (!this.passwordResetState.getEmail()) {
+            this.router.navigate(['/auth/forgot-password']);
+        }
+    }
+
+    getOtpError(): string {
+        const c = this.otpForm.get('otp');
         if (!c?.errors || !c.touched) return '';
-        if (c.errors['required']) return 'البريد الإلكتروني مطلوب';
-        if (c.errors['email']) return 'يرجى إدخال بريد إلكتروني صحيح';
+        if (c.errors['required']) return 'رمز التحقق مطلوب';
+        if (c.errors['minlength']) return 'يجب أن يحتوي الرمز على 6 أحرف على الأقل';
         return '';
     }
 
     onSubmit(): void {
-        if (this.forgotForm.invalid) {
-            this.forgotForm.markAllAsTouched();
+        if (this.otpForm.invalid) {
+            this.otpForm.markAllAsTouched();
+            return;
+        }
+
+        const email = this.passwordResetState.getEmail();
+        if (!email) {
+            this.router.navigate(['/auth/forgot-password']);
             return;
         }
 
         this.loading.set(true);
         this.error.set(null);
 
-        const { email } = this.forgotForm.getRawValue();
+        const { otp } = this.otpForm.getRawValue();
 
         this.authService
-            .forgotPassword(email)
+            .verifyOtp({ email, otp })
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: () => {
                     this.loading.set(false);
-                    this.submitted.set(true);
-                    this.passwordResetState.setEmail(email);
-                    setTimeout(() => {
-                        this.router.navigate(['/auth/verify-otp']);
-                    }, 1500);
+                    this.passwordResetState.setOtp(otp);
+                    this.router.navigate(['/auth/reset-password']);
                 },
                 error: err => {
                     this.loading.set(false);

@@ -7,6 +7,7 @@ export const API = {
         logout: '/api/auth/logout',
         profile: '/api/auth/profile',
         forgotPassword: '/api/auth/forgot-password',
+        verifyOtp: '/api/auth/verify-otp',
         resetPassword: '/api/auth/reset-password',
     },
     patients: {

@@ -57,6 +57,13 @@ public class AuthController : BaseController
         return Ok(new { message = "If the email exists, an OTP has been sent." });
     }
 
+    [HttpPost("verify-otp")]
+    public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpDto dto)
+    {
+        await _authService.VerifyOtpAsync(dto);
+        return Ok(new { message = "رمز التحقق صحيح." });
+    }
+
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
     {

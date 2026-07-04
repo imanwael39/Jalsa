@@ -1,8 +1,9 @@
-import { Component, ChangeDetectionStrategy, inject, signal, DestroyRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, DestroyRef, OnInit } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../../core/services/auth.service';
+import { PasswordResetStateService } from '../../../../core/services/password-reset-state.service';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { InputComponent } from '../../../../shared/components/input/input.component';
 import { passwordMatchValidator } from '../../../../shared/validators/password-match.validator';
@@ -15,9 +16,10 @@ import { passwordMatchValidator } from '../../../../shared/validators/password-m
     styleUrls: ['./reset-password.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ResetPasswordComponent {
+export class ResetPasswordComponent implements OnInit {
     private fb = inject(NonNullableFormBuilder);
     private authService = inject(AuthService);
+    private passwordResetState = inject(PasswordResetStateService);
     private router = inject(Router);
     private destroyRef = inject(DestroyRef);
 
@@ -27,8 +29,6 @@ export class ResetPasswordComponent {
 
     resetForm = this.fb.group(
         {
-            email: ['', [Validators.required, Validators.email]],
-            otp: ['', [Validators.required, Validators.minLength(6)]],
             password: [
                 '',
                 [
@@ -42,20 +42,10 @@ export class ResetPasswordComponent {
         { validators: passwordMatchValidator }
     );
 
-    getEmailError(): string {
-        const c = this.resetForm.get('email');
-        if (!c?.errors || !c.touched) return '';
-        if (c.errors['required']) return 'البريد الإلكتروني مطلوب';
-        if (c.errors['email']) return 'يرجى إدخال بريد إلكتروني صحيح';
-        return '';
-    }
-
-    getOtpError(): string {
-        const c = this.resetForm.get('otp');
-        if (!c?.errors || !c.touched) return '';
-        if (c.errors['required']) return 'رمز التحقق مطلوب';
-        if (c.errors['minlength']) return 'يجب أن يحتوي الرمز على 6 أحرف على الأقل';
-        return '';
+    ngOnInit(): void {
+        if (!this.passwordResetState.getEmail() || !this.passwordResetState.getOtp()) {
+            this.router.navigate(['/auth/forgot-password']);
+        }
     }
 
     getPasswordError(): string {
@@ -87,10 +77,17 @@ export class ResetPasswordComponent {
             return;
         }
 
+        const email = this.passwordResetState.getEmail();
+        const otp = this.passwordResetState.getOtp();
+        if (!email || !otp) {
+            this.router.navigate(['/auth/forgot-password']);
+            return;
+        }
+
         this.loading.set(true);
         this.error.set(null);
 
-        const { email, otp, password } = this.resetForm.getRawValue();
+        const { password } = this.resetForm.getRawValue();
 
         this.authService
             .resetPassword({ email, otp, newPassword: password })
@@ -99,6 +96,7 @@ export class ResetPasswordComponent {
                 next: () => {
                     this.loading.set(false);
                     this.success.set(true);
+                    this.passwordResetState.clear();
                     setTimeout(() => {
                         this.router.navigate(['/auth/login']);
                     }, 3000);
