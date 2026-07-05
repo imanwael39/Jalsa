@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit, DestroyRef } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PatientService } from '../../../../core/services/patient.service';
@@ -32,16 +32,29 @@ export class PatientForm implements OnInit {
     isEdit = signal(false);
     error = signal<string | null>(null);
 
-    form = this.fb.group({
-        fullName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(200)]],
-        email: ['', [Validators.email, Validators.maxLength(200)]],
-        phone: ['', [Validators.maxLength(20)]],
-        dateOfBirth: [''],
-        gender: [''],
-        address: ['', [Validators.maxLength(500)]],
-        referralSource: ['', [Validators.maxLength(200)]],
-        chiefComplaint: ['', [Validators.maxLength(1000)]],
-    });
+    // Password is only required (and shown) when creating a patient with an email —
+    // editing an existing patient never touches the password, so skip the check there.
+    private emailRequiresPasswordValidator = (group: AbstractControl): ValidationErrors | null => {
+        if (this.isEdit()) return null;
+        const email = group.get('email')?.value;
+        const password = group.get('password')?.value;
+        return email && !password ? { passwordRequiredForEmail: true } : null;
+    };
+
+    form = this.fb.group(
+        {
+            fullName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(200)]],
+            email: ['', [Validators.email, Validators.maxLength(200)]],
+            password: ['', [Validators.minLength(8), Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/)]],
+            phone: ['', [Validators.maxLength(20)]],
+            dateOfBirth: [''],
+            gender: [''],
+            address: ['', [Validators.maxLength(500)]],
+            referralSource: ['', [Validators.maxLength(200)]],
+            chiefComplaint: ['', [Validators.maxLength(1000)]],
+        },
+        { validators: this.emailRequiresPasswordValidator }
+    );
 
     ngOnInit(): void {
         const id = this.route.snapshot.paramMap.get('id');
@@ -97,6 +110,7 @@ export class PatientForm implements OnInit {
             gender: formValue.gender || null,
             phone: formValue.phone || null,
             email: formValue.email || null,
+            password: formValue.password || null,
             address: formValue.address || null,
             referralSource: formValue.referralSource || null,
             chiefComplaint: formValue.chiefComplaint || null,
@@ -135,8 +149,10 @@ export class PatientForm implements OnInit {
                 .subscribe({
                     next: patient => {
                         this.state.addPatient(patient);
-                        this.notification.success('تم إنشاء المريض بنجاح');
                         this.loading.set(false);
+                        this.notification.success(
+                            patient.userId ? 'تم إنشاء المريض وحساب دخول خاص به بنجاح' : 'تم إنشاء المريض بنجاح'
+                        );
                         this.router.navigate(['/patients', patient.id]);
                     },
                     error: (err: HttpErrorResponse) => {
@@ -175,10 +191,26 @@ export class PatientForm implements OnInit {
         return '';
     }
 
+    getPasswordError(): string {
+        const control = this.form.get('password');
+        if (!control?.touched) return '';
+        if (control.errors?.['minlength']) {
+            return 'كلمة المرور يجب ألا تقل عن 8 أحرف';
+        }
+        if (control.errors?.['pattern']) {
+            return 'يجب أن تحتوي كلمة المرور على حرف كبير وحرف صغير ورقم';
+        }
+        if (this.form.errors?.['passwordRequiredForEmail']) {
+            return 'كلمة المرور مطلوبة عند إدخال بريد إلكتروني للمريض';
+        }
+        return '';
+    }
+
     private getFieldLabel(fieldName: string): string {
         const labels: Record<string, string> = {
             fullName: 'الاسم الكامل',
             email: 'البريد الإلكتروني',
+            password: 'كلمة المرور',
             phone: 'الهاتف',
             dateOfBirth: 'تاريخ الميلاد',
             gender: 'الجنس',

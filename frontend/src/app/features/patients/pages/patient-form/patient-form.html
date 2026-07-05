@@ -36,7 +36,8 @@
                             [error]="isFieldInvalid('fullName') ? getFieldError('fullName') : ''"
                             id="fullName"
                             name="fullName"
-                            autocomplete="name">
+                            autocomplete="name"
+                        >
                         </app-input>
                     </div>
                     <div class="form-field">
@@ -48,9 +49,26 @@
                             [error]="isFieldInvalid('email') ? getFieldError('email') : ''"
                             id="email"
                             name="email"
-                            autocomplete="email">
+                            autocomplete="email"
+                        >
                         </app-input>
                     </div>
+                    @if (!isEdit()) {
+                        <div class="form-field">
+                            <app-input
+                                label="كلمة المرور"
+                                type="password"
+                                placeholder="لإنشاء حساب دخول للمريض"
+                                formControlName="password"
+                                [error]="form.get('password')?.touched ? getPasswordError() : ''"
+                                helpText="مطلوبة فقط لو عايز تنشئ حساب دخول للمريض بالبريد الإلكتروني أعلاه"
+                                id="password"
+                                name="password"
+                                autocomplete="new-password"
+                            >
+                            </app-input>
+                        </div>
+                    }
                     <div class="form-field">
                         <app-input
                             label="رقم الهاتف"
@@ -60,7 +78,8 @@
                             [error]="isFieldInvalid('phone') ? getFieldError('phone') : ''"
                             id="phone"
                             name="phone"
-                            autocomplete="tel">
+                            autocomplete="tel"
+                        >
                         </app-input>
                     </div>
                     <div class="form-field">
@@ -71,15 +90,12 @@
                             class="form-control"
                             formControlName="dateOfBirth"
                             name="dateOfBirth"
-                            autocomplete="bday">
+                            autocomplete="bday"
+                        />
                     </div>
                     <div class="form-field">
                         <label for="gender" class="form-label">الجنس</label>
-                        <select
-                            id="gender"
-                            class="form-select"
-                            formControlName="gender"
-                            name="gender">
+                        <select id="gender" class="form-select" formControlName="gender" name="gender">
                             <option value="">اختر الجنس</option>
                             <option value="Male">ذكر</option>
                             <option value="Female">أنثى</option>
@@ -101,7 +117,8 @@
                             [error]="isFieldInvalid('address') ? getFieldError('address') : ''"
                             id="address"
                             name="address"
-                            autocomplete="street-address">
+                            autocomplete="street-address"
+                        >
                         </app-input>
                     </div>
                     <div class="form-field">
@@ -112,7 +129,8 @@
                             formControlName="referralSource"
                             [error]="isFieldInvalid('referralSource') ? getFieldError('referralSource') : ''"
                             id="referralSource"
-                            name="referralSource">
+                            name="referralSource"
+                        >
                         </app-input>
                     </div>
                     <div class="form-field full-width">
@@ -124,7 +142,8 @@
                             name="chiefComplaint"
                             rows="3"
                             placeholder="صف السبب الرئيسي للزيارة"
-                            [class.is-invalid]="isFieldInvalid('chiefComplaint')"></textarea>
+                            [class.is-invalid]="isFieldInvalid('chiefComplaint')"
+                        ></textarea>
                         @if (isFieldInvalid('chiefComplaint')) {
                             <div class="invalid-feedback">{{ getFieldError('chiefComplaint') }}</div>
                         }
@@ -133,11 +152,7 @@
             </div>
 
             <div class="form-actions">
-                <app-button
-                    type="submit"
-                    variant="primary"
-                    [loading]="loading()"
-                    ariaLabel="حفظ بيانات المريض">
+                <app-button type="submit" variant="primary" [loading]="loading()" ariaLabel="حفظ بيانات المريض">
                     {{ isEdit() ? 'تحديث المريض' : 'إنشاء مريض' }}
                 </app-button>
                 <app-button
@@ -145,8 +160,9 @@
                     variant="secondary"
                     (clicked)="goBack()"
                     [disabled]="loading()"
-                    ariaLabel="العودة للقائمة">
-إلغاء
+                    ariaLabel="العودة للقائمة"
+                >
+                    إلغاء
                 </app-button>
             </div>
         </form>

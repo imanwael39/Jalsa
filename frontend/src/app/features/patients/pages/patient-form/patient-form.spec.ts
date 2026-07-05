@@ -154,12 +154,31 @@ describe('PatientForm', () => {
         component.form.patchValue({
             fullName: 'New Patient',
             email: 'new@example.com',
+            password: 'Passw0rd123',
         });
         component.onSubmit();
         expect(patientServiceSpy['createPatient']).toHaveBeenCalled();
         expect(stateServiceSpy['addPatient']).toHaveBeenCalledWith(mockPatient);
         expect(notificationSpy['success']).toHaveBeenCalledWith('تم إنشاء المريض بنجاح');
         expect(routerSpy['navigate']).toHaveBeenCalledWith(['/patients', mockPatient.id]);
+    });
+    it('should require password when email is set on create', (): void => {
+        setup();
+        fixture.detectChanges();
+        component.form.patchValue({
+            fullName: 'New Patient',
+            email: 'new@example.com',
+        });
+        component.form.get('password')?.markAsTouched();
+        expect(component.form.valid).toBe(false);
+        expect(component.getPasswordError()).toBe('كلمة المرور مطلوبة عند إدخال بريد إلكتروني للمريض');
+    });
+    it('should not require password when editing a patient that already has an email', (): void => {
+        setup({ patientId: '123e4567-e89b-12d3-a456-426614174000' });
+        fixture.detectChanges();
+        component.form.patchValue({ fullName: 'Updated Name' });
+        component.onSubmit();
+        expect(patientServiceSpy['updatePatient']).toHaveBeenCalled();
     });
 
     it('should submit edit form successfully', (): void => {
