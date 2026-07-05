@@ -51,6 +51,11 @@ export interface ResetPasswordRequest {
     newPassword: string;
 }
 
+export interface VerifyOtpRequest {
+    email: string;
+    otp: string;
+}
+
 export interface ChangePasswordRequest {
     currentPassword: string;
     newPassword: string;

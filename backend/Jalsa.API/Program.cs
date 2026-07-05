@@ -128,12 +128,36 @@ builder.Services.Configure<EmailSettings>(
 builder.Services.Configure<OpenAiSettings>(
     builder.Configuration.GetSection("OpenAI"));
 
+builder.Services.Configure<GatewaySettings>(options =>
+{
+    options.BaseUrl = builder.Configuration["Gateway:BaseUrl"] ?? string.Empty;
+    options.ApiKey = builder.Configuration["SBG_API_KEY"] ?? string.Empty;
+    options.ChatModelId = builder.Configuration["Gateway:ChatModelId"]
+        ?? "deepseek.v3.2";
+    options.EmbeddingModelId = builder.Configuration["Gateway:EmbeddingModelId"]
+        ?? "amazon.titan-embed-text-v2:0:8k";
+});
+
 builder.Services.Configure<LangfuseSettings>(
     builder.Configuration.GetSection("Langfuse"));
 
 builder.Services.AddHttpClient<
     ILlmObservabilityService,
     LangfuseObservabilityService>();
+
+builder.Services.AddHttpClient<IGatewayClient, GatewayClient>((sp, client) =>
+{
+    var gatewaySettings = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<GatewaySettings>>().Value;
+
+    if (!string.IsNullOrWhiteSpace(gatewaySettings.BaseUrl))
+    {
+        var baseUrl = gatewaySettings.BaseUrl.TrimEnd('/') + "/";
+        client.BaseAddress = new Uri(baseUrl);
+    }
+
+    client.DefaultRequestHeaders.Authorization =
+        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", gatewaySettings.ApiKey);
+});
 
 builder.Services.AddSingleton<
     IPromptService,
@@ -147,8 +171,6 @@ builder.Services.AddScoped<IChatAiService, ChatAiService>();
 builder.Services.AddScoped<ICrisisDetectionService, CrisisDetectionService>();
 builder.Services.AddScoped<ISummarizationService, SummarizationService>();
 builder.Services.AddScoped<IReportGenerationService, ReportGenerationService>();
-builder.Services.AddScoped<IOcrService, OcrService>();
-builder.Services.AddScoped<ISttService, SttService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
 

@@ -13,6 +13,7 @@ import type {
     UpdateProfileRequest,
     ChangePasswordRequest,
     ResetPasswordRequest,
+    VerifyOtpRequest,
 } from '../models/auth.model';
 
 @Injectable({ providedIn: 'root' })
@@ -161,6 +162,10 @@ export class AuthService {
                 this.notification.success('تم إرسال رمز التحقق إلى بريدك الإلكتروني');
             })
         );
+    }
+
+    verifyOtp(data: VerifyOtpRequest): Observable<unknown> {
+        return this.http.post(API.auth.verifyOtp, data);
     }
 
     resetPassword(data: ResetPasswordRequest): Observable<unknown> {

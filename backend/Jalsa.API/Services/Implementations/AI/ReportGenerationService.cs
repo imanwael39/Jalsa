@@ -3,13 +3,12 @@ using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using OpenAI.Chat;
 
 namespace Jalsa.API.Services.Implementations.AI;
 
 public class ReportGenerationService : IReportGenerationService
 {
-    private readonly ChatClient _client;
+    private readonly IGatewayClient _client;
     private readonly JalsaDbContext _context;
     private readonly IVectorStore _vectorStore;
     private readonly IEmbeddingService _embeddingService;
@@ -19,7 +18,8 @@ public class ReportGenerationService : IReportGenerationService
     private readonly Services.Interfaces.IPromptService _prompts;
 
     public ReportGenerationService(
-        IOptions<OpenAiSettings> settings,
+        IOptions<GatewaySettings> settings,
+        IGatewayClient client,
         JalsaDbContext context,
         IVectorStore vectorStore,
         IEmbeddingService embeddingService,
@@ -29,20 +29,11 @@ public class ReportGenerationService : IReportGenerationService
         _observability = observability;
         _prompts = prompts;
 
-        var config = settings.Value;
-        _model = config.ChatModel;
+        _client = client;
+        _model = settings.Value.ChatModelId;
         _context = context;
         _vectorStore = vectorStore;
         _embeddingService = embeddingService;
-
-        OpenAI.OpenAIClient openAi =
-            string.IsNullOrWhiteSpace(config.Endpoint)
-                ? new OpenAI.OpenAIClient(config.ApiKey)
-                : new Azure.AI.OpenAI.AzureOpenAIClient(
-                    new Uri(config.Endpoint),
-                    new System.ClientModel.ApiKeyCredential(config.ApiKey));
-
-        _client = openAi.GetChatClient(_model);
     }
 
     public async Task<string> GenerateDraftAsync(
@@ -93,23 +84,15 @@ public class ReportGenerationService : IReportGenerationService
                     ["instructions"] = instructions
                 });
 
-        var messages = new List<ChatMessage>
-        {
-            new SystemChatMessage(
-                _prompts.Get(
-                    "generate-report-draft",
-                    language)),
-
-            new UserChatMessage(userPrompt)
-        };
+        var systemPrompt =
+            _prompts.Get(
+                "generate-report-draft",
+                language);
 
         var startTime = DateTime.UtcNow;
 
-        var result =
-            await _client.CompleteChatAsync(messages);
-
         var output =
-            result.Value.Content[0].Text;
+            await _client.ChatAsync(systemPrompt, userPrompt);
 
         await _observability.LogGenerationAsync(
             new LlmGenerationLog
@@ -118,8 +101,6 @@ public class ReportGenerationService : IReportGenerationService
                 Model = _model,
                 Input = userPrompt,
                 Output = output,
-                InputTokens = result.Value.Usage?.InputTokenCount,
-                OutputTokens = result.Value.Usage?.OutputTokenCount,
                 StartTime = startTime,
                 EndTime = DateTime.UtcNow,
 

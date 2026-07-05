@@ -88,12 +88,23 @@ public class AuthControllerTests
     }
 
     [Fact]
-    public async Task ForgotPassword_AnyEmail_ReturnsOkWithMessage()
+    public async Task ForgotPassword_ExistingEmail_ReturnsOkWithMessage()
     {
         var dto = new ForgotPasswordDto { Email = "test@test.com" };
         _authServiceMock.Setup(x => x.ForgotPasswordAsync(dto)).Returns(Task.CompletedTask);
 
         var result = await _sut.ForgotPassword(dto);
+
+        result.Should().BeOfType<OkObjectResult>();
+    }
+
+    [Fact]
+    public async Task VerifyOtp_ValidDto_ReturnsOk()
+    {
+        var dto = new VerifyOtpDto { Email = "test@test.com", Otp = "123456" };
+        _authServiceMock.Setup(x => x.VerifyOtpAsync(dto)).Returns(Task.CompletedTask);
+
+        var result = await _sut.VerifyOtp(dto);
 
         result.Should().BeOfType<OkObjectResult>();
     }
