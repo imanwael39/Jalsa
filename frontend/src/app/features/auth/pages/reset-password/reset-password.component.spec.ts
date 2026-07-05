@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
-import { provideRouter, Router } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { CUSTOM_ELEMENTS_SCHEMA, signal } from '@angular/core';
 import { of, throwError } from 'rxjs';
 import { ResetPasswordComponent } from './reset-password.component';
@@ -9,6 +9,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
 
 interface SetupOptions {
     resetPasswordReturn?: ReturnType<typeof of> | ReturnType<typeof throwError>;
+    queryParamEmail?: string;
 }
 
 describe('ResetPasswordComponent', () => {
@@ -19,7 +20,7 @@ describe('ResetPasswordComponent', () => {
     let notificationSpy: Record<string, ReturnType<typeof vi.fn>>;
 
     const setup = (opts: SetupOptions = {}): void => {
-        const { resetPasswordReturn } = opts;
+        const { resetPasswordReturn, queryParamEmail } = opts;
 
         authServiceSpy = {
             resetPassword: vi.fn().mockReturnValue(resetPasswordReturn ?? of({})),
@@ -36,6 +37,14 @@ describe('ResetPasswordComponent', () => {
                 { provide: AuthService, useValue: authServiceSpy },
                 { provide: NotificationService, useValue: notificationSpy },
                 { provide: Router, useValue: routerSpy },
+                {
+                    provide: ActivatedRoute,
+                    useValue: {
+                        snapshot: {
+                            queryParamMap: convertToParamMap(queryParamEmail ? { email: queryParamEmail } : {}),
+                        },
+                    },
+                },
             ],
         });
 
@@ -130,6 +139,16 @@ describe('ResetPasswordComponent', () => {
         });
         component.onSubmit();
         expect(component.error()).toBe('رمز غير صحيح');
+    });
+    it('should prefill and lock the email field when provided via query params', () => {
+        setup({ queryParamEmail: 'carried@over.com' });
+        expect(component.resetForm.get('email')!.value).toBe('carried@over.com');
+        expect(component.emailPrefilled()).toBe(true);
+    });
+    it('should leave the email field empty and editable without a query param', () => {
+        setup();
+        expect(component.resetForm.get('email')!.value).toBe('');
+        expect(component.emailPrefilled()).toBe(false);
     });
     it('should set loading back to false after error', () => {
         setup({ resetPasswordReturn: throwError(() => new Error('fail')) });

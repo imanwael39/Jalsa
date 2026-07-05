@@ -26,7 +26,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             } else if (error.status === 403) {
                 notification.error(serverMessage || 'ليس لديك صلاحية للقيام بهذه العملية');
             } else if (error.status === 404) {
-                notification.error('المورد المطلوب غير موجود');
+                notification.error(serverMessage || 'المورد المطلوب غير موجود');
             } else if (error.status === 409) {
                 notification.error(serverMessage || 'يوجد حساب مسجل بالفعل بهذا البريد الإلكتروني');
             } else if (error.status === 429) {

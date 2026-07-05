@@ -22,6 +22,7 @@ export class ForgotPasswordComponent {
     loading = signal(false);
     submitted = signal(false);
     error = signal<string | null>(null);
+    submittedEmail = signal('');
 
     forgotForm = this.fb.group({
         email: ['', [Validators.required, Validators.email]],
@@ -46,19 +47,19 @@ export class ForgotPasswordComponent {
 
         const { email } = this.forgotForm.getRawValue();
 
-        this.authService.forgotPassword(email).pipe(
-            takeUntilDestroyed(this.destroyRef),
-        ).subscribe({
-            next: () => {
-                this.loading.set(false);
-                this.submitted.set(true);
-            },
-            error: (err) => {
-                this.loading.set(false);
-                this.error.set(
-                    err.error?.message || err.error?.error || 'حدث خطأ، يرجى المحاولة مرة أخرى',
-                );
-            },
-        });
+        this.authService
+            .forgotPassword(email)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: () => {
+                    this.loading.set(false);
+                    this.submittedEmail.set(email);
+                    this.submitted.set(true);
+                },
+                error: err => {
+                    this.loading.set(false);
+                    this.error.set(err.error?.message || err.error?.error || 'حدث خطأ، يرجى المحاولة مرة أخرى');
+                },
+            });
     }
 }

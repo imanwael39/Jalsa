@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, signal, DestroyRef } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
@@ -19,6 +19,7 @@ export class ResetPasswordComponent {
     private fb = inject(NonNullableFormBuilder);
     private authService = inject(AuthService);
     private router = inject(Router);
+    private route = inject(ActivatedRoute);
     private destroyRef = inject(DestroyRef);
 
     loading = signal(false);
@@ -41,6 +42,16 @@ export class ResetPasswordComponent {
         },
         { validators: passwordMatchValidator }
     );
+
+    emailPrefilled = signal(false);
+
+    constructor() {
+        const email = this.route.snapshot.queryParamMap.get('email');
+        if (email) {
+            this.resetForm.patchValue({ email });
+            this.emailPrefilled.set(true);
+        }
+    }
 
     getEmailError(): string {
         const c = this.resetForm.get('email');
