@@ -132,9 +132,9 @@ builder.Services.Configure<GatewaySettings>(options =>
     options.BaseUrl = builder.Configuration["Gateway:BaseUrl"] ?? string.Empty;
     options.ApiKey = builder.Configuration["SBG_API_KEY"] ?? string.Empty;
     options.ChatModelId = builder.Configuration["Gateway:ChatModelId"]
-        ?? "anthropic.claude-3-haiku-20240307-v1:0";
+        ?? "deepseek.v3.2";
     options.EmbeddingModelId = builder.Configuration["Gateway:EmbeddingModelId"]
-        ?? "amazon.titan-embed-text-v2:0";
+        ?? "amazon.titan-embed-text-v2:0:8k";
 });
 
 builder.Services.Configure<LangfuseSettings>(
