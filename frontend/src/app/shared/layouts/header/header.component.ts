@@ -5,6 +5,7 @@ import {
     inject,
     ChangeDetectionStrategy,
     signal,
+    computed,
     OnInit,
     OnDestroy,
 } from '@angular/core';
@@ -31,6 +32,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private readonly appState = inject(AppStateService);
 
     user = this.authService.currentUser;
+    avatarUrl = computed(() => this.authService.resolveAvatarUrl(this.user()?.profileImageUrl));
     theme = this.appState.theme;
     isDropdownOpen = signal(false);
     isNotifOpen = signal(false);

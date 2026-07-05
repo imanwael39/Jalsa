@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, inject, ChangeDetectionStrategy, input } from '@angular/core';
+import { Component, Output, EventEmitter, inject, ChangeDetectionStrategy, input, computed } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { NavigationService } from '../../../core/services/navigation.service';
 import { AppStateService } from '../../../core/services/app-state.service';
@@ -23,6 +23,7 @@ export class SidebarComponent {
 
     readonly menuItems = this.navService.menuItems;
     readonly user = this.authService.currentUser;
+    readonly avatarUrl = computed(() => this.authService.resolveAvatarUrl(this.user()?.profileImageUrl));
 
     toggleSidebar(): void {
         this.toggle.emit();
@@ -31,6 +32,10 @@ export class SidebarComponent {
     logout(): void {
         this.authService.logout();
         this.router.navigate(['/auth/login']);
+    }
+
+    goToProfile(): void {
+        this.router.navigate(['/auth/profile']);
     }
 
     getRoleLabel(): string {
