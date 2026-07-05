@@ -5,6 +5,7 @@ using Hangfire.SqlServer;
 using Jalsa.API.Configurations;
 using Jalsa.API.Exceptions;
 using Jalsa.API.Hubs;
+using Jalsa.API.Middleware;
 using Jalsa.API.Services.Implementations;
 using Jalsa.API.Services.Implementations.AI;
 using Jalsa.API.Services.Interfaces;
@@ -165,8 +166,8 @@ var corsOrigins =
     .Get<string[]>()
     ?? new[]
     {
-        "http://localhost:4200",
-        "https://localhost:4200"
+        "http://localhost:4300",
+        "https://localhost:4300"
     };
 
 builder.Services.AddCors(options =>
@@ -219,6 +220,8 @@ builder.Services.AddHangfireServer();
 
 var app = builder.Build();
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 app.Use(async (context, next) =>
 {
     context.Response.Headers["X-Content-Type-Options"] = "nosniff";
@@ -241,6 +244,8 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+
+app.UseStaticFiles();
 
 app.UseRouting();
 
