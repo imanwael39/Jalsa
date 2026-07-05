@@ -91,18 +91,103 @@ public class AuthServiceTests : IDisposable
     [Fact]
     public async Task RegisterAsync_PatientRole_DoesNotCreateTherapist()
     {
+        var therapist = await SeedTherapistAsync();
         var dto = new RegisterDto
         {
             Email = "patient@test.com",
             Password = "Test123!",
-            Role = "Patient"
+            Role = "Patient",
+            TherapistId = therapist.Id
         };
 
         var result = await _sut.RegisterAsync(dto);
 
         result.Roles.Should().Contain("Patient");
         var therapists = await _context.Therapists.ToListAsync();
-        therapists.Should().BeEmpty();
+        therapists.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task RegisterAsync_PatientRole_CreatesLinkedPatientAssignedToChosenTherapist()
+    {
+        var therapist = await SeedTherapistAsync();
+        var dto = new RegisterDto
+        {
+            Email = "patient2@test.com",
+            Password = "Test123!",
+            FullName = "Sara Ahmed",
+            Role = "Patient",
+            TherapistId = therapist.Id
+        };
+
+        var result = await _sut.RegisterAsync(dto);
+
+        var user = await _context.Users.FirstAsync(u => u.Email == dto.Email);
+        var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserId == user.Id);
+
+        patient.Should().NotBeNull();
+        patient!.TherapistId.Should().Be(therapist.Id);
+        patient.FullName.Should().Be("Sara Ahmed");
+        result.Roles.Should().Contain("Patient");
+    }
+
+    [Fact]
+    public async Task RegisterAsync_PatientRole_NoTherapistChosen_Throws400()
+    {
+        await SeedTherapistAsync();
+        var dto = new RegisterDto
+        {
+            Email = "orphan@test.com",
+            Password = "Test123!",
+            Role = "Patient"
+        };
+
+        var act = () => _sut.RegisterAsync(dto);
+
+        var ex = await act.Should().ThrowAsync<ApiException>();
+        ex.Which.StatusCode.Should().Be(400);
+    }
+
+    [Fact]
+    public async Task RegisterAsync_PatientRole_NonExistentTherapistId_Throws400()
+    {
+        var dto = new RegisterDto
+        {
+            Email = "orphan2@test.com",
+            Password = "Test123!",
+            Role = "Patient",
+            TherapistId = Guid.NewGuid()
+        };
+
+        var act = () => _sut.RegisterAsync(dto);
+
+        var ex = await act.Should().ThrowAsync<ApiException>();
+        ex.Which.StatusCode.Should().Be(400);
+    }
+
+    private async Task<Jalsa.Domain.Models.Clinic.Therapist> SeedTherapistAsync()
+    {
+        var therapistUser = new User
+        {
+            Id = Guid.NewGuid(),
+            Email = $"seed-therapist-{Guid.NewGuid()}@test.com",
+            PasswordHash = "hash",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+        };
+        var therapist = new Jalsa.Domain.Models.Clinic.Therapist
+        {
+            Id = Guid.NewGuid(),
+            UserId = therapistUser.Id,
+            FullName = "Dr. Seed",
+            LicenseNumber = $"LIC-{Guid.NewGuid().ToString()[..8]}",
+            CreatedAt = DateTime.UtcNow,
+        };
+        _context.Users.Add(therapistUser);
+        _context.Therapists.Add(therapist);
+        await _context.SaveChangesAsync();
+        return therapist;
     }
 
     [Fact]

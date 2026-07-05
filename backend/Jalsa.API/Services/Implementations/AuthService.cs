@@ -29,20 +29,39 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
     {
-        var existingUser = await _context.Users.AnyAsync(u => u.Email == dto.Email);
-        if (existingUser)
-            throw new ApiException(409, "هذا البريد الإلكتروني مسجل بالفعل.");
+        // Validate everything up front so no row is written until all checks pass.
+        var emailExists = await _context.Users.AnyAsync(u => u.Email == dto.Email);
+        if (emailExists)
+            throw new ApiException(409, "البريد الإلكتروني مستخدم بالفعل.");
 
         var roleName = string.IsNullOrWhiteSpace(dto.Role) ? "Therapist" : dto.Role;
         var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
         if (role == null)
-            throw new ApiException(400, $"الدور '{roleName}' غير موجود.");
+            throw new ApiException(400, $"نوع الحساب '{roleName}' غير موجود.");
 
-        if (roleName == "Therapist" && !string.IsNullOrWhiteSpace(dto.LicenseNumber))
+        string? licenseNumber = null;
+        if (roleName == "Therapist")
         {
-            var licenseExists = await _context.Therapists.AnyAsync(t => t.LicenseNumber == dto.LicenseNumber);
+            licenseNumber = string.IsNullOrWhiteSpace(dto.LicenseNumber)
+                ? $"LIC-{Guid.NewGuid().ToString()[..8].ToUpper()}"
+                : dto.LicenseNumber;
+
+            var licenseExists = await _context.Therapists.AnyAsync(t => t.LicenseNumber == licenseNumber);
             if (licenseExists)
                 throw new ApiException(409, "رقم الترخيص مستخدم بالفعل.");
+        }
+
+        // Self-registered patients still need a Patient record so they show up on a
+        // therapist's dashboard exactly like a therapist-created patient does. The
+        // patient picks which therapist they're signing up under at registration time.
+        if (roleName == "Patient")
+        {
+            if (dto.TherapistId == null)
+                throw new ApiException(400, "يجب اختيار المعالج عند التسجيل كمريض.");
+
+            var chosenTherapistExists = await _context.Therapists.AnyAsync(t => t.Id == dto.TherapistId);
+            if (!chosenTherapistExists)
+                throw new ApiException(400, "المعالج المختار غير موجود.");
         }
 
         var user = new User
@@ -71,15 +90,29 @@ public class AuthService : IAuthService
                 Id = Guid.NewGuid(),
                 UserId = user.Id,
                 FullName = string.IsNullOrWhiteSpace(dto.FullName) ? dto.Email.Split('@')[0] : dto.FullName,
-                LicenseNumber = string.IsNullOrWhiteSpace(dto.LicenseNumber) ? $"LIC-{Guid.NewGuid().ToString()[..8].ToUpper()}" : dto.LicenseNumber,
+                LicenseNumber = licenseNumber!,
                 Specialization = dto.Specialization,
                 CreatedAt = DateTime.UtcNow
             };
             _context.Therapists.Add(therapist);
         }
+        else if (roleName == "Patient")
+        {
+            var patient = new Jalsa.Domain.Models.Patient.Patient
+            {
+                Id = Guid.NewGuid(),
+                TherapistId = dto.TherapistId!.Value,
+                UserId = user.Id,
+                FullName = string.IsNullOrWhiteSpace(dto.FullName) ? dto.Email.Split('@')[0] : dto.FullName,
+                Email = dto.Email,
+                Status = "Active",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            _context.Patients.Add(patient);
+        }
 
-        // Single SaveChangesAsync call = one transaction: either both the user
-        // and therapist rows are persisted, or neither is (no orphaned users).
+        // Single SaveChangesAsync => one transaction, so User/UserRole/Therapist/Patient commit or fail together.
         await _context.SaveChangesAsync();
 
         return await BuildAuthResponse(user);
@@ -168,8 +201,11 @@ public class AuthService : IAuthService
     public async Task ForgotPasswordAsync(ForgotPasswordDto dto)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
-        if (user == null || !user.IsActive)
+        if (user == null)
             throw new ApiException(404, "هذا البريد الإلكتروني غير مسجل لدينا.");
+
+        if (!user.IsActive)
+            throw new ApiException(403, "هذا الحساب غير مفعل.");
 
         var existingTokens = await _context.PasswordResetTokens
             .Where(t => t.UserId == user.Id && t.UsedAt == null && t.ExpiresAt > DateTime.UtcNow)
@@ -207,7 +243,7 @@ public class AuthService : IAuthService
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
         if (user == null)
-            throw new ApiException(400, "طلب إعادة تعيين كلمة المرور غير صالح.");
+            throw new ApiException(404, "هذا البريد الإلكتروني غير مسجل لدينا.");
 
         var resetToken = await GetValidResetTokenAsync(user, dto.Otp);
 

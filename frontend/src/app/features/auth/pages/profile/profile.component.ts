@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal, OnInit, DestroyRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit, DestroyRef } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -6,6 +6,9 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
 import { InputComponent } from '../../../../shared/components/input/input.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { passwordMatchValidator } from '../../../../shared/validators/password-match.validator';
+
+const MAX_AVATAR_SIZE_BYTES = 5 * 1024 * 1024;
+const ALLOWED_AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 @Component({
     selector: 'app-profile',
@@ -23,9 +26,18 @@ export class ProfileComponent implements OnInit {
     loading = signal(true);
     updating = signal(false);
     changingPassword = signal(false);
+    uploadingPhoto = signal(false);
     error = signal<string | null>(null);
     passwordError = signal<string | null>(null);
+    photoError = signal<string | null>(null);
     success = signal(false);
+
+    avatarUrl = computed(() => this.authService.resolveAvatarUrl(this.authService.currentUser()?.profileImageUrl));
+    initials = computed(() => {
+        const user = this.authService.currentUser();
+        if (!user) return '';
+        return `${user.firstName?.charAt(0) ?? ''}${user.lastName?.charAt(0) ?? ''}`.toUpperCase();
+    });
 
     profileForm = this.fb.group({
         firstName: ['', [Validators.required, Validators.minLength(2)]],
@@ -185,6 +197,40 @@ export class ProfileComponent implements OnInit {
                 error: err => {
                     this.updating.set(false);
                     this.error.set(err.error?.message || err.error?.error || 'فشل تحديث الملف الشخصي.');
+                },
+            });
+    }
+
+    onPhotoSelected(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        const file = input.files?.[0];
+        input.value = '';
+        if (!file) return;
+
+        this.photoError.set(null);
+
+        if (!ALLOWED_AVATAR_TYPES.includes(file.type)) {
+            this.photoError.set('صيغة الصورة غير مدعومة. الصيغ المسموحة: JPG, PNG, WEBP.');
+            return;
+        }
+
+        if (file.size > MAX_AVATAR_SIZE_BYTES) {
+            this.photoError.set('حجم الصورة يجب ألا يتجاوز 5 ميجابايت.');
+            return;
+        }
+
+        this.uploadingPhoto.set(true);
+
+        this.authService
+            .uploadProfilePhoto(file)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: () => {
+                    this.uploadingPhoto.set(false);
+                },
+                error: err => {
+                    this.uploadingPhoto.set(false);
+                    this.photoError.set(err.error?.message || err.error?.error || 'فشل رفع الصورة الشخصية.');
                 },
             });
     }

@@ -3,11 +3,13 @@ import { Observable, tap, catchError, throwError, switchMap, map, of, firstValue
 import { HttpClientService } from '../api/http-client.service';
 import { API } from '../api/api-endpoints';
 import { NotificationService } from './notification.service';
+import { environment } from '../../../environments/environment';
 import type { User } from '../models/user.model';
 import type {
     AuthResponse,
     LoginRequest,
     RegisterRequest,
+    TherapistOption,
     UpdateProfileRequest,
     ChangePasswordRequest,
     ResetPasswordRequest,
@@ -81,6 +83,10 @@ export class AuthService {
         );
     }
 
+    getTherapistOptions(): Observable<TherapistOption[]> {
+        return this.http.get<TherapistOption[]>(API.auth.therapists);
+    }
+
     register(userData: RegisterRequest): Observable<unknown> {
         this.loadingSignal.set(true);
         return this.http.post(API.auth.register, userData).pipe(
@@ -122,6 +128,24 @@ export class AuthService {
                 this.notification.success('تم تحديث الملف الشخصي بنجاح');
             })
         );
+    }
+
+    uploadProfilePhoto(file: File): Observable<User> {
+        const formData = new FormData();
+        formData.append('file', file);
+        return this.http.upload<User>(API.auth.profilePhoto, formData).pipe(
+            tap(user => {
+                this.userSignal.set(user);
+                this.notification.success('تم تحديث الصورة الشخصية بنجاح');
+            })
+        );
+    }
+
+    /** Resolves a possibly-relative avatar path (e.g. "/uploads/avatars/x.jpg") to an absolute URL. */
+    resolveAvatarUrl(profileImageUrl: string | null | undefined): string | null {
+        if (!profileImageUrl) return null;
+        if (/^https?:\/\//i.test(profileImageUrl)) return profileImageUrl;
+        return `${environment.apiUrl}${profileImageUrl}`;
     }
 
     changePassword(data: ChangePasswordRequest): Observable<unknown> {
@@ -177,6 +201,7 @@ export class AuthService {
             email: response.email,
             firstName: '',
             lastName: '',
+            profileImageUrl: null,
             roles: response.roles,
             isActive: true,
             lastLoginAt: null,

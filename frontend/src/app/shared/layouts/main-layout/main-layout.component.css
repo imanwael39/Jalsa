@@ -1,19 +1,26 @@
 .app-layout {
     display: flex;
-    min-height: 100vh;
+    height: 100vh;
     width: 100%;
+    overflow: hidden;
 }
 
 .app-main {
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    height: 100vh;
     min-width: 0;
+    /* No overflow:hidden here — the header's dropdown menus (notifications,
+       user menu) are position:absolute descendants of this element, and an
+       ancestor's overflow:hidden would clip them even though they don't
+       affect this element's own box height (it's already fixed at 100vh,
+       and app-content below handles its own scrolling). */
 }
 
 .app-content {
     flex: 1;
+    overflow-y: auto;
     padding-inline: var(--space-7);
     padding-block: var(--space-6);
     background-color: var(--background);
