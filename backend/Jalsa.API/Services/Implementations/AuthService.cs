@@ -29,9 +29,40 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
     {
-        var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
-        if (existingUser != null)
-            throw new ApiException(409, "Email already exists.");
+        // Validate everything up front so no row is written until all checks pass.
+        var emailExists = await _context.Users.AnyAsync(u => u.Email == dto.Email);
+        if (emailExists)
+            throw new ApiException(409, "البريد الإلكتروني مستخدم بالفعل.");
+
+        var roleName = string.IsNullOrWhiteSpace(dto.Role) ? "Therapist" : dto.Role;
+        var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
+        if (role == null)
+            throw new ApiException(400, $"نوع الحساب '{roleName}' غير موجود.");
+
+        string? licenseNumber = null;
+        if (roleName == "Therapist")
+        {
+            licenseNumber = string.IsNullOrWhiteSpace(dto.LicenseNumber)
+                ? $"LIC-{Guid.NewGuid().ToString()[..8].ToUpper()}"
+                : dto.LicenseNumber;
+
+            var licenseExists = await _context.Therapists.AnyAsync(t => t.LicenseNumber == licenseNumber);
+            if (licenseExists)
+                throw new ApiException(409, "رقم الترخيص مستخدم بالفعل.");
+        }
+
+        // Self-registered patients still need a Patient record so they show up on a
+        // therapist's dashboard exactly like a therapist-created patient does. The
+        // patient picks which therapist they're signing up under at registration time.
+        if (roleName == "Patient")
+        {
+            if (dto.TherapistId == null)
+                throw new ApiException(400, "يجب اختيار المعالج عند التسجيل كمريض.");
+
+            var chosenTherapistExists = await _context.Therapists.AnyAsync(t => t.Id == dto.TherapistId);
+            if (!chosenTherapistExists)
+                throw new ApiException(400, "المعالج المختار غير موجود.");
+        }
 
         var user = new User
         {
@@ -43,11 +74,6 @@ public class AuthService : IAuthService
             UpdatedAt = DateTime.UtcNow
         };
 
-        var roleName = string.IsNullOrWhiteSpace(dto.Role) ? "Therapist" : dto.Role;
-        var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
-        if (role == null)
-            throw new ApiException(400, $"Role '{roleName}' does not exist.");
-
         user.UserRoles.Add(new UserRole
         {
             UserId = user.Id,
@@ -56,7 +82,6 @@ public class AuthService : IAuthService
         });
 
         _context.Users.Add(user);
-        await _context.SaveChangesAsync();
 
         if (roleName == "Therapist")
         {
@@ -65,13 +90,30 @@ public class AuthService : IAuthService
                 Id = Guid.NewGuid(),
                 UserId = user.Id,
                 FullName = string.IsNullOrWhiteSpace(dto.FullName) ? dto.Email.Split('@')[0] : dto.FullName,
-                LicenseNumber = string.IsNullOrWhiteSpace(dto.LicenseNumber) ? $"LIC-{Guid.NewGuid().ToString()[..8].ToUpper()}" : dto.LicenseNumber,
+                LicenseNumber = licenseNumber!,
                 Specialization = dto.Specialization,
                 CreatedAt = DateTime.UtcNow
             };
             _context.Therapists.Add(therapist);
-            await _context.SaveChangesAsync();
         }
+        else if (roleName == "Patient")
+        {
+            var patient = new Jalsa.Domain.Models.Patient.Patient
+            {
+                Id = Guid.NewGuid(),
+                TherapistId = dto.TherapistId!.Value,
+                UserId = user.Id,
+                FullName = string.IsNullOrWhiteSpace(dto.FullName) ? dto.Email.Split('@')[0] : dto.FullName,
+                Email = dto.Email,
+                Status = "Active",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            _context.Patients.Add(patient);
+        }
+
+        // Single SaveChangesAsync => one transaction, so User/UserRole/Therapist/Patient commit or fail together.
+        await _context.SaveChangesAsync();
 
         return await BuildAuthResponse(user);
     }
@@ -159,8 +201,11 @@ public class AuthService : IAuthService
     public async Task ForgotPasswordAsync(ForgotPasswordDto dto)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
-        if (user == null || !user.IsActive)
-            return;
+        if (user == null)
+            throw new ApiException(404, "هذا البريد الإلكتروني غير مسجل لدينا.");
+
+        if (!user.IsActive)
+            throw new ApiException(403, "هذا الحساب غير مفعل.");
 
         var existingTokens = await _context.PasswordResetTokens
             .Where(t => t.UserId == user.Id && t.UsedAt == null && t.ExpiresAt > DateTime.UtcNow)
@@ -189,7 +234,7 @@ public class AuthService : IAuthService
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
         if (user == null)
-            throw new ApiException(400, "Invalid reset request!");
+            throw new ApiException(404, "هذا البريد الإلكتروني غير مسجل لدينا.");
 
         var otpHash = ComputeSha256(dto.Otp);
         var resetToken = await _context.PasswordResetTokens
@@ -197,13 +242,13 @@ public class AuthService : IAuthService
             .FirstOrDefaultAsync(pr => pr.UserId == user.Id && pr.TokenHash == otpHash);
 
         if (resetToken == null)
-            throw new ApiException(400, "Invalid OTP!");
+            throw new ApiException(400, "رمز التحقق غير صحيح.");
 
         if (resetToken.UsedAt != null)
-            throw new ApiException(400, "OTP has already been used!");
+            throw new ApiException(400, "تم استخدام رمز التحقق من قبل.");
 
         if (resetToken.ExpiresAt < DateTime.UtcNow)
-            throw new ApiException(400, "OTP has expired!");
+            throw new ApiException(400, "انتهت صلاحية رمز التحقق، يرجى طلب رمز جديد.");
 
         resetToken.User.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
         resetToken.UsedAt = DateTime.UtcNow;

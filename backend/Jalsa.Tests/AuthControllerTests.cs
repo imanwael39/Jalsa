@@ -7,9 +7,11 @@ using Jalsa.API.Services.Interfaces;
 using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Domain.Models.Clinic;
 using Jalsa.Domain.Models.Identity;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using PatientEntity = Jalsa.Domain.Models.Patient.Patient;
 
 namespace Jalsa.Tests;
 
@@ -17,6 +19,7 @@ public class AuthControllerTests
 {
     private readonly Mock<IAuthService> _authServiceMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IWebHostEnvironment> _environmentMock;
     private readonly AuthController _sut;
     private readonly Guid _userId = Guid.NewGuid();
 
@@ -24,7 +27,8 @@ public class AuthControllerTests
     {
         _authServiceMock = new Mock<IAuthService>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
-        _sut = new AuthController(_authServiceMock.Object, _unitOfWorkMock.Object);
+        _environmentMock = new Mock<IWebHostEnvironment>();
+        _sut = new AuthController(_authServiceMock.Object, _unitOfWorkMock.Object, _environmentMock.Object);
 
         var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, _userId.ToString()) };
         var identity = new ClaimsIdentity(claims, "Test");
@@ -173,5 +177,43 @@ public class AuthControllerTests
         result.Should().BeOfType<OkObjectResult>();
         user.Email.Should().Be("new@test.com");
         therapist.FullName.Should().Be("New Name");
+    }
+
+    [Fact]
+    public async Task UpdateProfile_PatientUser_UpdatesPatientFullName()
+    {
+        var user = new User { Id = _userId, Email = "old@test.com", PasswordHash = "hash", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+        var patient = new PatientEntity { Id = Guid.NewGuid(), UserId = _userId, FullName = "Old Name", TherapistId = Guid.NewGuid() };
+        var roleId = Guid.NewGuid();
+
+        var userRepoMock = new Mock<IGenericRepository<User>>();
+        userRepoMock.Setup(r => r.GetByIdAsync(_userId, It.IsAny<CancellationToken>())).ReturnsAsync(user);
+
+        var therapistRepoMock = new Mock<IGenericRepository<Therapist>>();
+        therapistRepoMock.Setup(r => r.FindSingleAsync(It.IsAny<Expression<Func<Therapist, bool>>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Therapist?)null);
+
+        var patientRepoMock = new Mock<IGenericRepository<PatientEntity>>();
+        patientRepoMock.Setup(r => r.FindSingleAsync(It.IsAny<Expression<Func<PatientEntity, bool>>>(), It.IsAny<CancellationToken>())).ReturnsAsync(patient);
+
+        var userRoleRepoMock = new Mock<IGenericRepository<UserRole>>();
+        userRoleRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<UserRole, bool>>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<UserRole> { new() { UserId = _userId, RoleId = roleId } });
+
+        var roleRepoMock = new Mock<IGenericRepository<Role>>();
+        roleRepoMock.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<Role> { new() { Id = roleId, Name = "Patient" } });
+
+        _unitOfWorkMock.Setup(u => u.Repository<User>()).Returns(userRepoMock.Object);
+        _unitOfWorkMock.Setup(u => u.Repository<Therapist>()).Returns(therapistRepoMock.Object);
+        _unitOfWorkMock.Setup(u => u.Repository<PatientEntity>()).Returns(patientRepoMock.Object);
+        _unitOfWorkMock.Setup(u => u.Repository<UserRole>()).Returns(userRoleRepoMock.Object);
+        _unitOfWorkMock.Setup(u => u.Repository<Role>()).Returns(roleRepoMock.Object);
+        _unitOfWorkMock.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+        var dto = new UpdateProfileDto { FirstName = "New", LastName = "Name", Email = "new@test.com" };
+
+        var result = await _sut.UpdateProfile(dto);
+
+        result.Should().BeOfType<OkObjectResult>();
+        user.Email.Should().Be("new@test.com");
+        patient.FullName.Should().Be("New Name");
     }
 }
