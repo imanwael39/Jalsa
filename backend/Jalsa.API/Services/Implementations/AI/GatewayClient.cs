@@ -37,6 +37,9 @@ public class GatewayClient : IGatewayClient
         using var doc = await JsonDocument.ParseAsync(stream);
         var root = doc.RootElement;
 
+        if (root.TryGetProperty("output_text", out var outputTextEl))
+            return outputTextEl.GetString() ?? string.Empty;
+
         if (root.TryGetProperty("content", out var content) &&
             content.ValueKind == JsonValueKind.Array &&
             content.GetArrayLength() > 0 &&
