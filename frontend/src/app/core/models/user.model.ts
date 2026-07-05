@@ -3,6 +3,7 @@ export interface User {
     email: string;
     firstName: string;
     lastName: string;
+    profileImageUrl: string | null;
     roles: string[];
     isActive: boolean;
     lastLoginAt: string | null;

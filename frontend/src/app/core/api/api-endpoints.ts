@@ -6,6 +6,8 @@ export const API = {
         revoke: '/api/auth/revoke',
         logout: '/api/auth/logout',
         profile: '/api/auth/profile',
+        profilePhoto: '/api/auth/profile/photo',
+        therapists: '/api/auth/therapists',
         forgotPassword: '/api/auth/forgot-password',
         resetPassword: '/api/auth/reset-password',
     },
