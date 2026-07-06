@@ -4,7 +4,9 @@ using Hangfire;
 using Hangfire.SqlServer;
 using Jalsa.API.Configurations;
 using Jalsa.API.Exceptions;
+using Jalsa.API.Filters;
 using Jalsa.API.Hubs;
+using Jalsa.API.Middleware;
 using Jalsa.API.Services.Implementations;
 using Jalsa.API.Services.Implementations.AI;
 using Jalsa.API.Services.Interfaces;
@@ -170,7 +172,9 @@ builder.Services.AddScoped<IChatAiService, ChatAiService>();
 builder.Services.AddScoped<ICrisisDetectionService, CrisisDetectionService>();
 builder.Services.AddScoped<ISummarizationService, SummarizationService>();
 builder.Services.AddScoped<IReportGenerationService, ReportGenerationService>();
+builder.Services.AddScoped<ITherapistChatAiService, TherapistChatAiService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
 
 builder.Services.AddDbContext<JalsaDbContext>(options =>
@@ -187,8 +191,8 @@ var corsOrigins =
     .Get<string[]>()
     ?? new[]
     {
-        "http://localhost:4200",
-        "https://localhost:4200"
+        "http://localhost:4300",
+        "https://localhost:4300"
     };
 
 builder.Services.AddCors(options =>
@@ -218,6 +222,7 @@ builder.Services.AddScoped<IAssessmentService, AssessmentService>();
 builder.Services.AddScoped<IProgressService, ProgressService>();
 builder.Services.AddScoped<INotificationService, EmailNotificationService>();
 builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<ICrisisAlertService, CrisisAlertService>();
 builder.Services.AddScoped<ExerciseReminderJob>();
 
 builder.Services.AddFluentValidationAutoValidation();
@@ -241,7 +246,7 @@ builder.Services.AddHangfireServer();
 
 var app = builder.Build();
 
-app.UseMiddleware<Jalsa.API.Middleware.ExceptionHandlingMiddleware>();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.Use(async (context, next) =>
 {
@@ -266,6 +271,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
+app.UseStaticFiles();
+
 app.UseRouting();
 
 app.UseCors("AngularPolicy");
@@ -280,6 +287,9 @@ app.MapControllers();
 
 app.MapHub<ChatHub>("/chatHub");
 
-app.UseHangfireDashboard();
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireAuthorizationFilter() }
+});
 
 app.Run();

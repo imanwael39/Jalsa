@@ -39,6 +39,15 @@ export const routes: Routes = [
                 loadChildren: () => import('./features/chatbot/chatbot.routes').then(m => m.CHATBOT_ROUTES),
             },
             {
+                path: 'crisis-alerts',
+                loadChildren: () =>
+                    import('./features/crisis-alerts/crisis-alerts.routes').then(m => m.CRISIS_ALERTS_ROUTES),
+            },
+            {
+                path: 'admin',
+                loadChildren: () => import('./features/admin/admin.routes').then(m => m.ADMIN_ROUTES),
+            },
+            {
                 path: '',
                 redirectTo: 'dashboard',
                 pathMatch: 'full',

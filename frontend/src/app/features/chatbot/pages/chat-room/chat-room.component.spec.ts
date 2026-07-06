@@ -6,6 +6,23 @@ import { ChatRoomComponent } from './chat-room.component';
 import { HttpClientService } from '../../../../core/api/http-client.service';
 import { ChatMessage } from 'src/app/core/models/chat.model';
 
+const mockHubConnection = {
+    on: vi.fn(),
+    start: vi.fn().mockResolvedValue(undefined),
+    stop: vi.fn().mockResolvedValue(undefined),
+    invoke: vi.fn().mockResolvedValue(undefined),
+    state: 'Disconnected',
+};
+
+vi.mock('@microsoft/signalr', () => ({
+    HubConnectionBuilder: vi.fn().mockImplementation(function (this: Record<string, unknown>) {
+        this['withUrl'] = vi.fn().mockReturnThis();
+        this['withAutomaticReconnect'] = vi.fn().mockReturnThis();
+        this['build'] = vi.fn(() => mockHubConnection);
+    }),
+    HubConnectionState: { Connected: 'Connected', Disconnected: 'Disconnected' },
+}));
+
 const mockHistory = {
     conversationId: 'conv-1',
     patientId: 'pat-1',
@@ -73,6 +90,12 @@ describe('ChatRoomComponent', () => {
 
     beforeAll((): void => {
         Element.prototype.scrollIntoView = vi.fn();
+    });
+
+    afterEach((): void => {
+        mockHubConnection.state = 'Disconnected';
+        mockHubConnection.on.mockClear();
+        mockHubConnection.invoke.mockClear();
     });
 
     it('should create', (): void => {
@@ -145,13 +168,54 @@ describe('ChatRoomComponent', () => {
         });
     });
 
-    it('should optimistically append the outgoing message and clear the input', async () => {
+    it('should clear the input and rely on the ReceiveHumanMessage broadcast, without appending optimistically, when sent via REST', async () => {
         setup();
         fixture.detectChanges();
+        const countBefore = component.messages().length;
         component.updateMessageText('مرحباً');
         await component.sendMessage();
 
-        expect(component.messages()).toEqual(expect.arrayContaining([expect.objectContaining({ content: 'مرحباً' })]));
         expect(component.messageText()).toBe('');
+        expect(component.messages()).toHaveLength(countBefore);
+    });
+
+    it('should append a message received via the ReceiveHumanMessage broadcast', (): void => {
+        setup();
+        fixture.detectChanges();
+
+        const handler = mockHubConnection.on.mock.calls.find(call => call[0] === 'ReceiveHumanMessage')?.[1];
+        expect(handler).toBeDefined();
+
+        const incoming: ChatMessage = {
+            id: 'msg-3',
+            conversationId: 'conv-1',
+            senderType: 'Therapist',
+            content: 'كيف حالك؟',
+            createdAt: '2024-01-15T10:02:00Z',
+        };
+        handler(incoming);
+
+        expect(component.messages()).toEqual(
+            expect.arrayContaining([expect.objectContaining({ id: 'msg-3', content: 'كيف حالك؟' })])
+        );
+    });
+
+    it('should not duplicate a message already present when ReceiveHumanMessage fires again for the same id', (): void => {
+        setup();
+        fixture.detectChanges();
+
+        const handler = mockHubConnection.on.mock.calls.find(call => call[0] === 'ReceiveHumanMessage')?.[1];
+        const incoming: ChatMessage = {
+            id: 'msg-3',
+            conversationId: 'conv-1',
+            senderType: 'Therapist',
+            content: 'كيف حالك؟',
+            createdAt: '2024-01-15T10:02:00Z',
+        };
+
+        handler(incoming);
+        handler(incoming);
+
+        expect(component.messages().filter(m => m.id === 'msg-3')).toHaveLength(1);
     });
 });

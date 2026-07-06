@@ -20,7 +20,14 @@ describe('ForbiddenComponent', () => {
         authServiceSpy = {
             currentUser: signal(
                 currentUserRoles
-                    ? { id: '1', email: 't@t.com', firstName: 'T', lastName: 'U', roles: currentUserRoles }
+                    ? {
+                          id: '1',
+                          email: 't@t.com',
+                          firstName: 'T',
+                          lastName: 'U',
+                          profileImageUrl: null,
+                          roles: currentUserRoles,
+                      }
                     : null
             ),
         };

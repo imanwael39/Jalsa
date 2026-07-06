@@ -12,6 +12,7 @@ describe('AuthService', () => {
         email: 't@t.com',
         firstName: 'Test',
         lastName: 'User',
+        profileImageUrl: null,
         roles: ['Therapist'],
         isActive: true,
         lastLoginAt: null,

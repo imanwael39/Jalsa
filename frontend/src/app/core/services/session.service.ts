@@ -2,12 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpClientService } from '../api/http-client.service';
 import { API } from '../api/api-endpoints';
-import {
-    Session,
-    SessionNote,
-    CreateSessionRequest,
-    UpdateSessionRequest,
-} from '../models';
+import { Session, SessionNote, CreateSessionRequest, UpdateSessionRequest } from '../models';
 
 @Injectable({
     providedIn: 'root',

@@ -6,6 +6,8 @@ export const API = {
         revoke: '/api/auth/revoke',
         logout: '/api/auth/logout',
         profile: '/api/auth/profile',
+        profilePhoto: '/api/auth/profile/photo',
+        therapists: '/api/auth/therapists',
         forgotPassword: '/api/auth/forgot-password',
         verifyOtp: '/api/auth/verify-otp',
         resetPassword: '/api/auth/reset-password',
@@ -59,5 +61,15 @@ export const API = {
         history: (conversationId: string) => `/api/chat/${conversationId}/history`,
         send: '/api/chat/send',
         close: (conversationId: string) => `/api/chat/conversations/${conversationId}/close`,
+    },
+    crisisAlerts: {
+        base: '/api/crisis-alerts',
+        resolve: (id: string) => `/api/crisis-alerts/${id}/resolve`,
+    },
+    admin: {
+        users: '/api/admin/users',
+        status: (id: string) => `/api/admin/users/${id}/status`,
+        unlock: (id: string) => `/api/admin/users/${id}/unlock`,
+        role: (id: string) => `/api/admin/users/${id}/role`,
     },
 } as const;

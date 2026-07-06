@@ -26,7 +26,14 @@ describe('LoginComponent', () => {
             login: vi.fn().mockReturnValue(loginReturn ?? of({ token: 'mock-token', roles: ['Therapist'] })),
             currentUser: signal(
                 currentUserRoles
-                    ? { id: '1', email: 't@t.com', firstName: 'T', lastName: 'U', roles: currentUserRoles }
+                    ? {
+                          id: '1',
+                          email: 't@t.com',
+                          firstName: 'T',
+                          lastName: 'U',
+                          profileImageUrl: null,
+                          roles: currentUserRoles,
+                      }
                     : null
             ),
         };
@@ -100,6 +107,7 @@ describe('LoginComponent', () => {
             email: 't@t.com',
             firstName: 'T',
             lastName: 'U',
+            profileImageUrl: null,
             roles: ['Therapist'],
         });
         component.onSubmit();

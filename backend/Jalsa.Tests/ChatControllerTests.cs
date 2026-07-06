@@ -1,10 +1,13 @@
 using System.Security.Claims;
 using FluentAssertions;
 using Jalsa.API.Controllers;
+using Jalsa.API.Hubs;
+using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.Application.DTOs.Chat;
 using Jalsa.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Moq;
 
 namespace Jalsa.Tests;
@@ -12,6 +15,7 @@ namespace Jalsa.Tests;
 public class ChatControllerTests
 {
     private readonly Mock<IChatService> _chatServiceMock;
+    private readonly Mock<ITherapistChatAiService> _therapistChatAiMock;
     private readonly ChatController _sut;
     private readonly Guid _userId;
     private readonly Guid _patientId = Guid.NewGuid();
@@ -20,7 +24,18 @@ public class ChatControllerTests
     public ChatControllerTests()
     {
         _chatServiceMock = new Mock<IChatService>();
-        _sut = new ChatController(_chatServiceMock.Object);
+        _therapistChatAiMock = new Mock<ITherapistChatAiService>();
+
+        var clientProxyMock = new Mock<IClientProxy>();
+        clientProxyMock
+            .Setup(x => x.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), default))
+            .Returns(Task.CompletedTask);
+        var hubClientsMock = new Mock<IHubClients>();
+        hubClientsMock.Setup(x => x.Group(It.IsAny<string>())).Returns(clientProxyMock.Object);
+        var hubContextMock = new Mock<IHubContext<ChatHub>>();
+        hubContextMock.Setup(x => x.Clients).Returns(hubClientsMock.Object);
+
+        _sut = new ChatController(_chatServiceMock.Object, hubContextMock.Object, _therapistChatAiMock.Object);
 
         _userId = Guid.NewGuid();
         var claims = new List<Claim>

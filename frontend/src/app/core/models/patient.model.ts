@@ -22,6 +22,8 @@ export interface CreatePatientRequest {
     gender?: string | null;
     phone?: string | null;
     email?: string | null;
+    /** Required when email is set — creates the patient's login account with this password. */
+    password?: string | null;
     address?: string | null;
     referralSource?: string | null;
     chiefComplaint?: string | null;

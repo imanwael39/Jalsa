@@ -23,6 +23,9 @@ describe('RegisterComponent', () => {
 
         authServiceSpy = {
             register: vi.fn().mockReturnValue(registerReturn ?? of({})),
+            getTherapistOptions: vi
+                .fn()
+                .mockReturnValue(of([{ id: 'therapist-1', fullName: 'Dr. Test', specialization: null }])),
             currentUser: signal(null),
         };
         routerSpy = { navigate: vi.fn() };
@@ -143,5 +146,46 @@ describe('RegisterComponent', () => {
         setup();
         component.registerForm.get('role')!.setValue('Patient');
         expect(component.isTherapist()).toBe(false);
+    });
+    it('should treat Patient role as isPatient true', () => {
+        setup();
+        component.registerForm.get('role')!.setValue('Patient');
+        expect(component.isPatient()).toBe(true);
+    });
+    it('should load therapist options on init', () => {
+        setup();
+        component.ngOnInit();
+        expect(authServiceSpy['getTherapistOptions']).toHaveBeenCalled();
+        expect(component.therapistOptions()).toEqual([
+            { id: 'therapist-1', fullName: 'Dr. Test', specialization: null },
+        ]);
+    });
+    it('should require therapistId when role is Patient', () => {
+        setup();
+        component.registerForm.patchValue({
+            fullName: 'Patient User',
+            email: 'p@t.com',
+            password: 'Passw0rd123',
+            confirmPassword: 'Passw0rd123',
+            role: 'Patient',
+        });
+        component.registerForm.get('therapistId')!.markAsTouched();
+        expect(component.registerForm.valid).toBe(false);
+        expect(component.getTherapistError()).toBe('يجب اختيار المعالج المسؤول عن حسابك');
+    });
+    it('should submit successfully when Patient role has a therapistId', () => {
+        setup();
+        component.registerForm.patchValue({
+            fullName: 'Patient User',
+            email: 'p@t.com',
+            password: 'Passw0rd123',
+            confirmPassword: 'Passw0rd123',
+            role: 'Patient',
+            therapistId: 'therapist-1',
+        });
+        component.onSubmit();
+        expect(authServiceSpy['register']).toHaveBeenCalledWith(
+            expect.objectContaining({ therapistId: 'therapist-1' })
+        );
     });
 });

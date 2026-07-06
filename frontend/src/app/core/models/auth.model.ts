@@ -23,6 +23,14 @@ export interface RegisterRequest {
     licenseNumber?: string;
     specialization?: string;
     role?: string;
+    /** Required when role is 'Patient' — the therapist the patient is signing up under. */
+    therapistId?: string;
+}
+
+export interface TherapistOption {
+    id: string;
+    fullName: string;
+    specialization: string | null;
 }
 
 export interface RefreshTokenRequest {

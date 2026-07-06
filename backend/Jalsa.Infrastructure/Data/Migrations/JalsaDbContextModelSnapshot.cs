@@ -137,11 +137,17 @@ namespace Jalsa.Infrastructure.Data.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("SessionId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Severity")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -578,8 +584,14 @@ namespace Jalsa.Infrastructure.Data.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Difficulty")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateOnly?>("DueDate")
                         .HasColumnType("date");
+
+                    b.Property<int?>("DurationMinutes")
+                        .HasColumnType("int");
 
                     b.Property<string>("Frequency")
                         .HasColumnType("nvarchar(max)");
@@ -629,6 +641,12 @@ namespace Jalsa.Infrastructure.Data.Migrations
 
                     b.Property<DateTime?>("LoggedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<int?>("MoodAfter")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MoodBefore")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uniqueidentifier");
@@ -1007,6 +1025,9 @@ namespace Jalsa.Infrastructure.Data.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("EmergencyContact")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1014,7 +1035,13 @@ namespace Jalsa.Infrastructure.Data.Migrations
                     b.Property<string>("Gender")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("MedicalHistory")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Phone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProfileImageUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ReferralSource")

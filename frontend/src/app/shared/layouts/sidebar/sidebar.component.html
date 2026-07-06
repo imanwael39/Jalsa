@@ -7,7 +7,11 @@
                 <span>ج</span>
             }
         </div>
-        <button class="toggle-btn" (click)="toggleSidebar()" [attr.aria-label]="collapsed() ? 'توسيع الشريط الجانبي' : 'طي الشريط الجانبي'">
+        <button
+            class="toggle-btn"
+            (click)="toggleSidebar()"
+            [attr.aria-label]="collapsed() ? 'توسيع الشريط الجانبي' : 'طي الشريط الجانبي'"
+        >
             <i class="bi" [class.bi-chevron-left]="!collapsed()" [class.bi-chevron-right]="collapsed()"></i>
         </button>
     </div>
@@ -15,11 +19,13 @@
         <ul class="nav flex-column">
             @for (item of menuItems(); track item.route) {
                 <li class="nav-item">
-                    <a class="nav-link"
-                       [routerLink]="item.route"
-                       routerLinkActive="active"
-                       [routerLinkActiveOptions]="{ exact: false }"
-                       [attr.aria-label]="item.label">
+                    <a
+                        class="nav-link"
+                        [routerLink]="item.route"
+                        routerLinkActive="active"
+                        [routerLinkActiveOptions]="{ exact: false }"
+                        [attr.aria-label]="item.label"
+                    >
                         <i class="bi {{ item.icon }}"></i>
                         @if (!collapsed()) {
                             <span>{{ item.label }}</span>
@@ -31,16 +37,27 @@
     </nav>
     @if (user(); as u) {
         <div class="sidebar-footer">
-            <div class="sidebar-user">
+            <div
+                class="sidebar-user"
+                role="button"
+                tabindex="0"
+                [attr.aria-label]="'الملف الشخصي: ' + u.firstName + ' ' + u.lastName"
+                (click)="goToProfile()"
+                (keydown.enter)="goToProfile()"
+            >
                 <div class="user-avatar">
-                    <i class="bi bi-person-circle"></i>
+                    @if (avatarUrl(); as url) {
+                        <img [src]="url" alt="" class="user-avatar-image" />
+                    } @else {
+                        <i class="bi bi-person-circle"></i>
+                    }
                 </div>
                 @if (!collapsed()) {
                     <div class="user-info">
                         <span class="user-name">{{ u.firstName }} {{ u.lastName }}</span>
                         <span class="user-role">{{ getRoleLabel() }}</span>
                     </div>
-                    <button class="logout-btn" (click)="logout()" aria-label="تسجيل الخروج">
+                    <button class="logout-btn" (click)="logout(); $event.stopPropagation()" aria-label="تسجيل الخروج">
                         <i class="bi bi-box-arrow-right"></i>
                     </button>
                 }

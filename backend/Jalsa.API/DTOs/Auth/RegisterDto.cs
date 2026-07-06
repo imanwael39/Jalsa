@@ -17,4 +17,7 @@ public class RegisterDto
     public string? Specialization { get; set; }
 
     public string? Role { get; set; }
+
+    /// <summary>Required when Role is "Patient" — the therapist the patient is signing up under.</summary>
+    public Guid? TherapistId { get; set; }
 }

@@ -33,12 +33,33 @@ public class ExceptionHandlingMiddleware
         }
         catch (ApiException ex)
         {
+            _logger.LogWarning(ex, "API exception: {Message}", ex.Message);
             await WriteResponseAsync(context, ex.StatusCode, ex.Message);
         }
         catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
         {
             _logger.LogWarning(ex, "Unique constraint violation");
             await WriteResponseAsync(context, StatusCodes.Status409Conflict, "البيانات المدخلة مستخدمة بالفعل.");
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex, "Database update exception");
+            await WriteResponseAsync(context, StatusCodes.Status409Conflict, "تعذر حفظ البيانات، قد تكون البيانات مكررة.");
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Not found: {Message}", ex.Message);
+            await WriteResponseAsync(context, StatusCodes.Status404NotFound, ex.Message);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogWarning(ex, "Forbidden: {Message}", ex.Message);
+            await WriteResponseAsync(context, StatusCodes.Status403Forbidden, ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Invalid operation: {Message}", ex.Message);
+            await WriteResponseAsync(context, StatusCodes.Status409Conflict, ex.Message);
         }
         catch (Exception ex)
         {
@@ -54,10 +75,14 @@ public class ExceptionHandlingMiddleware
                (sqlEx.Number == UniqueConstraintViolation1 || sqlEx.Number == UniqueConstraintViolation2);
     }
 
-    private static async Task WriteResponseAsync(HttpContext context, int statusCode, string message)
+    private static Task WriteResponseAsync(HttpContext context, int statusCode, string message)
     {
+        if (context.Response.HasStarted)
+            return Task.CompletedTask;
+
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = statusCode;
-        await context.Response.WriteAsync(JsonSerializer.Serialize(new { message }));
+        var payload = JsonSerializer.Serialize(new { message });
+        return context.Response.WriteAsync(payload);
     }
 }

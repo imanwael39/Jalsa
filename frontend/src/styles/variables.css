@@ -251,7 +251,9 @@
     --text-primary: #e2e8f0;
     --text-secondary: #94a3b8;
     --text-muted: #64748b;
-    --text-inverse: #0f172a;
+    /* --text-inverse stays white in dark mode too: it's used for text on
+       solid saturated surfaces (primary/danger buttons, badges, icons)
+       whose color doesn't change between themes. */
 
     --border-color: #253046;
     --border-light: #1a2333;

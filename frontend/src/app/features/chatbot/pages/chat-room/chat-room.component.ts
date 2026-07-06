@@ -121,6 +121,14 @@ export class ChatRoomComponent implements OnInit, OnDestroy, AfterViewChecked {
             this.shouldScrollToBottom = true;
         });
 
+        // Broadcast for messages sent via the REST endpoint (Therapist replies, or a
+        // Patient fallback when the SignalR connection is down). Guarded by id so a
+        // sender doesn't see their own message twice.
+        this.hubConnection.on('ReceiveHumanMessage', (incoming: ChatMessage) => {
+            this.messages.update(prev => (prev.some(m => m.id === incoming.id) ? prev : [...prev, incoming]));
+            this.shouldScrollToBottom = true;
+        });
+
         try {
             await this.hubConnection.start();
             await this.hubConnection.invoke('JoinConversation', this.conversationId());
@@ -138,18 +146,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.sending.set(true);
 
         const isPatient = this.authService.hasRole('Patient');
-
-        const outgoing: ChatMessage = {
-            id: crypto.randomUUID(),
-            conversationId: this.conversationId(),
-            senderType: isPatient ? 'Patient' : 'Therapist',
-            content: text,
-            createdAt: new Date().toISOString(),
-        };
-
-        this.messages.update(prev => [...prev, outgoing]);
         this.messageText.set('');
-        this.shouldScrollToBottom = true;
 
         try {
             // The backend's ChatHub.SendMessage always records the sender as "Patient" and
@@ -157,8 +154,20 @@ export class ChatRoomComponent implements OnInit, OnDestroy, AfterViewChecked {
             // conversation. A Therapist must always go through the REST endpoint, which
             // correctly attributes senderType from the caller's role and does not trigger AI.
             if (isPatient && this.hubConnection?.state === signalR.HubConnectionState.Connected) {
+                // Own message isn't echoed back by the hub, so append it optimistically.
+                const outgoing: ChatMessage = {
+                    id: crypto.randomUUID(),
+                    conversationId: this.conversationId(),
+                    senderType: 'Patient',
+                    content: text,
+                    createdAt: new Date().toISOString(),
+                };
+                this.messages.update(prev => [...prev, outgoing]);
+                this.shouldScrollToBottom = true;
                 await this.hubConnection.invoke('SendMessage', this.conversationId(), this.patientId(), text);
             } else {
+                // Rendered once the 'ReceiveHumanMessage' broadcast arrives, since the
+                // sender is also a member of this conversation's SignalR group.
                 await this.http
                     .post<void>(API.chat.send, {
                         conversationId: this.conversationId(),

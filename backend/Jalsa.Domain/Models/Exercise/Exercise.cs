@@ -8,6 +8,8 @@ public class Exercise
     public string? Frequency { get; set; }
     public DateOnly? StartDate { get; set; }
     public DateOnly? DueDate { get; set; }
+    public int? DurationMinutes { get; set; }
+    public string? Difficulty { get; set; }
     public string Status { get; set; } = "Active";
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

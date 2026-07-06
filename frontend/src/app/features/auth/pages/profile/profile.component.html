@@ -14,6 +14,43 @@
 
         <div class="card mb-4">
             <div class="card-header">
+                <h5 class="mb-0">الصورة الشخصية</h5>
+            </div>
+            <div class="card-body">
+                <div class="avatar-section">
+                    <div class="avatar-preview">
+                        @if (avatarUrl(); as url) {
+                            <img [src]="url" alt="الصورة الشخصية" class="avatar-image" />
+                        } @else {
+                            <div class="avatar-fallback">{{ initials() }}</div>
+                        }
+                    </div>
+                    <div class="avatar-controls">
+                        <label class="avatar-upload-btn" [class.disabled]="uploadingPhoto()">
+                            @if (uploadingPhoto()) {
+                                جاري الرفع...
+                            } @else {
+                                تغيير الصورة
+                            }
+                            <input
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                (change)="onPhotoSelected($event)"
+                                [disabled]="uploadingPhoto()"
+                                hidden
+                            />
+                        </label>
+                        <p class="avatar-hint">JPG, PNG أو WEBP، بحد أقصى 5 ميجابايت</p>
+                        @if (photoError()) {
+                            <p class="avatar-error" role="alert">{{ photoError() }}</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
                 <h5 class="mb-0">المعلومات الشخصية</h5>
             </div>
             <div class="card-body">
