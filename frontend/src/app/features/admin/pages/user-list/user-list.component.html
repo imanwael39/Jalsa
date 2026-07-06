@@ -40,9 +40,17 @@
                                 <td>{{ user.email }}</td>
                                 <td>{{ user.fullName || '-' }}</td>
                                 <td>
-                                    @for (role of user.roles; track role) {
-                                        <span class="role-badge">{{ role }}</span>
-                                    }
+                                    <select
+                                        class="role-select"
+                                        [disabled]="busyId() === user.id"
+                                        (change)="changeRole(user, $any($event.target).value)"
+                                    >
+                                        @for (role of availableRoles; track role) {
+                                            <option [value]="role" [selected]="user.roles[0] === role">
+                                                {{ role }}
+                                            </option>
+                                        }
+                                    </select>
                                 </td>
                                 <td>
                                     <span

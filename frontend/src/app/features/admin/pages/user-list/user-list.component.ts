@@ -63,6 +63,27 @@ export class UserListComponent implements OnInit {
             });
     }
 
+    readonly availableRoles = ['Therapist', 'Patient', 'Admin'];
+
+    changeRole(user: AdminUser, roleName: string): void {
+        if (!roleName || user.roles[0] === roleName) return;
+
+        this.busyId.set(user.id);
+        this.http
+            .patch<AdminUser>(API.admin.role(user.id), { roleName })
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: updated => {
+                    this.users.update(list => list.map(u => (u.id === updated.id ? updated : u)));
+                    this.busyId.set(null);
+                },
+                error: () => {
+                    this.error.set('فشل تغيير دور المستخدم.');
+                    this.busyId.set(null);
+                },
+            });
+    }
+
     unlock(user: AdminUser): void {
         this.busyId.set(user.id);
         this.http

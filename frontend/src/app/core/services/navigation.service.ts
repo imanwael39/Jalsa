@@ -17,7 +17,7 @@ export class NavigationService {
 
     private readonly allItems: NavItem[] = [
         { label: 'لوحة التحكم', icon: 'bi-grid', route: '/dashboard' },
-        { label: 'المرضى', icon: 'bi-people', route: '/patients', roles: ['Therapist', 'Admin'] },
+        { label: 'المرضى', icon: 'bi-people', route: '/patients', roles: ['Therapist'] },
         { label: 'الجلسات', icon: 'bi-calendar', route: '/sessions', roles: ['Therapist', 'Admin'] },
         { label: 'التمارين', icon: 'bi-clipboard', route: '/exercises', roles: ['Therapist', 'Admin'] },
         { label: 'التقارير', icon: 'bi-file-text', route: '/reports', roles: ['Therapist', 'Admin'] },
