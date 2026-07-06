@@ -11,10 +11,12 @@ namespace Jalsa.API.Controllers;
 public class ProgressController : BaseController
 {
     private readonly IProgressService _progressService;
+    private readonly ILogger<ProgressController> _logger;
 
-    public ProgressController(IProgressService progressService)
+    public ProgressController(IProgressService progressService, ILogger<ProgressController> logger)
     {
         _progressService = progressService;
+        _logger = logger;
     }
 
     [Authorize(Roles = "Therapist")]
@@ -26,8 +28,9 @@ public class ProgressController : BaseController
             var result = await _progressService.GetDashboardAsync(GetCurrentUserId());
             return Ok(result);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Dashboard load failed for user {UserId}", GetCurrentUserId());
             return StatusCode(500, new { error = "حدث خطأ أثناء تحميل بيانات لوحة التحكم" });
         }
     }
