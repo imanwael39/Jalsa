@@ -14,6 +14,8 @@ public class Patient
     public string? Address { get; set; }
     public string? ReferralSource { get; set; }
     public string? ChiefComplaint { get; set; }
+    public string? EmergencyContact { get; set; }
+    public string? MedicalHistory { get; set; }
     public string? ProfileImageUrl { get; set; }
     public string Status { get; set; } = "Active";
     public DateTime CreatedAt { get; set; }
