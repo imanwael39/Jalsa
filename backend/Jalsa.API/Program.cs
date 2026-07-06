@@ -4,6 +4,7 @@ using Hangfire;
 using Hangfire.SqlServer;
 using Jalsa.API.Configurations;
 using Jalsa.API.Exceptions;
+using Jalsa.API.Filters;
 using Jalsa.API.Hubs;
 using Jalsa.API.Services.Implementations;
 using Jalsa.API.Services.Implementations.AI;
@@ -172,6 +173,7 @@ builder.Services.AddScoped<ISummarizationService, SummarizationService>();
 builder.Services.AddScoped<IReportGenerationService, ReportGenerationService>();
 builder.Services.AddScoped<ITherapistChatAiService, TherapistChatAiService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
 
 builder.Services.AddDbContext<JalsaDbContext>(options =>
@@ -280,6 +282,9 @@ app.MapControllers();
 
 app.MapHub<ChatHub>("/chatHub");
 
-app.UseHangfireDashboard();
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireAuthorizationFilter() }
+});
 
 app.Run();

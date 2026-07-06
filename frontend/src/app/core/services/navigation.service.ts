@@ -28,6 +28,7 @@ export class NavigationService {
             route: '/crisis-alerts',
             roles: ['Therapist'],
         },
+        { label: 'إدارة النظام', icon: 'bi-gear-fill', route: '/admin', roles: ['Admin'] },
     ];
 
     readonly menuItems = computed(() => {
