@@ -33,5 +33,6 @@ export type {
 } from './exercise.model';
 export type { ReferralReport, ReportVersion } from './report.model';
 export type { ChatConversation, ChatMessage, SendMessageRequest } from './chat.model';
+export type { CrisisAlert } from './crisis-alert.model';
 export type { DashboardSummary, TrendDto, ExerciseCompletionBreakdown, Analytics } from './dashboard.model';
 export type { ApiResponse } from './api-response.model';

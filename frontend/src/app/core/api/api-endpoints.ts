@@ -62,4 +62,8 @@ export const API = {
         send: '/api/chat/send',
         close: (conversationId: string) => `/api/chat/conversations/${conversationId}/close`,
     },
+    crisisAlerts: {
+        base: '/api/crisis-alerts',
+        resolve: (id: string) => `/api/crisis-alerts/${id}/resolve`,
+    },
 } as const;

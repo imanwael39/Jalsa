@@ -47,6 +47,16 @@
         "en": "Patient message: {message}\n\nRelevant session context:\n{ragContext}\n\nPast conversation memory:\n{memoryContext}\n\nRecent conversation history:\n{historyText}"
       }
     },
+    "therapist-patient-qa": {
+      "system": {
+        "ar": "أنت مساعد إكلينيكي يجيب على أسئلة المعالج حول مريضه باستخدام السياق المتوفر فقط. إذا لم تكن المعلومة متوفرة في السياق، وضح ذلك بصراحة. لا تخترع معلومات.",
+        "en": "You are a clinical assistant answering a therapist's questions about their patient, using only the provided context. If the information isn't available in the context, say so clearly. Never invent information."
+      },
+      "user": {
+        "ar": "معلومات المريض: {patientName}\n\nسياق من الجلسات والتقييمات:\n{contextText}\n\nسؤال المعالج: {question}",
+        "en": "Patient: {patientName}\n\nContext from sessions and assessments:\n{contextText}\n\nTherapist's question: {question}"
+      }
+    },
     "crisis-detection": {
       "system": {
         "ar": "أنت مساعد كشف الأزمات. حدد ما إذا كانت رسالة المستخدم تشير إلى خطر إيذاء النفس أو الانتحار.",

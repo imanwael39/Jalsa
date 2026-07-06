@@ -69,10 +69,10 @@
                                 class="notif-item"
                                 [class.unread]="!n.isRead"
                                 [class.notif-item-crisis]="n.type === 'CrisisAlert'"
-                                (click)="notifService.markRead(n.id)"
+                                (click)="onNotificationClick(n)"
                                 role="button"
                                 tabindex="0"
-                                (keydown.enter)="notifService.markRead(n.id)"
+                                (keydown.enter)="onNotificationClick(n)"
                             >
                                 <div class="notif-icon" [class.notif-icon-crisis]="n.type === 'CrisisAlert'">
                                     @if (n.type === 'CrisisAlert') {

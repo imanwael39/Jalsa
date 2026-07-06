@@ -171,6 +171,7 @@ builder.Services.AddScoped<IChatAiService, ChatAiService>();
 builder.Services.AddScoped<ICrisisDetectionService, CrisisDetectionService>();
 builder.Services.AddScoped<ISummarizationService, SummarizationService>();
 builder.Services.AddScoped<IReportGenerationService, ReportGenerationService>();
+builder.Services.AddScoped<ITherapistChatAiService, TherapistChatAiService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
 
@@ -219,6 +220,7 @@ builder.Services.AddScoped<IAssessmentService, AssessmentService>();
 builder.Services.AddScoped<IProgressService, ProgressService>();
 builder.Services.AddScoped<INotificationService, EmailNotificationService>();
 builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<ICrisisAlertService, CrisisAlertService>();
 builder.Services.AddScoped<ExerciseReminderJob>();
 
 builder.Services.AddFluentValidationAutoValidation();
