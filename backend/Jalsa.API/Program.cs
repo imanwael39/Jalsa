@@ -6,6 +6,7 @@ using Jalsa.API.Configurations;
 using Jalsa.API.Exceptions;
 using Jalsa.API.Filters;
 using Jalsa.API.Hubs;
+using Jalsa.API.Middleware;
 using Jalsa.API.Services.Implementations;
 using Jalsa.API.Services.Implementations.AI;
 using Jalsa.API.Services.Interfaces;
@@ -133,9 +134,9 @@ builder.Services.Configure<GatewaySettings>(options =>
     options.BaseUrl = builder.Configuration["Gateway:BaseUrl"] ?? string.Empty;
     options.ApiKey = builder.Configuration["SBG_API_KEY"] ?? string.Empty;
     options.ChatModelId = builder.Configuration["Gateway:ChatModelId"]
-        ?? "anthropic.claude-3-haiku-20240307-v1:0";
+        ?? "deepseek.v3.2";
     options.EmbeddingModelId = builder.Configuration["Gateway:EmbeddingModelId"]
-        ?? "amazon.titan-embed-text-v2:0";
+        ?? "amazon.titan-embed-text-v2:0:8k";
 });
 
 builder.Services.Configure<LangfuseSettings>(
@@ -190,8 +191,8 @@ var corsOrigins =
     .Get<string[]>()
     ?? new[]
     {
-        "http://localhost:4200",
-        "https://localhost:4200"
+        "http://localhost:4300",
+        "https://localhost:4300"
     };
 
 builder.Services.AddCors(options =>
@@ -245,6 +246,8 @@ builder.Services.AddHangfireServer();
 
 var app = builder.Build();
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 app.Use(async (context, next) =>
 {
     context.Response.Headers["X-Content-Type-Options"] = "nosniff";
@@ -267,6 +270,8 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+
+app.UseStaticFiles();
 
 app.UseRouting();
 

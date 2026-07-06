@@ -11,6 +11,11 @@ interface SetupOptions {
     getProfileReturn?: ReturnType<typeof of> | ReturnType<typeof throwError>;
     updateProfileReturn?: ReturnType<typeof of> | ReturnType<typeof throwError>;
     changePasswordReturn?: ReturnType<typeof of> | ReturnType<typeof throwError>;
+    uploadProfilePhotoReturn?: ReturnType<typeof of> | ReturnType<typeof throwError>;
+}
+
+function createFakeImageFile(type: string, sizeBytes: number): File {
+    return new File([new Uint8Array(sizeBytes)], 'avatar.jpg', { type });
 }
 
 const mockUser = {
@@ -18,6 +23,7 @@ const mockUser = {
     email: 't@t.com',
     firstName: 'Test',
     lastName: 'User',
+    profileImageUrl: null,
     roles: ['Therapist'],
     isActive: true,
 };
@@ -29,13 +35,15 @@ describe('ProfileComponent', () => {
     let notificationSpy: Record<string, ReturnType<typeof vi.fn>>;
 
     const setup = (opts: SetupOptions = {}): void => {
-        const { getProfileReturn, updateProfileReturn, changePasswordReturn } = opts;
+        const { getProfileReturn, updateProfileReturn, changePasswordReturn, uploadProfilePhotoReturn } = opts;
 
         authServiceSpy = {
             getProfile: vi.fn().mockReturnValue(getProfileReturn ?? of(mockUser)),
             updateProfile: vi.fn().mockReturnValue(updateProfileReturn ?? of(mockUser)),
             changePassword: vi.fn().mockReturnValue(changePasswordReturn ?? of({})),
-            currentUser: signal(null),
+            uploadProfilePhoto: vi.fn().mockReturnValue(uploadProfilePhotoReturn ?? of(mockUser)),
+            resolveAvatarUrl: vi.fn((url: string | null) => (url ? `http://localhost:5014${url}` : null)),
+            currentUser: signal(mockUser),
         };
         notificationSpy = { success: vi.fn(), error: vi.fn() };
 
@@ -168,5 +176,68 @@ describe('ProfileComponent', () => {
         setup();
         component.changePassword();
         expect(authServiceSpy['changePassword']).not.toHaveBeenCalled();
+    });
+
+    it('should show avatar initials when no profile image is set', () => {
+        setup();
+        expect(component.avatarUrl()).toBeNull();
+        expect(component.initials()).toBe('TU');
+    });
+    it('should resolve avatar url when a profile image is set', () => {
+        authServiceSpy = {
+            getProfile: vi.fn().mockReturnValue(of(mockUser)),
+            updateProfile: vi.fn().mockReturnValue(of(mockUser)),
+            changePassword: vi.fn().mockReturnValue(of({})),
+            uploadProfilePhoto: vi.fn().mockReturnValue(of(mockUser)),
+            resolveAvatarUrl: vi.fn((url: string | null) => (url ? `http://localhost:5014${url}` : null)),
+            currentUser: signal({ ...mockUser, profileImageUrl: '/uploads/avatars/1.jpg' }),
+        };
+        notificationSpy = { success: vi.fn(), error: vi.fn() };
+        TestBed.configureTestingModule({
+            imports: [ReactiveFormsModule, ProfileComponent],
+            schemas: [CUSTOM_ELEMENTS_SCHEMA],
+            providers: [
+                provideRouter([]),
+                { provide: AuthService, useValue: authServiceSpy },
+                { provide: NotificationService, useValue: notificationSpy },
+            ],
+        });
+        fixture = TestBed.createComponent(ProfileComponent);
+        component = fixture.componentInstance;
+
+        expect(component.avatarUrl()).toBe('http://localhost:5014/uploads/avatars/1.jpg');
+    });
+    it('should reject an unsupported image type without calling uploadProfilePhoto', () => {
+        setup();
+        const file = createFakeImageFile('image/gif', 1000);
+        const event = { target: { files: [file], value: '' } } as unknown as Event;
+        component.onPhotoSelected(event);
+        expect(component.photoError()).toBe('صيغة الصورة غير مدعومة. الصيغ المسموحة: JPG, PNG, WEBP.');
+        expect(authServiceSpy['uploadProfilePhoto']).not.toHaveBeenCalled();
+    });
+    it('should reject an oversized image without calling uploadProfilePhoto', () => {
+        setup();
+        const file = createFakeImageFile('image/jpeg', 6 * 1024 * 1024);
+        const event = { target: { files: [file], value: '' } } as unknown as Event;
+        component.onPhotoSelected(event);
+        expect(component.photoError()).toBe('حجم الصورة يجب ألا يتجاوز 5 ميجابايت.');
+        expect(authServiceSpy['uploadProfilePhoto']).not.toHaveBeenCalled();
+    });
+    it('should upload a valid image and clear uploading state', () => {
+        setup();
+        const file = createFakeImageFile('image/png', 1000);
+        const event = { target: { files: [file], value: '' } } as unknown as Event;
+        component.onPhotoSelected(event);
+        expect(authServiceSpy['uploadProfilePhoto']).toHaveBeenCalledWith(file);
+        expect(component.uploadingPhoto()).toBe(false);
+        expect(component.photoError()).toBeNull();
+    });
+    it('should show an error when photo upload fails', () => {
+        setup({ uploadProfilePhotoReturn: throwError(() => ({ error: { message: 'فشل الرفع' } })) });
+        const file = createFakeImageFile('image/png', 1000);
+        const event = { target: { files: [file], value: '' } } as unknown as Event;
+        component.onPhotoSelected(event);
+        expect(component.photoError()).toBe('فشل الرفع');
+        expect(component.uploadingPhoto()).toBe(false);
     });
 });

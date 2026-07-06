@@ -17,13 +17,7 @@ import { QuillEditorComponent } from 'ngx-quill';
 @Component({
     selector: 'app-session-form',
     standalone: true,
-    imports: [
-        ReactiveFormsModule,
-        ButtonComponent,
-        InputComponent,
-        SpinnerComponent,
-        QuillEditorComponent,
-    ],
+    imports: [ReactiveFormsModule, ButtonComponent, InputComponent, SpinnerComponent, QuillEditorComponent],
     templateUrl: './session-form.html',
     styleUrl: './session-form.css',
     changeDetection: ChangeDetectionStrategy.OnPush,

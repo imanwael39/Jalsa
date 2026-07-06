@@ -17,6 +17,9 @@ public class PatientCreateDto
     [EmailAddress, MaxLength(200)]
     public string? Email { get; set; }
 
+    /// <summary>Required when Email is set — creates the patient's login account with this password.</summary>
+    public string? Password { get; set; }
+
     [MaxLength(500)]
     public string? Address { get; set; }
 

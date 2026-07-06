@@ -29,9 +29,40 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
     {
-        var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
-        if (existingUser != null)
-            throw new ApiException(409, "Email already exists.");
+        // Validate everything up front so no row is written until all checks pass.
+        var emailExists = await _context.Users.AnyAsync(u => u.Email == dto.Email);
+        if (emailExists)
+            throw new ApiException(409, "البريد الإلكتروني مستخدم بالفعل.");
+
+        var roleName = string.IsNullOrWhiteSpace(dto.Role) ? "Therapist" : dto.Role;
+        var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
+        if (role == null)
+            throw new ApiException(400, $"نوع الحساب '{roleName}' غير موجود.");
+
+        string? licenseNumber = null;
+        if (roleName == "Therapist")
+        {
+            licenseNumber = string.IsNullOrWhiteSpace(dto.LicenseNumber)
+                ? $"LIC-{Guid.NewGuid().ToString()[..8].ToUpper()}"
+                : dto.LicenseNumber;
+
+            var licenseExists = await _context.Therapists.AnyAsync(t => t.LicenseNumber == licenseNumber);
+            if (licenseExists)
+                throw new ApiException(409, "رقم الترخيص مستخدم بالفعل.");
+        }
+
+        // Self-registered patients still need a Patient record so they show up on a
+        // therapist's dashboard exactly like a therapist-created patient does. The
+        // patient picks which therapist they're signing up under at registration time.
+        if (roleName == "Patient")
+        {
+            if (dto.TherapistId == null)
+                throw new ApiException(400, "يجب اختيار المعالج عند التسجيل كمريض.");
+
+            var chosenTherapistExists = await _context.Therapists.AnyAsync(t => t.Id == dto.TherapistId);
+            if (!chosenTherapistExists)
+                throw new ApiException(400, "المعالج المختار غير موجود.");
+        }
 
         var user = new User
         {
@@ -43,11 +74,6 @@ public class AuthService : IAuthService
             UpdatedAt = DateTime.UtcNow
         };
 
-        var roleName = string.IsNullOrWhiteSpace(dto.Role) ? "Therapist" : dto.Role;
-        var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
-        if (role == null)
-            throw new ApiException(400, $"Role '{roleName}' does not exist.");
-
         user.UserRoles.Add(new UserRole
         {
             UserId = user.Id,
@@ -56,7 +82,6 @@ public class AuthService : IAuthService
         });
 
         _context.Users.Add(user);
-        await _context.SaveChangesAsync();
 
         if (roleName == "Therapist")
         {
@@ -65,13 +90,30 @@ public class AuthService : IAuthService
                 Id = Guid.NewGuid(),
                 UserId = user.Id,
                 FullName = string.IsNullOrWhiteSpace(dto.FullName) ? dto.Email.Split('@')[0] : dto.FullName,
-                LicenseNumber = string.IsNullOrWhiteSpace(dto.LicenseNumber) ? $"LIC-{Guid.NewGuid().ToString()[..8].ToUpper()}" : dto.LicenseNumber,
+                LicenseNumber = licenseNumber!,
                 Specialization = dto.Specialization,
                 CreatedAt = DateTime.UtcNow
             };
             _context.Therapists.Add(therapist);
-            await _context.SaveChangesAsync();
         }
+        else if (roleName == "Patient")
+        {
+            var patient = new Jalsa.Domain.Models.Patient.Patient
+            {
+                Id = Guid.NewGuid(),
+                TherapistId = dto.TherapistId!.Value,
+                UserId = user.Id,
+                FullName = string.IsNullOrWhiteSpace(dto.FullName) ? dto.Email.Split('@')[0] : dto.FullName,
+                Email = dto.Email,
+                Status = "Active",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            _context.Patients.Add(patient);
+        }
+
+        // Single SaveChangesAsync => one transaction, so User/UserRole/Therapist/Patient commit or fail together.
+        await _context.SaveChangesAsync();
 
         return await BuildAuthResponse(user);
     }
@@ -87,10 +129,10 @@ public class AuthService : IAuthService
             .FirstOrDefaultAsync(u => u.Email == dto.Email);
 
         if (user == null)
-            throw new ApiException(401, "Invalid email or password!");
+            throw new ApiException(401, "البريد الإلكتروني أو كلمة المرور غير صحيحة.");
 
         if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.UtcNow)
-            throw new ApiException(403, "Account is locked. Please try again later.");
+            throw new ApiException(403, "الحساب مقفل مؤقتًا، يرجى المحاولة لاحقًا.");
 
         if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
         {
@@ -100,11 +142,11 @@ public class AuthService : IAuthService
 
             user.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
-            throw new ApiException(401, "Invalid email or password!");
+            throw new ApiException(401, "البريد الإلكتروني أو كلمة المرور غير صحيحة.");
         }
 
         if (!user.IsActive)
-            throw new ApiException(403, "Account is inactive!");
+            throw new ApiException(403, "هذا الحساب غير مُفعّل.");
 
         user.FailedLoginAttempts = 0;
         user.LockoutEnd = null;
@@ -124,13 +166,13 @@ public class AuthService : IAuthService
             .FirstOrDefaultAsync(rt => rt.Token == tokenHash);
 
         if (storedToken == null)
-            throw new ApiException(401, "Invalid refresh token!");
+            throw new ApiException(401, "رمز التحديث غير صالح.");
 
         if (storedToken.RevokedAt != null)
-            throw new ApiException(401, "Refresh token has been revoked!");
+            throw new ApiException(401, "تم إلغاء رمز التحديث.");
 
         if (storedToken.ExpiresAt < DateTime.UtcNow)
-            throw new ApiException(401, "Refresh token has expired!");
+            throw new ApiException(401, "انتهت صلاحية رمز التحديث.");
 
         var rawToken = GenerateRawToken();
         var newTokenHash = ComputeSha256(rawToken);
@@ -159,8 +201,11 @@ public class AuthService : IAuthService
     public async Task ForgotPasswordAsync(ForgotPasswordDto dto)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
-        if (user == null || !user.IsActive)
-            return;
+        if (user == null)
+            throw new ApiException(404, "هذا البريد الإلكتروني غير مسجل لدينا.");
+
+        if (!user.IsActive)
+            throw new ApiException(403, "هذا الحساب غير مفعل.");
 
         var existingTokens = await _context.PasswordResetTokens
             .Where(t => t.UserId == user.Id && t.UsedAt == null && t.ExpiresAt > DateTime.UtcNow)
@@ -185,25 +230,22 @@ public class AuthService : IAuthService
         await _emailService.SendOtpAsync(user.Email, otp);
     }
 
+    public async Task VerifyOtpAsync(VerifyOtpDto dto)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+        if (user == null)
+            throw new ApiException(404, "هذا البريد الإلكتروني غير مسجل لدينا.");
+
+        await GetValidResetTokenAsync(user, dto.Otp);
+    }
+
     public async Task ResetPasswordAsync(ResetPasswordDto dto)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
         if (user == null)
-            throw new ApiException(400, "Invalid reset request!");
+            throw new ApiException(404, "هذا البريد الإلكتروني غير مسجل لدينا.");
 
-        var otpHash = ComputeSha256(dto.Otp);
-        var resetToken = await _context.PasswordResetTokens
-            .Include(pr => pr.User)
-            .FirstOrDefaultAsync(pr => pr.UserId == user.Id && pr.TokenHash == otpHash);
-
-        if (resetToken == null)
-            throw new ApiException(400, "Invalid OTP!");
-
-        if (resetToken.UsedAt != null)
-            throw new ApiException(400, "OTP has already been used!");
-
-        if (resetToken.ExpiresAt < DateTime.UtcNow)
-            throw new ApiException(400, "OTP has expired!");
+        var resetToken = await GetValidResetTokenAsync(user, dto.Otp);
 
         resetToken.User.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
         resetToken.UsedAt = DateTime.UtcNow;
@@ -212,13 +254,32 @@ public class AuthService : IAuthService
         await _context.SaveChangesAsync();
     }
 
+    private async Task<PasswordResetToken> GetValidResetTokenAsync(User user, string otp)
+    {
+        var otpHash = ComputeSha256(otp);
+        var resetToken = await _context.PasswordResetTokens
+            .Include(pr => pr.User)
+            .FirstOrDefaultAsync(pr => pr.UserId == user.Id && pr.TokenHash == otpHash);
+
+        if (resetToken == null)
+            throw new ApiException(400, "رمز التحقق غير صحيح.");
+
+        if (resetToken.UsedAt != null)
+            throw new ApiException(400, "رمز التحقق مستخدم بالفعل.");
+
+        if (resetToken.ExpiresAt < DateTime.UtcNow)
+            throw new ApiException(400, "انتهت صلاحية رمز التحقق.");
+
+        return resetToken;
+    }
+
     public async Task ChangePasswordAsync(Guid userId, ChangePasswordDto dto)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId)
-            ?? throw new ApiException(404, "User not found");
+            ?? throw new ApiException(404, "المستخدم غير موجود.");
 
         if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
-            throw new ApiException(400, "Current password is incorrect");
+            throw new ApiException(400, "كلمة المرور الحالية غير صحيحة.");
 
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
         user.UpdatedAt = DateTime.UtcNow;
@@ -232,10 +293,10 @@ public class AuthService : IAuthService
             .FirstOrDefaultAsync(rt => rt.Token == tokenHash);
 
         if (storedToken == null)
-            throw new ApiException(401, "Invalid refresh token!");
+            throw new ApiException(401, "رمز التحديث غير صالح.");
 
         if (storedToken.RevokedAt != null)
-            throw new ApiException(400, "Refresh token is already revoked!");
+            throw new ApiException(400, "تم إلغاء رمز التحديث بالفعل.");
 
         storedToken.RevokedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
@@ -260,7 +321,7 @@ public class AuthService : IAuthService
         }
 
         if (string.IsNullOrWhiteSpace(_jwtSettings.Key))
-            throw new ApiException(500, "JWT signing key is not configured.");
+            throw new ApiException(500, "حدث خطأ في إعدادات الخادم.");
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

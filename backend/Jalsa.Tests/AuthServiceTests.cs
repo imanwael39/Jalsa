@@ -91,18 +91,103 @@ public class AuthServiceTests : IDisposable
     [Fact]
     public async Task RegisterAsync_PatientRole_DoesNotCreateTherapist()
     {
+        var therapist = await SeedTherapistAsync();
         var dto = new RegisterDto
         {
             Email = "patient@test.com",
             Password = "Test123!",
-            Role = "Patient"
+            Role = "Patient",
+            TherapistId = therapist.Id
         };
 
         var result = await _sut.RegisterAsync(dto);
 
         result.Roles.Should().Contain("Patient");
         var therapists = await _context.Therapists.ToListAsync();
-        therapists.Should().BeEmpty();
+        therapists.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task RegisterAsync_PatientRole_CreatesLinkedPatientAssignedToChosenTherapist()
+    {
+        var therapist = await SeedTherapistAsync();
+        var dto = new RegisterDto
+        {
+            Email = "patient2@test.com",
+            Password = "Test123!",
+            FullName = "Sara Ahmed",
+            Role = "Patient",
+            TherapistId = therapist.Id
+        };
+
+        var result = await _sut.RegisterAsync(dto);
+
+        var user = await _context.Users.FirstAsync(u => u.Email == dto.Email);
+        var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserId == user.Id);
+
+        patient.Should().NotBeNull();
+        patient!.TherapistId.Should().Be(therapist.Id);
+        patient.FullName.Should().Be("Sara Ahmed");
+        result.Roles.Should().Contain("Patient");
+    }
+
+    [Fact]
+    public async Task RegisterAsync_PatientRole_NoTherapistChosen_Throws400()
+    {
+        await SeedTherapistAsync();
+        var dto = new RegisterDto
+        {
+            Email = "orphan@test.com",
+            Password = "Test123!",
+            Role = "Patient"
+        };
+
+        var act = () => _sut.RegisterAsync(dto);
+
+        var ex = await act.Should().ThrowAsync<ApiException>();
+        ex.Which.StatusCode.Should().Be(400);
+    }
+
+    [Fact]
+    public async Task RegisterAsync_PatientRole_NonExistentTherapistId_Throws400()
+    {
+        var dto = new RegisterDto
+        {
+            Email = "orphan2@test.com",
+            Password = "Test123!",
+            Role = "Patient",
+            TherapistId = Guid.NewGuid()
+        };
+
+        var act = () => _sut.RegisterAsync(dto);
+
+        var ex = await act.Should().ThrowAsync<ApiException>();
+        ex.Which.StatusCode.Should().Be(400);
+    }
+
+    private async Task<Jalsa.Domain.Models.Clinic.Therapist> SeedTherapistAsync()
+    {
+        var therapistUser = new User
+        {
+            Id = Guid.NewGuid(),
+            Email = $"seed-therapist-{Guid.NewGuid()}@test.com",
+            PasswordHash = "hash",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+        };
+        var therapist = new Jalsa.Domain.Models.Clinic.Therapist
+        {
+            Id = Guid.NewGuid(),
+            UserId = therapistUser.Id,
+            FullName = "Dr. Seed",
+            LicenseNumber = $"LIC-{Guid.NewGuid().ToString()[..8]}",
+            CreatedAt = DateTime.UtcNow,
+        };
+        _context.Users.Add(therapistUser);
+        _context.Therapists.Add(therapist);
+        await _context.SaveChangesAsync();
+        return therapist;
     }
 
     [Fact]
@@ -115,6 +200,38 @@ public class AuthServiceTests : IDisposable
 
         var ex = await act.Should().ThrowAsync<ApiException>();
         ex.Which.StatusCode.Should().Be(409);
+
+        var users = await _context.Users.Where(u => u.Email == dto.Email).ToListAsync();
+        users.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task RegisterAsync_DuplicateLicenseNumber_Throws409AndDoesNotCreateUser()
+    {
+        await _sut.RegisterAsync(new RegisterDto
+        {
+            Email = "first-therapist@test.com",
+            Password = "Test123!",
+            LicenseNumber = "LIC-SHARED"
+        });
+
+        var secondDto = new RegisterDto
+        {
+            Email = "second-therapist@test.com",
+            Password = "Test123!",
+            LicenseNumber = "LIC-SHARED"
+        };
+
+        var act = () => _sut.RegisterAsync(secondDto);
+
+        var ex = await act.Should().ThrowAsync<ApiException>();
+        ex.Which.StatusCode.Should().Be(409);
+
+        var secondUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == secondDto.Email);
+        secondUser.Should().BeNull("registration must be atomic — no user row should exist when the license check fails");
+
+        var therapists = await _context.Therapists.Where(t => t.LicenseNumber == "LIC-SHARED").ToListAsync();
+        therapists.Should().HaveCount(1);
     }
 
     [Fact]
@@ -429,7 +546,85 @@ public class AuthServiceTests : IDisposable
         result.Token.Should().NotBeNullOrEmpty();
     }
 
+    // --- Forgot Password / OTP ---
+
+    [Fact]
+    public async Task ForgotPasswordAsync_NonExistentEmail_Throws404AndDoesNotSendEmail()
+    {
+        var act = () => _sut.ForgotPasswordAsync(new ForgotPasswordDto { Email = "nobody@test.com" });
+
+        var ex = await act.Should().ThrowAsync<ApiException>();
+        ex.Which.StatusCode.Should().Be(404);
+
+        _emailServiceMock.Verify(x => x.SendOtpAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ForgotPasswordAsync_ExistingEmail_SendsOtpAndSavesToken()
+    {
+        await RegisterTestUser("forgot@test.com", "Test123!");
+
+        await _sut.ForgotPasswordAsync(new ForgotPasswordDto { Email = "forgot@test.com" });
+
+        _emailServiceMock.Verify(x => x.SendOtpAsync("forgot@test.com", It.IsAny<string>()), Times.Once);
+        var tokens = await _context.PasswordResetTokens.ToListAsync();
+        tokens.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task VerifyOtpAsync_ValidOtp_DoesNotThrowAndDoesNotConsumeToken()
+    {
+        var otp = await RegisterAndForgotPassword("verify@test.com");
+
+        var act = () => _sut.VerifyOtpAsync(new VerifyOtpDto { Email = "verify@test.com", Otp = otp });
+
+        await act.Should().NotThrowAsync();
+
+        var token = await _context.PasswordResetTokens.FirstAsync();
+        token.UsedAt.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task VerifyOtpAsync_InvalidOtp_Throws400()
+    {
+        await RegisterAndForgotPassword("verify-invalid@test.com");
+
+        var act = () => _sut.VerifyOtpAsync(new VerifyOtpDto { Email = "verify-invalid@test.com", Otp = "000000" });
+
+        var ex = await act.Should().ThrowAsync<ApiException>();
+        ex.Which.StatusCode.Should().Be(400);
+    }
+
+    [Fact]
+    public async Task VerifyOtpAsync_ExpiredOtp_Throws400()
+    {
+        var otp = await RegisterAndForgotPassword("verify-expired@test.com");
+        var token = await _context.PasswordResetTokens.FirstAsync();
+        token.ExpiresAt = DateTime.UtcNow.AddMinutes(-1);
+        await _context.SaveChangesAsync();
+
+        var act = () => _sut.VerifyOtpAsync(new VerifyOtpDto { Email = "verify-expired@test.com", Otp = otp });
+
+        var ex = await act.Should().ThrowAsync<ApiException>();
+        ex.Which.StatusCode.Should().Be(400);
+    }
+
     // --- Helper ---
+
+    private async Task<string> RegisterAndForgotPassword(string email)
+    {
+        await RegisterTestUser(email, "Test123!");
+
+        string? capturedOtp = null;
+        _emailServiceMock
+            .Setup(x => x.SendOtpAsync(email, It.IsAny<string>()))
+            .Callback<string, string>((_, otp) => capturedOtp = otp)
+            .Returns(Task.CompletedTask);
+
+        await _sut.ForgotPasswordAsync(new ForgotPasswordDto { Email = email });
+
+        return capturedOtp!;
+    }
 
     private async Task<AuthResponseDto> RegisterTestUser(string email, string password)
     {

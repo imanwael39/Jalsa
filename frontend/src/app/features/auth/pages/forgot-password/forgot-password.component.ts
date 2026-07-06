@@ -1,8 +1,9 @@
 import { Component, ChangeDetectionStrategy, inject, signal, DestroyRef } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../../core/services/auth.service';
+import { PasswordResetStateService } from '../../../../core/services/password-reset-state.service';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { InputComponent } from '../../../../shared/components/input/input.component';
 
@@ -17,6 +18,8 @@ import { InputComponent } from '../../../../shared/components/input/input.compon
 export class ForgotPasswordComponent {
     private fb = inject(NonNullableFormBuilder);
     private authService = inject(AuthService);
+    private passwordResetState = inject(PasswordResetStateService);
+    private router = inject(Router);
     private destroyRef = inject(DestroyRef);
 
     loading = signal(false);
@@ -46,19 +49,22 @@ export class ForgotPasswordComponent {
 
         const { email } = this.forgotForm.getRawValue();
 
-        this.authService.forgotPassword(email).pipe(
-            takeUntilDestroyed(this.destroyRef),
-        ).subscribe({
-            next: () => {
-                this.loading.set(false);
-                this.submitted.set(true);
-            },
-            error: (err) => {
-                this.loading.set(false);
-                this.error.set(
-                    err.error?.message || err.error?.error || 'حدث خطأ، يرجى المحاولة مرة أخرى',
-                );
-            },
-        });
+        this.authService
+            .forgotPassword(email)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: () => {
+                    this.loading.set(false);
+                    this.submitted.set(true);
+                    this.passwordResetState.setEmail(email);
+                    setTimeout(() => {
+                        this.router.navigate(['/auth/verify-otp']);
+                    }, 1500);
+                },
+                error: err => {
+                    this.loading.set(false);
+                    this.error.set(err.error?.message || err.error?.error || 'حدث خطأ، يرجى المحاولة مرة أخرى');
+                },
+            });
     }
 }

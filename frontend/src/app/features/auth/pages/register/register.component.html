@@ -75,6 +75,26 @@
             ></app-input>
         }
 
+        @if (isPatient()) {
+            <div class="field">
+                <label class="label">
+                    المعالج المسؤول عن حسابك
+                    <span class="required-mark">*</span>
+                </label>
+                <select class="select" formControlName="therapistId">
+                    <option value="">اختر المعالج</option>
+                    @for (t of therapistOptions(); track t.id) {
+                        <option [value]="t.id">
+                            {{ t.fullName }}{{ t.specialization ? ' — ' + t.specialization : '' }}
+                        </option>
+                    }
+                </select>
+                @if (getTherapistError()) {
+                    <p class="field-error">{{ getTherapistError() }}</p>
+                }
+            </div>
+        }
+
         @if (registerError()) {
             <div class="alert alert-error" role="alert">
                 {{ registerError() }}

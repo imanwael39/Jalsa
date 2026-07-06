@@ -1,11 +1,24 @@
-import { Component, ChangeDetectionStrategy, inject, signal, computed, DestroyRef } from '@angular/core';
-import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, ChangeDetectionStrategy, inject, signal, computed, DestroyRef, OnInit } from '@angular/core';
+import {
+    AbstractControl,
+    NonNullableFormBuilder,
+    ReactiveFormsModule,
+    ValidationErrors,
+    Validators,
+} from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { InputComponent } from '../../../../shared/components/input/input.component';
 import { passwordMatchValidator } from '../../../../shared/validators/password-match.validator';
+import type { TherapistOption } from '../../../../core/models/auth.model';
+
+function therapistRequiredForPatientValidator(group: AbstractControl): ValidationErrors | null {
+    const role = group.get('role')?.value;
+    const therapistId = group.get('therapistId')?.value;
+    return role === 'Patient' && !therapistId ? { therapistRequired: true } : null;
+}
 
 @Component({
     selector: 'app-register',
@@ -15,7 +28,7 @@ import { passwordMatchValidator } from '../../../../shared/validators/password-m
     styleUrls: ['./register.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
     private fb = inject(NonNullableFormBuilder);
     private authService = inject(AuthService);
     private router = inject(Router);
@@ -24,6 +37,7 @@ export class RegisterComponent {
     loading = signal(false);
     registerError = signal<string | null>(null);
     success = signal(false);
+    therapistOptions = signal<TherapistOption[]>([]);
 
     registerForm = this.fb.group(
         {
@@ -41,8 +55,9 @@ export class RegisterComponent {
             role: ['Therapist', [Validators.required]],
             licenseNumber: [''],
             specialization: [''],
+            therapistId: [''],
         },
-        { validators: passwordMatchValidator }
+        { validators: [passwordMatchValidator, therapistRequiredForPatientValidator] }
     );
 
     private readonly roleValue = toSignal(this.registerForm.get('role')!.valueChanges, {
@@ -50,6 +65,17 @@ export class RegisterComponent {
     });
 
     readonly isTherapist = computed(() => this.roleValue() === 'Therapist');
+    readonly isPatient = computed(() => this.roleValue() === 'Patient');
+
+    ngOnInit(): void {
+        this.authService
+            .getTherapistOptions()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: therapists => this.therapistOptions.set(therapists),
+                error: () => this.therapistOptions.set([]),
+            });
+    }
 
     getFullNameError(): string {
         const c = this.registerForm.get('fullName');
@@ -90,6 +116,15 @@ export class RegisterComponent {
         return '';
     }
 
+    getTherapistError(): string {
+        const c = this.registerForm.get('therapistId');
+        if (!c?.touched) return '';
+        if (this.registerForm.errors?.['therapistRequired']) {
+            return 'يجب اختيار المعالج المسؤول عن حسابك';
+        }
+        return '';
+    }
+
     onSubmit(): void {
         if (this.registerForm.invalid) {
             this.registerForm.markAllAsTouched();
@@ -99,7 +134,8 @@ export class RegisterComponent {
         this.loading.set(true);
         this.registerError.set(null);
 
-        const { fullName, email, password, role, licenseNumber, specialization } = this.registerForm.getRawValue();
+        const { fullName, email, password, role, licenseNumber, specialization, therapistId } =
+            this.registerForm.getRawValue();
 
         this.authService
             .register({
@@ -109,6 +145,7 @@ export class RegisterComponent {
                 role,
                 licenseNumber: licenseNumber || undefined,
                 specialization: specialization || undefined,
+                therapistId: therapistId || undefined,
             })
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({

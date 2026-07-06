@@ -68,6 +68,7 @@ describe('DashboardComponent', () => {
                 email: 'test@test.com',
                 firstName: 'Test',
                 lastName: 'User',
+                profileImageUrl: null,
                 roles: ['Therapist'],
             }),
         };

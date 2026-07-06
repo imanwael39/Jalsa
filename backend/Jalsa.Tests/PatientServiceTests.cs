@@ -4,6 +4,7 @@ using Jalsa.Application.DTOs.Patient;
 using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Application.Services;
 using Jalsa.Domain.Models.Clinic;
+using Jalsa.Domain.Models.Identity;
 using Jalsa.Domain.Models.Patient;
 using Moq;
 
@@ -14,6 +15,8 @@ public class PatientServiceTests
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IGenericRepository<Patient>> _patientRepoMock;
     private readonly Mock<IGenericRepository<Therapist>> _therapistRepoMock;
+    private readonly Mock<IGenericRepository<User>> _userRepoMock;
+    private readonly Mock<IGenericRepository<Role>> _roleRepoMock;
     private readonly PatientService _sut;
 
     private readonly Guid _userId = Guid.NewGuid();
@@ -25,14 +28,26 @@ public class PatientServiceTests
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _patientRepoMock = new Mock<IGenericRepository<Patient>>();
         _therapistRepoMock = new Mock<IGenericRepository<Therapist>>();
+        _userRepoMock = new Mock<IGenericRepository<User>>();
+        _roleRepoMock = new Mock<IGenericRepository<Role>>();
 
         _unitOfWorkMock.Setup(x => x.Repository<Patient>()).Returns(_patientRepoMock.Object);
         _unitOfWorkMock.Setup(x => x.Repository<Therapist>()).Returns(_therapistRepoMock.Object);
+        _unitOfWorkMock.Setup(x => x.Repository<User>()).Returns(_userRepoMock.Object);
+        _unitOfWorkMock.Setup(x => x.Repository<Role>()).Returns(_roleRepoMock.Object);
         _unitOfWorkMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         _therapistRepoMock
             .Setup(x => x.FindSingleAsync(It.IsAny<Expression<Func<Therapist, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Therapist { Id = _therapistId, UserId = _userId, FullName = "Dr. Test", LicenseNumber = "LIC-001" });
+
+        _userRepoMock
+            .Setup(x => x.FindSingleAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((User?)null);
+
+        _roleRepoMock
+            .Setup(x => x.FindSingleAsync(It.IsAny<Expression<Func<Role, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Role { Id = Guid.NewGuid(), Name = "Patient" });
 
         _sut = new PatientService(_unitOfWorkMock.Object);
     }
@@ -44,6 +59,7 @@ public class PatientServiceTests
         Gender = "ذكر",
         Phone = "01012345678",
         Email = "patient@test.com",
+        Password = "Passw0rd123",
         ChiefComplaint = "قلق عام"
     };
 
@@ -74,6 +90,67 @@ public class PatientServiceTests
         result.Status.Should().Be("Active");
         _patientRepoMock.Verify(x => x.AddAsync(It.IsAny<Patient>(), It.IsAny<CancellationToken>()), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateAsync_WithEmailAndPassword_CreatesLinkedUserAccount()
+    {
+        var dto = MakeCreateDto();
+
+        var result = await _sut.CreateAsync(dto, _userId);
+
+        result.UserId.Should().NotBeNull();
+        _userRepoMock.Verify(x => x.AddAsync(
+            It.Is<User>(u => u.Email == dto.Email && u.UserRoles.Any(ur => ur.RoleId != Guid.Empty)),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateAsync_NoEmail_DoesNotCreateUserAccount()
+    {
+        var dto = MakeCreateDto();
+        dto.Email = null;
+        dto.Password = null;
+
+        var result = await _sut.CreateAsync(dto, _userId);
+
+        result.UserId.Should().BeNull();
+        _userRepoMock.Verify(x => x.AddAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CreateAsync_EmailWithoutPassword_ThrowsInvalidOperation()
+    {
+        var dto = MakeCreateDto();
+        dto.Password = null;
+
+        var act = () => _sut.CreateAsync(dto, _userId);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task CreateAsync_WeakPassword_ThrowsInvalidOperation()
+    {
+        var dto = MakeCreateDto();
+        dto.Password = "weak";
+
+        var act = () => _sut.CreateAsync(dto, _userId);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task CreateAsync_EmailAlreadyRegistered_ThrowsInvalidOperation()
+    {
+        var dto = MakeCreateDto();
+        _userRepoMock
+            .Setup(x => x.FindSingleAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new User { Id = Guid.NewGuid(), Email = dto.Email!, PasswordHash = "hash", IsActive = true });
+
+        var act = () => _sut.CreateAsync(dto, _userId);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
     }
 
     [Fact]

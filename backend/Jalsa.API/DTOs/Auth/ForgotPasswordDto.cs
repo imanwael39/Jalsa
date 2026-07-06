@@ -1,5 +1,8 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Jalsa.API.DTOs.Auth;
 public class ForgotPasswordDto
 {
-    public string Email{get;set;}=string.Empty;
+    [Required, EmailAddress]
+    public string Email { get; set; } = string.Empty;
 }
