@@ -1,0 +1,66 @@
+<div class="crisis-alerts-list">
+    <div class="page-header">
+        <h2 class="page-title">تنبيهات الأزمات</h2>
+        <button class="toggle-btn" type="button" (click)="toggleOpenOnly()">
+            {{ openOnly() ? 'عرض الكل' : 'عرض المفتوحة فقط' }}
+        </button>
+    </div>
+
+    @if (error()) {
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+            {{ error() }}
+        </div>
+    }
+
+    @if (loading()) {
+        <div class="loading-wrapper">
+            <app-spinner size="lg" label="جاري تحميل التنبيهات..."></app-spinner>
+        </div>
+    } @else if (!error()) {
+        @if (alerts().length === 0) {
+            <app-empty-state
+                title="لا توجد تنبيهات"
+                message="لا توجد تنبيهات أزمات حالياً."
+                icon="bi-shield-check"
+            ></app-empty-state>
+        } @else {
+            <div class="alerts-list">
+                @for (alert of alerts(); track alert.id) {
+                    <div class="alert-card">
+                        <div class="alert-icon">
+                            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                        </div>
+                        <div class="alert-info">
+                            <div class="alert-header">
+                                <span class="patient-name">{{ alert.patientName }}</span>
+                                <span class="severity-badge">{{ alert.severity }}</span>
+                                <span
+                                    class="status-badge"
+                                    [class.status-open]="alert.status === 'Open'"
+                                    [class.status-resolved]="alert.status !== 'Open'"
+                                >
+                                    {{ alert.status === 'Open' ? 'مفتوح' : 'تم الحل' }}
+                                </span>
+                            </div>
+                            @if (alert.triggeringMessage) {
+                                <p class="triggering-message">"{{ alert.triggeringMessage }}"</p>
+                            }
+                            <span class="alert-date">{{ formatDate(alert.createdAt) }}</span>
+                        </div>
+                        @if (alert.status === 'Open') {
+                            <button
+                                class="resolve-btn"
+                                type="button"
+                                [disabled]="resolvingId() === alert.id"
+                                (click)="resolve(alert.id)"
+                            >
+                                {{ resolvingId() === alert.id ? 'جاري الحل...' : 'وضع علامة كمحلول' }}
+                            </button>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>

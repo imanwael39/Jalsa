@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { InAppNotificationService } from '../../../core/services/in-app-notification.service';
+import { InAppNotificationService, InAppNotification } from '../../../core/services/in-app-notification.service';
 import { AppStateService } from '../../../core/services/app-state.service';
 import { ClickOutsideDirective } from '../../directives/click-outside/click-outside.directive';
 
@@ -62,6 +62,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
     closeNotif(): void {
         this.isNotifOpen.set(false);
+    }
+
+    onNotificationClick(notification: InAppNotification): void {
+        this.notifService.markRead(notification.id);
+        if (notification.type === 'CrisisAlert') {
+            this.isNotifOpen.set(false);
+            this.router.navigate(['/crisis-alerts']);
+        }
     }
 
     logout(): void {

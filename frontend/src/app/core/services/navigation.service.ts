@@ -22,6 +22,12 @@ export class NavigationService {
         { label: 'التمارين', icon: 'bi-clipboard', route: '/exercises', roles: ['Therapist', 'Admin'] },
         { label: 'التقارير', icon: 'bi-file-text', route: '/reports', roles: ['Therapist', 'Admin'] },
         { label: 'المحادثات', icon: 'bi-chat-dots', route: '/chatbot', roles: ['Therapist', 'Admin', 'Patient'] },
+        {
+            label: 'تنبيهات الأزمات',
+            icon: 'bi-exclamation-triangle-fill',
+            route: '/crisis-alerts',
+            roles: ['Therapist'],
+        },
     ];
 
     readonly menuItems = computed(() => {

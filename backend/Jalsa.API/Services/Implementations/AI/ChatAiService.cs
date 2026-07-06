@@ -8,7 +8,7 @@ namespace Jalsa.API.Services.Implementations.AI;
 
 public class ChatAiService : IChatAiService
 {
-    private readonly OpenAI.Chat.ChatClient _client;
+    private readonly IGatewayClient _client;
     private readonly JalsaDbContext _context;
     private readonly IVectorStore _vectorStore;
     private readonly IEmbeddingService _embeddingService;
@@ -19,7 +19,8 @@ public class ChatAiService : IChatAiService
     private readonly Services.Interfaces.IPromptService _prompts;
 
     public ChatAiService(
-        IOptions<OpenAiSettings> settings,
+        IOptions<GatewaySettings> settings,
+        IGatewayClient client,
         JalsaDbContext context,
         IVectorStore vectorStore,
         IEmbeddingService embeddingService,
@@ -30,20 +31,12 @@ public class ChatAiService : IChatAiService
         _observability = observability;
         _prompts = prompts;
 
-        var config = settings.Value;
-        _model = config.ChatModel;
+        _client = client;
+        _model = settings.Value.ChatModelId;
         _context = context;
         _vectorStore = vectorStore;
         _embeddingService = embeddingService;
         _memory = memory;
-
-        OpenAI.OpenAIClient openAi = string.IsNullOrWhiteSpace(config.Endpoint)
-            ? new OpenAI.OpenAIClient(config.ApiKey)
-            : new Azure.AI.OpenAI.AzureOpenAIClient(
-                new Uri(config.Endpoint),
-                new System.ClientModel.ApiKeyCredential(config.ApiKey));
-
-        _client = openAi.GetChatClient(_model);
     }
 
     public async Task<string> GenerateResponseAsync(
@@ -103,21 +96,11 @@ public class ChatAiService : IChatAiService
                 ["historyText"] = historyText
             });
 
-        var messages = new List<OpenAI.Chat.ChatMessage>
-        {
-            new OpenAI.Chat.SystemChatMessage(
-                _prompts.Get("chat-response")),
-
-            new OpenAI.Chat.UserChatMessage(
-                userPrompt)
-        };
+        var systemPrompt = _prompts.Get("chat-response");
 
         var startTime = DateTime.UtcNow;
 
-        var result = await _client.CompleteChatAsync(messages);
-
-        var response =
-            result.Value.Content[0].Text;
+        var response = await _client.ChatAsync(systemPrompt, userPrompt);
 
         await _observability.LogGenerationAsync(
             new LlmGenerationLog
@@ -126,8 +109,6 @@ public class ChatAiService : IChatAiService
                 Model = _model,
                 Input = message,
                 Output = response,
-                InputTokens = result.Value.Usage?.InputTokenCount,
-                OutputTokens = result.Value.Usage?.OutputTokenCount,
                 StartTime = startTime,
                 EndTime = DateTime.UtcNow,
 
@@ -138,21 +119,15 @@ public class ChatAiService : IChatAiService
                 }
             });
 
-        var startedAt =
-            history.Count > 0
-                ? history.First().CreatedAt
-                : DateTime.UtcNow;
-
         _context.AiChatLogs.Add(
             new Jalsa.Domain.Models.Chat.AiChatLog
             {
                 Id = Guid.NewGuid(),
                 ConversationId = conversationId,
                 PatientId = patientId,
-                TokensUsed = result.Value.Usage?.OutputTokenCount,
                 ModelUsed = _model,
                 ResponseLatencyMs =
-                    (int?)(DateTime.UtcNow - startedAt)
+                    (int?)(DateTime.UtcNow - startTime)
                     .TotalMilliseconds,
                 CreatedAt = DateTime.UtcNow
             });

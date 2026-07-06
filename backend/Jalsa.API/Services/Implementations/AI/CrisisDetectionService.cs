@@ -2,43 +2,27 @@ using Jalsa.API.Configurations;
 using Jalsa.API.Services.Interfaces;
 using Jalsa.API.Services.Interfaces.AI;
 using Microsoft.Extensions.Options;
-using OpenAI.Chat;
 
 namespace Jalsa.API.Services.Implementations.AI;
 
 public class CrisisDetectionService : ICrisisDetectionService
 {
-    internal ChatClient _client;
+    private readonly IGatewayClient _client;
 
     private readonly ILlmObservabilityService? _observability;
     private readonly IPromptService _prompts;
-    private string _model = "gpt-4o";
-
-    internal CrisisDetectionService(ChatClient client)
-    {
-        _client = client;
-        _prompts = null!;
-    }
+    private readonly string _model;
 
     public CrisisDetectionService(
-        IOptions<OpenAiSettings> settings,
+        IOptions<GatewaySettings> settings,
+        IGatewayClient client,
         ILlmObservabilityService observability,
         IPromptService prompts)
     {
-        var config = settings.Value;
-
-        _model = config.ChatModel;
+        _client = client;
+        _model = settings.Value.ChatModelId;
         _observability = observability;
         _prompts = prompts;
-
-        OpenAI.OpenAIClient openAi =
-            string.IsNullOrWhiteSpace(config.Endpoint)
-                ? new OpenAI.OpenAIClient(config.ApiKey)
-                : new Azure.AI.OpenAI.AzureOpenAIClient(
-                    new Uri(config.Endpoint),
-                    new System.ClientModel.ApiKeyCredential(config.ApiKey));
-
-        _client = openAi.GetChatClient(_model);
     }
 
     public async Task<CrisisDetectionResult> AnalyzeAsync(string message)
@@ -76,13 +60,7 @@ public class CrisisDetectionService : ICrisisDetectionService
         {
             var startTime = DateTime.UtcNow;
 
-            var response =
-                await _client.CompleteChatAsync(
-                    new SystemChatMessage(systemPrompt),
-                    new UserChatMessage(userPrompt));
-
-            var content =
-                response.Value.Content[0].Text ?? "";
+            var content = await _client.ChatAsync(systemPrompt, userPrompt);
 
             if (_observability != null)
             {
@@ -93,8 +71,6 @@ public class CrisisDetectionService : ICrisisDetectionService
                         Model = _model,
                         Input = userPrompt,
                         Output = content,
-                        InputTokens = response.Value.Usage?.InputTokenCount,
-                        OutputTokens = response.Value.Usage?.OutputTokenCount,
                         StartTime = startTime,
                         EndTime = DateTime.UtcNow
                     });
