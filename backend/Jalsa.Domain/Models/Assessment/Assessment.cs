@@ -9,6 +9,8 @@ public class Assessment
     public string? Title { get; set; }
     public DateOnly? AssessmentDate { get; set; }
     public decimal? TotalScore { get; set; }
+    public string? Severity { get; set; }
+    public string? Notes { get; set; }
     public string Status { get; set; } = "Active";
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
