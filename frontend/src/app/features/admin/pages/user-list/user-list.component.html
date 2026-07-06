@@ -1,0 +1,95 @@
+<div class="user-list">
+    <div class="page-header">
+        <h2 class="page-title">إدارة المستخدمين</h2>
+    </div>
+
+    @if (error()) {
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+            {{ error() }}
+        </div>
+    }
+
+    @if (loading()) {
+        <div class="loading-wrapper">
+            <app-spinner size="lg" label="جاري تحميل المستخدمين..."></app-spinner>
+        </div>
+    } @else if (!error()) {
+        @if (users().length === 0) {
+            <app-empty-state
+                title="لا يوجد مستخدمون"
+                message="لا يوجد مستخدمون مسجلون حتى الآن."
+                icon="bi-people"
+            ></app-empty-state>
+        } @else {
+            <div class="users-table-wrapper">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>البريد الإلكتروني</th>
+                            <th>الاسم</th>
+                            <th>الأدوار</th>
+                            <th>الحالة</th>
+                            <th>آخر دخول</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (user of users(); track user.id) {
+                            <tr>
+                                <td>{{ user.email }}</td>
+                                <td>{{ user.fullName || '-' }}</td>
+                                <td>
+                                    <select
+                                        class="role-select"
+                                        [disabled]="busyId() === user.id"
+                                        (change)="changeRole(user, $any($event.target).value)"
+                                    >
+                                        @for (role of availableRoles; track role) {
+                                            <option [value]="role" [selected]="user.roles[0] === role">
+                                                {{ role }}
+                                            </option>
+                                        }
+                                    </select>
+                                </td>
+                                <td>
+                                    <span
+                                        class="status-badge"
+                                        [class.status-active]="user.isActive"
+                                        [class.status-inactive]="!user.isActive"
+                                    >
+                                        {{ user.isActive ? 'نشط' : 'موقوف' }}
+                                    </span>
+                                    @if (user.isLockedOut) {
+                                        <span class="status-badge status-locked">مقفل</span>
+                                    }
+                                </td>
+                                <td>{{ formatDate(user.lastLoginAt) }}</td>
+                                <td class="actions-cell">
+                                    <button
+                                        class="action-btn"
+                                        type="button"
+                                        [disabled]="busyId() === user.id"
+                                        (click)="toggleActive(user)"
+                                    >
+                                        {{ user.isActive ? 'إيقاف' : 'تفعيل' }}
+                                    </button>
+                                    @if (user.isLockedOut) {
+                                        <button
+                                            class="action-btn"
+                                            type="button"
+                                            [disabled]="busyId() === user.id"
+                                            (click)="unlock(user)"
+                                        >
+                                            إلغاء القفل
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+</div>

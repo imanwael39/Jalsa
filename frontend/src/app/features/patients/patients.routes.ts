@@ -5,7 +5,7 @@ import { roleGuard } from '../../core/guards/role.guard';
 export const PATIENTS_ROUTES: Routes = [
     {
         path: '',
-        canActivate: [authGuard, roleGuard(['Therapist', 'Admin'])],
+        canActivate: [authGuard, roleGuard(['Therapist'])],
         data: { breadcrumb: 'المرضى' },
         children: [
             {

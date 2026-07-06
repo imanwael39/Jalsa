@@ -66,4 +66,10 @@ export const API = {
         base: '/api/crisis-alerts',
         resolve: (id: string) => `/api/crisis-alerts/${id}/resolve`,
     },
+    admin: {
+        users: '/api/admin/users',
+        status: (id: string) => `/api/admin/users/${id}/status`,
+        unlock: (id: string) => `/api/admin/users/${id}/unlock`,
+        role: (id: string) => `/api/admin/users/${id}/role`,
+    },
 } as const;
