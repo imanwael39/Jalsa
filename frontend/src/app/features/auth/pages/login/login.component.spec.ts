@@ -114,13 +114,13 @@ describe('LoginComponent', () => {
         subj.next({ token: 'token' });
         expect(routerSpy['navigateByUrl']).toHaveBeenCalledWith('/dashboard');
     });
-    it('should navigate Patient to my-exercises on success', () => {
+    it('should navigate Patient to /dashboard/patient on success', () => {
         const subj = new Subject<unknown>();
         setup({ loginReturn: subj, currentUserRoles: ['Patient'] });
         component.loginForm.patchValue({ email: 'p@t.com', password: '123456' });
         component.onSubmit();
         subj.next({ token: 'token' });
-        expect(routerSpy['navigateByUrl']).toHaveBeenCalledWith('/exercises/my-exercises');
+        expect(routerSpy['navigateByUrl']).toHaveBeenCalledWith('/dashboard/patient');
     });
     it('should navigate Admin to /admin/dashboard on success (not the Therapist-only /dashboard)', () => {
         const subj = new Subject<unknown>();

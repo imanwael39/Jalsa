@@ -1,7 +1,7 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Jalsa.Application.DTOs.Exercise;
+using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Application.Interfaces.Services;
 using ExtendDueDateRequest = Jalsa.Application.DTOs.Exercise.ExtendDueDateRequest;
 
@@ -13,10 +13,12 @@ namespace Jalsa.API.Controllers;
 public class ExerciseController : BaseController
 {
     private readonly IExerciseService _exerciseService;
+    private readonly IPatientRepository _patientRepository;
 
-    public ExerciseController(IExerciseService exerciseService)
+    public ExerciseController(IExerciseService exerciseService, IPatientRepository patientRepository)
     {
         _exerciseService = exerciseService;
+        _patientRepository = patientRepository;
     }
 
     // ──────────────────────────── Therapist Endpoints ────────────────────────────
@@ -91,7 +93,7 @@ public class ExerciseController : BaseController
     [HttpGet("my")]
     public async Task<IActionResult> GetMyExercises()
     {
-        var patientId = GetPatientId();
+        var patientId = await GetPatientIdAsync();
         if (patientId is null) return Unauthorized();
 
         var result = await _exerciseService.GetByPatientIdAsync(patientId.Value);
@@ -102,7 +104,7 @@ public class ExerciseController : BaseController
     [HttpPost("log")]
     public async Task<IActionResult> LogCompletion([FromBody] ExerciseLogCreateDto dto)
     {
-        var patientId = GetPatientId();
+        var patientId = await GetPatientIdAsync();
         if (patientId is null) return Unauthorized();
 
         dto.PatientId = patientId.Value;
@@ -114,7 +116,7 @@ public class ExerciseController : BaseController
     [HttpGet("my/logs")]
     public async Task<IActionResult> GetMyLogs()
     {
-        var patientId = GetPatientId();
+        var patientId = await GetPatientIdAsync();
         if (patientId is null) return Unauthorized();
 
         var result = await _exerciseService.GetLogsByPatientIdAsync(patientId.Value);
@@ -123,9 +125,14 @@ public class ExerciseController : BaseController
 
     // ──────────────────────────── Helpers ────────────────────────────────────────
 
-    private Guid? GetPatientId()
+    /// <summary>
+    /// Resolves the current user's Patient.Id (not User.Id) — the JWT identity claim is
+    /// the Users table row, which is a different key than Patients.Id.
+    /// </summary>
+    private async Task<Guid?> GetPatientIdAsync()
     {
-        var value = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return value is null ? null : Guid.Parse(value);
+        var userId = GetCurrentUserId();
+        var patient = await _patientRepository.FindSingleAsync(p => p.UserId == userId);
+        return patient?.Id;
     }
 }

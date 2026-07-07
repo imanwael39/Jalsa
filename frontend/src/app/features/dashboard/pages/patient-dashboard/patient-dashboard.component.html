@@ -1,0 +1,302 @@
+<div class="patient-dashboard">
+    <!-- Welcome Banner -->
+    <div class="welcome-banner">
+        <div class="welcome-content">
+            <h1 class="welcome-title">
+                @if (user(); as u) {
+                    مرحباً بك، {{ dashboard()?.patientFirstName || u.firstName }}
+                } @else {
+                    مرحباً بك
+                }
+            </h1>
+            <p class="welcome-subtitle">إليك نظرة عامة على رحلتك العلاجية</p>
+        </div>
+        <button class="refresh-btn" (click)="loadDashboard()" [disabled]="loading()">
+            <i class="bi bi-arrow-clockwise" [class.spinning]="loading()"></i> تحديث
+        </button>
+    </div>
+
+    <!-- Crisis Support -->
+    <div class="crisis-bar">
+        <div class="crisis-text">
+            <i class="bi bi-heart-pulse-fill"></i>
+            <span>هل تمر بأزمة الآن؟ الدعم متاح على مدار الساعة.</span>
+        </div>
+        <div class="crisis-actions">
+            <a class="crisis-btn" [href]="'tel:' + (dashboard()?.crisisSupport?.hotlineNumber || '08008880700')">
+                <i class="bi bi-telephone-fill"></i>
+                {{ dashboard()?.crisisSupport?.hotlineLabel || 'الخط الساخن للصحة النفسية' }}
+                ({{ dashboard()?.crisisSupport?.hotlineNumber || '08008880700' }})
+            </a>
+            <a class="crisis-btn-secondary" routerLink="/chatbot">
+                <i class="bi bi-chat-dots-fill"></i>
+                تحدث مع المساعد الذكي
+            </a>
+        </div>
+    </div>
+
+    <!-- Skeleton Loading State -->
+    @if (loading() && !dashboard()) {
+        <div class="skeleton-grid">
+            @for (i of [1, 2, 3, 4]; track i) {
+                <div class="skeleton-card">
+                    <div class="skeleton-icon"></div>
+                    <div class="skeleton-lines">
+                        <div class="skeleton-line short"></div>
+                        <div class="skeleton-line tall"></div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Error State -->
+    @if (error()) {
+        <div class="error-state">
+            <div class="error-state-icon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <h3 class="error-state-title">تعذّر تحميل لوحة التحكم</h3>
+            <p class="error-state-message">{{ error() }}</p>
+            <button class="btn btn-primary btn-sm" (click)="loadDashboard()">
+                <i class="bi bi-arrow-clockwise"></i> إعادة المحاولة
+            </button>
+        </div>
+    }
+
+    <!-- Dashboard Content -->
+    @if (!error() && dashboard(); as d) {
+        <!-- Upcoming Sessions & Today's Reminders -->
+        <div class="two-col-row">
+            <div class="info-card">
+                <div class="info-card-header">
+                    <div class="info-card-title">
+                        <i class="bi bi-calendar-event-fill"></i>
+                        <h6>الجلسات القادمة</h6>
+                    </div>
+                </div>
+                <div class="info-card-body">
+                    @if (d.upcomingSessions.length > 0) {
+                        <ul class="item-list">
+                            @for (session of d.upcomingSessions; track session.id) {
+                                <li class="item-row">
+                                    <i class="bi bi-calendar3 item-icon"></i>
+                                    <div class="item-content">
+                                        <span class="item-title">{{ session.sessionType || 'جلسة علاجية' }}</span>
+                                        <span class="item-meta">{{ session.sessionDate }}</span>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    } @else {
+                        <app-empty-state
+                            title="لا توجد جلسات قادمة"
+                            message="لم يتم جدولة أي جلسات بعد."
+                            icon="bi-calendar-x"
+                        ></app-empty-state>
+                    }
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-header">
+                    <div class="info-card-title">
+                        <i class="bi bi-bell-fill"></i>
+                        <h6>تذكيرات اليوم</h6>
+                    </div>
+                </div>
+                <div class="info-card-body">
+                    @if (d.todayReminders.length > 0) {
+                        <ul class="item-list">
+                            @for (reminder of d.todayReminders; track reminder.referenceId) {
+                                <li class="item-row">
+                                    <i
+                                        class="bi item-icon"
+                                        [class.bi-calendar-check]="reminder.type === 'Session'"
+                                        [class.bi-clipboard-check]="reminder.type === 'Exercise'"
+                                    ></i>
+                                    <div class="item-content">
+                                        <span class="item-title">{{ reminder.title }}</span>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    } @else {
+                        <app-empty-state
+                            title="لا توجد تذكيرات اليوم"
+                            message="لا توجد مهام مستحقة اليوم."
+                            icon="bi-check2-circle"
+                        ></app-empty-state>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Assigned Exercises & Pending Assessments -->
+        <div class="two-col-row">
+            <div class="info-card">
+                <div class="info-card-header">
+                    <div class="info-card-title">
+                        <i class="bi bi-clipboard2-pulse-fill"></i>
+                        <h6>التمارين الموكلة إليّ</h6>
+                    </div>
+                    <a class="view-all-link" routerLink="/exercises/my-exercises">عرض الكل</a>
+                </div>
+                <div class="info-card-body">
+                    @if (d.assignedExercises.length > 0) {
+                        <ul class="item-list">
+                            @for (exercise of d.assignedExercises; track exercise.id) {
+                                <li class="item-row">
+                                    <i class="bi bi-clipboard-check item-icon"></i>
+                                    <div class="item-content">
+                                        <span class="item-title">{{ exercise.description || 'تمرين' }}</span>
+                                        @if (exercise.dueDate) {
+                                            <span class="item-meta" [class.overdue]="exercise.isOverdue">
+                                                @if (exercise.isOverdue) {
+                                                    متأخر - كان يجب إنجازه في {{ exercise.dueDate }}
+                                                } @else {
+                                                    الموعد النهائي: {{ exercise.dueDate }}
+                                                }
+                                            </span>
+                                        }
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    } @else {
+                        <app-empty-state
+                            title="لا توجد تمارين"
+                            message="لم يتم تعيين أي تمارين لك بعد."
+                            icon="bi-clipboard2-x"
+                        ></app-empty-state>
+                    }
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-header">
+                    <div class="info-card-title">
+                        <i class="bi bi-file-earmark-medical-fill"></i>
+                        <h6>التقييمات المعلقة</h6>
+                    </div>
+                </div>
+                <div class="info-card-body">
+                    @if (d.pendingAssessments.length > 0) {
+                        <ul class="item-list">
+                            @for (assessment of d.pendingAssessments; track assessment.id) {
+                                <li class="item-row">
+                                    <i class="bi bi-file-earmark-text item-icon"></i>
+                                    <div class="item-content">
+                                        <span class="item-title">{{ assessment.templateName }}</span>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    } @else {
+                        <app-empty-state
+                            title="لا توجد تقييمات معلقة"
+                            message="ليس لديك أي تقييمات بحاجة للإكمال حالياً."
+                            icon="bi-clipboard2-check"
+                        ></app-empty-state>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent AI Conversations -->
+        <div class="info-card full-width">
+            <div class="info-card-header">
+                <div class="info-card-title">
+                    <i class="bi bi-robot"></i>
+                    <h6>محادثاتي الأخيرة مع المساعد الذكي</h6>
+                </div>
+                <a class="view-all-link" routerLink="/chatbot">عرض الكل</a>
+            </div>
+            <div class="info-card-body">
+                @if (d.recentConversations.length > 0) {
+                    <ul class="item-list">
+                        @for (conversation of d.recentConversations; track conversation.conversationId) {
+                            <li class="item-row">
+                                <i class="bi bi-chat-dots item-icon"></i>
+                                <div class="item-content">
+                                    <span class="item-title">محادثة - {{ conversation.status }}</span>
+                                    @if (conversation.lastActivityAt) {
+                                        <span class="item-meta">آخر نشاط: {{ conversation.lastActivityAt }}</span>
+                                    }
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                } @else {
+                    <app-empty-state
+                        title="لا توجد محادثات بعد"
+                        message="ابدأ محادثة مع المساعد الذكي الداعم في أي وقت."
+                        icon="bi-chat-square-heart"
+                    ></app-empty-state>
+                }
+            </div>
+        </div>
+
+        <!-- Progress Overview -->
+        <h2 class="section-title">نظرة عامة على تقدمك</h2>
+        <div class="stats-grid">
+            <app-stats-card
+                label="معدل إنجاز التمارين"
+                [value]="d.progressOverview.exerciseCompletionRate + '%'"
+                icon="bi-graph-up-arrow"
+                color="success"
+            ></app-stats-card>
+            <app-stats-card
+                label="الجلسات المكتملة"
+                [value]="d.progressOverview.completedSessionsCount"
+                icon="bi-calendar-check-fill"
+                color="primary"
+            ></app-stats-card>
+            <app-stats-card
+                label="آخر درجة تقييم"
+                [value]="d.progressOverview.latestAssessmentScore ?? '-'"
+                icon="bi-clipboard-data-fill"
+                color="info"
+            ></app-stats-card>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <h6 class="chart-title">اتجاه درجات التقييم</h6>
+            </div>
+            <app-line-chart
+                title=""
+                [labels]="assessmentTrendLabels()"
+                [datasets]="assessmentTrendData()"
+                [loading]="loading()"
+                height="240px"
+            >
+            </app-line-chart>
+        </div>
+
+        <!-- Therapist Info -->
+        @if (d.therapist; as therapist) {
+            <div class="therapist-card">
+                <div class="therapist-avatar">
+                    @if (therapist.profileImageUrl) {
+                        <img [src]="therapist.profileImageUrl" alt="" />
+                    } @else {
+                        <i class="bi bi-person-badge-fill"></i>
+                    }
+                </div>
+                <div class="therapist-info">
+                    <h6 class="therapist-name">{{ therapist.fullName }}</h6>
+                    @if (therapist.specialization) {
+                        <span class="therapist-specialization">{{ therapist.specialization }}</span>
+                    }
+                </div>
+                @if (therapist.phone) {
+                    <a class="therapist-phone" [href]="'tel:' + therapist.phone">
+                        <i class="bi bi-telephone-fill"></i>
+                        {{ therapist.phone }}
+                    </a>
+                }
+            </div>
+        }
+    }
+</div>

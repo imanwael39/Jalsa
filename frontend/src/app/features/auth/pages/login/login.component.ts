@@ -69,7 +69,7 @@ export class LoginComponent {
                     const roles = this.authService.currentUser()?.roles ?? [];
                     let target = this.returnUrl;
                     if (roles.includes('Patient')) {
-                        target = '/exercises/my-exercises';
+                        target = '/dashboard/patient';
                     } else if (roles.includes('Admin') && target === '/dashboard') {
                         target = '/admin/dashboard';
                     }

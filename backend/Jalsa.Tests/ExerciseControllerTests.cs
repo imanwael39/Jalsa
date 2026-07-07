@@ -2,7 +2,9 @@ using System.Security.Claims;
 using FluentAssertions;
 using Jalsa.API.Controllers;
 using Jalsa.Application.DTOs.Exercise;
+using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Application.Interfaces.Services;
+using Jalsa.Domain.Models.Patient;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -13,13 +15,22 @@ namespace Jalsa.Tests;
 public class ExerciseControllerTests
 {
     private readonly Mock<IExerciseService> _exerciseServiceMock;
+    private readonly Mock<IPatientRepository> _patientRepositoryMock;
     private readonly ExerciseController _sut;
     private readonly Guid _userId = Guid.NewGuid();
+    private readonly Guid _patientId = Guid.NewGuid();
 
     public ExerciseControllerTests()
     {
         _exerciseServiceMock = new Mock<IExerciseService>();
-        _sut = new ExerciseController(_exerciseServiceMock.Object);
+        _patientRepositoryMock = new Mock<IPatientRepository>();
+
+        var patient = new Patient { Id = _patientId, UserId = _userId, TherapistId = Guid.NewGuid(), FullName = "مريض اختبار" };
+        _patientRepositoryMock
+            .Setup(x => x.FindSingleAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Patient, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(patient);
+
+        _sut = new ExerciseController(_exerciseServiceMock.Object, _patientRepositoryMock.Object);
 
         var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, _userId.ToString()) };
         var identity = new ClaimsIdentity(claims, "Test");
@@ -128,8 +139,8 @@ public class ExerciseControllerTests
     [Fact]
     public async Task GetMyExercises_PatientRole_ReturnsOk()
     {
-        var exercises = new List<ExerciseViewDto> { MakeExerciseDto(patientId: _userId) };
-        _exerciseServiceMock.Setup(x => x.GetByPatientIdAsync(_userId)).ReturnsAsync(exercises);
+        var exercises = new List<ExerciseViewDto> { MakeExerciseDto(patientId: _patientId) };
+        _exerciseServiceMock.Setup(x => x.GetByPatientIdAsync(_patientId)).ReturnsAsync(exercises);
 
         var result = await _sut.GetMyExercises();
 
@@ -140,8 +151,8 @@ public class ExerciseControllerTests
     public async Task LogCompletion_ValidDto_Returns201Created()
     {
         var dto = new ExerciseLogCreateDto { ExerciseId = Guid.NewGuid(), CompletionStatus = "Completed" };
-        var logView = new ExerciseLogViewDto { Id = Guid.NewGuid(), ExerciseId = dto.ExerciseId, PatientId = _userId, CompletionStatus = "Completed", CreatedAt = DateTime.UtcNow };
-        _exerciseServiceMock.Setup(x => x.LogCompletionAsync(It.Is<ExerciseLogCreateDto>(d => d.PatientId == _userId))).ReturnsAsync(logView);
+        var logView = new ExerciseLogViewDto { Id = Guid.NewGuid(), ExerciseId = dto.ExerciseId, PatientId = _patientId, CompletionStatus = "Completed", CreatedAt = DateTime.UtcNow };
+        _exerciseServiceMock.Setup(x => x.LogCompletionAsync(It.Is<ExerciseLogCreateDto>(d => d.PatientId == _patientId))).ReturnsAsync(logView);
 
         var result = await _sut.LogCompletion(dto);
 
@@ -151,11 +162,23 @@ public class ExerciseControllerTests
     [Fact]
     public async Task GetMyLogs_PatientRole_ReturnsOk()
     {
-        var logs = new List<ExerciseLogViewDto> { new() { Id = Guid.NewGuid(), PatientId = _userId, CompletionStatus = "Completed", CreatedAt = DateTime.UtcNow } };
-        _exerciseServiceMock.Setup(x => x.GetLogsByPatientIdAsync(_userId)).ReturnsAsync(logs);
+        var logs = new List<ExerciseLogViewDto> { new() { Id = Guid.NewGuid(), PatientId = _patientId, CompletionStatus = "Completed", CreatedAt = DateTime.UtcNow } };
+        _exerciseServiceMock.Setup(x => x.GetLogsByPatientIdAsync(_patientId)).ReturnsAsync(logs);
 
         var result = await _sut.GetMyLogs();
 
         result.Should().BeOfType<OkObjectResult>();
+    }
+
+    [Fact]
+    public async Task GetMyExercises_NoPatientProfileForUser_ReturnsUnauthorized()
+    {
+        _patientRepositoryMock
+            .Setup(x => x.FindSingleAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Patient, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Patient?)null);
+
+        var result = await _sut.GetMyExercises();
+
+        result.Should().BeOfType<UnauthorizedResult>();
     }
 }
