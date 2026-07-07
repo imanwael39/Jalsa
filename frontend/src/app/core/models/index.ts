@@ -51,5 +51,16 @@ export type {
     SystemHealth,
 } from './admin.model';
 export type { DashboardSummary, TrendDto, ExerciseCompletionBreakdown, Analytics } from './dashboard.model';
+export type {
+    PatientDashboard,
+    UpcomingSession,
+    TodayReminder,
+    AssignedExerciseSummary,
+    PendingAssessment,
+    RecentConversation,
+    ProgressOverview,
+    TherapistInfo,
+    CrisisSupportInfo,
+} from './patient-dashboard.model';
 export type { ApiResponse } from './api-response.model';
 export type { RagSource, AiGenerationDiagnostics } from './ai.model';

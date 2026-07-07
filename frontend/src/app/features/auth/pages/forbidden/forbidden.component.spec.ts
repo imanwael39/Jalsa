@@ -51,10 +51,10 @@ describe('ForbiddenComponent', () => {
         setup();
         expect(component).toBeTruthy();
     });
-    it('should navigate Patient to my-exercises', () => {
+    it('should navigate Patient to /dashboard/patient', () => {
         setup({ currentUserRoles: ['Patient'] });
         component.goHome();
-        expect(routerSpy['navigate']).toHaveBeenCalledWith(['/exercises/my-exercises']);
+        expect(routerSpy['navigate']).toHaveBeenCalledWith(['/dashboard/patient']);
     });
     it('should navigate Therapist to dashboard', () => {
         setup({ currentUserRoles: ['Therapist'] });

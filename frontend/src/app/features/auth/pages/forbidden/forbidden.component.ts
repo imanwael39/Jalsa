@@ -75,7 +75,7 @@ export class ForbiddenComponent {
     goHome(): void {
         const roles = this.authService.currentUser()?.roles ?? [];
         if (roles.includes('Patient')) {
-            this.router.navigate(['/exercises/my-exercises']);
+            this.router.navigate(['/dashboard/patient']);
         } else if (roles.includes('Admin')) {
             this.router.navigate(['/admin/dashboard']);
         } else {
