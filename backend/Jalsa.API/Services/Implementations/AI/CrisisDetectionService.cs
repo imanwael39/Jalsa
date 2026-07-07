@@ -7,15 +7,15 @@ namespace Jalsa.API.Services.Implementations.AI;
 
 public class CrisisDetectionService : ICrisisDetectionService
 {
-    private readonly IGatewayClient _client;
+    private readonly IGeminiClient _client;
 
     private readonly ILlmObservabilityService? _observability;
     private readonly IPromptService _prompts;
     private readonly string _model;
 
     public CrisisDetectionService(
-        IOptions<GatewaySettings> settings,
-        IGatewayClient client,
+        IOptions<GeminiSettings> settings,
+        IGeminiClient client,
         ILlmObservabilityService observability,
         IPromptService prompts)
     {

@@ -142,6 +142,25 @@ builder.Services.Configure<GatewaySettings>(options =>
 builder.Services.Configure<LangfuseSettings>(
     builder.Configuration.GetSection("Langfuse"));
 
+builder.Services.Configure<GeminiSettings>(options =>
+{
+    options.BaseUrl = builder.Configuration["Gemini:BaseUrl"]
+        ?? "https://generativelanguage.googleapis.com/v1beta/";
+    var cfgKey = builder.Configuration["Gemini:ApiKey"];
+    options.ApiKey = string.IsNullOrWhiteSpace(cfgKey)
+        ? (builder.Configuration["GEMINI_API_KEY"] ?? string.Empty)
+        : cfgKey;
+    options.ChatModelId = builder.Configuration["Gemini:ChatModelId"]
+        ?? "gemini-2.5-flash";
+    options.EmbeddingModelId = builder.Configuration["Gemini:EmbeddingModelId"]
+        ?? "gemini-embedding-001";
+    if (int.TryParse(builder.Configuration["Gemini:EmbeddingDimensions"], out var dims)
+        && dims > 0)
+    {
+        options.EmbeddingDimensions = dims;
+    }
+});
+
 builder.Services.AddHttpClient<
     ILlmObservabilityService,
     LangfuseObservabilityService>();
@@ -158,6 +177,20 @@ builder.Services.AddHttpClient<IGatewayClient, GatewayClient>((sp, client) =>
 
     client.DefaultRequestHeaders.Authorization =
         new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", gatewaySettings.ApiKey);
+});
+
+builder.Services.AddHttpClient<IGeminiClient, GeminiClient>((sp, client) =>
+{
+    var geminiSettings = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<GeminiSettings>>().Value;
+
+    if (string.IsNullOrWhiteSpace(geminiSettings.ApiKey))
+    {
+        throw new InvalidOperationException(
+            "Gemini ApiKey is not configured. Set Gemini__ApiKey or GEMINI_API_KEY.");
+    }
+
+    var baseUrl = geminiSettings.BaseUrl.TrimEnd('/') + "/";
+    client.BaseAddress = new Uri(baseUrl);
 });
 
 builder.Services.AddSingleton<

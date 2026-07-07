@@ -4,15 +4,15 @@ namespace Jalsa.API.Services.Implementations.AI;
 
 public class EmbeddingService : IEmbeddingService
 {
-    private readonly IGatewayClient _gatewayClient;
+    private readonly IGeminiClient _geminiClient;
 
-    public EmbeddingService(IGatewayClient gatewayClient)
+    public EmbeddingService(IGeminiClient geminiClient)
     {
-        _gatewayClient = gatewayClient;
+        _geminiClient = geminiClient;
     }
 
     public Task<float[]> GenerateEmbeddingAsync(string text)
     {
-        return _gatewayClient.EmbedAsync(text);
+        return _geminiClient.EmbedAsync(text);
     }
 }

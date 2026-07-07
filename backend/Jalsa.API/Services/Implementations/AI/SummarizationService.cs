@@ -9,7 +9,7 @@ namespace Jalsa.API.Services.Implementations.AI;
 
 public class SummarizationService : ISummarizationService
 {
-    private readonly IGatewayClient _client;
+    private readonly IGeminiClient _client;
     private readonly JalsaDbContext _context;
     private readonly IVectorStore _vectorStore;
     private readonly IEmbeddingService _embeddingService;
@@ -18,8 +18,8 @@ public class SummarizationService : ISummarizationService
     private readonly string _model;
 
     public SummarizationService(
-        IOptions<GatewaySettings> settings,
-        IGatewayClient client,
+        IOptions<GeminiSettings> settings,
+        IGeminiClient client,
         JalsaDbContext context,
         IVectorStore vectorStore,
         IEmbeddingService embeddingService,

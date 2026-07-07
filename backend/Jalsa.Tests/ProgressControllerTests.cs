@@ -5,6 +5,7 @@ using Jalsa.Application.Interfaces.Services;
 using Jalsa.API.Controllers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace Jalsa.Tests;
@@ -18,7 +19,9 @@ public class ProgressControllerTests
     public ProgressControllerTests()
     {
         _progressServiceMock = new Mock<IProgressService>();
-        _sut = new ProgressController(_progressServiceMock.Object);
+        _sut = new ProgressController(
+            _progressServiceMock.Object,
+            NullLogger<ProgressController>.Instance);
 
         _therapistUserId = Guid.NewGuid();
         var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, _therapistUserId.ToString()) };

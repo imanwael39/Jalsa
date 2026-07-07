@@ -8,7 +8,7 @@ namespace Jalsa.API.Services.Implementations.AI;
 
 public class TherapistChatAiService : ITherapistChatAiService
 {
-    private readonly IGatewayClient _client;
+    private readonly IGeminiClient _client;
     private readonly JalsaDbContext _context;
     private readonly string _model;
 
@@ -16,8 +16,8 @@ public class TherapistChatAiService : ITherapistChatAiService
     private readonly Services.Interfaces.IPromptService _prompts;
 
     public TherapistChatAiService(
-        IOptions<GatewaySettings> settings,
-        IGatewayClient client,
+        IOptions<GeminiSettings> settings,
+        IGeminiClient client,
         JalsaDbContext context,
         ILlmObservabilityService observability,
         Services.Interfaces.IPromptService prompts)

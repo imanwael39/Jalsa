@@ -8,7 +8,7 @@ namespace Jalsa.API.Services.Implementations.AI;
 
 public class ReportGenerationService : IReportGenerationService
 {
-    private readonly IGatewayClient _client;
+    private readonly IGeminiClient _client;
     private readonly JalsaDbContext _context;
     private readonly IVectorStore _vectorStore;
     private readonly IEmbeddingService _embeddingService;
@@ -18,8 +18,8 @@ public class ReportGenerationService : IReportGenerationService
     private readonly Services.Interfaces.IPromptService _prompts;
 
     public ReportGenerationService(
-        IOptions<GatewaySettings> settings,
-        IGatewayClient client,
+        IOptions<GeminiSettings> settings,
+        IGeminiClient client,
         JalsaDbContext context,
         IVectorStore vectorStore,
         IEmbeddingService embeddingService,
