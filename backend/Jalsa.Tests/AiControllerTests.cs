@@ -1,8 +1,11 @@
 using FluentAssertions;
+using Jalsa.API.Configurations;
 using Jalsa.API.Controllers;
 using Jalsa.API.DTOs.AI;
 using Jalsa.API.Services.Interfaces.AI;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace Jalsa.Tests;
@@ -11,16 +14,30 @@ public class AiControllerTests
 {
     private readonly Mock<ISummarizationService> _summarizationServiceMock;
     private readonly Mock<IReportGenerationService> _reportGenerationServiceMock;
+    private readonly Mock<IEmbeddingService> _embeddingServiceMock;
     private readonly AiController _sut;
 
     public AiControllerTests()
     {
         _summarizationServiceMock = new Mock<ISummarizationService>();
         _reportGenerationServiceMock = new Mock<IReportGenerationService>();
+        _embeddingServiceMock = new Mock<IEmbeddingService>();
+
+        var geminiSettings = Options.Create(new GeminiSettings
+        {
+            BaseUrl = "https://generativelanguage.googleapis.com/v1beta/",
+            ApiKey = "test-key",
+            ChatModelId = "gemini-2.5-flash",
+            EmbeddingModelId = "gemini-embedding-001",
+            EmbeddingDimensions = 768
+        });
 
         _sut = new AiController(
             _summarizationServiceMock.Object,
-            _reportGenerationServiceMock.Object);
+            _reportGenerationServiceMock.Object,
+            _embeddingServiceMock.Object,
+            geminiSettings,
+            NullLogger<AiController>.Instance);
     }
 
     [Fact]
