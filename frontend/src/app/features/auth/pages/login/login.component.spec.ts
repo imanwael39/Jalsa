@@ -122,6 +122,14 @@ describe('LoginComponent', () => {
         subj.next({ token: 'token' });
         expect(routerSpy['navigateByUrl']).toHaveBeenCalledWith('/exercises/my-exercises');
     });
+    it('should navigate Admin to /admin/dashboard on success (not the Therapist-only /dashboard)', () => {
+        const subj = new Subject<unknown>();
+        setup({ loginReturn: subj, currentUserRoles: ['Admin'] });
+        component.loginForm.patchValue({ email: 'a@t.com', password: '123456' });
+        component.onSubmit();
+        subj.next({ token: 'token' });
+        expect(routerSpy['navigateByUrl']).toHaveBeenCalledWith('/admin/dashboard');
+    });
     it('should show error on login failure', () => {
         setup({ loginReturn: new Observable(sub => sub.error({ error: { message: 'خطأ' } })) });
         component.loginForm.patchValue({ email: 't@t.com', password: 'wrong' });

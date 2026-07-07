@@ -1,0 +1,73 @@
+<div class="settings-page">
+    <div class="page-header">
+        <h2 class="page-title">إعدادات النظام</h2>
+    </div>
+
+    @if (error()) {
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+            {{ error() }}
+        </div>
+    }
+
+    @if (loading()) {
+        <div class="loading-wrapper">
+            <app-spinner size="lg" label="جاري تحميل الإعدادات..."></app-spinner>
+        </div>
+    } @else if (!error()) {
+        <form class="settings-form" [formGroup]="form" (ngSubmit)="save()">
+            <app-input
+                label="اسم النظام"
+                formControlName="siteName"
+                [required]="true"
+                [error]="form.controls.siteName.invalid && form.controls.siteName.touched ? 'اسم النظام مطلوب' : ''"
+            ></app-input>
+
+            <div class="field">
+                <label class="label" for="defaultLanguage">اللغة الافتراضية</label>
+                <select id="defaultLanguage" class="native-select" formControlName="defaultLanguage">
+                    <option value="ar">العربية</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label class="label" for="passwordMinLength">الحد الأدنى لطول كلمة المرور</label>
+                <input
+                    id="passwordMinLength"
+                    type="number"
+                    class="native-input"
+                    formControlName="passwordMinLength"
+                    min="6"
+                    max="32"
+                />
+            </div>
+
+            <div class="field">
+                <label class="label" for="sessionTimeoutMinutes">مهلة انتهاء الجلسة (بالدقائق)</label>
+                <input
+                    id="sessionTimeoutMinutes"
+                    type="number"
+                    class="native-input"
+                    formControlName="sessionTimeoutMinutes"
+                    min="5"
+                    max="480"
+                />
+            </div>
+
+            <app-checkbox label="وضع الصيانة" formControlName="maintenanceMode"></app-checkbox>
+            @if (form.controls.maintenanceMode.value) {
+                <p class="maintenance-warning">
+                    <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                    تفعيل وضع الصيانة سيمنع جميع المستخدمين (عدا المدراء) من استخدام النظام.
+                </p>
+            }
+
+            <div class="form-actions">
+                <app-button type="submit" variant="primary" [loading]="saving()" [disabled]="form.invalid">
+                    حفظ الإعدادات
+                </app-button>
+            </div>
+        </form>
+    }
+</div>

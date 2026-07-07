@@ -1,0 +1,99 @@
+<div class="doctor-list">
+    <div class="page-header">
+        <h2 class="page-title">الأطباء المعالجون</h2>
+    </div>
+
+    <div class="filters">
+        <div class="search-wrapper">
+            <i class="bi bi-search search-icon"></i>
+            <input
+                type="search"
+                class="search-input"
+                placeholder="بحث بالاسم أو البريد الإلكتروني أو رقم الترخيص..."
+                [value]="searchTerm"
+                (input)="onSearch($any($event.target).value)"
+                aria-label="بحث في المعالجين"
+            />
+        </div>
+        <select class="status-filter" [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()">
+            <option value="">كل الحالات</option>
+            @for (status of statusOptions; track status) {
+                <option [value]="status">{{ statusLabel(status) }}</option>
+            }
+        </select>
+    </div>
+
+    @if (error()) {
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+            {{ error() }}
+        </div>
+    }
+
+    @if (!error()) {
+        <div class="table-responsive">
+            <app-table
+                [data]="doctors()"
+                [columns]="columns"
+                [loading]="loading()"
+                emptyMessage="لا يوجد معالجون مطابقون"
+                (rowClick)="viewDetail($event)"
+            >
+                <ng-template appColumnCell="approvalStatus" let-row>
+                    <span
+                        class="status-badge"
+                        [class.status-approved]="row.approvalStatus === 'Approved'"
+                        [class.status-pending]="row.approvalStatus === 'Pending'"
+                        [class.status-rejected]="row.approvalStatus === 'Rejected'"
+                        [class.status-suspended]="row.approvalStatus === 'Suspended'"
+                    >
+                        {{ statusLabel(row.approvalStatus) }}
+                    </span>
+                </ng-template>
+                <ng-template appColumnCell="actions" let-row>
+                    <div class="d-flex gap-1 justify-content-center" (click)="$event.stopPropagation()">
+                        @if (row.approvalStatus !== 'Approved') {
+                            <app-button
+                                variant="secondary"
+                                size="sm"
+                                [disabled]="busyId() === row.id"
+                                (clicked)="updateStatus(row, 'Approved')"
+                                ariaLabel="اعتماد المعالج"
+                            >
+                                اعتماد
+                            </app-button>
+                        }
+                        @if (row.approvalStatus !== 'Suspended') {
+                            <app-button
+                                variant="danger"
+                                size="sm"
+                                [disabled]="busyId() === row.id"
+                                (clicked)="updateStatus(row, 'Suspended')"
+                                ariaLabel="تعليق المعالج"
+                            >
+                                تعليق
+                            </app-button>
+                        } @else {
+                            <app-button
+                                variant="secondary"
+                                size="sm"
+                                [disabled]="busyId() === row.id"
+                                (clicked)="updateStatus(row, 'Approved')"
+                                ariaLabel="إعادة تفعيل المعالج"
+                            >
+                                إعادة تفعيل
+                            </app-button>
+                        }
+                    </div>
+                </ng-template>
+            </app-table>
+        </div>
+
+        <app-pagination
+            [totalItems]="totalCount()"
+            [pageSize]="pageSize"
+            [currentPage]="currentPage"
+            (pageChange)="onPageChange($event)"
+        ></app-pagination>
+    }
+</div>

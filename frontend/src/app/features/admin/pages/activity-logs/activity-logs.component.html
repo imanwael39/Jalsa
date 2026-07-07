@@ -1,0 +1,52 @@
+<div class="activity-logs">
+    <div class="page-header">
+        <h2 class="page-title">سجل النشاط</h2>
+    </div>
+
+    <div class="filters">
+        <input
+            type="text"
+            class="filter-input"
+            placeholder="اسم الكيان (مثال: User, Therapist)"
+            [(ngModel)]="entityNameFilter"
+            (ngModelChange)="onFilterChange()"
+        />
+        <input
+            type="text"
+            class="filter-input"
+            placeholder="نوع الإجراء (مثال: User.LoginSucceeded)"
+            [(ngModel)]="actionFilter"
+            (ngModelChange)="onFilterChange()"
+        />
+    </div>
+
+    @if (error()) {
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+            {{ error() }}
+        </div>
+    }
+
+    @if (!error()) {
+        <div class="table-responsive">
+            <app-table [data]="logs()" [columns]="columns" [loading]="loading()" emptyMessage="لا يوجد نشاط مسجل">
+                <ng-template appColumnCell="occurredAt" let-row>
+                    {{ formatDate(row.occurredAt) }}
+                </ng-template>
+                <ng-template appColumnCell="userEmail" let-row>
+                    {{ row.userEmail || '-' }}
+                </ng-template>
+                <ng-template appColumnCell="ipAddress" let-row>
+                    {{ row.ipAddress || '-' }}
+                </ng-template>
+            </app-table>
+        </div>
+
+        <app-pagination
+            [totalItems]="totalCount()"
+            [pageSize]="pageSize"
+            [currentPage]="currentPage"
+            (pageChange)="onPageChange($event)"
+        ></app-pagination>
+    }
+</div>

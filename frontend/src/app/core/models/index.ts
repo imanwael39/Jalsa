@@ -34,6 +34,21 @@ export type {
 export type { ReferralReport, ReportVersion } from './report.model';
 export type { ChatConversation, ChatMessage, SendMessageRequest } from './chat.model';
 export type { CrisisAlert } from './crisis-alert.model';
-export type { AdminUser } from './admin.model';
+export type {
+    AdminUser,
+    UserFilter,
+    PagedResult,
+    TherapistApprovalStatus,
+    TherapistAdmin,
+    TherapistAdminDetail,
+    TherapistFilter,
+    PatientAccountAdmin,
+    PatientAccountFilter,
+    AuditLogEntry,
+    AuditLogFilter,
+    SystemSettings,
+    AdminDashboardSummary,
+    SystemHealth,
+} from './admin.model';
 export type { DashboardSummary, TrendDto, ExerciseCompletionBreakdown, Analytics } from './dashboard.model';
 export type { ApiResponse } from './api-response.model';

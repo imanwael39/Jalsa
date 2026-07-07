@@ -76,6 +76,8 @@ export class ForbiddenComponent {
         const roles = this.authService.currentUser()?.roles ?? [];
         if (roles.includes('Patient')) {
             this.router.navigate(['/exercises/my-exercises']);
+        } else if (roles.includes('Admin')) {
+            this.router.navigate(['/admin/dashboard']);
         } else {
             this.router.navigate(['/dashboard']);
         }

@@ -1,0 +1,118 @@
+<div class="patient-account-list">
+    <div class="page-header">
+        <h2 class="page-title">حسابات المرضى</h2>
+    </div>
+
+    <div class="filters">
+        <div class="search-wrapper">
+            <i class="bi bi-search search-icon"></i>
+            <input
+                type="search"
+                class="search-input"
+                placeholder="بحث بالاسم أو البريد الإلكتروني..."
+                [value]="searchTerm"
+                (input)="onSearch($any($event.target).value)"
+                aria-label="بحث في حسابات المرضى"
+            />
+        </div>
+        <select class="status-filter" [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()">
+            <option value="">كل الحالات</option>
+            <option value="Active">نشط</option>
+            <option value="Archived">مؤرشف</option>
+        </select>
+    </div>
+
+    @if (error()) {
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+            {{ error() }}
+        </div>
+    }
+
+    @if (!error()) {
+        <div class="table-responsive">
+            <app-table
+                [data]="patients()"
+                [columns]="columns"
+                [loading]="loading()"
+                emptyMessage="لا يوجد مرضى مطابقون"
+            >
+                <ng-template appColumnCell="email" let-row>
+                    {{ row.email || '-' }}
+                </ng-template>
+                <ng-template appColumnCell="accountStatus" let-row>
+                    @if (row.userId === null) {
+                        <span class="status-badge status-no-account">بدون حساب دخول</span>
+                    } @else if (row.isDeleted) {
+                        <span class="status-badge status-deleted">محذوف</span>
+                    } @else {
+                        <span
+                            class="status-badge"
+                            [class.status-active]="row.isActive"
+                            [class.status-inactive]="!row.isActive"
+                        >
+                            {{ row.isActive ? 'نشط' : 'معطل' }}
+                        </span>
+                    }
+                </ng-template>
+                <ng-template appColumnCell="actions" let-row>
+                    <div class="d-flex gap-1 justify-content-center">
+                        @if (row.userId !== null) {
+                            @if (row.isDeleted) {
+                                <app-button
+                                    variant="secondary"
+                                    size="sm"
+                                    [disabled]="busyId() === row.id"
+                                    (clicked)="restore(row)"
+                                    ariaLabel="استعادة الحساب"
+                                >
+                                    استعادة
+                                </app-button>
+                            } @else {
+                                @if (row.isActive) {
+                                    <app-button
+                                        variant="secondary"
+                                        size="sm"
+                                        [disabled]="busyId() === row.id"
+                                        (clicked)="disable(row)"
+                                        ariaLabel="تعطيل الحساب"
+                                    >
+                                        تعطيل
+                                    </app-button>
+                                } @else {
+                                    <app-button
+                                        variant="secondary"
+                                        size="sm"
+                                        [disabled]="busyId() === row.id"
+                                        (clicked)="restore(row)"
+                                        ariaLabel="إعادة تفعيل الحساب"
+                                    >
+                                        تفعيل
+                                    </app-button>
+                                }
+                                <app-button
+                                    variant="danger"
+                                    size="sm"
+                                    [disabled]="busyId() === row.id"
+                                    (clicked)="delete(row)"
+                                    ariaLabel="حذف الحساب"
+                                >
+                                    <i class="bi bi-trash" aria-hidden="true"></i>
+                                </app-button>
+                            }
+                        } @else {
+                            <span class="no-account-note">لا يوجد إجراء</span>
+                        }
+                    </div>
+                </ng-template>
+            </app-table>
+        </div>
+
+        <app-pagination
+            [totalItems]="totalCount()"
+            [pageSize]="pageSize"
+            [currentPage]="currentPage"
+            (pageChange)="onPageChange($event)"
+        ></app-pagination>
+    }
+</div>

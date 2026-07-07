@@ -175,12 +175,19 @@ builder.Services.AddScoped<IReportGenerationService, ReportGenerationService>();
 builder.Services.AddScoped<ITherapistChatAiService, TherapistChatAiService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
+builder.Services.AddScoped<IAuditLogService, AuditLogService>();
+builder.Services.AddScoped<ITherapistAdminService, TherapistAdminService>();
+builder.Services.AddScoped<IPatientAccountAdminService, PatientAccountAdminService>();
+builder.Services.AddScoped<ISystemSettingsService, SystemSettingsService>();
+builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+builder.Services.AddScoped<ISystemHealthService, SystemHealthService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
 
 builder.Services.AddDbContext<JalsaDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddSignalR();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -280,6 +287,8 @@ app.UseCors("AngularPolicy");
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseMiddleware<MaintenanceModeMiddleware>();
 
 app.UseRateLimiter();
 

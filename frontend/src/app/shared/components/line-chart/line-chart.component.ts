@@ -1,4 +1,5 @@
 import {
+    AfterViewInit,
     ChangeDetectionStrategy,
     Component,
     ElementRef,
@@ -19,7 +20,7 @@ Chart.register(...registerables);
     styleUrls: ['./line-chart.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LineChartComponent implements OnChanges, OnDestroy {
+export class LineChartComponent implements OnChanges, AfterViewInit, OnDestroy {
     @Input() title = '';
     @Input() labels: string[] = [];
     @Input() datasets: ChartDataset<'line'>[] = [];
@@ -28,19 +29,30 @@ export class LineChartComponent implements OnChanges, OnDestroy {
 
     @ViewChild('chartCanvas') chartCanvas!: ElementRef<HTMLCanvasElement>;
     private chart: Chart | null = null;
+    // ngOnChanges fires before the view (and @ViewChild) exists, so an initial
+    // input already carrying data would otherwise crash on chartCanvas being
+    // undefined. Defer any render request that arrives before ngAfterViewInit.
+    private viewReady = false;
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (
-            (changes['datasets'] || changes['labels']) &&
-            this.datasets.length > 0 &&
-            this.labels.length > 0
-        ) {
+        if (this.viewReady && this.hasRenderableData(changes)) {
+            this.renderChart();
+        }
+    }
+
+    ngAfterViewInit(): void {
+        this.viewReady = true;
+        if (this.datasets.length > 0 && this.labels.length > 0) {
             this.renderChart();
         }
     }
 
     ngOnDestroy(): void {
         this.destroyChart();
+    }
+
+    private hasRenderableData(changes: SimpleChanges): boolean {
+        return !!(changes['datasets'] || changes['labels']) && this.datasets.length > 0 && this.labels.length > 0;
     }
 
     private renderChart(): void {
@@ -50,7 +62,7 @@ export class LineChartComponent implements OnChanges, OnDestroy {
             type: 'line',
             data: {
                 labels: this.labels,
-                datasets: this.datasets.map((ds) => ({
+                datasets: this.datasets.map(ds => ({
                     ...ds,
                     tension: 0.3,
                     pointRadius: 4,

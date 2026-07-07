@@ -67,7 +67,12 @@ export class LoginComponent {
                 next: () => {
                     this.loading.set(false);
                     const roles = this.authService.currentUser()?.roles ?? [];
-                    const target = roles.includes('Patient') ? '/exercises/my-exercises' : this.returnUrl;
+                    let target = this.returnUrl;
+                    if (roles.includes('Patient')) {
+                        target = '/exercises/my-exercises';
+                    } else if (roles.includes('Admin') && target === '/dashboard') {
+                        target = '/admin/dashboard';
+                    }
                     this.router.navigateByUrl(target);
                 },
                 error: err => {
