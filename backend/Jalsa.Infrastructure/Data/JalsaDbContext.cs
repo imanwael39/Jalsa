@@ -67,6 +67,7 @@ public class JalsaDbContext : DbContext
             e.HasIndex(u => u.Email).IsUnique();
             e.Property(u => u.PasswordHash).IsRequired();
             e.Property(u => u.IsActive).HasDefaultValue(true);
+            e.Property(u => u.IsDeleted).HasDefaultValue(false);
             e.Property(u => u.FailedLoginAttempts).HasDefaultValue(0);
             e.Property(u => u.LockoutEnd).IsRequired(false);
             e.Property(u => u.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
@@ -134,6 +135,7 @@ public class JalsaDbContext : DbContext
             e.Property(t => t.FullName).IsRequired();
             e.Property(t => t.LicenseNumber).IsRequired();
             e.HasIndex(t => t.LicenseNumber).IsUnique();
+            e.Property(t => t.ApprovalStatus).HasMaxLength(20).HasDefaultValue(TherapistApprovalStatus.Pending);
             e.Property(t => t.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
             e.HasOne(t => t.User).WithOne(u => u.Therapist).HasForeignKey<Therapist>(t => t.UserId).OnDelete(DeleteBehavior.NoAction);
         });

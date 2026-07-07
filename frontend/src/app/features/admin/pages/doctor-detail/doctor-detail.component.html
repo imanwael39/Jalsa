@@ -1,0 +1,115 @@
+<div class="doctor-detail">
+    <div class="page-header">
+        <app-button variant="secondary" size="sm" (clicked)="goBack()" ariaLabel="عودة إلى قائمة المعالجين">
+            <i class="bi bi-arrow-right" aria-hidden="true"></i> عودة
+        </app-button>
+    </div>
+
+    @if (error()) {
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+            {{ error() }}
+        </div>
+    }
+
+    @if (loading()) {
+        <div class="loading-wrapper">
+            <app-spinner size="lg" label="جاري تحميل بيانات المعالج..."></app-spinner>
+        </div>
+    } @else if (doctor(); as d) {
+        <div class="detail-card">
+            <div class="detail-header">
+                <h2 class="doctor-name">{{ d.fullName }}</h2>
+                <span
+                    class="status-badge"
+                    [class.status-approved]="d.approvalStatus === 'Approved'"
+                    [class.status-pending]="d.approvalStatus === 'Pending'"
+                    [class.status-rejected]="d.approvalStatus === 'Rejected'"
+                    [class.status-suspended]="d.approvalStatus === 'Suspended'"
+                >
+                    {{ statusLabel(d.approvalStatus) }}
+                </span>
+            </div>
+
+            <div class="detail-grid">
+                <div class="detail-field">
+                    <span class="field-label">البريد الإلكتروني</span>
+                    <span class="field-value">{{ d.email }}</span>
+                </div>
+                <div class="detail-field">
+                    <span class="field-label">رقم الترخيص</span>
+                    <span class="field-value">{{ d.licenseNumber }}</span>
+                </div>
+                <div class="detail-field">
+                    <span class="field-label">التخصص</span>
+                    <span class="field-value">{{ d.specialization || '-' }}</span>
+                </div>
+                <div class="detail-field">
+                    <span class="field-label">الهاتف</span>
+                    <span class="field-value">{{ d.phone || '-' }}</span>
+                </div>
+                <div class="detail-field">
+                    <span class="field-label">عدد المرضى</span>
+                    <span class="field-value">{{ d.patientCount }}</span>
+                </div>
+                <div class="detail-field">
+                    <span class="field-label">تاريخ التسجيل</span>
+                    <span class="field-value">{{ formatDate(d.createdAt) }}</span>
+                </div>
+                <div class="detail-field">
+                    <span class="field-label">آخر دخول</span>
+                    <span class="field-value">{{ formatDate(d.lastLoginAt) }}</span>
+                </div>
+                <div class="detail-field">
+                    <span class="field-label">آخر تحديث للحالة</span>
+                    <span class="field-value">{{ formatDate(d.approvalStatusUpdatedAt) }}</span>
+                </div>
+            </div>
+
+            @if (d.bio) {
+                <div class="bio-section">
+                    <span class="field-label">نبذة</span>
+                    <p class="bio-text">{{ d.bio }}</p>
+                </div>
+            }
+
+            <div class="actions-section">
+                @if (d.approvalStatus !== 'Approved') {
+                    <app-button variant="secondary" [disabled]="busy()" (clicked)="updateStatus('Approved')">
+                        اعتماد
+                    </app-button>
+                }
+                @if (d.approvalStatus !== 'Rejected') {
+                    <app-button variant="danger" [disabled]="busy()" (clicked)="updateStatus('Rejected')">
+                        رفض
+                    </app-button>
+                }
+                @if (d.approvalStatus !== 'Suspended') {
+                    <app-button variant="danger" [disabled]="busy()" (clicked)="updateStatus('Suspended')">
+                        تعليق
+                    </app-button>
+                } @else {
+                    <app-button variant="secondary" [disabled]="busy()" (clicked)="updateStatus('Approved')">
+                        إعادة تفعيل
+                    </app-button>
+                }
+            </div>
+
+            <div class="audit-section">
+                <h3 class="section-title">النشاط الأخير</h3>
+                @if (d.recentAuditLogs.length === 0) {
+                    <p class="no-activity">لا يوجد نشاط مسجل بعد.</p>
+                } @else {
+                    <ul class="audit-list">
+                        @for (log of d.recentAuditLogs; track log.id) {
+                            <li class="audit-item">
+                                <span class="audit-action">{{ log.action }}</span>
+                                <span class="audit-date">{{ formatDate(log.occurredAt) }}</span>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,64 @@
+<div class="roles-page">
+    <div class="page-header">
+        <h2 class="page-title">الأدوار</h2>
+    </div>
+
+    @if (error()) {
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+            {{ error() }}
+        </div>
+    }
+
+    @if (loading()) {
+        <div class="loading-wrapper">
+            <app-spinner size="lg" label="جاري تحميل الأدوار..."></app-spinner>
+        </div>
+    } @else if (!error()) {
+        @for (group of groups(); track trackByRole($index, group)) {
+            <div class="role-group">
+                <div class="role-group-header">
+                    <h3 class="role-group-title">{{ group.label }}</h3>
+                    <span class="role-count">{{ group.totalCount }}</span>
+                </div>
+
+                @if (group.users.length === 0) {
+                    <p class="no-users">لا يوجد مستخدمون بهذا الدور.</p>
+                } @else {
+                    <div class="table-responsive">
+                        <table class="role-table">
+                            <thead>
+                                <tr>
+                                    <th>البريد الإلكتروني</th>
+                                    <th>الاسم</th>
+                                    <th>تغيير الدور</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (user of group.users; track trackByUserId($index, user)) {
+                                    <tr>
+                                        <td>{{ user.email }}</td>
+                                        <td>{{ user.fullName || '-' }}</td>
+                                        <td>
+                                            <select
+                                                class="role-select"
+                                                [disabled]="busyId() === user.id"
+                                                (change)="changeRole(user, $any($event.target).value)"
+                                            >
+                                                @for (role of availableRoles; track role) {
+                                                    <option [value]="role" [selected]="user.roles[0] === role">
+                                                        {{ role }}
+                                                    </option>
+                                                }
+                                            </select>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>

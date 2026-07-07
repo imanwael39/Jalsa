@@ -10,6 +10,8 @@ public class Therapist
     public string? Phone { get; set; }
     public string? ProfileImageUrl { get; set; }
     public string? Bio { get; set; }
+    public string ApprovalStatus { get; set; } = TherapistApprovalStatus.Pending;
+    public DateTime? ApprovalStatusUpdatedAt { get; set; }
     public DateTime CreatedAt { get; set; }
 
     public Identity.User User { get; set; } = null!;

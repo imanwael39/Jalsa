@@ -25,31 +25,61 @@
     padding: var(--space-8);
 }
 
-.users-table-wrapper {
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    overflow-x: auto;
+.filters {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+    flex-wrap: wrap;
 }
 
-.users-table {
+.search-wrapper {
+    position: relative;
+    flex: 1;
+    max-width: 400px;
+}
+
+.search-icon {
+    position: absolute;
+    inset-inline-end: var(--space-3);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-400);
+    font-size: var(--text-md);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.search-input {
     width: 100%;
-    border-collapse: collapse;
+    padding: var(--space-2) var(--space-8) var(--space-2) var(--space-4);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background-color: var(--surface);
+    font-size: var(--text-base);
+    color: var(--text-primary);
+    font-family: inherit;
 }
 
-.users-table th,
-.users-table td {
-    padding: var(--space-3) var(--space-4);
-    text-align: start;
-    border-bottom: 1px solid var(--border-color);
-    font-size: var(--text-sm);
-    white-space: nowrap;
+.role-filter {
+    padding: var(--space-2) var(--space-4);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background-color: var(--surface);
+    color: var(--text-primary);
+    font-size: var(--text-base);
 }
 
-.users-table th {
-    font-weight: 600;
-    color: var(--text-muted);
-    background: var(--secondary-50, #f8fafc);
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.form-check-label {
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    font-weight: 500;
 }
 
 .role-select {
@@ -89,6 +119,11 @@
 .status-locked {
     background: var(--danger-light, #fee2e2);
     color: var(--danger, #dc2626);
+}
+
+.status-deleted {
+    background: var(--secondary-100);
+    color: var(--secondary-600);
 }
 
 .actions-cell {

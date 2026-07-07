@@ -3,8 +3,10 @@ using Jalsa.API.Configurations;
 using Jalsa.API.DTOs.Auth;
 using Jalsa.API.Exceptions;
 using Jalsa.API.Services.Interfaces;
+using Jalsa.Application.Interfaces.Services;
 using Jalsa.Domain.Models.Identity;
 using Jalsa.Infrastructure.Data;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -15,6 +17,7 @@ public class AuthServiceTests : IDisposable
 {
     private readonly JalsaDbContext _context;
     private readonly Mock<IEmailService> _emailServiceMock;
+    private readonly Mock<IAuditLogService> _auditLogServiceMock;
     private readonly AuthService _sut;
     private readonly JwtSettings _jwtSettings;
 
@@ -26,6 +29,7 @@ public class AuthServiceTests : IDisposable
 
         _context = new JalsaDbContext(options);
         _emailServiceMock = new Mock<IEmailService>();
+        _auditLogServiceMock = new Mock<IAuditLogService>();
 
         _jwtSettings = new JwtSettings
         {
@@ -38,7 +42,9 @@ public class AuthServiceTests : IDisposable
         _sut = new AuthService(
             _context,
             Options.Create(_jwtSettings),
-            _emailServiceMock.Object);
+            _emailServiceMock.Object,
+            _auditLogServiceMock.Object,
+            new HttpContextAccessor());
 
         SeedRoles();
     }
@@ -306,6 +312,85 @@ public class AuthServiceTests : IDisposable
         var act = () => _sut.LoginAsync(new LoginDto
         {
             Email = "inactive@test.com",
+            Password = "Test123!"
+        });
+
+        var ex = await act.Should().ThrowAsync<ApiException>();
+        ex.Which.StatusCode.Should().Be(403);
+    }
+
+    [Fact]
+    public async Task LoginAsync_DeletedUser_Throws401()
+    {
+        await RegisterTestUser("deleted@test.com", "Test123!");
+        var user = await _context.Users.FirstAsync(u => u.Email == "deleted@test.com");
+        user.IsDeleted = true;
+        await _context.SaveChangesAsync();
+
+        var act = () => _sut.LoginAsync(new LoginDto
+        {
+            Email = "deleted@test.com",
+            Password = "Test123!"
+        });
+
+        var ex = await act.Should().ThrowAsync<ApiException>();
+        ex.Which.StatusCode.Should().Be(401);
+    }
+
+    // --- Therapist Approval Status ---
+
+    [Fact]
+    public async Task RegisterAsync_Therapist_DefaultsToPendingApprovalStatus()
+    {
+        await RegisterTestUser("pending-therapist@test.com", "Test123!");
+
+        var therapist = await _context.Therapists.FirstAsync(t => t.User.Email == "pending-therapist@test.com");
+        therapist.ApprovalStatus.Should().Be(Jalsa.Domain.Models.Clinic.TherapistApprovalStatus.Pending);
+    }
+
+    [Fact]
+    public async Task LoginAsync_PendingTherapist_LoginAllowed()
+    {
+        await RegisterTestUser("pending-login@test.com", "Test123!");
+
+        var result = await _sut.LoginAsync(new LoginDto
+        {
+            Email = "pending-login@test.com",
+            Password = "Test123!"
+        });
+
+        result.Token.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task LoginAsync_SuspendedTherapist_Throws403()
+    {
+        await RegisterTestUser("suspended@test.com", "Test123!");
+        var therapist = await _context.Therapists.FirstAsync(t => t.User.Email == "suspended@test.com");
+        therapist.ApprovalStatus = Jalsa.Domain.Models.Clinic.TherapistApprovalStatus.Suspended;
+        await _context.SaveChangesAsync();
+
+        var act = () => _sut.LoginAsync(new LoginDto
+        {
+            Email = "suspended@test.com",
+            Password = "Test123!"
+        });
+
+        var ex = await act.Should().ThrowAsync<ApiException>();
+        ex.Which.StatusCode.Should().Be(403);
+    }
+
+    [Fact]
+    public async Task LoginAsync_RejectedTherapist_Throws403()
+    {
+        await RegisterTestUser("rejected@test.com", "Test123!");
+        var therapist = await _context.Therapists.FirstAsync(t => t.User.Email == "rejected@test.com");
+        therapist.ApprovalStatus = Jalsa.Domain.Models.Clinic.TherapistApprovalStatus.Rejected;
+        await _context.SaveChangesAsync();
+
+        var act = () => _sut.LoginAsync(new LoginDto
+        {
+            Email = "rejected@test.com",
             Password = "Test123!"
         });
 

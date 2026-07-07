@@ -1,28 +1,34 @@
-<div class="stats-card card" [class.border-primary]="color === 'primary'"
-     [class.border-success]="color === 'success'"
-     [class.border-danger]="color === 'danger'"
-     [class.border-warning]="color === 'warning'"
-     [class.border-info]="color === 'info'">
+<div
+    class="stats-card card"
+    [class.border-primary]="color() === 'primary'"
+    [class.border-success]="color() === 'success'"
+    [class.border-danger]="color() === 'danger'"
+    [class.border-warning]="color() === 'warning'"
+    [class.border-info]="color() === 'info'"
+>
     <div class="card-body">
         <div class="stats-content">
-            <div class="stats-icon" [class.bg-primary]="color === 'primary'"
-                 [class.bg-success]="color === 'success'"
-                 [class.bg-danger]="color === 'danger'"
-                 [class.bg-warning]="color === 'warning'"
-                 [class.bg-info]="color === 'info'">
-                <i class="bi {{ icon }}" aria-hidden="true"></i>
+            <div
+                class="stats-icon"
+                [class.bg-primary]="color() === 'primary'"
+                [class.bg-success]="color() === 'success'"
+                [class.bg-danger]="color() === 'danger'"
+                [class.bg-warning]="color() === 'warning'"
+                [class.bg-info]="color() === 'info'"
+            >
+                <i class="bi {{ icon() }}" aria-hidden="true"></i>
             </div>
             <div class="stats-details">
-                <h6 class="stats-label text-muted">{{ label }}</h6>
-                <h3 class="stats-value">{{ value }}</h3>
-                @if (trend !== undefined) {
+                <h6 class="stats-label text-muted">{{ label() }}</h6>
+                <h3 class="stats-value">{{ value() }}</h3>
+                @if (trend() !== undefined) {
                     <div class="stats-trend">
-                        <span class="badge" [class.bg-success]="trend >= 0" [class.bg-danger]="trend < 0">
-                            <i class="bi bi-arrow-{{ trend >= 0 ? 'up' : 'down' }}"></i>
-                            {{ trend >= 0 ? '+' : '' }}{{ trend }}%
+                        <span class="badge" [class.bg-success]="trend()! >= 0" [class.bg-danger]="trend()! < 0">
+                            <i class="bi bi-arrow-{{ trend()! >= 0 ? 'up' : 'down' }}"></i>
+                            {{ trend()! >= 0 ? '+' : '' }}{{ trend() }}%
                         </span>
-                        @if (trendLabel) {
-                            <span class="trend-label ms-1 text-muted">{{ trendLabel }}</span>
+                        @if (trendLabel()) {
+                            <span class="trend-label ms-1 text-muted">{{ trendLabel() }}</span>
                         }
                     </div>
                 }

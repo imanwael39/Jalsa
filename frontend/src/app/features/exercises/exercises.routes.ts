@@ -10,13 +10,13 @@ export const EXERCISES_ROUTES: Routes = [
         children: [
             {
                 path: '',
-                canActivate: [roleGuard(['Therapist', 'Admin'])],
+                canActivate: [roleGuard(['Therapist'])],
                 loadComponent: () =>
                     import('./pages/exercise-list/exercise-list.component').then(m => m.ExerciseListComponent),
             },
             {
                 path: 'assign',
-                canActivate: [roleGuard(['Therapist', 'Admin'])],
+                canActivate: [roleGuard(['Therapist'])],
                 data: { breadcrumb: 'تعيين تمرين' },
                 loadComponent: () =>
                     import('./pages/assign-exercise/assign-exercise.component').then(m => m.AssignExerciseComponent),

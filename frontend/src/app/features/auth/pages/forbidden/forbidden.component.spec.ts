@@ -66,9 +66,9 @@ describe('ForbiddenComponent', () => {
         component.goHome();
         expect(routerSpy['navigate']).toHaveBeenCalledWith(['/dashboard']);
     });
-    it('should navigate Admin to dashboard', () => {
+    it('should navigate Admin to /admin/dashboard (not the Therapist-only /dashboard)', () => {
         setup({ currentUserRoles: ['Admin'] });
         component.goHome();
-        expect(routerSpy['navigate']).toHaveBeenCalledWith(['/dashboard']);
+        expect(routerSpy['navigate']).toHaveBeenCalledWith(['/admin/dashboard']);
     });
 });

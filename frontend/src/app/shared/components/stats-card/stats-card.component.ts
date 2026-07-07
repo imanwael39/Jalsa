@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 export type StatsCardColor = 'primary' | 'success' | 'danger' | 'warning' | 'info';
 
@@ -10,10 +10,10 @@ export type StatsCardColor = 'primary' | 'success' | 'danger' | 'warning' | 'inf
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StatsCardComponent {
-    @Input() label = '';
-    @Input() value: number | string = 0;
-    @Input() icon = '';
-    @Input() color: StatsCardColor = 'primary';
-    @Input() trend?: number;
-    @Input() trendLabel = '';
+    label = input('');
+    value = input<number | string>(0);
+    icon = input('');
+    color = input<StatsCardColor>('primary');
+    trend = input<number>();
+    trendLabel = input('');
 }

@@ -3,6 +3,36 @@
         <h2 class="page-title">إدارة المستخدمين</h2>
     </div>
 
+    <div class="filters">
+        <div class="search-wrapper">
+            <i class="bi bi-search search-icon"></i>
+            <input
+                type="search"
+                class="search-input"
+                placeholder="بحث بالبريد الإلكتروني أو الاسم..."
+                [value]="searchTerm"
+                (input)="onSearch($any($event.target).value)"
+                aria-label="بحث في المستخدمين"
+            />
+        </div>
+        <select class="role-filter" [(ngModel)]="roleFilter" (ngModelChange)="onFilterChange()">
+            <option value="">كل الأدوار</option>
+            @for (role of availableRoles; track role) {
+                <option [value]="role">{{ role }}</option>
+            }
+        </select>
+        <div class="form-check">
+            <input
+                class="form-check-input"
+                type="checkbox"
+                id="includeDeleted"
+                [(ngModel)]="includeDeleted"
+                (ngModelChange)="onFilterChange()"
+            />
+            <label class="form-check-label" for="includeDeleted">عرض المحذوفين</label>
+        </div>
+    </div>
+
     @if (error()) {
         <div class="alert alert-danger" role="alert">
             <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
@@ -10,86 +40,100 @@
         </div>
     }
 
-    @if (loading()) {
-        <div class="loading-wrapper">
-            <app-spinner size="lg" label="جاري تحميل المستخدمين..."></app-spinner>
-        </div>
-    } @else if (!error()) {
-        @if (users().length === 0) {
-            <app-empty-state
-                title="لا يوجد مستخدمون"
-                message="لا يوجد مستخدمون مسجلون حتى الآن."
-                icon="bi-people"
-            ></app-empty-state>
-        } @else {
-            <div class="users-table-wrapper">
-                <table class="users-table">
-                    <thead>
-                        <tr>
-                            <th>البريد الإلكتروني</th>
-                            <th>الاسم</th>
-                            <th>الأدوار</th>
-                            <th>الحالة</th>
-                            <th>آخر دخول</th>
-                            <th>إجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (user of users(); track user.id) {
-                            <tr>
-                                <td>{{ user.email }}</td>
-                                <td>{{ user.fullName || '-' }}</td>
-                                <td>
-                                    <select
-                                        class="role-select"
-                                        [disabled]="busyId() === user.id"
-                                        (change)="changeRole(user, $any($event.target).value)"
-                                    >
-                                        @for (role of availableRoles; track role) {
-                                            <option [value]="role" [selected]="user.roles[0] === role">
-                                                {{ role }}
-                                            </option>
-                                        }
-                                    </select>
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-badge"
-                                        [class.status-active]="user.isActive"
-                                        [class.status-inactive]="!user.isActive"
-                                    >
-                                        {{ user.isActive ? 'نشط' : 'موقوف' }}
-                                    </span>
-                                    @if (user.isLockedOut) {
-                                        <span class="status-badge status-locked">مقفل</span>
-                                    }
-                                </td>
-                                <td>{{ formatDate(user.lastLoginAt) }}</td>
-                                <td class="actions-cell">
-                                    <button
-                                        class="action-btn"
-                                        type="button"
-                                        [disabled]="busyId() === user.id"
-                                        (click)="toggleActive(user)"
-                                    >
-                                        {{ user.isActive ? 'إيقاف' : 'تفعيل' }}
-                                    </button>
-                                    @if (user.isLockedOut) {
-                                        <button
-                                            class="action-btn"
-                                            type="button"
-                                            [disabled]="busyId() === user.id"
-                                            (click)="unlock(user)"
-                                        >
-                                            إلغاء القفل
-                                        </button>
-                                    }
-                                </td>
-                            </tr>
+    @if (!error()) {
+        <div class="table-responsive">
+            <app-table
+                [data]="users()"
+                [columns]="columns"
+                [loading]="loading()"
+                emptyMessage="لا يوجد مستخدمون مطابقون"
+            >
+                <ng-template appColumnCell="fullName" let-row>
+                    {{ row.fullName || '-' }}
+                </ng-template>
+                <ng-template appColumnCell="roles" let-row>
+                    <select
+                        class="role-select"
+                        [disabled]="busyId() === row.id"
+                        (change)="changeRole(row, $any($event.target).value)"
+                    >
+                        @for (role of availableRoles; track role) {
+                            <option [value]="role" [selected]="row.roles[0] === role">{{ role }}</option>
                         }
-                    </tbody>
-                </table>
-            </div>
-        }
+                    </select>
+                </ng-template>
+                <ng-template appColumnCell="status" let-row>
+                    @if (row.isDeleted) {
+                        <span class="status-badge status-deleted">محذوف</span>
+                    } @else {
+                        <span
+                            class="status-badge"
+                            [class.status-active]="row.isActive"
+                            [class.status-inactive]="!row.isActive"
+                        >
+                            {{ row.isActive ? 'نشط' : 'موقوف' }}
+                        </span>
+                        @if (row.isLockedOut) {
+                            <span class="status-badge status-locked">مقفل</span>
+                        }
+                    }
+                </ng-template>
+                <ng-template appColumnCell="lastLoginAt" let-row>
+                    {{ formatDate(row.lastLoginAt) }}
+                </ng-template>
+                <ng-template appColumnCell="actions" let-row>
+                    <div class="d-flex gap-1 justify-content-center">
+                        @if (row.isDeleted) {
+                            <app-button
+                                variant="secondary"
+                                size="sm"
+                                [disabled]="busyId() === row.id"
+                                (clicked)="restore(row)"
+                                ariaLabel="استعادة الحساب"
+                            >
+                                <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> استعادة
+                            </app-button>
+                        } @else {
+                            <app-button
+                                variant="secondary"
+                                size="sm"
+                                [disabled]="busyId() === row.id"
+                                (clicked)="toggleActive(row)"
+                                [ariaLabel]="row.isActive ? 'إيقاف الحساب' : 'تفعيل الحساب'"
+                            >
+                                {{ row.isActive ? 'إيقاف' : 'تفعيل' }}
+                            </app-button>
+                            @if (row.isLockedOut) {
+                                <app-button
+                                    variant="secondary"
+                                    size="sm"
+                                    [disabled]="busyId() === row.id"
+                                    (clicked)="unlock(row)"
+                                    ariaLabel="إلغاء قفل الحساب"
+                                >
+                                    إلغاء القفل
+                                </app-button>
+                            }
+                            <app-button
+                                variant="danger"
+                                size="sm"
+                                [disabled]="busyId() === row.id"
+                                (clicked)="softDelete(row)"
+                                ariaLabel="حذف الحساب"
+                            >
+                                <i class="bi bi-trash" aria-hidden="true"></i>
+                            </app-button>
+                        }
+                    </div>
+                </ng-template>
+            </app-table>
+        </div>
+
+        <app-pagination
+            [totalItems]="totalCount()"
+            [pageSize]="pageSize"
+            [currentPage]="currentPage"
+            (pageChange)="onPageChange($event)"
+        ></app-pagination>
     }
 </div>

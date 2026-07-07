@@ -1,0 +1,44 @@
+.activity-logs {
+    padding: 0;
+    animation: fadeIn 200ms ease-out;
+}
+
+.page-header {
+    margin-bottom: var(--space-6);
+}
+
+.page-title {
+    font-family: var(--font-family-heading);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    font-size: var(--text-xl);
+}
+
+.filters {
+    display: flex;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+    flex-wrap: wrap;
+}
+
+.filter-input {
+    flex: 1;
+    min-width: 220px;
+    padding: var(--space-2) var(--space-4);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background-color: var(--surface);
+    color: var(--text-primary);
+    font-size: var(--text-base);
+    font-family: inherit;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}

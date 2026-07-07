@@ -27,4 +27,15 @@ public abstract class BaseController : ControllerBase
 
         return userId;
     }
+
+    /// <summary>
+    /// Extracts the caller's IP address for audit logging. Application-layer services
+    /// stay framework-agnostic, so this is read here and passed down as a plain string.
+    /// </summary>
+    protected string? GetClientIpAddress() => HttpContext.Connection.RemoteIpAddress?.ToString();
+
+    /// <summary>
+    /// Extracts the caller's User-Agent header for audit logging.
+    /// </summary>
+    protected string? GetUserAgent() => Request.Headers.UserAgent.ToString() is { Length: > 0 } ua ? ua : null;
 }

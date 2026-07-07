@@ -11,20 +11,39 @@ using Jalsa.API.Configurations;
 using Jalsa.API.DTOs.Auth;
 using Jalsa.API.Exceptions;
 using Jalsa.API.Services.Interfaces;
+using Jalsa.Application.Interfaces.Services;
 using Jalsa.Infrastructure.Data;
 using Jalsa.Domain.Models.Identity;
+using Microsoft.AspNetCore.Http;
 
 public class AuthService : IAuthService
 {
     private readonly JalsaDbContext _context;
     private readonly JwtSettings _jwtSettings;
     private readonly IEmailService _emailService;
+    private readonly IAuditLogService _auditLogService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public AuthService(JalsaDbContext context, IOptions<JwtSettings> jwt, IEmailService emailService)
+    public AuthService(
+        JalsaDbContext context,
+        IOptions<JwtSettings> jwt,
+        IEmailService emailService,
+        IAuditLogService auditLogService,
+        IHttpContextAccessor httpContextAccessor)
     {
         _context = context;
         _jwtSettings = jwt.Value;
         _emailService = emailService;
+        _auditLogService = auditLogService;
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    private (string? Ip, string? UserAgent) GetRequestMetadata()
+    {
+        var http = _httpContextAccessor.HttpContext;
+        var ip = http?.Connection.RemoteIpAddress?.ToString();
+        var ua = http?.Request.Headers.UserAgent.ToString() is { Length: > 0 } value ? value : null;
+        return (ip, ua);
     }
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
@@ -92,6 +111,7 @@ public class AuthService : IAuthService
                 FullName = string.IsNullOrWhiteSpace(dto.FullName) ? dto.Email.Split('@')[0] : dto.FullName,
                 LicenseNumber = licenseNumber!,
                 Specialization = dto.Specialization,
+                ApprovalStatus = Jalsa.Domain.Models.Clinic.TherapistApprovalStatus.Pending,
                 CreatedAt = DateTime.UtcNow
             };
             _context.Therapists.Add(therapist);
@@ -126,13 +146,22 @@ public class AuthService : IAuthService
         var user = await _context.Users
             .Include(u => u.UserRoles)
             .ThenInclude(ur => ur.Role)
+            .Include(u => u.Therapist)
             .FirstOrDefaultAsync(u => u.Email == dto.Email);
 
-        if (user == null)
+        var (ip, userAgent) = GetRequestMetadata();
+
+        if (user == null || user.IsDeleted)
+        {
+            await _auditLogService.LogAsync(null, "User", null, "User.LoginFailed", newValues: new { dto.Email, Reason = "NotFound" }, ipAddress: ip, userAgent: userAgent);
             throw new ApiException(401, "البريد الإلكتروني أو كلمة المرور غير صحيحة.");
+        }
 
         if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.UtcNow)
+        {
+            await _auditLogService.LogAsync(user.Id, "User", user.Id.ToString(), "User.LoginFailed", newValues: new { Reason = "LockedOut" }, ipAddress: ip, userAgent: userAgent);
             throw new ApiException(403, "الحساب مقفل مؤقتًا، يرجى المحاولة لاحقًا.");
+        }
 
         if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
         {
@@ -142,17 +171,30 @@ public class AuthService : IAuthService
 
             user.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
+            await _auditLogService.LogAsync(user.Id, "User", user.Id.ToString(), "User.LoginFailed", newValues: new { Reason = "WrongPassword" }, ipAddress: ip, userAgent: userAgent);
             throw new ApiException(401, "البريد الإلكتروني أو كلمة المرور غير صحيحة.");
         }
 
         if (!user.IsActive)
+        {
+            await _auditLogService.LogAsync(user.Id, "User", user.Id.ToString(), "User.LoginFailed", newValues: new { Reason = "Inactive" }, ipAddress: ip, userAgent: userAgent);
             throw new ApiException(403, "هذا الحساب غير مُفعّل.");
+        }
+
+        if (user.Therapist != null &&
+            (user.Therapist.ApprovalStatus == Jalsa.Domain.Models.Clinic.TherapistApprovalStatus.Suspended ||
+             user.Therapist.ApprovalStatus == Jalsa.Domain.Models.Clinic.TherapistApprovalStatus.Rejected))
+        {
+            await _auditLogService.LogAsync(user.Id, "User", user.Id.ToString(), "User.LoginFailed", newValues: new { Reason = "TherapistSuspended" }, ipAddress: ip, userAgent: userAgent);
+            throw new ApiException(403, "تم تعليق حساب المعالج من قبل الإدارة.");
+        }
 
         user.FailedLoginAttempts = 0;
         user.LockoutEnd = null;
         user.LastLoginAt = DateTime.UtcNow;
         user.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
+        await _auditLogService.LogAsync(user.Id, "User", user.Id.ToString(), "User.LoginSucceeded", ipAddress: ip, userAgent: userAgent);
         return await BuildAuthResponse(user);
     }
 
@@ -300,6 +342,9 @@ public class AuthService : IAuthService
 
         storedToken.RevokedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
+
+        var (ip, userAgent) = GetRequestMetadata();
+        await _auditLogService.LogAsync(storedToken.UserId, "User", storedToken.UserId.ToString(), "User.Logout", ipAddress: ip, userAgent: userAgent);
     }
 
     private async Task<AuthResponseDto> BuildAuthResponse(User user)

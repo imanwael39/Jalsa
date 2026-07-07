@@ -1,0 +1,151 @@
+<div class="admin-dashboard">
+    <div class="page-header">
+        <h2 class="page-title">لوحة تحكم النظام</h2>
+    </div>
+
+    @if (error()) {
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+            {{ error() }}
+        </div>
+    }
+
+    @if (loading()) {
+        <div class="loading-wrapper">
+            <app-spinner size="lg" label="جاري تحميل لوحة التحكم..."></app-spinner>
+        </div>
+    } @else if (summary(); as s) {
+        <div class="stats-grid">
+            <app-stats-card
+                label="إجمالي المستخدمين"
+                [value]="s.totalUsers"
+                icon="bi-people-fill"
+                color="primary"
+            ></app-stats-card>
+            <app-stats-card
+                label="المعالجون"
+                [value]="s.totalTherapists"
+                icon="bi-briefcase-fill"
+                color="info"
+            ></app-stats-card>
+            <app-stats-card
+                label="المرضى"
+                [value]="s.totalPatients"
+                icon="bi-heart-pulse-fill"
+                color="success"
+            ></app-stats-card>
+            <app-stats-card
+                label="مدراء النظام"
+                [value]="s.totalAdmins"
+                icon="bi-shield-lock-fill"
+                color="warning"
+            ></app-stats-card>
+            <app-stats-card
+                label="حسابات نشطة"
+                [value]="s.activeUsers"
+                icon="bi-check-circle-fill"
+                color="success"
+            ></app-stats-card>
+            <app-stats-card
+                label="حسابات معطلة"
+                [value]="s.disabledUsers"
+                icon="bi-slash-circle-fill"
+                color="danger"
+            ></app-stats-card>
+            <app-stats-card
+                label="تسجيلات جديدة (7 أيام)"
+                [value]="s.newRegistrations7Days"
+                icon="bi-person-plus-fill"
+                color="info"
+            ></app-stats-card>
+            <app-stats-card
+                label="تسجيلات جديدة (30 يوم)"
+                [value]="s.newRegistrations30Days"
+                icon="bi-calendar-plus-fill"
+                color="info"
+            ></app-stats-card>
+            <app-stats-card
+                label="موافقات معلقة"
+                [value]="s.pendingDoctorApprovals"
+                icon="bi-hourglass-split"
+                color="warning"
+            ></app-stats-card>
+        </div>
+
+        <div class="charts-row">
+            <div class="chart-card">
+                <app-bar-chart
+                    title="توزيع المستخدمين حسب الدور"
+                    [labels]="roleLabels"
+                    [datasets]="roleDatasets()"
+                ></app-bar-chart>
+            </div>
+
+            @if (systemHealth(); as health) {
+                <div class="health-card">
+                    <h3 class="section-title">صحة النظام</h3>
+                    <ul class="health-list">
+                        <li>
+                            <span>ذاكرة العملية</span><strong>{{ health.processMemoryMb }} MB</strong>
+                        </li>
+                        <li>
+                            <span>حجم قاعدة البيانات</span><strong>{{ health.databaseSizeMb ?? '-' }} MB</strong>
+                        </li>
+                        <li>
+                            <span>مهام قيد التنفيذ (Hangfire)</span
+                            ><strong>{{ health.hangfireProcessing ?? '-' }}</strong>
+                        </li>
+                        <li>
+                            <span>مهام فاشلة (Hangfire)</span><strong>{{ health.hangfireFailed ?? '-' }}</strong>
+                        </li>
+                        <li>
+                            <span>طلبات الذكاء الاصطناعي اليوم</span
+                            ><strong>{{ health.aiChatCallsToday + health.aiReportCallsToday }}</strong>
+                        </li>
+                        <li>
+                            <span>طلبات الذكاء الاصطناعي هذا الشهر</span
+                            ><strong>{{ health.aiChatCallsThisMonth + health.aiReportCallsThisMonth }}</strong>
+                        </li>
+                    </ul>
+                </div>
+            }
+        </div>
+
+        <div class="lists-row">
+            <div class="list-card">
+                <div class="list-header">
+                    <h3 class="section-title">آخر المستخدمين المسجلين</h3>
+                    <button type="button" class="link-btn" (click)="goToUsers()">عرض الكل</button>
+                </div>
+                @if (s.latestRegisteredUsers.length === 0) {
+                    <p class="no-data">لا يوجد مستخدمون بعد.</p>
+                } @else {
+                    <ul class="simple-list">
+                        @for (user of s.latestRegisteredUsers; track user.id) {
+                            <li>
+                                <span class="item-title">{{ user.email }}</span>
+                                <span class="item-meta">{{ formatDate(user.createdAt) }}</span>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+
+            <div class="list-card">
+                <h3 class="section-title">آخر النشاطات</h3>
+                @if (s.recentAuditLogs.length === 0) {
+                    <p class="no-data">لا يوجد نشاط مسجل بعد.</p>
+                } @else {
+                    <ul class="simple-list">
+                        @for (log of s.recentAuditLogs; track log.id) {
+                            <li>
+                                <span class="item-title">{{ log.action }}</span>
+                                <span class="item-meta">{{ formatDate(log.occurredAt) }}</span>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    }
+</div>

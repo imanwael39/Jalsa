@@ -98,7 +98,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
 
     canSearchPatients(): boolean {
-        return this.authService.hasAnyRole(['Therapist', 'Admin']);
+        return this.authService.hasRole('Therapist');
     }
 
     toggleTheme(): void {
