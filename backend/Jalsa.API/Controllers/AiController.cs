@@ -12,24 +12,30 @@ namespace Jalsa.API.Controllers;
 [Route("api/ai")]
 [Authorize(Roles = "Therapist")]
 [EnableRateLimiting("ai")]
-public class AiController : ControllerBase
+public class AiController : BaseController
 {
     private readonly ISummarizationService _summarizationService;
     private readonly IReportGenerationService _reportGenerationService;
+    private readonly ITherapistChatAiService _therapistChatAi;
     private readonly IEmbeddingService _embeddingService;
+    private readonly IVectorStore _vectorStore;
     private readonly GeminiSettings _geminiSettings;
     private readonly ILogger<AiController> _logger;
 
     public AiController(
         ISummarizationService summarizationService,
         IReportGenerationService reportGenerationService,
+        ITherapistChatAiService therapistChatAi,
         IEmbeddingService embeddingService,
+        IVectorStore vectorStore,
         IOptions<GeminiSettings> geminiSettings,
         ILogger<AiController> logger)
     {
         _summarizationService = summarizationService;
         _reportGenerationService = reportGenerationService;
+        _therapistChatAi = therapistChatAi;
         _embeddingService = embeddingService;
+        _vectorStore = vectorStore;
         _geminiSettings = geminiSettings.Value;
         _logger = logger;
     }
@@ -39,7 +45,8 @@ public class AiController : ControllerBase
     {
         var summary = await _summarizationService.SummarizePatientAsync(
             patientId,
-            request?.Language ?? "ar");
+            request?.Language ?? "ar",
+            GetCurrentUserId());
         return Ok(new { summary });
     }
 
@@ -49,8 +56,41 @@ public class AiController : ControllerBase
         var draft = await _reportGenerationService.GenerateDraftAsync(
             patientId,
             request?.TherapistInstructions,
-            request?.Language ?? "ar");
+            request?.Language ?? "ar",
+            GetCurrentUserId());
         return Ok(new { draft });
+    }
+
+    [HttpGet("diagnostics/patient-summary/{patientId:guid}")]
+    public async Task<IActionResult> DiagnosePatientSummary(Guid patientId, [FromQuery] string language = "ar")
+    {
+        var diagnostics = await _summarizationService.SummarizePatientWithDiagnosticsAsync(patientId, language);
+        return Ok(diagnostics);
+    }
+
+    [HttpGet("diagnostics/report-draft/{patientId:guid}")]
+    public async Task<IActionResult> DiagnoseReportDraft(Guid patientId, [FromQuery] string language = "ar", [FromQuery] string? instructions = null)
+    {
+        var diagnostics = await _reportGenerationService.GenerateDraftWithDiagnosticsAsync(patientId, instructions, language);
+        return Ok(diagnostics);
+    }
+
+    [HttpPost("diagnostics/chat")]
+    public async Task<IActionResult> DiagnoseChatAnswer([FromBody] ChatDiagnosticsRequest request)
+    {
+        var diagnostics = await _therapistChatAi.AnswerQuestionWithDiagnosticsAsync(
+            request.ConversationId,
+            request.PatientId,
+            request.Question,
+            request.Language ?? "ar");
+        return Ok(diagnostics);
+    }
+
+    [HttpGet("diagnostics/embeddings/{patientId:guid}")]
+    public async Task<IActionResult> GetEmbeddingCount(Guid patientId)
+    {
+        var count = await _vectorStore.CountAsync(patientId);
+        return Ok(new { patientId, embeddingCount = count });
     }
 
     [HttpGet("test-embed")]

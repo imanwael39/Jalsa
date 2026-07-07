@@ -229,8 +229,11 @@ public class JalsaDbContext : DbContext
             e.ToTable("SessionEmbeddings");
             e.HasKey(se => se.Id);
             e.Property(se => se.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
+            e.Property(se => se.Source).HasMaxLength(50).HasDefaultValue("SessionNote");
             e.Property(se => se.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
-            e.HasIndex(se => new { se.SessionId, se.ChunkIndex }).IsUnique();
+            e.Property(se => se.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+            e.HasIndex(se => new { se.SessionId, se.ChunkIndex, se.Source }).IsUnique();
+            e.HasIndex(se => se.PatientId);
             e.HasOne(se => se.Session).WithMany(s => s.SessionEmbeddings).HasForeignKey(se => se.SessionId).OnDelete(DeleteBehavior.NoAction);
         });
 

@@ -1,4 +1,5 @@
-﻿using Jalsa.API.Configurations;
+using Jalsa.API.Configurations;
+using Jalsa.API.DTOs.AI;
 using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -9,9 +10,8 @@ namespace Jalsa.API.Services.Implementations.AI;
 public class ReportGenerationService : IReportGenerationService
 {
     private readonly IGeminiClient _client;
+    private readonly IPatientContextBuilder _contextBuilder;
     private readonly JalsaDbContext _context;
-    private readonly IVectorStore _vectorStore;
-    private readonly IEmbeddingService _embeddingService;
     private readonly string _model;
 
     private readonly ILlmObservabilityService _observability;
@@ -20,9 +20,8 @@ public class ReportGenerationService : IReportGenerationService
     public ReportGenerationService(
         IOptions<GeminiSettings> settings,
         IGeminiClient client,
+        IPatientContextBuilder contextBuilder,
         JalsaDbContext context,
-        IVectorStore vectorStore,
-        IEmbeddingService embeddingService,
         ILlmObservabilityService observability,
         Services.Interfaces.IPromptService prompts)
     {
@@ -31,37 +30,47 @@ public class ReportGenerationService : IReportGenerationService
 
         _client = client;
         _model = settings.Value.ChatModelId;
+        _contextBuilder = contextBuilder;
         _context = context;
-        _vectorStore = vectorStore;
-        _embeddingService = embeddingService;
     }
 
     public async Task<string> GenerateDraftAsync(
         Guid patientId,
         string? therapistInstructions = null,
-        string language = "ar")
+        string language = "ar",
+        Guid? requestedByUserId = null)
     {
-        var patient = await _context.Patients
-            .Include(p => p.IntakeForms)
-            .Include(p => p.Assessments)
-            .ThenInclude(a => a.Template)
-            .FirstOrDefaultAsync(p => p.Id == patientId);
+        var diagnostics = await GenerateDraftWithDiagnosticsAsync(patientId, therapistInstructions, language, requestedByUserId);
+        return diagnostics.Output;
+    }
 
-        if (patient == null)
-            return "Patient not found.";
+    public async Task<AiGenerationDiagnosticsDto> GenerateDraftWithDiagnosticsAsync(
+        Guid patientId,
+        string? therapistInstructions = null,
+        string language = "ar",
+        Guid? requestedByUserId = null)
+    {
+        var bundle = await _contextBuilder.BuildAsync(
+            patientId,
+            embeddingQueryKey: "generate-report-draft",
+            language: language,
+            ragTopK: 5,
+            recentSessionCount: 5);
 
-        var queryVec =
-            await _embeddingService.GenerateEmbeddingAsync(
-                _prompts.GetEmbeddingQuery(
-                    "generate-report-draft",
-                    "ar")
-                .Replace("{patientName}", patient.FullName));
+        if (bundle.Demographics is null)
+        {
+            var notFound = language == "ar" ? "المريض غير موجود." : "Patient not found.";
+            return new AiGenerationDiagnosticsDto { Output = notFound, Model = _model };
+        }
 
-        var ragContext =
-            await _vectorStore.SearchAsync(queryVec, topK: 5);
+        var demographics = bundle.Demographics;
 
-        var contextText =
-            string.Join("\n\n", ragContext.Select(r => r.Text));
+        var contextText = string.Join("\n\n", bundle.RagChunks.Select(r => r.Text));
+
+        var sessionNotesText = ClinicalContextFormatter.BuildSessionNotesText(bundle.RecentSessionNotes, language);
+        var voiceTranscriptsText = ClinicalContextFormatter.BuildVoiceTranscriptsText(bundle.VoiceTranscripts, language);
+        var intakeText = ClinicalContextFormatter.BuildIntakeText(bundle.Intake, language);
+        var assessmentsText = ClinicalContextFormatter.BuildAssessmentsText(bundle.Assessments, language);
 
         var instructions =
             !string.IsNullOrWhiteSpace(therapistInstructions)
@@ -76,10 +85,16 @@ public class ReportGenerationService : IReportGenerationService
                 language,
                 new Dictionary<string, string>
                 {
-                    ["patientName"] = patient.FullName,
+                    ["patientName"] = demographics.FullName,
                     ["dateOfBirth"] =
-                        patient.DateOfBirth?.ToString("d") ?? "",
-                    ["gender"] = patient.Gender ?? "",
+                        demographics.DateOfBirth?.ToString("d") ?? "",
+                    ["gender"] = demographics.Gender ?? "",
+                    ["chiefComplaint"] = demographics.ChiefComplaint ?? "",
+                    ["medicalHistory"] = demographics.MedicalHistory ?? "",
+                    ["intakeText"] = intakeText,
+                    ["assessmentsText"] = assessmentsText,
+                    ["sessionNotesText"] = sessionNotesText,
+                    ["voiceTranscriptsText"] = voiceTranscriptsText,
                     ["contextText"] = contextText,
                     ["instructions"] = instructions
                 });
@@ -91,8 +106,37 @@ public class ReportGenerationService : IReportGenerationService
 
         var startTime = DateTime.UtcNow;
 
-        var output =
-            await _client.ChatAsync(systemPrompt, userPrompt);
+        GeminiChatResult generation;
+        try
+        {
+            generation = await _client.ChatWithUsageAsync(systemPrompt, userPrompt);
+        }
+        catch (Exception ex)
+        {
+            await _observability.LogGenerationAsync(
+                new LlmGenerationLog
+                {
+                    Name = "generate-report-draft",
+                    Model = _model,
+                    Input = userPrompt,
+                    Output = string.Empty,
+                    StartTime = startTime,
+                    EndTime = DateTime.UtcNow,
+                    Error = ex.Message,
+                    Metadata = new Dictionary<string, object>
+                    {
+                        ["patientId"] = patientId.ToString(),
+                        ["embeddingCount"] = bundle.EmbeddingCount,
+                        ["ragChunkCount"] = bundle.RagChunks.Count
+                    }
+                });
+            throw;
+        }
+
+        var output = generation.Text;
+
+        var endTime = DateTime.UtcNow;
+        var latencyMs = (int)(endTime - startTime).TotalMilliseconds;
 
         await _observability.LogGenerationAsync(
             new LlmGenerationLog
@@ -102,14 +146,62 @@ public class ReportGenerationService : IReportGenerationService
                 Input = userPrompt,
                 Output = output,
                 StartTime = startTime,
-                EndTime = DateTime.UtcNow,
+                EndTime = endTime,
+                InputTokens = generation.InputTokens,
+                OutputTokens = generation.OutputTokens,
 
                 Metadata = new Dictionary<string, object>
                 {
-                    ["patientId"] = patientId.ToString()
+                    ["patientId"] = patientId.ToString(),
+                    ["embeddingCount"] = bundle.EmbeddingCount,
+                    ["ragChunkCount"] = bundle.RagChunks.Count
                 }
             });
 
-        return output;
+        if (requestedByUserId.HasValue)
+        {
+            var therapistId = await _context.Therapists
+                .Where(t => t.UserId == requestedByUserId.Value)
+                .Select(t => (Guid?)t.Id)
+                .FirstOrDefaultAsync();
+
+            if (therapistId.HasValue)
+            {
+                _context.AiReportGenerationLogs.Add(new Jalsa.Domain.Models.Ai.AiReportGenerationLog
+                {
+                    Id = Guid.NewGuid(),
+                    PatientId = patientId,
+                    SourceType = "ReportDraft",
+                    ContentText = output.Length > 4000 ? output[..4000] : output,
+                    GeneratedByTherapistId = therapistId.Value,
+                    TokensUsed = generation.TotalTokens,
+                    ProcessingTimeMs = latencyMs,
+                    ModelUsed = _model,
+                    CreatedAt = DateTime.UtcNow
+                });
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        return new AiGenerationDiagnosticsDto
+        {
+            Output = output,
+            SystemPrompt = systemPrompt,
+            UserPrompt = userPrompt,
+            Model = _model,
+            LatencyMs = latencyMs,
+            EmbeddingCount = bundle.EmbeddingCount,
+            RagChunkCount = bundle.RagChunks.Count,
+            InputTokens = generation.InputTokens,
+            OutputTokens = generation.OutputTokens,
+            TotalTokens = generation.TotalTokens,
+            RagSources = bundle.RagChunks.Select(r => new RagSourceDto
+            {
+                SessionId = r.SessionId,
+                Score = r.Score,
+                Source = r.Source,
+                TextPreview = r.Text.Length > 200 ? r.Text[..200] + "…" : r.Text
+            }).ToList()
+        };
     }
 }

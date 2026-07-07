@@ -100,9 +100,20 @@ public class ChatHub : Hub
 
         await _memory.StoreMessageMemoryAsync(conversationId, patientId, patientMsg.Id, message);
 
-        var reply = crisisResult.IsCrisis
-            ? crisisResult.SuggestedMessage!
-            : await _chatAi.GenerateResponseAsync(conversationId, patientId, message);
+        string reply;
+        if (crisisResult.IsCrisis)
+        {
+            reply = crisisResult.SuggestedMessage!;
+        }
+        else
+        {
+            var group = conversationId.ToString();
+            reply = await _chatAi.GenerateResponseStreamingAsync(
+                conversationId,
+                patientId,
+                message,
+                delta => Clients.Group(group).SendAsync("ReceiveMessageChunk", delta));
+        }
 
         var aiMsg = new ChatMessage
         {

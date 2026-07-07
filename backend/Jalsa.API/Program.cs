@@ -200,12 +200,17 @@ builder.Services.AddSingleton<
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IEmbeddingService, EmbeddingService>();
 builder.Services.AddScoped<IVectorStore, VectorStore>();
+builder.Services.AddScoped<IPatientContextBuilder, PatientContextBuilder>();
 builder.Services.AddScoped<IConversationMemoryService, ConversationMemoryService>();
 builder.Services.AddScoped<IChatAiService, ChatAiService>();
 builder.Services.AddScoped<ICrisisDetectionService, CrisisDetectionService>();
 builder.Services.AddScoped<ISummarizationService, SummarizationService>();
 builder.Services.AddScoped<IReportGenerationService, ReportGenerationService>();
 builder.Services.AddScoped<ITherapistChatAiService, TherapistChatAiService>();
+builder.Services.AddScoped<ISessionNoteEmbeddingService, SessionNoteEmbeddingService>();
+builder.Services.AddScoped<
+    Jalsa.Application.Interfaces.Services.ISessionNoteEmbeddingCoordinator,
+    SessionNoteEmbeddingCoordinator>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();

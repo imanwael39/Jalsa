@@ -53,6 +53,12 @@ export const API = {
     ai: {
         summarize: (patientId: string) => `/api/ai/summarize/${patientId}`,
         reportDraft: (patientId: string) => `/api/ai/report-draft/${patientId}`,
+        diagnosticsSummary: (patientId: string, language: string) =>
+            `/api/ai/diagnostics/patient-summary/${patientId}?language=${language}`,
+        diagnosticsReportDraft: (patientId: string, language: string) =>
+            `/api/ai/diagnostics/report-draft/${patientId}?language=${language}`,
+        diagnosticsChat: '/api/ai/diagnostics/chat',
+        diagnosticsEmbeddingCount: (patientId: string) => `/api/ai/diagnostics/embeddings/${patientId}`,
     },
     chat: {
         conversations: '/api/chat/conversations',
@@ -61,6 +67,7 @@ export const API = {
         history: (conversationId: string) => `/api/chat/${conversationId}/history`,
         send: '/api/chat/send',
         close: (conversationId: string) => `/api/chat/conversations/${conversationId}/close`,
+        regenerate: (conversationId: string) => `/api/chat/${conversationId}/regenerate`,
     },
     crisisAlerts: {
         base: '/api/crisis-alerts',

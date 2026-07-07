@@ -1,4 +1,5 @@
-﻿using Jalsa.API.Configurations;
+using System.Text;
+using Jalsa.API.Configurations;
 using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -10,8 +11,7 @@ public class ChatAiService : IChatAiService
 {
     private readonly IGeminiClient _client;
     private readonly JalsaDbContext _context;
-    private readonly IVectorStore _vectorStore;
-    private readonly IEmbeddingService _embeddingService;
+    private readonly IPatientContextBuilder _contextBuilder;
     private readonly IConversationMemoryService _memory;
     private readonly string _model;
 
@@ -22,8 +22,7 @@ public class ChatAiService : IChatAiService
         IOptions<GeminiSettings> settings,
         IGeminiClient client,
         JalsaDbContext context,
-        IVectorStore vectorStore,
-        IEmbeddingService embeddingService,
+        IPatientContextBuilder contextBuilder,
         IConversationMemoryService memory,
         ILlmObservabilityService observability,
         Services.Interfaces.IPromptService prompts)
@@ -34,16 +33,19 @@ public class ChatAiService : IChatAiService
         _client = client;
         _model = settings.Value.ChatModelId;
         _context = context;
-        _vectorStore = vectorStore;
-        _embeddingService = embeddingService;
+        _contextBuilder = contextBuilder;
         _memory = memory;
     }
 
-    public async Task<string> GenerateResponseAsync(
-        Guid conversationId,
-        Guid patientId,
-        string message)
+    private record PromptContext(string SystemPrompt, string UserPrompt, PatientContextBundle Bundle);
+
+    private async Task<PromptContext> BuildPromptAsync(Guid conversationId, Guid patientId, string message)
     {
+        var lang =
+            message.Any(c => c >= 0x0600 && c <= 0x06FF)
+                ? "ar"
+                : "en";
+
         var history = await _context.ChatMessages
             .Where(m => m.ConversationId == conversationId)
             .OrderByDescending(m => m.CreatedAt)
@@ -51,9 +53,13 @@ public class ChatAiService : IChatAiService
             .OrderBy(m => m.CreatedAt)
             .ToListAsync();
 
-        var ragResults = await _vectorStore.SearchAsync(
-            await _embeddingService.GenerateEmbeddingAsync(message),
-            topK: 3);
+        var bundle = await _contextBuilder.BuildAsync(
+            patientId,
+            embeddingQueryKey: "chat-response",
+            language: lang,
+            ragTopK: 3,
+            recentSessionCount: 3,
+            explicitEmbeddingQuery: message);
 
         var memoryResults =
             await _memory.RetrieveSimilarMessagesAsync(
@@ -61,16 +67,11 @@ public class ChatAiService : IChatAiService
                 message,
                 topK: 3);
 
-        var ragContext =
-            string.Join("\n\n", ragResults.Select(r => r.Text));
-
-        var memoryContext =
-            string.Join("\n\n", memoryResults);
-
-        var lang =
-            message.Any(c => c >= 0x0600 && c <= 0x06FF)
-                ? "ar"
-                : "en";
+        var ragContext = string.Join("\n\n", bundle.RagChunks.Select(r => r.Text));
+        var memoryContext = string.Join("\n\n", memoryResults);
+        var intakeText = ClinicalContextFormatter.BuildIntakeText(bundle.Intake, lang);
+        var assessmentsText = ClinicalContextFormatter.BuildAssessmentsText(bundle.Assessments, lang);
+        var sessionNotesText = ClinicalContextFormatter.BuildSessionNotesText(bundle.RecentSessionNotes, lang);
 
         var historyText =
             string.Join("\n", history.Select(m =>
@@ -91,31 +92,139 @@ public class ChatAiService : IChatAiService
             new Dictionary<string, string>
             {
                 ["message"] = message,
+                ["intakeText"] = intakeText,
+                ["assessmentsText"] = assessmentsText,
                 ["ragContext"] = ragContext,
+                ["sessionNotesText"] = sessionNotesText,
                 ["memoryContext"] = memoryContext,
                 ["historyText"] = historyText
             });
 
         var systemPrompt = _prompts.Get("chat-response");
 
+        return new PromptContext(systemPrompt, userPrompt, bundle);
+    }
+
+    public async Task<string> GenerateResponseAsync(
+        Guid conversationId,
+        Guid patientId,
+        string message)
+    {
+        var ctx = await BuildPromptAsync(conversationId, patientId, message);
         var startTime = DateTime.UtcNow;
 
-        var response = await _client.ChatAsync(systemPrompt, userPrompt);
+        GeminiChatResult generation;
+        try
+        {
+            generation = await _client.ChatWithUsageAsync(ctx.SystemPrompt, ctx.UserPrompt);
+        }
+        catch (Exception ex)
+        {
+            await LogFailureAsync(ctx, conversationId, patientId, message, startTime, ex);
+            throw;
+        }
 
+        var endTime = DateTime.UtcNow;
+        await LogAndPersistAsync(ctx, conversationId, patientId, message, startTime, endTime, generation);
+
+        return generation.Text;
+    }
+
+    public async Task<string> GenerateResponseStreamingAsync(
+        Guid conversationId,
+        Guid patientId,
+        string message,
+        Func<string, Task> onChunk,
+        CancellationToken cancellationToken = default)
+    {
+        var ctx = await BuildPromptAsync(conversationId, patientId, message);
+        var startTime = DateTime.UtcNow;
+        var text = new StringBuilder();
+        int? inputTokens = null, outputTokens = null, totalTokens = null;
+
+        try
+        {
+            await foreach (var chunk in _client.ChatStreamAsync(ctx.SystemPrompt, ctx.UserPrompt, cancellationToken: cancellationToken))
+            {
+                if (!string.IsNullOrEmpty(chunk.TextDelta))
+                {
+                    text.Append(chunk.TextDelta);
+                    await onChunk(chunk.TextDelta);
+                }
+
+                if (chunk.IsFinal)
+                {
+                    inputTokens = chunk.InputTokens;
+                    outputTokens = chunk.OutputTokens;
+                    totalTokens = chunk.TotalTokens;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await LogFailureAsync(ctx, conversationId, patientId, message, startTime, ex);
+            throw;
+        }
+
+        var generation = new GeminiChatResult
+        {
+            Text = text.ToString(),
+            InputTokens = inputTokens,
+            OutputTokens = outputTokens,
+            TotalTokens = totalTokens
+        };
+
+        var endTime = DateTime.UtcNow;
+        await LogAndPersistAsync(ctx, conversationId, patientId, message, startTime, endTime, generation);
+
+        return generation.Text;
+    }
+
+    private async Task LogFailureAsync(
+        PromptContext ctx, Guid conversationId, Guid patientId, string message, DateTime startTime, Exception ex)
+    {
         await _observability.LogGenerationAsync(
             new LlmGenerationLog
             {
                 Name = "chat-response",
                 Model = _model,
                 Input = message,
-                Output = response,
+                Output = string.Empty,
                 StartTime = startTime,
                 EndTime = DateTime.UtcNow,
+                Error = ex.Message,
+                Metadata = new Dictionary<string, object>
+                {
+                    ["conversationId"] = conversationId.ToString(),
+                    ["patientId"] = patientId.ToString(),
+                    ["embeddingCount"] = ctx.Bundle.EmbeddingCount,
+                    ["ragChunkCount"] = ctx.Bundle.RagChunks.Count
+                }
+            });
+    }
+
+    private async Task LogAndPersistAsync(
+        PromptContext ctx, Guid conversationId, Guid patientId, string message,
+        DateTime startTime, DateTime endTime, GeminiChatResult generation)
+    {
+        await _observability.LogGenerationAsync(
+            new LlmGenerationLog
+            {
+                Name = "chat-response",
+                Model = _model,
+                Input = message,
+                Output = generation.Text,
+                StartTime = startTime,
+                EndTime = endTime,
+                InputTokens = generation.InputTokens,
+                OutputTokens = generation.OutputTokens,
 
                 Metadata = new Dictionary<string, object>
                 {
                     ["conversationId"] = conversationId.ToString(),
-                    ["patientId"] = patientId.ToString()
+                    ["patientId"] = patientId.ToString(),
+                    ["embeddingCount"] = ctx.Bundle.EmbeddingCount,
+                    ["ragChunkCount"] = ctx.Bundle.RagChunks.Count
                 }
             });
 
@@ -126,14 +235,11 @@ public class ChatAiService : IChatAiService
                 ConversationId = conversationId,
                 PatientId = patientId,
                 ModelUsed = _model,
-                ResponseLatencyMs =
-                    (int?)(DateTime.UtcNow - startTime)
-                    .TotalMilliseconds,
+                ResponseLatencyMs = (int)(endTime - startTime).TotalMilliseconds,
+                TokensUsed = generation.TotalTokens,
                 CreatedAt = DateTime.UtcNow
             });
 
         await _context.SaveChangesAsync();
-
-        return response;
     }
 }

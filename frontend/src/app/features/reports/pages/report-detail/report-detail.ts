@@ -142,7 +142,7 @@ export class ReportDetail implements OnInit, OnDestroy {
 
     exportReport(): void {
         const r = this.report();
-        if (!r) return;
+        if (!r || !r.currentVersion?.content) return;
 
         this.exporting.set(true);
         this.reportService
@@ -154,16 +154,20 @@ export class ReportDetail implements OnInit, OnDestroy {
                     const container = document.createElement('div');
                     container.innerHTML = html;
                     container.style.position = 'fixed';
-                    container.style.insetInlineStart = '-9999px';
+                    container.style.left = '0';
+                    container.style.top = '0';
                     container.style.width = '210mm';
+                    container.style.zIndex = '-1';
+                    container.style.pointerEvents = 'none';
                     document.body.appendChild(container);
 
                     try {
+                        await new Promise(resolve => requestAnimationFrame(resolve));
                         await html2pdf()
                             .set({
                                 margin: 10,
                                 filename: `report-${r.id}.pdf`,
-                                html2canvas: { scale: 2, useCORS: true },
+                                html2canvas: { scale: 2 },
                                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
                             })
                             .from(container)

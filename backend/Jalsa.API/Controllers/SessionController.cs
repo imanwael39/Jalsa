@@ -86,7 +86,7 @@ public class SessionController : BaseController
         var therapistId = GetCurrentUserId();
         await _sessionService.GetByIdAsync(id, therapistId);
 
-        var summary = await _summarizationService.SummarizeSessionAsync(id, language);
+        var summary = await _summarizationService.SummarizeSessionAsync(id, language, therapistId);
         return Ok(new { sessionId = id, summary });
     }
 }

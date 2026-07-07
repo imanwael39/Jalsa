@@ -25,7 +25,7 @@ public class ReportController : BaseController
     public async Task<IActionResult> Generate([FromBody] ReportGenerateDto dto)
     {
         var therapistId = GetCurrentUserId();
-        var aiContent = await _aiService.GenerateDraftAsync(dto.PatientId, dto.TherapistInstructions, dto.Language);
+        var aiContent = await _aiService.GenerateDraftAsync(dto.PatientId, dto.TherapistInstructions, dto.Language, therapistId);
         var result = await _reportService.CreateWithAiContentAsync(dto.PatientId, aiContent, therapistId);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }

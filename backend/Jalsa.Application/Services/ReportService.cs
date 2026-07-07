@@ -40,6 +40,11 @@ public class ReportService : IReportService
             CreatedAt = DateTime.UtcNow
         };
 
+        // ReferralReport.CurrentVersionId (FK -> ReportVersion.Id) and ReportVersion.ReportId
+        // (FK -> ReferralReport.Id) form a hard cycle when both rows are Added in the same
+        // SaveChangesAsync — EF Core's topological sort throws "circular dependency detected".
+        // Break the cycle by inserting CurrentVersionId as null in the first save, then
+        // back-filling it once both rows exist.
         var report = new ReferralReport
         {
             Id = reportId,
@@ -47,13 +52,18 @@ public class ReportService : IReportService
             TherapistId = therapistId,
             GeneratedByTherapistId = therapistId,
             Status = "Draft",
-            CurrentVersionId = versionId,
+            CurrentVersionId = null,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             Versions = new List<ReportVersion> { version }
         };
 
         await _reportRepository.AddAsync(report);
+        await _unitOfWork.Repository<ReportVersion>().AddAsync(version);
+        await _unitOfWork.SaveChangesAsync();
+
+        report.CurrentVersionId = versionId;
+        _reportRepository.Update(report);
         await _unitOfWork.SaveChangesAsync();
 
         report.CurrentVersion = version;
