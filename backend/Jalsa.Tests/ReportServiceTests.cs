@@ -115,8 +115,15 @@ public class ReportServiceTests
         result.TherapistId.Should().Be(_therapistProfileId);
         result.GeneratedByTherapistId.Should().Be(_therapistProfileId);
         result.CurrentVersion.CreatedByTherapistId.Should().Be(_therapistProfileId);
+        // ReferralReport.CurrentVersionId (FK -> ReportVersion.Id) and ReportVersion.ReportId
+        // (FK -> ReferralReport.Id) form a hard cycle when both rows are Added in the same
+        // SaveChangesAsync — EF Core's topological sort throws "circular dependency detected".
+        // The service must break the cycle by inserting CurrentVersionId as null in the first
+        // save, then back-filling it via Update + second SaveChangesAsync.
         _reportRepoMock.Verify(x => x.AddAsync(It.IsAny<ReferralReport>(), It.IsAny<CancellationToken>()), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _reportVersionRepoMock.Verify(x => x.AddAsync(It.IsAny<ReportVersion>(), It.IsAny<CancellationToken>()), Times.Once);
+        _reportRepoMock.Verify(x => x.Update(It.Is<ReferralReport>(r => r.CurrentVersionId != null)), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
     [Fact]

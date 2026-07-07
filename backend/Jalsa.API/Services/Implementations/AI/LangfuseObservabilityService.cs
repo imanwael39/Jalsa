@@ -34,11 +34,21 @@ public class LangfuseObservabilityService : ILlmObservabilityService
 
     public async Task LogGenerationAsync(LlmGenerationLog log)
     {
+        // Application-level error visibility must not depend on Langfuse being configured —
+        // otherwise a failed AI call disappears silently in environments without observability wired up.
+        if (!string.IsNullOrEmpty(log.Error))
+        {
+            _logger.LogError(
+                "AI generation '{Name}' failed (model={Model}, latencyMs={LatencyMs}): {Error}",
+                log.Name, log.Model, (int)(log.EndTime - log.StartTime).TotalMilliseconds, log.Error);
+        }
+
         if (!_settings.Enabled)
             return;
 
         var traceId = Guid.NewGuid().ToString();
         var generationId = Guid.NewGuid().ToString();
+        var hasError = !string.IsNullOrEmpty(log.Error);
 
         var payload = new
         {
@@ -78,6 +88,8 @@ public class LangfuseObservabilityService : ILlmObservabilityService
                             input = log.InputTokens,
                             output = log.OutputTokens
                         },
+                        level = hasError ? "ERROR" : "DEFAULT",
+                        statusMessage = log.Error,
                         metadata = log.Metadata
                     }
                 }

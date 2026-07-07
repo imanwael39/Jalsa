@@ -15,5 +15,6 @@ public class LlmGenerationLog
     public int? OutputTokens { get; set; }
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }
+    public string? Error { get; set; }
     public Dictionary<string, object>? Metadata { get; set; }
 }

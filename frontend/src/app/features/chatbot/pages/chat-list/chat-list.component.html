@@ -1,7 +1,27 @@
 <div class="chat-list">
     <div class="page-header">
         <h2 class="page-title">محادثات المرضى</h2>
+        @if (isTherapist()) {
+            <button type="button" class="new-chat-btn" (click)="openPatientPicker()">
+                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                محادثة جديدة
+            </button>
+        }
     </div>
+
+    @if (conversations().length > 0) {
+        <div class="search-bar">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input
+                type="text"
+                class="search-input"
+                placeholder="ابحث باسم المريض..."
+                [value]="searchTerm()"
+                (input)="updateSearchTerm($any($event.target).value)"
+                aria-label="بحث في المحادثات"
+            />
+        </div>
+    }
 
     @if (error()) {
         <div class="alert alert-danger" role="alert">
@@ -21,9 +41,11 @@
                 message="لا توجد محادثات نشطة مع أي مريض حتى الآن."
                 icon="bi-chat-dots"
             ></app-empty-state>
+        } @else if (filteredConversations().length === 0) {
+            <app-empty-state title="لا نتائج" message="لا توجد محادثات مطابقة لبحثك." icon="bi-search"></app-empty-state>
         } @else {
             <div class="conversations-list">
-                @for (conv of conversations(); track conv.id) {
+                @for (conv of filteredConversations(); track conv.id) {
                     <button
                         class="conversation-card"
                         (click)="openConversation(conv.id)"
@@ -32,6 +54,9 @@
                     >
                         <div class="conversation-avatar">
                             <i class="bi bi-person-circle" aria-hidden="true"></i>
+                            @if (isUnread(conv)) {
+                                <span class="unread-dot" aria-label="رسائل غير مقروءة"></span>
+                            }
                         </div>
                         <div class="conversation-info">
                             <div class="conversation-header">
@@ -62,5 +87,53 @@
                 }
             </div>
         }
+    }
+
+    @if (showPatientPicker()) {
+        <div class="picker-overlay" (click)="closePatientPicker()">
+            <div class="picker-panel" (click)="$event.stopPropagation()">
+                <div class="picker-header">
+                    <h3>اختر مريضًا لبدء محادثة</h3>
+                    <button type="button" class="picker-close-btn" (click)="closePatientPicker()" aria-label="إغلاق">
+                        <i class="bi bi-x-lg" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="search-bar">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    <input
+                        type="text"
+                        class="search-input"
+                        placeholder="ابحث عن مريض..."
+                        [value]="patientSearchTerm()"
+                        (input)="updatePatientSearchTerm($any($event.target).value)"
+                        aria-label="بحث عن مريض"
+                    />
+                </div>
+
+                @if (patientPickerLoading()) {
+                    <div class="loading-wrapper">
+                        <app-spinner size="md" label="جاري تحميل المرضى..."></app-spinner>
+                    </div>
+                } @else if (filteredPatients().length === 0) {
+                    <p class="picker-empty">لا يوجد مرضى مطابقون.</p>
+                } @else {
+                    <ul class="patient-picker-list">
+                        @for (patient of filteredPatients(); track patient.id) {
+                            <li>
+                                <button
+                                    type="button"
+                                    class="patient-picker-item"
+                                    (click)="selectPatient(patient)"
+                                    [disabled]="creatingConversation()"
+                                >
+                                    <i class="bi bi-person-circle" aria-hidden="true"></i>
+                                    {{ patient.fullName }}
+                                </button>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
     }
 </div>

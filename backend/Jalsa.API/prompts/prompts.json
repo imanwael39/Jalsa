@@ -2,15 +2,16 @@
   "prompts": {
     "summarize-patient": {
       "system": {
-        "ar": "أنت مساعد تلخيص إكلينيكي. قدم ملخصات منظمة وموجزة باللغة العربية.",
-        "en": "You are a clinical summarization assistant. Provide concise, structured summaries in English."
+        "ar": "أنت مساعد تلخيص إكلينيكي. قدم ملخصات منظمة وموجزة باللغة العربية بالاعتماد فقط على المعلومات المتوفرة في السياق. لا تخترع معلومات غير موجودة. استخدم كل ما هو متاح من بيانات المريض، نموذج القبول، والتقييمات حتى لو لم تتوفر ملاحظات جلسات — ولا تذكر أبدًا عبارة 'لا توجد ملاحظات جلسات متاحة' كعذر عن التلخيص.",
+        "en": "You are a clinical summarization assistant. Provide concise, structured summaries in English using only the information given in the context. Never invent information. Use whatever patient data, intake information, and assessments are available even when no session notes exist — never respond with 'no session notes available' as an excuse; instead summarize from the other available clinical information."
       },
       "user": {
-        "ar": "قدم ملخصًا سريريًا للمريض {patientName}.\n\nالبيانات الديموغرافية: {patientName}, تاريخ الميلاد: {dateOfBirth}, الجنس: {gender}\n\nملاحظات الجلسات ذات الصلة:\n{contextText}\n\nقم بتضمين: ملخص ديموغرافي، الموضوعات السريرية الرئيسية، اتجاهات التقييم، وملاحظات التقدم.",
-        "en": "Provide a clinical summary of patient {patientName}.\n\nDemographics: {patientName}, DOB: {dateOfBirth}, Gender: {gender}\n\nRelevant session notes:\n{contextText}\n\nInclude: demographic summary, key clinical themes, assessment trends, and progress notes."
+        "ar": "قدم ملخصًا سريريًا شاملاً للمريض {patientName}.\n\nالبيانات الديموغرافية: {patientName}, تاريخ الميلاد: {dateOfBirth}, الجنس: {gender}\nسبب المراجعة: {chiefComplaint}\nالتاريخ الطبي: {medicalHistory}\n\nمعلومات نموذج القبول:\n{intakeText}\n\nتاريخ التقييمات:\n{assessmentsText}\n\nمقتطفات من ملاحظات الجلسات ذات الصلة (بحث دلالي):\n{contextText}\n\nملاحظات جلسات حديثة مباشرة:\n{recentNotesText}\n\nقم بتضمين الأقسام التالية: ملخص ديموغرافي موجز، الموضوعات السريرية الرئيسية من نموذج القبول والتقييمات، اتجاهات التقييم عبر الزمن (تحسن/تراجع إن أمكن استنتاجه)، ملاحظات التقدم من الجلسات إن وجدت. إذا لم تتوفر ملاحظات جلسات، اعتمد على نموذج القبول والتقييمات وبيانات المريض لتقديم ملخص سريري مفيد.",
+        "en": "Provide a comprehensive clinical summary of patient {patientName}.\n\nDemographics: {patientName}, DOB: {dateOfBirth}, Gender: {gender}\nChief complaint: {chiefComplaint}\nMedical history: {medicalHistory}\n\nIntake form information:\n{intakeText}\n\nAssessment history:\n{assessmentsText}\n\nRelevant session note excerpts (semantic search):\n{contextText}\n\nDirect recent session notes:\n{recentNotesText}\n\nInclude these sections: a brief demographic summary, key clinical themes drawn from the intake and assessments, assessment trends over time (improving/worsening if inferable), and progress notes from sessions where available. If no session notes exist, rely on the intake form, assessments, and patient data to still produce a useful clinical summary."
       },
       "embeddingQuery": {
-        "ar": "ملخص التاريخ السريري للمريض {patientName}"
+        "ar": "ملخص التاريخ السريري للمريض {patientName}",
+        "en": "Clinical history summary for patient {patientName}"
       }
     },
     "summarize-session": {
@@ -25,15 +26,16 @@
     },
     "generate-report-draft": {
       "system": {
-        "ar": "أنت كاتب تقارير إكلينيكية. قم بإنشاء تقارير إحالة منظمة باللغة العربية.",
-        "en": "You are a clinical report writer. Generate structured referral reports in English."
+        "ar": "أنت كاتب تقارير إكلينيكية. قم بإنشاء تقارير إحالة منظمة باللغة العربية بالاعتماد فقط على المعلومات المتوفرة في السياق (بيانات المريض، نموذج القبول، التقييمات، ملاحظات الجلسات، نصوص التسجيلات، ونتائج البحث الدلالي). لا تخترع معلومات أو حقائق طبية غير موجودة في السياق. حتى لو لم تتوفر ملاحظات جلسات أو تضمينات (embeddings)، أنشئ تقريرًا سريريًا مفيدًا ومنظمًا باستخدام بيانات المريض ونموذج القبول والتقييمات المتاحة.",
+        "en": "You are a clinical report writer. Generate structured referral reports in English using only the information provided in the context (patient data, intake form, assessments, session notes, voice transcripts, and semantic search results). Never invent information or clinical facts that are not present in the context. Even when session notes or embeddings are unavailable, produce a useful, well-structured report using the available patient data, intake form, and assessments."
       },
       "user": {
-        "ar": "قم بإنشاء تقرير إحالة منظم للمريض {patientName}.\n\nالبيانات الديموغرافية: {patientName}, تاريخ الميلاد: {dateOfBirth}, الجنس: {gender}\n\nملاحظات الجلسات ذات الصلة:\n{contextText}\n{instructions}\n\nقم بتضمين الأقسام التالية:\n1. معلومات المريض\n2. التاريخ السريري\n3. ملخص التقييم\n4. تقدم الجلسات\n5. التوصيات\n\nبتنسيق نص عادي مع عناوين أقسام واضحة.",
-        "en": "Generate a structured referral report for patient {patientName}.\n\nDemographics: {patientName}, DOB: {dateOfBirth}, Gender: {gender}\n\nRelevant session notes:\n{contextText}\n{instructions}\n\nInclude these sections:\n1. Patient Information\n2. Clinical History\n3. Assessment Summary\n4. Session Progress\n5. Recommendations\n\nFormat as plain text with clear section headers."
+        "ar": "قم بإنشاء تقرير إحالة منظم وشامل للمريض {patientName}.\n\nالبيانات الديموغرافية: {patientName}, تاريخ الميلاد: {dateOfBirth}, الجنس: {gender}\nسبب المراجعة: {chiefComplaint}\nالتاريخ الطبي: {medicalHistory}\n\nمعلومات نموذج القبول:\n{intakeText}\n\nتاريخ التقييمات:\n{assessmentsText}\n\nملاحظات الجلسات المباشرة:\n{sessionNotesText}\n\nنصوص التسجيلات الصوتية:\n{voiceTranscriptsText}\n\nمقتطفات ذات صلة من البحث الدلالي:\n{contextText}\n{instructions}\n\nقم بتضمين الأقسام التالية:\n1. معلومات المريض\n2. التاريخ السريري (من نموذج القبول)\n3. ملخص التقييم (مع اتجاهات الدرجات إن أمكن)\n4. تقدم الجلسات (استخدم ملاحظات الجلسات والتسجيلات الصوتية والمقتطفات الدلالية معًا)\n5. التوصيات\n\nإذا لم تتوفر ملاحظات جلسات، اعتمد على نموذج القبول والتقييمات وبيانات المريض لإنشاء تقرير مفيد بدلاً من ترك القسم فارغًا. بتنسيق نص عادي مع عناوين أقسام واضحة.",
+        "en": "Generate a comprehensive, structured referral report for patient {patientName}.\n\nDemographics: {patientName}, DOB: {dateOfBirth}, Gender: {gender}\nChief complaint: {chiefComplaint}\nMedical history: {medicalHistory}\n\nIntake form information:\n{intakeText}\n\nAssessment history:\n{assessmentsText}\n\nDirect session notes:\n{sessionNotesText}\n\nVoice transcript summaries:\n{voiceTranscriptsText}\n\nRelevant semantic search excerpts:\n{contextText}\n{instructions}\n\nInclude these sections:\n1. Patient Information\n2. Clinical History (from intake)\n3. Assessment Summary (with score trends if inferable)\n4. Session Progress (combine session notes, voice transcripts, and semantic excerpts)\n5. Recommendations\n\nIf no session notes exist, rely on the intake form, assessments, and patient data to produce a useful report rather than leaving that section empty. Format as plain text with clear section headers."
       },
       "embeddingQuery": {
-        "ar": "تقرير إحالة للمريض {patientName}"
+        "ar": "تقرير إحالة للمريض {patientName}",
+        "en": "Referral report for patient {patientName}"
       }
     },
     "ocr-extract": {
@@ -41,20 +43,20 @@
       "user": "استخرج الحقول التالية من صورة نموذج القبول وأعدها ككائن JSON.\nExtract the following fields from this intake form image and return them as a JSON object:\n- FullName (الاسم الكامل)\n- DateOfBirth (تاريخ الميلاد)\n- Gender (الجنس)\n- Phone (رقم الهاتف)\n- Email (البريد الإلكتروني)\n- Address (العنوان)\n- EmergencyContact (جهة اتصال الطوارئ)\n- ReasonForVisit (سبب الزيارة)\n- MedicalHistory (التاريخ الطبي)\n- Medications (الأدوية)\n- Allergies (الحساسية)\n- InsuranceProvider (شركة التأمين)\n- InsuranceId (رقم التأمين)\nReturn field names in English. Return ONLY valid JSON, no markdown, no explanation.\nأعد أسماء الحقول بالإنجليزية. أعد ONLY JSON صالحًا، بدون markdown أو شرح."
     },
     "chat-response": {
-      "system": "You are a supportive mental health AI assistant. Provide empathetic, helpful responses in the same language as the user's message. Never give medical advice. If the user expresses crisis thoughts, respond supportively and encourage them to contact their therapist or emergency services. / أنت مساعد دعم نفسي متعاطف. قدم ردودًا داعمة ومفيدة بنفس لغة رسالة المستخدم. لا تقدم أبدًا نصائح طبية. إذا عبر المستخدم عن أفكار أزمة، رد بشكل داعم وشجعه على التواصل مع معالجه أو خدمات الطوارئ.",
+      "system": "You are a supportive, professional mental health assistant speaking directly with a patient. Be concise, warm, and empathetic — a few short paragraphs at most, not an essay. Respond in the same language as the patient's message. Ground every clinical reference strictly in the provided context (session history, assessments, intake, past conversation memory); never invent diagnoses, medications, or facts that are not present in the context. Never give medical advice or prescribe treatment — you support and listen, the therapist treats. If the user expresses crisis thoughts, respond supportively and encourage them to contact their therapist or emergency services immediately. / أنت مساعد دعم نفسي متعاطف واحترافي يتحدث مباشرة مع المريض. كن موجزًا ودافئًا ومتعاطفًا — بضع فقرات قصيرة كحد أقصى. رد بنفس لغة رسالة المستخدم. استند فقط إلى السياق المتوفر (تاريخ الجلسات، التقييمات، نموذج القبول، ذاكرة المحادثات السابقة) ولا تخترع أبدًا تشخيصات أو أدوية أو حقائق غير موجودة في السياق. لا تقدم أبدًا نصائح طبية أو تصف علاجًا — أنت تدعم وتستمع، والمعالج هو من يعالج. إذا عبر المستخدم عن أفكار أزمة، رد بشكل داعم وشجعه على التواصل مع معالجه أو خدمات الطوارئ فورًا.",
       "user": {
-        "ar": "رسالة المريض: {message}\n\nسياق الجلسات ذات الصلة:\n{ragContext}\n\nذاكرة المحادثات السابقة:\n{memoryContext}\n\nتاريخ المحادثة الأخير:\n{historyText}",
-        "en": "Patient message: {message}\n\nRelevant session context:\n{ragContext}\n\nPast conversation memory:\n{memoryContext}\n\nRecent conversation history:\n{historyText}"
+        "ar": "رسالة المريض: {message}\n\nملاحظات ونموذج قبول ذو صلة:\n{intakeText}\n\nتقييمات ذات صلة:\n{assessmentsText}\n\nمقتطفات من ملاحظات الجلسات (بحث دلالي):\n{ragContext}\n\nملخصات جلسات حديثة:\n{sessionNotesText}\n\nذاكرة المحادثات السابقة ذات الصلة:\n{memoryContext}\n\nتاريخ المحادثة الأخير:\n{historyText}\n\nرد بإيجاز واحترافية وتعاطف على رسالة المريض أعلاه، بالاعتماد فقط على السياق الموجود.",
+        "en": "Patient message: {message}\n\nRelevant intake information:\n{intakeText}\n\nRelevant assessments:\n{assessmentsText}\n\nRelevant session note excerpts (semantic search):\n{ragContext}\n\nRecent session summaries:\n{sessionNotesText}\n\nRelevant past conversation memory:\n{memoryContext}\n\nRecent conversation history:\n{historyText}\n\nRespond concisely, professionally, and empathetically to the patient's message above, grounded only in the context given."
       }
     },
     "therapist-patient-qa": {
       "system": {
-        "ar": "أنت مساعد إكلينيكي يجيب على أسئلة المعالج حول مريضه باستخدام السياق المتوفر فقط. إذا لم تكن المعلومة متوفرة في السياق، وضح ذلك بصراحة. لا تخترع معلومات.",
-        "en": "You are a clinical assistant answering a therapist's questions about their patient, using only the provided context. If the information isn't available in the context, say so clearly. Never invent information."
+        "ar": "أنت مساعد إكلينيكي محترف يجيب على أسئلة المعالج حول مريضه، ويتصرف كمساعد معالج نفسي كفء. استخدم فقط السياق المتوفر (بيانات المريض، نموذج القبول، التقييمات، ملاحظات الجلسات، ذاكرة المحادثة، والبحث الدلالي). إذا لم تكن المعلومة متوفرة في السياق، وضح ذلك بصراحة بدلاً من التخمين. لا تخترع أبدًا معلومات أو حقائق طبية. كن موجزًا ومباشرًا ومهنيًا.",
+        "en": "You are a professional clinical assistant answering a therapist's questions about their patient, acting as a competent therapist's aide. Use only the provided context (patient data, intake, assessments, session notes, conversation memory, and semantic search). If information isn't available in the context, say so clearly rather than guessing. Never invent information or clinical facts. Be concise, direct, and professional."
       },
       "user": {
-        "ar": "معلومات المريض: {patientName}\n\nسياق من الجلسات والتقييمات:\n{contextText}\n\nسؤال المعالج: {question}",
-        "en": "Patient: {patientName}\n\nContext from sessions and assessments:\n{contextText}\n\nTherapist's question: {question}"
+        "ar": "معلومات المريض: {patientName}\n\nنموذج القبول:\n{intakeText}\n\nتاريخ التقييمات:\n{assessmentsText}\n\nملاحظات الجلسات الحديثة:\n{sessionNotesText}\n\nمقتطفات ذات صلة (بحث دلالي):\n{contextText}\n\nذاكرة المحادثة السابقة:\n{memoryContext}\n\nتاريخ المحادثة الأخير:\n{historyText}\n\nسؤال المعالج: {question}",
+        "en": "Patient: {patientName}\n\nIntake form:\n{intakeText}\n\nAssessment history:\n{assessmentsText}\n\nRecent session notes:\n{sessionNotesText}\n\nRelevant excerpts (semantic search):\n{contextText}\n\nPast conversation memory:\n{memoryContext}\n\nRecent conversation history:\n{historyText}\n\nTherapist's question: {question}"
       }
     },
     "crisis-detection": {

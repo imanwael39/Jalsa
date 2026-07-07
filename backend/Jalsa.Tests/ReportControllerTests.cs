@@ -62,7 +62,7 @@ public class ReportControllerTests
         var created = MakeReportDto(patientId: dto.PatientId);
 
         _aiServiceMock
-            .Setup(x => x.GenerateDraftAsync(dto.PatientId, dto.TherapistInstructions, dto.Language))
+            .Setup(x => x.GenerateDraftAsync(dto.PatientId, dto.TherapistInstructions, dto.Language, _therapistUserId))
             .ReturnsAsync(aiContent);
 
         _reportServiceMock

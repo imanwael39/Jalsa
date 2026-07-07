@@ -16,15 +16,18 @@ public class ChatController : BaseController
     private readonly IChatService _chatService;
     private readonly IHubContext<ChatHub> _chatHub;
     private readonly ITherapistChatAiService _therapistChatAi;
+    private readonly IConversationMemoryService _conversationMemory;
 
     public ChatController(
         IChatService chatService,
         IHubContext<ChatHub> chatHub,
-        ITherapistChatAiService therapistChatAi)
+        ITherapistChatAiService therapistChatAi,
+        IConversationMemoryService conversationMemory)
     {
         _chatService = chatService;
         _chatHub = chatHub;
         _therapistChatAi = therapistChatAi;
+        _conversationMemory = conversationMemory;
     }
 
     [HttpGet("conversations")]
@@ -84,26 +87,81 @@ public class ChatController : BaseController
 
         await _chatHub.Clients.Group(dto.ConversationId.ToString()).SendAsync("ReceiveHumanMessage", result);
 
-        if (senderType == "Therapist")
+        try
         {
-            try
+            var history = await _chatService.GetHistoryAsync(userId, dto.ConversationId);
+            if (history is not null)
             {
-                var history = await _chatService.GetHistoryAsync(userId, dto.ConversationId);
-                if (history is not null)
+                await _conversationMemory.StoreMessageMemoryAsync(dto.ConversationId, history.PatientId, result.Id, dto.Content);
+
+                if (senderType == "Therapist")
                 {
                     var lang = dto.Content.Any(c => c >= 0x0600 && c <= 0x06FF) ? "ar" : "en";
-                    var answer = await _therapistChatAi.AnswerQuestionAsync(history.PatientId, dto.Content, lang);
+                    var group = dto.ConversationId.ToString();
+                    var diagnostics = await _therapistChatAi.AnswerQuestionStreamingAsync(
+                        dto.ConversationId,
+                        history.PatientId,
+                        dto.Content,
+                        lang,
+                        delta => _chatHub.Clients.Group(group).SendAsync("ReceiveMessageChunk", delta));
+                    var answer = diagnostics.Output;
                     var aiResult = await _chatService.SendMessageAsync(userId, dto.ConversationId, answer, "AI");
                     if (aiResult is not null)
+                    {
                         await _chatHub.Clients.Group(dto.ConversationId.ToString()).SendAsync("ReceiveHumanMessage", aiResult);
+                        await _conversationMemory.StoreMessageMemoryAsync(dto.ConversationId, history.PatientId, aiResult.Id, answer);
+                    }
                 }
             }
-            catch
-            {
-                // Best-effort: a Gateway failure must never block the therapist's own message from sending.
-            }
+        }
+        catch
+        {
+            // Best-effort: a Gateway/memory failure must never block the sender's own message from sending.
         }
 
         return Ok(result);
+    }
+
+    [HttpPost("{conversationId:guid}/regenerate")]
+    [Authorize(Roles = "Therapist")]
+    public async Task<IActionResult> Regenerate(Guid conversationId)
+    {
+        var userId = GetCurrentUserId();
+        var history = await _chatService.GetHistoryAsync(userId, conversationId);
+        if (history is null)
+            return NotFound(new { message = "المحادثة غير موجودة" });
+
+        var lastTherapistMessage = history.Messages
+            .LastOrDefault(m => m.SenderType == "Therapist" && !string.IsNullOrWhiteSpace(m.Content));
+
+        if (lastTherapistMessage?.Content is null)
+            return BadRequest(new { message = "لا توجد رسالة معالج لإعادة توليد رد عليها" });
+
+        var lang = lastTherapistMessage.Content.Any(c => c >= 0x0600 && c <= 0x06FF) ? "ar" : "en";
+        var group = conversationId.ToString();
+        var diagnostics = await _therapistChatAi.AnswerQuestionStreamingAsync(
+            conversationId,
+            history.PatientId,
+            lastTherapistMessage.Content,
+            lang,
+            delta => _chatHub.Clients.Group(group).SendAsync("ReceiveMessageChunk", delta));
+        var answer = diagnostics.Output;
+        var aiResult = await _chatService.SendMessageAsync(userId, conversationId, answer, "AI");
+
+        if (aiResult is null)
+            return NotFound(new { message = "المحادثة غير موجودة" });
+
+        await _chatHub.Clients.Group(conversationId.ToString()).SendAsync("ReceiveHumanMessage", aiResult);
+
+        try
+        {
+            await _conversationMemory.StoreMessageMemoryAsync(conversationId, history.PatientId, aiResult.Id, answer);
+        }
+        catch
+        {
+            // Best-effort: memory storage must never block the regenerated reply from returning.
+        }
+
+        return Ok(aiResult);
     }
 }

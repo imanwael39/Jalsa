@@ -15,17 +15,34 @@
                 }
             </div>
         </div>
-        @if (connecting()) {
-            <div class="connection-status">
-                <span class="status-dot connecting"></span>
-                <span class="status-label">جاري الاتصال...</span>
-            </div>
-        } @else {
-            <div class="connection-status">
-                <span class="status-dot connected"></span>
-                <span class="status-label">متصل</span>
-            </div>
-        }
+
+        <div class="header-actions">
+            @if (isClosed()) {
+                <span class="status-chip status-chip-closed">مغلقة</span>
+            } @else if (connecting()) {
+                <div class="connection-status">
+                    <span class="status-dot connecting"></span>
+                    <span class="status-label">جاري الاتصال...</span>
+                </div>
+            } @else {
+                <div class="connection-status">
+                    <span class="status-dot connected"></span>
+                    <span class="status-label">متصل</span>
+                </div>
+            }
+
+            @if (isTherapist() && !isClosed()) {
+                <button
+                    class="header-icon-btn"
+                    type="button"
+                    (click)="clearConversation()"
+                    aria-label="إغلاق المحادثة"
+                    title="إغلاق المحادثة"
+                >
+                    <i class="bi bi-x-circle" aria-hidden="true"></i>
+                </button>
+            }
+        </div>
     </div>
 
     <app-ai-disclaimer [blocked]="!!error()" [message]="error() || ''"></app-ai-disclaimer>
@@ -49,15 +66,46 @@
                         [class.message-ai]="isAiMessage(msg)"
                         [class.message-patient]="!isAiMessage(msg) && !isTherapistMessage(msg)"
                         [class.message-therapist]="isTherapistMessage(msg)"
+                        [class.message-failed]="msg.failed"
                     >
                         @if (isAiMessage(msg)) {
                             <div class="message-sender-icon ai-icon" aria-hidden="true">
                                 <i class="bi bi-robot"></i>
                             </div>
                         }
-                        <div class="message-bubble">
-                            <p class="message-content">{{ msg.content }}</p>
-                            <span class="message-time">{{ formatTime(msg.createdAt) }}</span>
+                        <div class="message-bubble" [dir]="messageDir(msg)">
+                            <p class="message-content" [innerHTML]="msg.content | markdown"></p>
+                            <div class="message-footer">
+                                <span class="message-time">{{ formatTime(msg.createdAt) }}</span>
+                                <div class="message-tools">
+                                    @if (isAiMessage(msg)) {
+                                        <button
+                                            type="button"
+                                            class="msg-tool-btn"
+                                            (click)="copyMessage(msg)"
+                                            aria-label="نسخ رد المساعد"
+                                        >
+                                            <i
+                                                class="bi"
+                                                [class.bi-clipboard]="copiedMessageId() !== msg.id"
+                                                [class.bi-clipboard-check]="copiedMessageId() === msg.id"
+                                                aria-hidden="true"
+                                            ></i>
+                                        </button>
+                                    }
+                                    @if (msg.failed) {
+                                        <button
+                                            type="button"
+                                            class="msg-tool-btn retry-btn"
+                                            (click)="retryMessage(msg)"
+                                            aria-label="إعادة المحاولة"
+                                        >
+                                            <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+                                            إعادة المحاولة
+                                        </button>
+                                    }
+                                </div>
+                            </div>
                         </div>
                         @if (!isAiMessage(msg)) {
                             <div
@@ -71,36 +119,92 @@
                         }
                     </div>
                 }
+
+                @if (isStreaming()) {
+                    <div class="message-wrapper message-ai">
+                        <div class="message-sender-icon ai-icon" aria-hidden="true">
+                            <i class="bi bi-robot"></i>
+                        </div>
+                        <div class="message-bubble streaming-bubble">
+                            <p class="message-content" [innerHTML]="streamingText() | markdown"></p>
+                        </div>
+                    </div>
+                } @else if (aiTyping()) {
+                    <div class="message-wrapper message-ai">
+                        <div class="message-sender-icon ai-icon" aria-hidden="true">
+                            <i class="bi bi-robot"></i>
+                        </div>
+                        <div class="message-bubble typing-bubble">
+                            <span class="typing-dot"></span>
+                            <span class="typing-dot"></span>
+                            <span class="typing-dot"></span>
+                        </div>
+                    </div>
+                }
+
+                @if (canRegenerate()) {
+                    <div class="regenerate-row">
+                        <button
+                            type="button"
+                            class="regenerate-btn"
+                            (click)="regenerateLastResponse()"
+                            [disabled]="regenerating()"
+                        >
+                            @if (regenerating()) {
+                                <app-spinner size="sm"></app-spinner>
+                            } @else {
+                                <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+                            }
+                            إعادة توليد الرد
+                        </button>
+                    </div>
+                }
+
                 <div #messagesEnd></div>
             </div>
         }
     </div>
 
+    @if (isTherapist() && patientId()) {
+        <app-ai-testing-tools
+            [patientId]="patientId()"
+            [conversationId]="conversationId()"
+            [lastQuestion]="lastTherapistQuestion()"
+        ></app-ai-testing-tools>
+    }
+
     <!-- Input Area -->
     <div class="input-area">
-        <textarea
-            class="message-input"
-            rows="1"
-            placeholder="أرسل رسالة..."
-            [value]="messageText()"
-            (input)="updateMessageText($any($event.target).value)"
-            (keydown)="onKeyDown($event)"
-            [disabled]="loading() || sending()"
-            aria-label="اكتب رسالتك"
-        ></textarea>
-        <button
-            class="send-btn"
-            type="button"
-            (click)="sendMessage()"
-            [disabled]="!messageText().trim() || loading() || sending()"
-            aria-label="إرسال الرسالة"
-        >
-            @if (sending()) {
-                <app-spinner size="sm"></app-spinner>
-            } @else {
-                <i class="bi bi-send-fill" aria-hidden="true"></i>
-            }
-            <span class="send-label">إرسال</span>
-        </button>
+        @if (isClosed()) {
+            <div class="closed-banner">
+                <i class="bi bi-lock" aria-hidden="true"></i>
+                هذه المحادثة مغلقة ولا يمكن إرسال رسائل جديدة إليها.
+            </div>
+        } @else {
+            <textarea
+                class="message-input"
+                rows="1"
+                placeholder="أرسل رسالة... (Enter للإرسال، Shift+Enter لسطر جديد)"
+                [value]="messageText()"
+                (input)="updateMessageText($any($event.target).value)"
+                (keydown)="onKeyDown($event)"
+                [disabled]="loading() || sending()"
+                aria-label="اكتب رسالتك"
+            ></textarea>
+            <button
+                class="send-btn"
+                type="button"
+                (click)="sendMessage()"
+                [disabled]="!messageText().trim() || loading() || sending()"
+                aria-label="إرسال الرسالة"
+            >
+                @if (sending()) {
+                    <app-spinner size="sm"></app-spinner>
+                } @else {
+                    <i class="bi bi-send-fill" aria-hidden="true"></i>
+                }
+                <span class="send-label">إرسال</span>
+            </button>
+        }
     </div>
 </div>

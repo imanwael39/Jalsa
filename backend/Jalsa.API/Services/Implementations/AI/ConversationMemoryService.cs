@@ -34,24 +34,47 @@ public class ConversationMemoryService : IConversationMemoryService
         await _context.SaveChangesAsync();
     }
 
+    private const double SemanticWeight = 0.75;
+    private const double RecencyWeight = 0.25;
+    private const int MaxCandidates = 200;
+
     public async Task<IReadOnlyList<string>> RetrieveSimilarMessagesAsync(Guid patientId, string query, int topK = 3)
     {
         var queryVec = await _embedding.GenerateEmbeddingAsync(query);
 
         var memories = await _context.AiArtifacts
             .Where(a => a.PatientId == patientId && a.SourceType == "Chat" && a.EmbeddingVector != null)
+            .OrderByDescending(a => a.CreatedAt)
+            .Take(MaxCandidates)
             .ToListAsync();
 
+        if (memories.Count == 0)
+            return Array.Empty<string>();
+
+        var now = DateTime.UtcNow;
+        var oldestAgeHours = Math.Max(1.0, memories.Max(m => (now - m.CreatedAt).TotalHours));
+
+        // Combines semantic similarity with recency so that fresher context is
+        // preferred among equally-relevant memories, without a stale but
+        // strongly-matching message dominating the result.
         var scored = memories
-            .Select(m => new
+            .Where(m => m.ContentText != null)
+            .Select(m =>
             {
-                m.ContentText,
-                Score = VectorHelper.CosineSimilarity(
+                var semanticScore = VectorHelper.CosineSimilarity(
                     queryVec,
-                    VectorHelper.Deserialize(m.EmbeddingVector!))
+                    VectorHelper.Deserialize(m.EmbeddingVector!));
+
+                var ageHours = (now - m.CreatedAt).TotalHours;
+                var recencyScore = 1.0 - Math.Min(1.0, ageHours / oldestAgeHours);
+
+                return new
+                {
+                    m.ContentText,
+                    Combined = (semanticScore * SemanticWeight) + (recencyScore * RecencyWeight)
+                };
             })
-            .Where(x => x.ContentText != null)
-            .OrderByDescending(x => x.Score)
+            .OrderByDescending(x => x.Combined)
             .Take(topK)
             .Select(x => x.ContentText!)
             .ToList();

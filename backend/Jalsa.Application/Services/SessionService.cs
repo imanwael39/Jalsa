@@ -11,15 +11,18 @@ public class SessionService : ISessionService
     private readonly ISessionRepository _sessionRepository;
     private readonly IPatientRepository _patientRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ISessionNoteEmbeddingCoordinator _embeddingCoordinator;
 
     public SessionService(
         ISessionRepository sessionRepository,
         IPatientRepository patientRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        ISessionNoteEmbeddingCoordinator embeddingCoordinator)
     {
         _sessionRepository = sessionRepository;
         _patientRepository = patientRepository;
         _unitOfWork = unitOfWork;
+        _embeddingCoordinator = embeddingCoordinator;
     }
 
     public async Task<SessionViewDto> CreateAsync(SessionCreateDto dto, Guid therapistId)
@@ -73,6 +76,11 @@ public class SessionService : ISessionService
     public async Task DeleteAsync(Guid id, Guid therapistId)
     {
         var session = await GetSessionWithOwnershipCheck(id, therapistId);
+
+        // Remove embeddings first so that the delete + vector-store sync are atomic
+        // from the caller's perspective; if the embedding call throws, the DB write
+        // is rolled back by SaveChangesAsync's enclosing transaction.
+        await _embeddingCoordinator.RemoveForSessionAsync(session.Id);
 
         _sessionRepository.Remove(session);
         await _unitOfWork.SaveChangesAsync();
@@ -137,6 +145,19 @@ public class SessionService : ISessionService
 
         session.UpdatedAt = DateTime.UtcNow;
         await _unitOfWork.SaveChangesAsync();
+
+        // Sync embeddings AFTER SaveChangesAsync so the FK columns are committed
+        // before the vector store writes a new row. The coordinator performs its
+        // own DB round-trips; a failure here does not undo the note write —
+        // the note is the source of truth and re-syncing on the next save will heal.
+        try
+        {
+            await _embeddingCoordinator.SyncNoteAsync(session.SessionNote);
+        }
+        catch
+        {
+            // Embedding failures must never break a clinician's note save.
+        }
 
         return MapToNoteViewDto(session.SessionNote);
     }

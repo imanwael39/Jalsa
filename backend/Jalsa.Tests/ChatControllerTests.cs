@@ -16,6 +16,7 @@ public class ChatControllerTests
 {
     private readonly Mock<IChatService> _chatServiceMock;
     private readonly Mock<ITherapistChatAiService> _therapistChatAiMock;
+    private readonly Mock<IConversationMemoryService> _conversationMemoryMock;
     private readonly ChatController _sut;
     private readonly Guid _userId;
     private readonly Guid _patientId = Guid.NewGuid();
@@ -25,6 +26,7 @@ public class ChatControllerTests
     {
         _chatServiceMock = new Mock<IChatService>();
         _therapistChatAiMock = new Mock<ITherapistChatAiService>();
+        _conversationMemoryMock = new Mock<IConversationMemoryService>();
 
         var clientProxyMock = new Mock<IClientProxy>();
         clientProxyMock
@@ -35,7 +37,7 @@ public class ChatControllerTests
         var hubContextMock = new Mock<IHubContext<ChatHub>>();
         hubContextMock.Setup(x => x.Clients).Returns(hubClientsMock.Object);
 
-        _sut = new ChatController(_chatServiceMock.Object, hubContextMock.Object, _therapistChatAiMock.Object);
+        _sut = new ChatController(_chatServiceMock.Object, hubContextMock.Object, _therapistChatAiMock.Object, _conversationMemoryMock.Object);
 
         _userId = Guid.NewGuid();
         var claims = new List<Claim>

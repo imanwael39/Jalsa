@@ -2,6 +2,7 @@
 using FluentAssertions;
 using Jalsa.Application.DTOs.Session;
 using Jalsa.Application.Interfaces.Repositories;
+using Jalsa.Application.Interfaces.Services;
 using Jalsa.Application.Services;
 using Jalsa.Domain.Models.Clinic;
 using Jalsa.Domain.Models.Patient;
@@ -17,6 +18,7 @@ public class SessionServiceTests
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IGenericRepository<Therapist>> _therapistRepoMock;
     private readonly Mock<IGenericRepository<SessionNote>> _sessionNoteRepoMock;
+    private readonly Mock<ISessionNoteEmbeddingCoordinator> _embeddingCoordinatorMock;
     private readonly SessionService _sut;
 
     private readonly Guid _therapistUserId = Guid.NewGuid();
@@ -30,6 +32,7 @@ public class SessionServiceTests
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _therapistRepoMock = new Mock<IGenericRepository<Therapist>>();
         _sessionNoteRepoMock = new Mock<IGenericRepository<SessionNote>>();
+        _embeddingCoordinatorMock = new Mock<ISessionNoteEmbeddingCoordinator>();
 
         _unitOfWorkMock
             .Setup(x => x.Repository<Therapist>())
@@ -46,7 +49,8 @@ public class SessionServiceTests
         _sut = new SessionService(
             _sessionRepoMock.Object,
             _patientRepoMock.Object,
-            _unitOfWorkMock.Object);
+            _unitOfWorkMock.Object,
+            _embeddingCoordinatorMock.Object);
     }
 
     private void SetupOwnershipCheck()
