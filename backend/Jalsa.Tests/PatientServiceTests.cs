@@ -93,6 +93,23 @@ public class PatientServiceTests
     }
 
     [Fact]
+    public async Task CreateAsync_WithEmergencyContactAndTreatmentStartDate_PersistsAllFields()
+    {
+        var dto = MakeCreateDto();
+        dto.EmergencyContactName = "سارة عبدالله";
+        dto.EmergencyContactRelationship = "الأخت";
+        dto.EmergencyContactPhone = "+201190980339";
+        dto.TreatmentStartDate = new DateOnly(2026, 1, 15);
+
+        var result = await _sut.CreateAsync(dto, _userId);
+
+        result.EmergencyContactName.Should().Be("سارة عبدالله");
+        result.EmergencyContactRelationship.Should().Be("الأخت");
+        result.EmergencyContactPhone.Should().Be("+201190980339");
+        result.TreatmentStartDate.Should().Be(new DateOnly(2026, 1, 15));
+    }
+
+    [Fact]
     public async Task CreateAsync_WithEmailAndPassword_CreatesLinkedUserAccount()
     {
         var dto = MakeCreateDto();
@@ -289,6 +306,55 @@ public class PatientServiceTests
 
         result.FullName.Should().Be("اسم جديد");
         _patientRepoMock.Verify(x => x.Update(It.IsAny<Patient>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_WithEmergencyContactAndTreatmentStartDate_UpdatesAllFields()
+    {
+        var patientId = Guid.NewGuid();
+        var patient = MakePatient(id: patientId);
+
+        _patientRepoMock
+            .Setup(x => x.GetByIdAsync(patientId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(patient);
+
+        var updateDto = new PatientUpdateDto
+        {
+            FullName = patient.FullName,
+            EmergencyContactName = "منى صبحي",
+            EmergencyContactRelationship = "الأخت",
+            EmergencyContactPhone = "+201025779044",
+            TreatmentStartDate = new DateOnly(2026, 2, 1)
+        };
+
+        var result = await _sut.UpdateAsync(patientId, updateDto, _userId);
+
+        result.EmergencyContactName.Should().Be("منى صبحي");
+        result.EmergencyContactRelationship.Should().Be("الأخت");
+        result.EmergencyContactPhone.Should().Be("+201025779044");
+        result.TreatmentStartDate.Should().Be(new DateOnly(2026, 2, 1));
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ClearingEmergencyContact_SetsFieldsToNull()
+    {
+        var patientId = Guid.NewGuid();
+        var patient = MakePatient(id: patientId);
+        patient.EmergencyContactName = "اسم قديم";
+        patient.EmergencyContactRelationship = "علاقة قديمة";
+        patient.EmergencyContactPhone = "0100000000";
+
+        _patientRepoMock
+            .Setup(x => x.GetByIdAsync(patientId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(patient);
+
+        var updateDto = new PatientUpdateDto { FullName = patient.FullName };
+
+        var result = await _sut.UpdateAsync(patientId, updateDto, _userId);
+
+        result.EmergencyContactName.Should().BeNull();
+        result.EmergencyContactRelationship.Should().BeNull();
+        result.EmergencyContactPhone.Should().BeNull();
     }
 
     [Fact]
