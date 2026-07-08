@@ -39,5 +39,21 @@ public class PatientUpdateDtoValidator : AbstractValidator<PatientUpdateDto>
         RuleFor(x => x.ChiefComplaint)
             .MaximumLength(1000).WithMessage("ChiefComplaint must not exceed 1000 characters.")
             .When(x => x.ChiefComplaint is not null);
+
+        RuleFor(x => x.EmergencyContactName)
+            .MaximumLength(200).WithMessage("EmergencyContactName must not exceed 200 characters.")
+            .When(x => x.EmergencyContactName is not null);
+
+        RuleFor(x => x.EmergencyContactRelationship)
+            .MaximumLength(100).WithMessage("EmergencyContactRelationship must not exceed 100 characters.")
+            .When(x => x.EmergencyContactRelationship is not null);
+
+        RuleFor(x => x.EmergencyContactPhone)
+            .MaximumLength(30).WithMessage("EmergencyContactPhone must not exceed 30 characters.")
+            .When(x => x.EmergencyContactPhone is not null);
+
+        RuleFor(x => x.TreatmentStartDate)
+            .Must(d => !d.HasValue || d.Value <= DateOnly.FromDateTime(DateTime.UtcNow))
+            .WithMessage("TreatmentStartDate cannot be in the future.");
     }
 }
