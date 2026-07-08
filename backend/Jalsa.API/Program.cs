@@ -292,6 +292,7 @@ builder.Services.AddScoped<IPatientProgressService, PatientProgressService>();
 builder.Services.AddScoped<IPatientSessionService, PatientSessionService>();
 builder.Services.AddScoped<IPatientAssessmentService, PatientAssessmentService>();
 builder.Services.AddScoped<INotificationService, EmailNotificationService>();
+builder.Services.AddScoped<INotificationPushService, SignalRNotificationPushService>();
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<ICrisisAlertService, CrisisAlertService>();
 builder.Services.AddScoped<ExerciseReminderJob>();
@@ -359,6 +360,7 @@ app.UseRateLimiter();
 app.MapControllers();
 
 app.MapHub<ChatHub>("/chatHub");
+app.MapHub<NotificationHub>("/notificationHub");
 
 app.UseHangfireDashboard("/hangfire", new DashboardOptions
 {
