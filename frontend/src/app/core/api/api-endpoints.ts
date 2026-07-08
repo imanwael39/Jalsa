@@ -20,6 +20,7 @@ export const API = {
         intake: (id: string) => `/api/patient/${id}/intake`,
         intakeOcr: (id: string, intakeFormId: string) => `/api/patient/${id}/intake/${intakeFormId}/ocr`,
         assessments: (id: string) => `/api/patient/${id}/assessments`,
+        assignAssessment: (id: string) => `/api/patient/${id}/assessments/assign`,
     },
     sessions: {
         base: '/api/sessions',

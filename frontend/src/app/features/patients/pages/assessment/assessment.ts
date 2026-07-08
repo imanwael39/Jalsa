@@ -36,11 +36,31 @@ export class Assessment implements OnInit {
     submitLoading = signal(false);
 
     form = this.fb.group({
+        mode: ['score' as 'score' | 'assign', [Validators.required]],
         templateId: ['', [Validators.required]],
         title: [''],
         totalScore: [null as number | null, [Validators.required, Validators.min(0)]],
         assessmentDate: [this.getCurrentDate(), [Validators.required]],
     });
+
+    constructor() {
+        this.form
+            .get('mode')!
+            .valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(mode => {
+                const scoreControl = this.form.get('totalScore')!;
+                const dateControl = this.form.get('assessmentDate')!;
+                if (mode === 'assign') {
+                    scoreControl.clearValidators();
+                    dateControl.clearValidators();
+                } else {
+                    scoreControl.setValidators([Validators.required, Validators.min(0)]);
+                    dateControl.setValidators([Validators.required]);
+                }
+                scoreControl.updateValueAndValidity();
+                dateControl.updateValueAndValidity();
+            });
+    }
 
     assessmentTypes = [
         { value: 'phq-9', label: 'PHQ-9 (اكتئاب)' },
@@ -89,34 +109,43 @@ export class Assessment implements OnInit {
         this.error.set(null);
 
         const formValue = this.form.value;
-        const assessmentData: Partial<AssessmentModel> = {
-            templateId: formValue.templateId ?? '',
-            title: formValue.title ?? this.getAssessmentLabel(formValue.templateId ?? ''),
-            totalScore: formValue.totalScore ?? null,
-            assessmentDate: formValue.assessmentDate ?? null,
-            status: 'Completed',
-        };
+        const isAssignMode = formValue.mode === 'assign';
 
-        this.patientService
-            .addAssessment(this.patientId(), assessmentData)
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe({
-                next: () => {
-                    this.submitLoading.set(false);
-                    this.notification.success('تم إضافة التقييم بنجاح');
-                    this.form.reset({
-                        templateId: '',
-                        title: '',
-                        totalScore: null,
-                        assessmentDate: this.getCurrentDate(),
-                    });
-                    this.loadAssessments();
-                },
-                error: (err: HttpErrorResponse) => {
-                    this.error.set(err.error?.message || err.error?.error || 'فشل إضافة التقييم');
-                    this.submitLoading.set(false);
-                },
-            });
+        const request$ = isAssignMode
+            ? this.patientService.assignAssessment(this.patientId(), {
+                  templateId: formValue.templateId ?? '',
+                  title: formValue.title || this.getAssessmentLabel(formValue.templateId ?? ''),
+              })
+            : this.patientService.addAssessment(this.patientId(), {
+                  templateId: formValue.templateId ?? '',
+                  title: formValue.title || this.getAssessmentLabel(formValue.templateId ?? ''),
+                  totalScore: formValue.totalScore ?? null,
+                  assessmentDate: formValue.assessmentDate ?? null,
+                  status: 'Completed',
+              });
+
+        request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+            next: () => {
+                this.submitLoading.set(false);
+                this.notification.success(
+                    isAssignMode ? 'تم إسناد التقييم إلى المريض بنجاح' : 'تم إضافة التقييم بنجاح'
+                );
+                this.form.reset({
+                    mode: 'score',
+                    templateId: '',
+                    title: '',
+                    totalScore: null,
+                    assessmentDate: this.getCurrentDate(),
+                });
+                this.loadAssessments();
+            },
+            error: (err: HttpErrorResponse) => {
+                this.error.set(
+                    err.error?.message || err.error?.error || (isAssignMode ? 'فشل إسناد التقييم' : 'فشل إضافة التقييم')
+                );
+                this.submitLoading.set(false);
+            },
+        });
     }
 
     goBack(): void {

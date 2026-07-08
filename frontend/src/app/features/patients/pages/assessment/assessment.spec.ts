@@ -16,7 +16,9 @@ const mockAssessments: AssessmentModel[] = [
         title: 'PHQ-9 (اكتئاب)',
         assessmentDate: '2024-01-15',
         totalScore: 12,
+        severity: 'Moderate',
         status: 'Completed',
+        completedAt: '2024-01-15T00:00:00Z',
         createdAt: '2024-01-15T00:00:00Z',
         updatedAt: '2024-01-15T00:00:00Z',
     },
@@ -28,7 +30,9 @@ const mockAssessments: AssessmentModel[] = [
         title: 'GAD-7 (قلق)',
         assessmentDate: '2024-01-20',
         totalScore: 8,
+        severity: null,
         status: 'Completed',
+        completedAt: '2024-01-20T00:00:00Z',
         createdAt: '2024-01-20T00:00:00Z',
         updatedAt: '2024-01-20T00:00:00Z',
     },
@@ -38,6 +42,7 @@ interface SetupOptions {
     patientId?: string | null;
     getAssessmentsReturn?: Observable<unknown>;
     addAssessmentReturn?: Observable<unknown>;
+    assignAssessmentReturn?: Observable<unknown>;
 }
 
 describe('Assessment', () => {
@@ -48,11 +53,12 @@ describe('Assessment', () => {
     let routerSpy: Record<string, ReturnType<typeof vi.fn>>;
 
     const setup = (opts: SetupOptions = {}): void => {
-        const { patientId = 'patient-123', getAssessmentsReturn, addAssessmentReturn } = opts;
+        const { patientId = 'patient-123', getAssessmentsReturn, addAssessmentReturn, assignAssessmentReturn } = opts;
 
         patientServiceSpy = {
             getAssessments: vi.fn().mockReturnValue(getAssessmentsReturn ?? of(mockAssessments)),
             addAssessment: vi.fn().mockReturnValue(addAssessmentReturn ?? of(mockAssessments[0])),
+            assignAssessment: vi.fn().mockReturnValue(assignAssessmentReturn ?? of(mockAssessments[0])),
         };
         notificationSpy = { success: vi.fn(), error: vi.fn() };
         routerSpy = { navigate: vi.fn() };
@@ -216,5 +222,34 @@ describe('Assessment', () => {
         fixture.detectChanges();
         const assessment = mockAssessments[0];
         expect(component.trackByAssessmentId(0, assessment)).toBe('assess-1');
+    });
+
+    it('should default to score mode', (): void => {
+        setup();
+        fixture.detectChanges();
+        expect(component.form.get('mode')?.value).toBe('score');
+    });
+
+    it('should clear totalScore/assessmentDate validators when switching to assign mode', (): void => {
+        setup();
+        fixture.detectChanges();
+        component.form.get('mode')?.setValue('assign');
+        component.form.get('totalScore')?.setValue(null);
+        component.form.get('assessmentDate')?.setValue('');
+        expect(component.form.get('totalScore')?.valid).toBe(true);
+        expect(component.form.get('assessmentDate')?.valid).toBe(true);
+    });
+
+    it('should call assignAssessment (not addAssessment) when submitting in assign mode', (): void => {
+        setup();
+        fixture.detectChanges();
+        component.form.patchValue({ mode: 'assign', templateId: 'phq-9' });
+        component.onSubmit();
+        expect(patientServiceSpy['assignAssessment']).toHaveBeenCalledWith('patient-123', {
+            templateId: 'phq-9',
+            title: 'PHQ-9 (اكتئاب)',
+        });
+        expect(patientServiceSpy['addAssessment']).not.toHaveBeenCalled();
+        expect(notificationSpy['success']).toHaveBeenCalledWith('تم إسناد التقييم إلى المريض بنجاح');
     });
 });
