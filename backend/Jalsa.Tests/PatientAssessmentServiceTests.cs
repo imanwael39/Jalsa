@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using FluentAssertions;
 using Jalsa.Application.DTOs.PatientAssessment;
 using Jalsa.Application.Interfaces.Repositories;
+using Jalsa.Application.Interfaces.Services;
 using Jalsa.Domain.Models.Assessment;
 using Jalsa.Domain.Models.Clinic;
 using Jalsa.Domain.Models.Crisis;
@@ -24,6 +25,7 @@ public class PatientAssessmentServiceTests
     private readonly Mock<IGenericRepository<Therapist>> _therapistRepoMock;
     private readonly Mock<IGenericRepository<CrisisAlert>> _crisisAlertRepoMock;
     private readonly Mock<IGenericRepository<Notification>> _notificationRepoMock;
+    private readonly Mock<INotificationPushService> _pushServiceMock;
     private readonly PatientAssessmentService _sut;
 
     private readonly Guid _userId = Guid.NewGuid();
@@ -43,6 +45,7 @@ public class PatientAssessmentServiceTests
         _therapistRepoMock = new Mock<IGenericRepository<Therapist>>();
         _crisisAlertRepoMock = new Mock<IGenericRepository<CrisisAlert>>();
         _notificationRepoMock = new Mock<IGenericRepository<Notification>>();
+        _pushServiceMock = new Mock<INotificationPushService>();
 
         _unitOfWorkMock.Setup(u => u.Repository<AssessmentTemplate>()).Returns(_templateRepoMock.Object);
         _unitOfWorkMock.Setup(u => u.Repository<AssessmentQuestion>()).Returns(_questionRepoMock.Object);
@@ -64,7 +67,11 @@ public class PatientAssessmentServiceTests
             .Setup(r => r.FindSingleAsync(It.IsAny<Expression<Func<Therapist, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Therapist { Id = _therapistId, UserId = Guid.NewGuid(), FullName = "د. أحمد سالم", LicenseNumber = "L-1" });
 
-        _sut = new PatientAssessmentService(_patientRepoMock.Object, _assessmentRepoMock.Object, _unitOfWorkMock.Object);
+        _sut = new PatientAssessmentService(
+            _patientRepoMock.Object,
+            _assessmentRepoMock.Object,
+            _unitOfWorkMock.Object,
+            _pushServiceMock.Object);
     }
 
     private Assessment CreateAssignedAssessment() => new()

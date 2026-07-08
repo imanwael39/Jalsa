@@ -9,10 +9,12 @@ namespace Jalsa.Infrastructure.Services;
 public class EmailNotificationService : INotificationService
 {
     private readonly JalsaDbContext _context;
+    private readonly INotificationPushService _pushService;
 
-    public EmailNotificationService(JalsaDbContext context)
+    public EmailNotificationService(JalsaDbContext context, INotificationPushService pushService)
     {
         _context = context;
+        _pushService = pushService;
     }
 
     public async Task SendExerciseReminderAsync(Guid patientId, string exerciseDescription, DateOnly dueDate)
@@ -45,6 +47,26 @@ public class EmailNotificationService : INotificationService
 
         _context.Notifications.Add(notification);
         await _context.SaveChangesAsync();
+
+        // A push failure must never undo the notification write — it's already
+        // persisted and will show up on the recipient's next poll/page load.
+        try
+        {
+            await _pushService.PushToUserAsync(recipientUserId, new NotificationViewDto
+            {
+                Id = notification.Id,
+                Type = notification.Type,
+                Title = notification.Title,
+                Body = notification.Body,
+                IsRead = notification.IsRead,
+                ReadAt = notification.ReadAt,
+                CreatedAt = notification.CreatedAt
+            });
+        }
+        catch
+        {
+            // Real-time push is a convenience layer; polling/page load is the source of truth.
+        }
     }
 
     public async Task<NotificationListDto> GetNotificationsAsync(Guid userId, bool unreadOnly = false)

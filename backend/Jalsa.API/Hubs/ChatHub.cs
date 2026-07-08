@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Jalsa.API.Services.Interfaces.AI;
+using Jalsa.Application.DTOs.Notification;
+using Jalsa.Application.Interfaces.Services;
 using Jalsa.Domain.Models.Chat;
 using Jalsa.Domain.Models.Clinic;
 using Jalsa.Domain.Models.Crisis;
@@ -17,17 +19,20 @@ public class ChatHub : Hub
     private readonly IChatAiService _chatAi;
     private readonly IConversationMemoryService _memory;
     private readonly ICrisisDetectionService _crisisDetection;
+    private readonly INotificationPushService _pushService;
     private readonly JalsaDbContext _context;
 
     public ChatHub(
         IChatAiService chatAi,
         IConversationMemoryService memory,
         ICrisisDetectionService crisisDetection,
+        INotificationPushService pushService,
         JalsaDbContext context)
     {
         _chatAi = chatAi;
         _memory = memory;
         _crisisDetection = crisisDetection;
+        _pushService = pushService;
         _context = context;
     }
 
@@ -63,6 +68,8 @@ public class ChatHub : Hub
 
         var lang = message.Any(c => c >= 0x0600 && c <= 0x06FF) ? "ar" : "en";
         var crisisResult = await _crisisDetection.AnalyzeAsync(message);
+        Notification? crisisNotification = null;
+        Guid? crisisNotificationRecipientId = null;
         if (crisisResult.IsCrisis)
         {
             var therapist = await _context.Therapists
@@ -84,7 +91,7 @@ public class ChatHub : Hub
             if (therapist != null)
             {
                 var snippet = patientMsg.Content[..Math.Min(100, patientMsg.Content.Length)];
-                _context.Notifications.Add(new Notification
+                crisisNotification = new Notification
                 {
                     Id = Guid.NewGuid(),
                     RecipientUserId = therapist.UserId,
@@ -92,11 +99,36 @@ public class ChatHub : Hub
                     Title = lang == "ar" ? "تنبيه أزمة" : "Crisis Alert",
                     Body = lang == "ar" ? $"المريض: {snippet}..." : $"Patient: {snippet}...",
                     CreatedAt = DateTime.UtcNow
-                });
+                };
+                crisisNotificationRecipientId = therapist.UserId;
+                _context.Notifications.Add(crisisNotification);
             }
         }
 
         await _context.SaveChangesAsync();
+
+        if (crisisNotification != null && crisisNotificationRecipientId.HasValue)
+        {
+            // A push failure must never break the chat flow — the notification row
+            // is already persisted and will show up on the therapist's next poll.
+            try
+            {
+                await _pushService.PushToUserAsync(crisisNotificationRecipientId.Value, new NotificationViewDto
+                {
+                    Id = crisisNotification.Id,
+                    Type = crisisNotification.Type,
+                    Title = crisisNotification.Title,
+                    Body = crisisNotification.Body,
+                    IsRead = crisisNotification.IsRead,
+                    ReadAt = crisisNotification.ReadAt,
+                    CreatedAt = crisisNotification.CreatedAt
+                });
+            }
+            catch
+            {
+                // Real-time push is a convenience layer; polling/page load is the source of truth.
+            }
+        }
 
         await _memory.StoreMessageMemoryAsync(conversationId, patientId, patientMsg.Id, message);
 
