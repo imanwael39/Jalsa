@@ -11,6 +11,10 @@ export interface Patient {
     address: string | null;
     referralSource: string | null;
     chiefComplaint: string | null;
+    emergencyContactName: string | null;
+    emergencyContactRelationship: string | null;
+    emergencyContactPhone: string | null;
+    treatmentStartDate: string | null;
     status: string;
     createdAt: string;
     updatedAt: string;
@@ -27,6 +31,10 @@ export interface CreatePatientRequest {
     address?: string | null;
     referralSource?: string | null;
     chiefComplaint?: string | null;
+    emergencyContactName?: string | null;
+    emergencyContactRelationship?: string | null;
+    emergencyContactPhone?: string | null;
+    treatmentStartDate?: string | null;
 }
 
 export interface UpdatePatientRequest {
@@ -38,6 +46,10 @@ export interface UpdatePatientRequest {
     address?: string | null;
     referralSource?: string | null;
     chiefComplaint?: string | null;
+    emergencyContactName?: string | null;
+    emergencyContactRelationship?: string | null;
+    emergencyContactPhone?: string | null;
+    treatmentStartDate?: string | null;
 }
 
 export interface PatientFilter {
