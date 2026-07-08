@@ -205,6 +205,10 @@ public class SessionService : ISessionService
         DurationMinutes = session.DurationMinutes,
         SessionType = session.SessionType,
         Status = session.Status,
+        PatientRequestType = session.PatientRequestType,
+        PatientRequestNote = session.PatientRequestNote,
+        PatientRequestStatus = session.PatientRequestStatus,
+        PatientRequestedAt = session.PatientRequestedAt,
         CreatedAt = session.CreatedAt,
         UpdatedAt = session.UpdatedAt,
         Note = session.SessionNote is null ? null : MapToNoteViewDto(session.SessionNote)
