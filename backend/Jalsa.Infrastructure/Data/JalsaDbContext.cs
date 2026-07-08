@@ -327,6 +327,7 @@ public class JalsaDbContext : DbContext
             e.Property(ar => ar.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
             e.HasOne(ar => ar.Assessment).WithMany(a => a.Responses).HasForeignKey(ar => ar.AssessmentId).OnDelete(DeleteBehavior.NoAction);
             e.HasOne(ar => ar.Question).WithMany(q => q.Responses).HasForeignKey(ar => ar.QuestionId).OnDelete(DeleteBehavior.NoAction);
+            e.HasIndex(ar => new { ar.AssessmentId, ar.QuestionId }).IsUnique();
         });
 
         // ── Exercise ─────────────────────────────────────────────
