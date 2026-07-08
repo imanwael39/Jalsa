@@ -172,6 +172,58 @@ public class SessionService : ISessionService
         return session.SessionNote is null ? null : MapToNoteViewDto(session.SessionNote);
     }
 
+    public async Task<SessionViewDto> ApprovePatientRequestAsync(Guid sessionId, ApprovePatientRequestDto dto, Guid therapistId)
+    {
+        var session = await GetSessionWithOwnershipCheck(sessionId, therapistId);
+
+        if (session.PatientRequestStatus != "Pending")
+            throw new InvalidOperationException("لا يوجد طلب معلق لهذه الجلسة.");
+
+        if (session.PatientRequestType == "Reschedule")
+        {
+            if (!dto.NewSessionDate.HasValue)
+                throw new InvalidOperationException("يرجى تحديد الموعد الجديد للجلسة.");
+
+            session.SessionDate = dto.NewSessionDate.Value;
+        }
+        else if (session.PatientRequestType == "Cancel")
+        {
+            session.Status = "Cancelled";
+        }
+
+        ClearPatientRequest(session);
+        session.UpdatedAt = DateTime.UtcNow;
+
+        _sessionRepository.Update(session);
+        await _unitOfWork.SaveChangesAsync();
+
+        return MapToViewDto(session);
+    }
+
+    public async Task<SessionViewDto> RejectPatientRequestAsync(Guid sessionId, Guid therapistId)
+    {
+        var session = await GetSessionWithOwnershipCheck(sessionId, therapistId);
+
+        if (session.PatientRequestStatus != "Pending")
+            throw new InvalidOperationException("لا يوجد طلب معلق لهذه الجلسة.");
+
+        ClearPatientRequest(session);
+        session.UpdatedAt = DateTime.UtcNow;
+
+        _sessionRepository.Update(session);
+        await _unitOfWork.SaveChangesAsync();
+
+        return MapToViewDto(session);
+    }
+
+    private static void ClearPatientRequest(Session session)
+    {
+        session.PatientRequestType = null;
+        session.PatientRequestNote = null;
+        session.PatientRequestStatus = null;
+        session.PatientRequestedAt = null;
+    }
+
     private async Task<Session> GetSessionWithOwnershipCheck(Guid sessionId, Guid therapistId)
     {
         var session = await _sessionRepository.GetByIdAsync(sessionId)

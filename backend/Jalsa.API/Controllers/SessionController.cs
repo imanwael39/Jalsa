@@ -89,4 +89,20 @@ public class SessionController : BaseController
         var summary = await _summarizationService.SummarizeSessionAsync(id, language, therapistId);
         return Ok(new { sessionId = id, summary });
     }
+
+    [HttpPost("{id:guid}/patient-request/approve")]
+    public async Task<IActionResult> ApprovePatientRequest(Guid id, [FromBody] ApprovePatientRequestDto dto)
+    {
+        var therapistId = GetCurrentUserId();
+        var result = await _sessionService.ApprovePatientRequestAsync(id, dto, therapistId);
+        return Ok(result);
+    }
+
+    [HttpPost("{id:guid}/patient-request/reject")]
+    public async Task<IActionResult> RejectPatientRequest(Guid id)
+    {
+        var therapistId = GetCurrentUserId();
+        var result = await _sessionService.RejectPatientRequestAsync(id, therapistId);
+        return Ok(result);
+    }
 }
