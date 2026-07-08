@@ -76,3 +76,4 @@ export type {
 } from './patient-assessment.model';
 export type { ApiResponse } from './api-response.model';
 export type { RagSource, AiGenerationDiagnostics } from './ai.model';
+export type { PatientSessionSummary, PatientSessionDetail, SessionChangeRequest } from './patient-session.model';

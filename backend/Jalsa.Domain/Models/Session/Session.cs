@@ -10,6 +10,10 @@ public class Session
     public int? DurationMinutes { get; set; }
     public string? SessionType { get; set; }
     public string Status { get; set; } = "Draft";
+    public string? PatientRequestType { get; set; }
+    public string? PatientRequestNote { get; set; }
+    public string? PatientRequestStatus { get; set; }
+    public DateTime? PatientRequestedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

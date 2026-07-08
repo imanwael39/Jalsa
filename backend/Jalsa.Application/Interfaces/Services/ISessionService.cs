@@ -11,4 +11,6 @@ public interface ISessionService
     Task<IEnumerable<SessionViewDto>> GetByPatientIdAsync(Guid patientId, Guid therapistId);
     Task<SessionNoteViewDto> SaveNoteAsync(Guid sessionId, SessionNoteDto dto, Guid therapistId);
     Task<SessionNoteViewDto?> GetNoteAsync(Guid sessionId, Guid therapistId);
+    Task<SessionViewDto> ApprovePatientRequestAsync(Guid sessionId, ApprovePatientRequestDto dto, Guid therapistId);
+    Task<SessionViewDto> RejectPatientRequestAsync(Guid sessionId, Guid therapistId);
 }

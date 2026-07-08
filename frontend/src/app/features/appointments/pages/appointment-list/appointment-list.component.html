@@ -1,0 +1,167 @@
+<div class="appointments">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">مواعيدي</h1>
+            <p class="page-subtitle">تابع جلساتك القادمة والسابقة، واطلب تعديل أو إلغاء موعد عند الحاجة</p>
+        </div>
+        <div class="view-toggle">
+            <app-button
+                [variant]="viewMode() === 'list' ? 'primary' : 'ghost'"
+                size="sm"
+                (clicked)="setViewMode('list')"
+            >
+                <i class="bi bi-list-ul"></i>
+                قائمة
+            </app-button>
+            <app-button
+                [variant]="viewMode() === 'calendar' ? 'primary' : 'ghost'"
+                size="sm"
+                (clicked)="setViewMode('calendar')"
+            >
+                <i class="bi bi-calendar3"></i>
+                تقويم
+            </app-button>
+        </div>
+    </div>
+
+    @if (error()) {
+        <div class="error-state">
+            <div class="error-state-icon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <h3 class="error-state-title">تعذّر تحميل المواعيد</h3>
+            <p class="error-state-message">{{ error() }}</p>
+            <app-button variant="primary" size="sm" (clicked)="loadSessions()">إعادة المحاولة</app-button>
+        </div>
+    }
+
+    @if (loading() && sessions().length === 0 && !error()) {
+        <div class="skeleton-list">
+            @for (i of [1, 2, 3]; track i) {
+                <div class="skeleton-card"></div>
+            }
+        </div>
+    }
+
+    @if (!error() && !loading() && sessions().length === 0) {
+        <app-empty-state
+            title="لا توجد مواعيد بعد"
+            message="ستظهر هنا جلساتك بمجرد أن يقوم معالجك بجدولتها"
+            icon="bi-calendar-x"
+        ></app-empty-state>
+    }
+
+    @if (!error() && sessions().length > 0) {
+        @if (viewMode() === 'list') {
+            <div class="sessions-groups">
+                <section class="sessions-group">
+                    <h2 class="group-title">الجلسات القادمة</h2>
+                    @if (upcomingSessions().length > 0) {
+                        <div class="session-cards">
+                            @for (session of upcomingSessions(); track session.id) {
+                                <button type="button" class="session-card" (click)="openSession(session.id)">
+                                    <div class="session-card-date">
+                                        <i class="bi bi-calendar3"></i>
+                                        {{ session.sessionDate }}
+                                    </div>
+                                    <div class="session-card-info">
+                                        <span class="session-type">{{ session.sessionType || 'جلسة' }}</span>
+                                        @if (session.durationMinutes) {
+                                            <span class="session-duration">{{ session.durationMinutes }} دقيقة</span>
+                                        }
+                                    </div>
+                                    <div class="session-card-badges">
+                                        <span class="badge status-badge" [class]="'status-' + session.status">
+                                            {{ session.status | statusAr }}
+                                        </span>
+                                        @if (session.patientRequestStatus === 'Pending') {
+                                            <span class="badge request-badge">
+                                                طلب {{ session.patientRequestType | statusAr }} قيد الانتظار
+                                            </span>
+                                        }
+                                    </div>
+                                    <i class="bi bi-chevron-left session-card-arrow"></i>
+                                </button>
+                            }
+                        </div>
+                    } @else {
+                        <p class="group-empty">لا توجد جلسات قادمة</p>
+                    }
+                </section>
+
+                <section class="sessions-group">
+                    <h2 class="group-title">الجلسات السابقة</h2>
+                    @if (pastSessions().length > 0) {
+                        <div class="session-cards">
+                            @for (session of pastSessions(); track session.id) {
+                                <button type="button" class="session-card past" (click)="openSession(session.id)">
+                                    <div class="session-card-date">
+                                        <i class="bi bi-calendar3"></i>
+                                        {{ session.sessionDate }}
+                                    </div>
+                                    <div class="session-card-info">
+                                        <span class="session-type">{{ session.sessionType || 'جلسة' }}</span>
+                                        @if (session.durationMinutes) {
+                                            <span class="session-duration">{{ session.durationMinutes }} دقيقة</span>
+                                        }
+                                    </div>
+                                    <div class="session-card-badges">
+                                        <span class="badge status-badge" [class]="'status-' + session.status">
+                                            {{ session.status | statusAr }}
+                                        </span>
+                                    </div>
+                                    <i class="bi bi-chevron-left session-card-arrow"></i>
+                                </button>
+                            }
+                        </div>
+                    } @else {
+                        <p class="group-empty">لا توجد جلسات سابقة</p>
+                    }
+                </section>
+            </div>
+        } @else {
+            <div class="calendar">
+                <div class="calendar-header">
+                    <app-button variant="ghost" size="sm" (clicked)="goToPreviousMonth()">
+                        <i class="bi bi-chevron-right"></i>
+                    </app-button>
+                    <div class="calendar-month">
+                        <span>{{ monthLabel() }}</span>
+                        <button type="button" class="today-link" (click)="goToToday()">اليوم</button>
+                    </div>
+                    <app-button variant="ghost" size="sm" (clicked)="goToNextMonth()">
+                        <i class="bi bi-chevron-left"></i>
+                    </app-button>
+                </div>
+
+                <div class="calendar-grid calendar-weekdays">
+                    @for (label of weekdayLabels; track label) {
+                        <div class="calendar-weekday">{{ label }}</div>
+                    }
+                </div>
+
+                <div class="calendar-grid">
+                    @for (day of calendarDays(); track $index) {
+                        <div class="calendar-day" [class.empty]="!day.dayNumber" [class.today]="isToday(day.dateKey)">
+                            @if (day.dayNumber) {
+                                <span class="day-number">{{ day.dayNumber }}</span>
+                                <div class="day-sessions">
+                                    @for (session of day.sessions; track session.id) {
+                                        <button
+                                            type="button"
+                                            class="day-session-pill"
+                                            [class]="'status-' + session.status"
+                                            (click)="openSession(session.id)"
+                                        >
+                                            {{ session.sessionType || 'جلسة' }}
+                                        </button>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>

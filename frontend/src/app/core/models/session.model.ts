@@ -8,6 +8,10 @@ export interface Session {
     durationMinutes: number | null;
     sessionType: string | null;
     status: string;
+    patientRequestType: string | null;
+    patientRequestNote: string | null;
+    patientRequestStatus: string | null;
+    patientRequestedAt: string | null;
     createdAt: string;
     updatedAt: string;
 }

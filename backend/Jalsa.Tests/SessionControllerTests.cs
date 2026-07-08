@@ -211,4 +211,44 @@ public class SessionControllerTests
         // Assert
         result.Should().BeOfType<NotFoundResult>();
     }
+
+    [Fact]
+    public async Task ApprovePatientRequest_ValidDto_ReturnsOkWithUpdatedSession()
+    {
+        // Arrange
+        var sessionId = Guid.NewGuid();
+        var dto = new ApprovePatientRequestDto { NewSessionDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(10)) };
+        var updated = MakeSessionDto(id: sessionId);
+        updated.SessionDate = dto.NewSessionDate!.Value;
+
+        _sessionServiceMock
+            .Setup(x => x.ApprovePatientRequestAsync(sessionId, dto, _therapistUserId))
+            .ReturnsAsync(updated);
+
+        // Act
+        var result = await _sut.ApprovePatientRequest(sessionId, dto);
+
+        // Assert
+        var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+        ok.Value.Should().BeEquivalentTo(updated);
+    }
+
+    [Fact]
+    public async Task RejectPatientRequest_ValidId_ReturnsOkWithUpdatedSession()
+    {
+        // Arrange
+        var sessionId = Guid.NewGuid();
+        var updated = MakeSessionDto(id: sessionId);
+
+        _sessionServiceMock
+            .Setup(x => x.RejectPatientRequestAsync(sessionId, _therapistUserId))
+            .ReturnsAsync(updated);
+
+        // Act
+        var result = await _sut.RejectPatientRequest(sessionId);
+
+        // Assert
+        var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+        ok.Value.Should().BeEquivalentTo(updated);
+    }
 }

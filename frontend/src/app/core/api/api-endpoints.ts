@@ -27,6 +27,8 @@ export const API = {
         byPatient: (patientId: string) => `/api/sessions/patient/${patientId}`,
         byId: (id: string) => `/api/sessions/${id}`,
         summary: (id: string) => `/api/sessions/${id}/summary`,
+        approvePatientRequest: (id: string) => `/api/sessions/${id}/patient-request/approve`,
+        rejectPatientRequest: (id: string) => `/api/sessions/${id}/patient-request/reject`,
     },
     exercises: {
         base: '/api/exercises',
@@ -52,6 +54,11 @@ export const API = {
     patientProgress: {
         summary: '/api/patient-progress',
     },
+    patientSessions: {
+        base: '/api/patient-sessions',
+        byId: (id: string) => `/api/patient-sessions/${id}`,
+        requestReschedule: (id: string) => `/api/patient-sessions/${id}/request-reschedule`,
+        requestCancel: (id: string) => `/api/patient-sessions/${id}/request-cancel`,
     patientAssessments: {
         base: '/api/patient-assessments',
         byId: (id: string) => `/api/patient-assessments/${id}`,

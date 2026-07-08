@@ -4,6 +4,7 @@ using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jalsa.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(JalsaDbContext))]
-    partial class JalsaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260708075240_AddSessionPatientRequestFields")]
+    partial class AddSessionPatientRequestFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -132,9 +135,6 @@ namespace Jalsa.Infrastructure.Data.Migrations
                     b.Property<DateOnly?>("AssessmentDate")
                         .HasColumnType("date");
 
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
@@ -243,10 +243,9 @@ namespace Jalsa.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("QuestionId");
+                    b.HasIndex("AssessmentId");
 
-                    b.HasIndex("AssessmentId", "QuestionId")
-                        .IsUnique();
+                    b.HasIndex("QuestionId");
 
                     b.ToTable("AssessmentResponses", (string)null);
                 });

@@ -128,7 +128,7 @@ describe('PatientProgressComponent', () => {
     it('should translate attendance status labels to Arabic', (): void => {
         setup();
         fixture.detectChanges();
-        expect(component.attendanceLabels()).toEqual(['مكتمل', 'Cancelled']);
+        expect(component.attendanceLabels()).toEqual(['مكتمل', 'ملغاة']);
     });
 
     it('should reload progress using the from/to filter values on submit', (): void => {
