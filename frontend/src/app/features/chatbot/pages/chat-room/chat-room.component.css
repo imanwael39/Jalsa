@@ -244,8 +244,13 @@
     line-height: 1.6;
     word-break: break-word;
 }
+/* currentColor-based tint instead of a literal black overlay: this bubble
+   can sit on --surface (light text on dark, dark text on light) or on a
+   solid --primary background (always white text) depending on sender, so
+   deriving the chip color from the surrounding text color keeps it
+   readable in every combination without needing per-bubble overrides. */
 ::ng-deep .message-content .md-code-block {
-    background: rgba(0, 0, 0, 0.06);
+    background: color-mix(in srgb, currentColor 10%, transparent);
     border-radius: var(--radius-sm);
     padding: var(--space-2);
     overflow-x: auto;
@@ -253,7 +258,7 @@
     margin: var(--space-2) 0;
 }
 ::ng-deep .message-content .md-inline-code {
-    background: rgba(0, 0, 0, 0.08);
+    background: color-mix(in srgb, currentColor 12%, transparent);
     border-radius: 3px;
     padding: 0.05rem 0.3rem;
     font-size: 0.9em;
