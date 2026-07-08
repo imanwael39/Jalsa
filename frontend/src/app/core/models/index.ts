@@ -62,5 +62,11 @@ export type {
     TherapistInfo,
     CrisisSupportInfo,
 } from './patient-dashboard.model';
+export type {
+    PatientProgress,
+    AttendanceBreakdown,
+    ProgressStatistics,
+    PatientProgressDateFilter,
+} from './patient-progress.model';
 export type { ApiResponse } from './api-response.model';
 export type { RagSource, AiGenerationDiagnostics } from './ai.model';
