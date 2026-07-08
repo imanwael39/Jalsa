@@ -59,6 +59,7 @@ export const API = {
         byId: (id: string) => `/api/patient-sessions/${id}`,
         requestReschedule: (id: string) => `/api/patient-sessions/${id}/request-reschedule`,
         requestCancel: (id: string) => `/api/patient-sessions/${id}/request-cancel`,
+    },
     patientAssessments: {
         base: '/api/patient-assessments',
         byId: (id: string) => `/api/patient-assessments/${id}`,

@@ -2,6 +2,7 @@ export interface Environment {
     production: boolean;
     apiUrl: string;
     signalRHubUrl: string;
+    notificationHubUrl: string;
     aiServiceUrl: string;
     appName: string;
     enableMockApi: boolean;

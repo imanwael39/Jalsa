@@ -4,6 +4,7 @@ export const environment: Environment = {
     production: false,
     apiUrl: 'https://staging-api.jalsa.com/api',
     signalRHubUrl: 'https://staging-api.jalsa.com/chatHub',
+    notificationHubUrl: 'https://staging-api.jalsa.com/notificationHub',
     aiServiceUrl: 'https://staging-ai.jalsa.com',
     appName: 'Jalsa (Staging)',
     enableMockApi: false,

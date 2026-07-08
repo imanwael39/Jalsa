@@ -6,19 +6,21 @@ import {
     ChangeDetectionStrategy,
     signal,
     computed,
+    effect,
     OnInit,
     OnDestroy,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { InAppNotificationService, InAppNotification } from '../../../core/services/in-app-notification.service';
+import { NotificationService as ToastService } from '../../../core/services/notification.service';
 import { AppStateService } from '../../../core/services/app-state.service';
 import { ClickOutsideDirective } from '../../directives/click-outside/click-outside.directive';
 
 @Component({
     selector: 'app-header',
     standalone: true,
-    imports: [ClickOutsideDirective],
+    imports: [ClickOutsideDirective, RouterLink],
     templateUrl: './header.component.html',
     styleUrls: ['./header.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,6 +31,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private authService = inject(AuthService);
     private router = inject(Router);
     readonly notifService = inject(InAppNotificationService);
+    private readonly toast = inject(ToastService);
     private readonly appState = inject(AppStateService);
 
     user = this.authService.currentUser;
@@ -37,6 +40,20 @@ export class HeaderComponent implements OnInit, OnDestroy {
     isDropdownOpen = signal(false);
     isNotifOpen = signal(false);
     searchQuery = signal('');
+
+    constructor() {
+        effect(() => {
+            const notification = this.notifService.newNotification();
+            if (!notification) return;
+
+            const message = notification.body ? `${notification.title}: ${notification.body}` : notification.title;
+            if (notification.type === 'CrisisAlert') {
+                this.toast.warning(message);
+            } else {
+                this.toast.info(message);
+            }
+        });
+    }
 
     ngOnInit(): void {
         if (this.authService.isAuthenticated()) {

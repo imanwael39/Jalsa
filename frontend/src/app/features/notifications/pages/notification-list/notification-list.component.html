@@ -1,0 +1,50 @@
+<div class="notifications-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">الإشعارات</h1>
+            <p class="page-subtitle">جميع الإشعارات المرسلة إليك</p>
+        </div>
+        <div class="page-actions">
+            <app-button [variant]="showUnreadOnly() ? 'primary' : 'ghost'" size="sm" (clicked)="toggleUnreadOnly()">
+                {{ showUnreadOnly() ? 'عرض الكل' : 'غير المقروءة فقط' }}
+            </app-button>
+            @if (unreadCount() > 0) {
+                <app-button variant="ghost" size="sm" (clicked)="markAllRead()"> تحديد الكل كمقروء </app-button>
+            }
+        </div>
+    </div>
+
+    @if (filteredNotifications().length === 0) {
+        <app-empty-state
+            [title]="showUnreadOnly() ? 'لا توجد إشعارات غير مقروءة' : 'لا توجد إشعارات'"
+            message="ستظهر هنا الإشعارات الجديدة فور وصولها"
+            icon="bi-bell"
+        ></app-empty-state>
+    } @else {
+        <div class="notification-cards">
+            @for (n of filteredNotifications(); track n.id) {
+                <button
+                    type="button"
+                    class="notification-card"
+                    [class.unread]="!n.isRead"
+                    [class.crisis]="n.type === 'CrisisAlert'"
+                    (click)="onNotificationClick(n)"
+                >
+                    <div class="notification-icon" [class.crisis]="n.type === 'CrisisAlert'">
+                        <i class="bi" [class]="iconClass(n.type)"></i>
+                    </div>
+                    <div class="notification-content">
+                        <p class="notification-title">{{ n.title }}</p>
+                        @if (n.body) {
+                            <p class="notification-body">{{ n.body }}</p>
+                        }
+                        <span class="notification-date">{{ n.createdAt | date: 'medium' }}</span>
+                    </div>
+                    @if (!n.isRead) {
+                        <span class="unread-dot"></span>
+                    }
+                </button>
+            }
+        </div>
+    }
+</div>

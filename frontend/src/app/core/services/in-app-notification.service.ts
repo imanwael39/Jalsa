@@ -1,6 +1,8 @@
 import { Injectable, inject, signal } from '@angular/core';
+import * as signalR from '@microsoft/signalr';
 import { HttpClientService } from '../api/http-client.service';
 import { API } from '../api/api-endpoints';
+import { environment } from '../../../environments/environment';
 
 export interface InAppNotification {
     id: string;
@@ -23,11 +25,15 @@ export class InAppNotificationService {
 
     private notificationsSignal = signal<InAppNotification[]>([]);
     private unreadCountSignal = signal(0);
+    private newNotificationSignal = signal<InAppNotification | null>(null);
 
     readonly notifications = this.notificationsSignal.asReadonly();
     readonly unreadCount = this.unreadCountSignal.asReadonly();
+    /** Emits the most recently pushed notification so consumers (e.g. a toast) can react to it. */
+    readonly newNotification = this.newNotificationSignal.asReadonly();
 
     private pollInterval: ReturnType<typeof setInterval> | null = null;
+    private hubConnection: signalR.HubConnection | null = null;
 
     load(): void {
         this.http.get<NotificationsResponse>(API.notifications.base).subscribe({
@@ -44,12 +50,40 @@ export class InAppNotificationService {
     startPolling(intervalMs = 30_000): void {
         this.load();
         this.pollInterval = setInterval(() => this.load(), intervalMs);
+        this.startRealtimeConnection();
     }
 
     stopPolling(): void {
         if (this.pollInterval !== null) {
             clearInterval(this.pollInterval);
             this.pollInterval = null;
+        }
+        this.stopRealtimeConnection();
+    }
+
+    private startRealtimeConnection(): void {
+        this.hubConnection = new signalR.HubConnectionBuilder()
+            .withUrl(environment.notificationHubUrl, {
+                accessTokenFactory: () => localStorage.getItem('jalsa_token') ?? '',
+            })
+            .withAutomaticReconnect()
+            .build();
+
+        this.hubConnection.on('ReceiveNotification', (notification: InAppNotification) => {
+            this.notificationsSignal.update(list => [notification, ...list]);
+            this.unreadCountSignal.update(c => c + 1);
+            this.newNotificationSignal.set(notification);
+        });
+
+        this.hubConnection.start().catch(() => {
+            /* silent — 30s polling remains the source of truth if the socket never connects */
+        });
+    }
+
+    private stopRealtimeConnection(): void {
+        if (this.hubConnection) {
+            this.hubConnection.stop().catch(() => {});
+            this.hubConnection = null;
         }
     }
 

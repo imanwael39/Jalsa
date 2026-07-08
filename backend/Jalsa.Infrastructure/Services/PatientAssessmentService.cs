@@ -1,3 +1,4 @@
+using Jalsa.Application.DTOs.Notification;
 using Jalsa.Application.DTOs.PatientAssessment;
 using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Application.Interfaces.Services;
@@ -17,15 +18,18 @@ public class PatientAssessmentService : IPatientAssessmentService
     private readonly IPatientRepository _patientRepository;
     private readonly IAssessmentRepository _assessmentRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly INotificationPushService _pushService;
 
     public PatientAssessmentService(
         IPatientRepository patientRepository,
         IAssessmentRepository assessmentRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        INotificationPushService pushService)
     {
         _patientRepository = patientRepository;
         _assessmentRepository = assessmentRepository;
         _unitOfWork = unitOfWork;
+        _pushService = pushService;
     }
 
     public async Task<List<PatientAssessmentSummaryDto>> GetListAsync(Guid userId)
@@ -158,29 +162,52 @@ public class PatientAssessmentService : IPatientAssessmentService
         assessment.UpdatedAt = DateTime.UtcNow;
         _assessmentRepository.Update(assessment);
 
-        await CheckForCrisisIndicatorsAsync(patientId, template, questions, responses);
+        var crisisNotification = await CheckForCrisisIndicatorsAsync(patientId, template, questions, responses);
 
         await _unitOfWork.SaveChangesAsync();
+
+        if (crisisNotification is not null)
+        {
+            // A push failure must never break assessment submission — the notification
+            // row is already persisted and will show up on the therapist's next poll.
+            try
+            {
+                await _pushService.PushToUserAsync(crisisNotification.RecipientUserId, new NotificationViewDto
+                {
+                    Id = crisisNotification.Id,
+                    Type = crisisNotification.Type,
+                    Title = crisisNotification.Title,
+                    Body = crisisNotification.Body,
+                    IsRead = crisisNotification.IsRead,
+                    ReadAt = crisisNotification.ReadAt,
+                    CreatedAt = crisisNotification.CreatedAt
+                });
+            }
+            catch
+            {
+                // Real-time push is a convenience layer; polling/page load is the source of truth.
+            }
+        }
 
         return BuildDetailDto(assessment, template, questions.OrderBy(q => q.SortOrder).ToList(), responses);
     }
 
-    private async Task CheckForCrisisIndicatorsAsync(
+    private async Task<Notification?> CheckForCrisisIndicatorsAsync(
         Guid patientId,
         AssessmentTemplate template,
         List<AssessmentQuestion> questions,
         List<AssessmentResponse> responses)
     {
-        if (template.Name != Phq9TemplateName) return;
+        if (template.Name != Phq9TemplateName) return null;
 
         var lastQuestion = questions.OrderByDescending(q => q.SortOrder).FirstOrDefault();
-        if (lastQuestion is null) return;
+        if (lastQuestion is null) return null;
 
         var lastResponse = responses.FirstOrDefault(r => r.QuestionId == lastQuestion.Id);
-        if (lastResponse?.AnswerNumber is null || lastResponse.AnswerNumber <= 0) return;
+        if (lastResponse?.AnswerNumber is null || lastResponse.AnswerNumber <= 0) return null;
 
         var patient = await _unitOfWork.Repository<PatientEntity>().GetByIdAsync(patientId);
-        if (patient is null) return;
+        if (patient is null) return null;
 
         var therapist = await _unitOfWork.Repository<Therapist>().FindSingleAsync(t => t.Id == patient.TherapistId);
 
@@ -195,18 +222,20 @@ public class PatientAssessmentService : IPatientAssessmentService
             UpdatedAt = DateTime.UtcNow
         });
 
-        if (therapist != null)
+        if (therapist is null) return null;
+
+        var notification = new Notification
         {
-            await _unitOfWork.Repository<Notification>().AddAsync(new Notification
-            {
-                Id = Guid.NewGuid(),
-                RecipientUserId = therapist.UserId,
-                Type = "CrisisAlert",
-                Title = "تنبيه أزمة",
-                Body = $"أشارت إجابات المريض {patient.FullName} على تقييم PHQ-9 إلى احتمال وجود أفكار إيذاء النفس. يرجى المتابعة فوراً.",
-                CreatedAt = DateTime.UtcNow
-            });
-        }
+            Id = Guid.NewGuid(),
+            RecipientUserId = therapist.UserId,
+            Type = "CrisisAlert",
+            Title = "تنبيه أزمة",
+            Body = $"أشارت إجابات المريض {patient.FullName} على تقييم PHQ-9 إلى احتمال وجود أفكار إيذاء النفس. يرجى المتابعة فوراً.",
+            CreatedAt = DateTime.UtcNow
+        };
+        await _unitOfWork.Repository<Notification>().AddAsync(notification);
+
+        return notification;
     }
 
     private static string? ComputeSeverity(string templateName, decimal totalScore)
