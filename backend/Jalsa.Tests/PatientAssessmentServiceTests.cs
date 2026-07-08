@@ -302,6 +302,40 @@ public class PatientAssessmentServiceTests
         _notificationRepoMock.Verify(r => r.AddAsync(
             It.Is<Notification>(n => n.Type == "CrisisAlert" && n.Body!.Contains("سارة أحمد")),
             It.IsAny<CancellationToken>()), Times.Once);
+        _pushServiceMock.Verify(
+            x => x.PushToUserAsync(
+                It.IsAny<Guid>(),
+                It.Is<Jalsa.Application.DTOs.Notification.NotificationViewDto>(n => n.Type == "CrisisAlert")),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task SubmitAsync_LastQuestionAnsweredZero_DoesNotPushNotification()
+    {
+        var assessment = CreateAssignedAssessment();
+        var questions = CreatePhq9Questions(9);
+        var responses = questions.Select(q => new AssessmentResponse
+        {
+            Id = Guid.NewGuid(),
+            AssessmentId = assessment.Id,
+            QuestionId = q.Id,
+            AnswerNumber = 0
+        }).ToList();
+
+        _assessmentRepoMock
+            .Setup(r => r.FindSingleAsync(It.IsAny<Expression<Func<Assessment, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(assessment);
+        _templateRepoMock
+            .Setup(r => r.FindSingleAsync(It.IsAny<Expression<Func<AssessmentTemplate, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AssessmentTemplate { Id = _templateId, Name = "phq-9" });
+        _questionRepoMock.Setup(r => r.Query()).Returns(new AsyncQueryProvider<AssessmentQuestion>(questions.AsQueryable()));
+        _responseRepoMock.Setup(r => r.Query()).Returns(new AsyncQueryProvider<AssessmentResponse>(responses.AsQueryable()));
+
+        await _sut.SubmitAsync(_userId, assessment.Id);
+
+        _pushServiceMock.Verify(
+            x => x.PushToUserAsync(It.IsAny<Guid>(), It.IsAny<Jalsa.Application.DTOs.Notification.NotificationViewDto>()),
+            Times.Never);
     }
 
     [Fact]
