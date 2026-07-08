@@ -77,6 +77,28 @@ builder.Services
                 new SymmetricSecurityKey(
                     Encoding.UTF8.GetBytes(JwtSettings.Key))
         };
+
+    // Browsers cannot set custom headers on the WebSocket upgrade request, so the
+    // SignalR JS client appends the token as an "access_token" query param instead.
+    // Without this hook, JwtBearer only reads the Authorization header, so the socket
+    // upgrade itself would be unauthenticated (only the initial HTTP negotiate call,
+    // which does carry the header, would succeed).
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+
+            if (!string.IsNullOrEmpty(accessToken) &&
+                (path.StartsWithSegments("/chatHub") || path.StartsWithSegments("/notificationHub")))
+            {
+                context.Token = accessToken;
+            }
+
+            return Task.CompletedTask;
+        }
+    };
 });
 
 builder.Services.AddAuthorization();
