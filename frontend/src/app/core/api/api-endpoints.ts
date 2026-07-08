@@ -52,6 +52,12 @@ export const API = {
     patientProgress: {
         summary: '/api/patient-progress',
     },
+    patientAssessments: {
+        base: '/api/patient-assessments',
+        byId: (id: string) => `/api/patient-assessments/${id}`,
+        saveAnswer: (id: string, questionId: string) => `/api/patient-assessments/${id}/responses/${questionId}`,
+        submit: (id: string) => `/api/patient-assessments/${id}/submit`,
+    },
     notifications: {
         base: '/api/notifications',
         markRead: (id: string) => `/api/notifications/${id}/read`,
