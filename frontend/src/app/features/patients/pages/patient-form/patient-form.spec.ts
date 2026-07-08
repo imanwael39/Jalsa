@@ -21,6 +21,10 @@ const mockPatient: Patient = {
     address: '123 Main St',
     referralSource: 'Self-referral',
     chiefComplaint: 'Anxiety',
+    emergencyContactName: 'Jane Doe',
+    emergencyContactRelationship: 'Spouse',
+    emergencyContactPhone: '+1234567891',
+    treatmentStartDate: '2024-01-10',
     status: 'Active',
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-02T00:00:00Z',
@@ -107,6 +111,36 @@ describe('PatientForm', () => {
         expect(patientServiceSpy['getPatient']).toHaveBeenCalledWith('123e4567-e89b-12d3-a456-426614174000');
         expect(component.form.get('fullName')?.value).toBe('John Doe');
         expect(component.form.get('email')?.value).toBe('john.doe@example.com');
+    });
+
+    it('should load emergency contact and treatment start date in edit mode', (): void => {
+        setup({ patientId: '123e4567-e89b-12d3-a456-426614174000' });
+        fixture.detectChanges();
+        expect(component.form.get('emergencyContactName')?.value).toBe('Jane Doe');
+        expect(component.form.get('emergencyContactRelationship')?.value).toBe('Spouse');
+        expect(component.form.get('emergencyContactPhone')?.value).toBe('+1234567891');
+        expect(component.form.get('treatmentStartDate')?.value).toBe('2024-01-10');
+    });
+
+    it('should submit emergency contact and treatment start date on create', (): void => {
+        setup();
+        fixture.detectChanges();
+        component.form.patchValue({
+            fullName: 'New Patient',
+            emergencyContactName: 'Jane Doe',
+            emergencyContactRelationship: 'Spouse',
+            emergencyContactPhone: '+1234567891',
+            treatmentStartDate: '2026-01-15',
+        });
+        component.onSubmit();
+        expect(patientServiceSpy['createPatient']).toHaveBeenCalledWith(
+            expect.objectContaining({
+                emergencyContactName: 'Jane Doe',
+                emergencyContactRelationship: 'Spouse',
+                emergencyContactPhone: '+1234567891',
+                treatmentStartDate: '2026-01-15',
+            })
+        );
     });
 
     it('should handle load error', (): void => {
