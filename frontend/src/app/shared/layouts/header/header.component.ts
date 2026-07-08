@@ -10,7 +10,7 @@ import {
     OnInit,
     OnDestroy,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { InAppNotificationService, InAppNotification } from '../../../core/services/in-app-notification.service';
 import { NotificationService as ToastService } from '../../../core/services/notification.service';
@@ -20,7 +20,7 @@ import { ClickOutsideDirective } from '../../directives/click-outside/click-outs
 @Component({
     selector: 'app-header',
     standalone: true,
-    imports: [ClickOutsideDirective],
+    imports: [ClickOutsideDirective, RouterLink],
     templateUrl: './header.component.html',
     styleUrls: ['./header.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush,

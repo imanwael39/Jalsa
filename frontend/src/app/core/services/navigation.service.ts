@@ -26,6 +26,7 @@ export class NavigationService {
         { label: 'تقدمي', icon: 'bi-graph-up-arrow', route: '/progress', roles: ['Patient'] },
         { label: 'مواعيدي', icon: 'bi-calendar3', route: '/appointments', roles: ['Patient'] },
         { label: 'تقييماتي', icon: 'bi-clipboard2-pulse', route: '/assessments', roles: ['Patient'] },
+        { label: 'الإشعارات', icon: 'bi-bell', route: '/notifications' },
         {
             label: 'تنبيهات الأزمات',
             icon: 'bi-exclamation-triangle-fill',
