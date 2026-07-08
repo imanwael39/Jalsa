@@ -41,4 +41,12 @@ export class SessionService {
     saveSessionNote(sessionId: string, note: Partial<SessionNote>): Observable<SessionNote> {
         return this.http.post<SessionNote>(`${API.sessions.byId(sessionId)}/note`, note);
     }
+
+    approvePatientRequest(sessionId: string, newSessionDate?: string): Observable<Session> {
+        return this.http.post<Session>(API.sessions.approvePatientRequest(sessionId), { newSessionDate });
+    }
+
+    rejectPatientRequest(sessionId: string): Observable<Session> {
+        return this.http.post<Session>(API.sessions.rejectPatientRequest(sessionId), {});
+    }
 }
