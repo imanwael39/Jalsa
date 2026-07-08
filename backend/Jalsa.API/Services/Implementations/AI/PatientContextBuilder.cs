@@ -83,7 +83,7 @@ public class PatientContextBuilder : IPatientContextBuilder
                 ReferralSource = patient.ReferralSource,
                 ChiefComplaint = patient.ChiefComplaint,
                 MedicalHistory = patient.MedicalHistory,
-                EmergencyContact = patient.EmergencyContact,
+                EmergencyContact = FormatEmergencyContact(patient),
                 Status = patient.Status,
                 CreatedAt = patient.CreatedAt
             },
@@ -196,5 +196,22 @@ public class PatientContextBuilder : IPatientContextBuilder
             Score = r.Score,
             Source = r.Source
         }).ToList();
+    }
+
+    private static string? FormatEmergencyContact(Jalsa.Domain.Models.Patient.Patient patient)
+    {
+        if (string.IsNullOrWhiteSpace(patient.EmergencyContactName) &&
+            string.IsNullOrWhiteSpace(patient.EmergencyContactRelationship) &&
+            string.IsNullOrWhiteSpace(patient.EmergencyContactPhone))
+            return null;
+
+        var parts = new[]
+        {
+            patient.EmergencyContactRelationship,
+            patient.EmergencyContactName,
+            patient.EmergencyContactPhone
+        }.Where(p => !string.IsNullOrWhiteSpace(p));
+
+        return string.Join(" - ", parts);
     }
 }
