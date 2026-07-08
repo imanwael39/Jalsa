@@ -223,4 +223,43 @@ public class AssessmentServiceTests
 
         result.SessionId.Should().Be(sessionId);
     }
+
+    [Fact]
+    public async Task AssignAsync_ExistingTemplate_CreatesAssessmentWithAssignedStatusAndNoScore()
+    {
+        var templateId = Guid.NewGuid();
+        var dto = new AssessmentAssignDto { TemplateId = "phq-9", Title = "PHQ-9" };
+
+        _patientRepoMock.Setup(r => r.GetByIdAsync(_patientId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(CreatePatient());
+        _templateRepoMock.Setup(r => r.FindSingleAsync(It.IsAny<Expression<Func<AssessmentTemplate, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AssessmentTemplate { Id = templateId, Name = "phq-9", Version = 1, IsActive = true, CreatedAt = DateTime.UtcNow });
+        _assessmentRepoMock.Setup(r => r.AddAsync(It.IsAny<Assessment>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        _unitOfWorkMock.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        var result = await _sut.AssignAsync(_patientId, dto, _therapistId);
+
+        result.Status.Should().Be("Assigned");
+        result.TotalScore.Should().BeNull();
+        result.TemplateId.Should().Be(templateId);
+    }
+
+    [Fact]
+    public async Task AssignAsync_WrongTherapist_ThrowsUnauthorized()
+    {
+        var dto = new AssessmentAssignDto { TemplateId = "phq-9" };
+        var wrongUserId = Guid.NewGuid();
+
+        _therapistRepoMock.Setup(r => r.FindSingleAsync(It.IsAny<Expression<Func<Therapist, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Therapist { Id = Guid.NewGuid(), UserId = wrongUserId, FullName = "Wrong", LicenseNumber = "LIC-999" });
+
+        _patientRepoMock.Setup(r => r.GetByIdAsync(_patientId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(CreatePatient());
+
+        var act = () => _sut.AssignAsync(_patientId, dto, wrongUserId);
+
+        await act.Should().ThrowAsync<UnauthorizedAccessException>();
+    }
 }

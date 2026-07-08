@@ -68,5 +68,11 @@ export type {
     ProgressStatistics,
     PatientProgressDateFilter,
 } from './patient-progress.model';
+export type {
+    PatientAssessmentSummary,
+    AssessmentQuestion,
+    PatientAssessmentDetail,
+    SaveAnswerRequest,
+} from './patient-assessment.model';
 export type { ApiResponse } from './api-response.model';
 export type { RagSource, AiGenerationDiagnostics } from './ai.model';

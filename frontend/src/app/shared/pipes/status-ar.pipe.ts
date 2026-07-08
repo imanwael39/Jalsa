@@ -15,6 +15,12 @@ const STATUS_MAP: Record<string, string> = {
     Skipped: 'متخطى',
     Male: 'ذكر',
     Female: 'أنثى',
+    Assigned: 'بانتظار الإكمال',
+    Minimal: 'بسيطة',
+    Mild: 'خفيفة',
+    Moderate: 'متوسطة',
+    ModeratelySevere: 'متوسطة إلى شديدة',
+    Severe: 'شديدة',
 };
 
 @Pipe({ name: 'statusAr', standalone: true })

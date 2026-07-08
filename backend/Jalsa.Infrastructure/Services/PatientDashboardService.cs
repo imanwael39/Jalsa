@@ -3,6 +3,7 @@ using Jalsa.Application.DTOs.Dashboard;
 using Jalsa.Application.DTOs.PatientDashboard;
 using Jalsa.Application.Interfaces.Repositories;
 using Jalsa.Application.Interfaces.Services;
+using Jalsa.Domain.Models.Assessment;
 using Jalsa.Domain.Models.Chat;
 using Jalsa.Domain.Models.Clinic;
 using Jalsa.Domain.Models.System;
@@ -67,7 +68,7 @@ public class PatientDashboardService : IPatientDashboardService
             UpcomingSessions = upcomingSessions,
             TodayReminders = todayReminders,
             AssignedExercises = await GetAssignedExercisesAsync(patient.Id, today),
-            PendingAssessments = new List<PendingAssessmentDto>(),
+            PendingAssessments = await GetPendingAssessmentsAsync(patient.Id),
             RecentConversations = await GetRecentConversationsAsync(patient.Id),
             ProgressOverview = await GetProgressOverviewAsync(patient.Id, sixMonthsAgo, today),
             Therapist = await GetTherapistInfoAsync(patient.TherapistId),
@@ -145,6 +146,30 @@ public class PatientDashboardService : IPatientDashboardService
             Status = e.Status,
             IsOverdue = e.DueDate.HasValue && e.DueDate.Value < today
         }).ToList();
+    }
+
+    private async Task<List<PendingAssessmentDto>> GetPendingAssessmentsAsync(Guid patientId)
+    {
+        var assessments = await _assessmentRepository.Query()
+            .AsNoTracking()
+            .Where(a => a.PatientId == patientId && a.Status == "Assigned")
+            .OrderBy(a => a.CreatedAt)
+            .Take(10)
+            .ToListAsync();
+
+        var result = new List<PendingAssessmentDto>();
+        foreach (var a in assessments)
+        {
+            var template = await _unitOfWork.Repository<AssessmentTemplate>().FindSingleAsync(t => t.Id == a.TemplateId);
+            result.Add(new PendingAssessmentDto
+            {
+                Id = a.Id,
+                TemplateName = template?.Name ?? "",
+                AssignedDate = DateOnly.FromDateTime(a.CreatedAt)
+            });
+        }
+
+        return result;
     }
 
     private async Task<List<RecentConversationDto>> GetRecentConversationsAsync(Guid patientId)

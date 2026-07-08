@@ -1,0 +1,95 @@
+<div class="assessment-list">
+    <div class="page-header">
+        <h1 class="page-title">تقييماتي</h1>
+        <p class="page-subtitle">التقييمات النفسية الموكلة إليك وسجل التقييمات المكتملة</p>
+    </div>
+
+    @if (loading()) {
+        <div class="loading-state">
+            <div class="spinner" aria-hidden="true"></div>
+            <p>جاري التحميل...</p>
+        </div>
+    }
+
+    @if (error()) {
+        <div class="error-state">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <p>{{ error() }}</p>
+            <button class="btn btn-primary btn-sm" (click)="loadList()">إعادة المحاولة</button>
+        </div>
+    }
+
+    @if (!loading() && !error()) {
+        <section class="section">
+            <h2 class="section-title">
+                <i class="bi bi-hourglass-split"></i>
+                بانتظار الإكمال
+            </h2>
+            @if (pending().length > 0) {
+                <div class="cards-grid">
+                    @for (a of pending(); track a.id) {
+                        <a class="assessment-card pending" [routerLink]="['/assessments', a.id]">
+                            <div class="card-icon">
+                                <i class="bi bi-clipboard2-pulse"></i>
+                            </div>
+                            <div class="card-body">
+                                <h3 class="card-title">
+                                    {{ a.templateName === 'phq-9' ? 'PHQ-9 (تقييم الاكتئاب)' : a.templateName }}
+                                </h3>
+                                <p class="card-meta">{{ a.answeredCount }} / {{ a.questionCount }} سؤال</p>
+                            </div>
+                            <i class="bi bi-chevron-left card-arrow"></i>
+                        </a>
+                    }
+                </div>
+            } @else {
+                <app-empty-state
+                    title="لا توجد تقييمات معلقة"
+                    message="ليس لديك أي تقييمات بحاجة للإكمال حالياً."
+                    icon="bi-clipboard2-check"
+                ></app-empty-state>
+            }
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">
+                <i class="bi bi-clock-history"></i>
+                السجل
+            </h2>
+            @if (completed().length > 0) {
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">النوع</th>
+                                <th scope="col">الدرجة</th>
+                                <th scope="col">الشدة</th>
+                                <th scope="col">تاريخ الإكمال</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (a of completed(); track a.id) {
+                                <tr [routerLink]="['/assessments', a.id]" class="clickable-row">
+                                    <td>
+                                        {{ a.templateName === 'phq-9' ? 'PHQ-9 (تقييم الاكتئاب)' : a.templateName }}
+                                    </td>
+                                    <td>
+                                        <span class="score-badge">{{ a.totalScore ?? '-' }}</span>
+                                    </td>
+                                    <td>{{ a.severity ? (a.severity | statusAr) : '-' }}</td>
+                                    <td>{{ a.completedAt ? (a.completedAt | date: 'mediumDate') : '-' }}</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            } @else {
+                <app-empty-state
+                    title="لا يوجد سجل بعد"
+                    message="ستظهر هنا التقييمات التي أكملتها."
+                    icon="bi-clock-history"
+                ></app-empty-state>
+            }
+        </section>
+    }
+</div>

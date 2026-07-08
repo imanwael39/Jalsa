@@ -68,7 +68,9 @@ export interface Assessment {
     title: string | null;
     assessmentDate: string | null;
     totalScore: number | null;
+    severity: string | null;
     status: string;
+    completedAt: string | null;
     createdAt: string;
     updatedAt: string;
 }

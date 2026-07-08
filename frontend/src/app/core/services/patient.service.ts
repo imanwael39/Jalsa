@@ -74,4 +74,8 @@ export class PatientService {
     addAssessment(patientId: string, data: Partial<Assessment>): Observable<Assessment> {
         return this.http.post<Assessment>(API.patients.assessments(patientId), data);
     }
+
+    assignAssessment(patientId: string, data: { templateId: string; title?: string | null }): Observable<Assessment> {
+        return this.http.post<Assessment>(API.patients.assignAssessment(patientId), data);
+    }
 }

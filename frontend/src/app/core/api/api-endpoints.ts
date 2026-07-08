@@ -20,6 +20,7 @@ export const API = {
         intake: (id: string) => `/api/patient/${id}/intake`,
         intakeOcr: (id: string, intakeFormId: string) => `/api/patient/${id}/intake/${intakeFormId}/ocr`,
         assessments: (id: string) => `/api/patient/${id}/assessments`,
+        assignAssessment: (id: string) => `/api/patient/${id}/assessments/assign`,
     },
     sessions: {
         base: '/api/sessions',
@@ -50,6 +51,12 @@ export const API = {
     },
     patientProgress: {
         summary: '/api/patient-progress',
+    },
+    patientAssessments: {
+        base: '/api/patient-assessments',
+        byId: (id: string) => `/api/patient-assessments/${id}`,
+        saveAnswer: (id: string, questionId: string) => `/api/patient-assessments/${id}/responses/${questionId}`,
+        submit: (id: string) => `/api/patient-assessments/${id}/submit`,
     },
     notifications: {
         base: '/api/notifications',

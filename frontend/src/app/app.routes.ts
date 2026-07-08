@@ -39,6 +39,10 @@ export const routes: Routes = [
                 loadChildren: () => import('./features/progress/progress.routes').then(m => m.PROGRESS_ROUTES),
             },
             {
+                path: 'assessments',
+                loadChildren: () => import('./features/assessments/assessments.routes').then(m => m.ASSESSMENTS_ROUTES),
+            },
+            {
                 path: 'chatbot',
                 loadChildren: () => import('./features/chatbot/chatbot.routes').then(m => m.CHATBOT_ROUTES),
             },
