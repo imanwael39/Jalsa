@@ -23,6 +23,7 @@ public class PatientDashboardServiceTests
     private readonly Mock<IGenericRepository<ChatConversation>> _chatConversationRepoMock;
     private readonly Mock<IGenericRepository<Therapist>> _therapistRepoMock;
     private readonly Mock<IGenericRepository<SystemSetting>> _systemSettingRepoMock;
+    private readonly Mock<IGenericRepository<AssessmentTemplate>> _assessmentTemplateRepoMock;
     private readonly PatientDashboardService _sut;
     private readonly Guid _userId;
     private readonly Guid _patientId;
@@ -38,6 +39,7 @@ public class PatientDashboardServiceTests
         _chatConversationRepoMock = new Mock<IGenericRepository<ChatConversation>>();
         _therapistRepoMock = new Mock<IGenericRepository<Therapist>>();
         _systemSettingRepoMock = new Mock<IGenericRepository<SystemSetting>>();
+        _assessmentTemplateRepoMock = new Mock<IGenericRepository<AssessmentTemplate>>();
 
         _userId = Guid.NewGuid();
         _patientId = Guid.NewGuid();
@@ -46,6 +48,7 @@ public class PatientDashboardServiceTests
         _unitOfWorkMock.Setup(x => x.Repository<ChatConversation>()).Returns(_chatConversationRepoMock.Object);
         _unitOfWorkMock.Setup(x => x.Repository<Therapist>()).Returns(_therapistRepoMock.Object);
         _unitOfWorkMock.Setup(x => x.Repository<SystemSetting>()).Returns(_systemSettingRepoMock.Object);
+        _unitOfWorkMock.Setup(x => x.Repository<AssessmentTemplate>()).Returns(_assessmentTemplateRepoMock.Object);
 
         _patientRepoMock
             .Setup(x => x.FindSingleAsync(It.IsAny<Expression<Func<Patient, bool>>>(), It.IsAny<CancellationToken>()))
@@ -225,6 +228,26 @@ public class PatientDashboardServiceTests
         result.Therapist.Should().NotBeNull();
         result.Therapist!.Id.Should().Be(_therapistId);
         result.Therapist.FullName.Should().Be("د. أحمد سالم");
+    }
+
+    [Fact]
+    public async Task GetDashboardAsync_PendingAssessments_OnlyIncludesAssignedStatus()
+    {
+        var templateId = Guid.NewGuid();
+        var assessments = new List<Assessment>
+        {
+            new() { Id = Guid.NewGuid(), PatientId = _patientId, TemplateId = templateId, Status = "Assigned", CreatedAt = DateTime.UtcNow },
+            new() { Id = Guid.NewGuid(), PatientId = _patientId, TemplateId = templateId, Status = "Completed", CreatedAt = DateTime.UtcNow }
+        };
+        _assessmentRepoMock.Setup(x => x.Query()).Returns(new AsyncQueryProvider<Assessment>(assessments.AsQueryable()));
+        _assessmentTemplateRepoMock
+            .Setup(x => x.FindSingleAsync(It.IsAny<Expression<Func<AssessmentTemplate, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AssessmentTemplate { Id = templateId, Name = "phq-9" });
+
+        var result = await _sut.GetDashboardAsync(_userId);
+
+        result.PendingAssessments.Should().ContainSingle();
+        result.PendingAssessments[0].TemplateName.Should().Be("phq-9");
     }
 
     [Fact]
