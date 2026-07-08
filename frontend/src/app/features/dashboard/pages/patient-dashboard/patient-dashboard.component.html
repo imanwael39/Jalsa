@@ -179,15 +179,22 @@
                         <i class="bi bi-file-earmark-medical-fill"></i>
                         <h6>التقييمات المعلقة</h6>
                     </div>
+                    <a class="view-all-link" routerLink="/assessments">عرض الكل</a>
                 </div>
                 <div class="info-card-body">
                     @if (d.pendingAssessments.length > 0) {
                         <ul class="item-list">
                             @for (assessment of d.pendingAssessments; track assessment.id) {
-                                <li class="item-row">
+                                <li class="item-row clickable" [routerLink]="['/assessments', assessment.id]">
                                     <i class="bi bi-file-earmark-text item-icon"></i>
                                     <div class="item-content">
-                                        <span class="item-title">{{ assessment.templateName }}</span>
+                                        <span class="item-title">
+                                            {{
+                                                assessment.templateName === 'phq-9'
+                                                    ? 'PHQ-9 (تقييم الاكتئاب)'
+                                                    : assessment.templateName
+                                            }}
+                                        </span>
                                     </div>
                                 </li>
                             }
