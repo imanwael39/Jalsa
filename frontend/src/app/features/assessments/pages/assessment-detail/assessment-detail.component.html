@@ -1,0 +1,139 @@
+<div class="assessment-detail">
+    <div class="page-header">
+        <app-button variant="ghost" size="sm" (clicked)="goBack()" ariaLabel="العودة إلى قائمة التقييمات">
+            <i class="bi bi-arrow-right" aria-hidden="true"></i> رجوع
+        </app-button>
+    </div>
+
+    @if (loading()) {
+        <div class="loading-state">
+            <div class="spinner" aria-hidden="true"></div>
+            <p>جاري التحميل...</p>
+        </div>
+    }
+
+    @if (error()) {
+        <div class="error-state">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <p>{{ error() }}</p>
+            <app-button variant="primary" size="sm" (clicked)="loadDetail()">إعادة المحاولة</app-button>
+        </div>
+    }
+
+    @if (!loading() && !error() && detail(); as d) {
+        <div class="assessment-header">
+            <h1 class="assessment-title">
+                {{ d.templateName === 'phq-9' ? 'PHQ-9 (تقييم الاكتئاب)' : d.templateName }}
+            </h1>
+            @if (isAssigned()) {
+                <div class="progress-indicator">
+                    <div class="progress-bar-track">
+                        <div
+                            class="progress-bar-fill"
+                            [style.width.%]="totalCount() > 0 ? (answeredCount() / totalCount()) * 100 : 0"
+                        ></div>
+                    </div>
+                    <span class="progress-label">{{ answeredCount() }} / {{ totalCount() }} تم الإجابة عليه</span>
+                </div>
+            }
+        </div>
+
+        @if (isAssigned()) {
+            <!-- Take-flow -->
+            <div class="questions-list">
+                @for (q of d.questions; track q.id) {
+                    <div class="question-card">
+                        <div class="question-header">
+                            <span class="question-number">{{ q.sortOrder }}</span>
+                            <p class="question-text">{{ q.questionText }}</p>
+                            @if (savingQuestionId() === q.id) {
+                                <span class="saving-indicator" aria-live="polite">
+                                    <i class="bi bi-arrow-repeat spinning"></i>
+                                </span>
+                            } @else if (q.answerNumber !== null) {
+                                <span class="saved-indicator" aria-live="polite">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                </span>
+                            }
+                        </div>
+                        <div class="options-row" role="radiogroup" [attr.aria-label]="q.questionText">
+                            @for (opt of likertOptions; track opt.value) {
+                                <button
+                                    type="button"
+                                    class="option-btn"
+                                    role="radio"
+                                    [attr.aria-checked]="q.answerNumber === opt.value"
+                                    [class.selected]="q.answerNumber === opt.value"
+                                    (click)="selectAnswer(q.id, opt.value)"
+                                >
+                                    {{ opt.label }}
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @if (submitError()) {
+                <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    {{ submitError() }}
+                </div>
+            }
+
+            <div class="submit-bar">
+                <app-button
+                    variant="primary"
+                    [loading]="saving()"
+                    [disabled]="!allAnswered()"
+                    (clicked)="submit()"
+                    ariaLabel="إرسال التقييم"
+                >
+                    إرسال التقييم
+                </app-button>
+                @if (!allAnswered()) {
+                    <span class="submit-hint">يرجى الإجابة على جميع الأسئلة قبل الإرسال</span>
+                }
+            </div>
+        } @else {
+            <!-- Result view -->
+            <div class="result-card">
+                <div class="result-summary">
+                    <div class="result-stat">
+                        <span class="result-label">الدرجة الكلية</span>
+                        <span class="result-value">{{ d.totalScore ?? '-' }}</span>
+                    </div>
+                    <div class="result-stat">
+                        <span class="result-label">الشدة</span>
+                        <span class="result-value severity" [attr.data-severity]="d.severity">{{
+                            d.severity ? (d.severity | statusAr) : '-'
+                        }}</span>
+                    </div>
+                    <div class="result-stat">
+                        <span class="result-label">تاريخ الإكمال</span>
+                        <span class="result-value">{{
+                            d.completedAt ? (d.completedAt | date: 'mediumDate') : '-'
+                        }}</span>
+                    </div>
+                </div>
+                <p class="result-disclaimer">
+                    <i class="bi bi-info-circle"></i>
+                    هذا التقييم أداة فحص ولا يُغني عن استشارة معالجك النفسي. تحدث مع معالجك حول نتائج هذا التقييم في
+                    جلستكما القادمة.
+                </p>
+            </div>
+
+            <div class="answers-review">
+                <h2 class="section-title">إجاباتك</h2>
+                <ul class="review-list">
+                    @for (q of d.questions; track q.id) {
+                        <li class="review-item">
+                            <span class="review-question">{{ q.sortOrder }}. {{ q.questionText }}</span>
+                            <span class="review-answer">{{ likertOptions[q.answerNumber ?? 0].label }}</span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+    }
+</div>
