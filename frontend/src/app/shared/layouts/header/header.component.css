@@ -126,7 +126,7 @@
     top: -4px;
     inset-inline-end: -4px;
     background: var(--danger);
-    color: #fff;
+    color: var(--text-inverse);
     font-size: 10px;
     font-weight: 700;
     min-width: 18px;
