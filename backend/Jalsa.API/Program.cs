@@ -268,6 +268,7 @@ builder.Services.AddScoped<IProgressService, ProgressService>();
 builder.Services.AddScoped<IPatientDashboardService, PatientDashboardService>();
 builder.Services.AddScoped<IPatientProgressService, PatientProgressService>();
 builder.Services.AddScoped<IPatientSessionService, PatientSessionService>();
+builder.Services.AddScoped<IPatientAssessmentService, PatientAssessmentService>();
 builder.Services.AddScoped<INotificationService, EmailNotificationService>();
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<ICrisisAlertService, CrisisAlertService>();

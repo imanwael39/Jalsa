@@ -44,6 +44,32 @@ public class AssessmentService : IAssessmentService
             AssessmentDate = dto.AssessmentDate ?? DateOnly.FromDateTime(DateTime.UtcNow),
             TotalScore = dto.TotalScore,
             Status = "Completed",
+            CompletedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+        };
+
+        var repo = _unitOfWork.Repository<Assessment>();
+        await repo.AddAsync(assessment, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
+
+        return MapToViewDto(assessment);
+    }
+
+    public async Task<AssessmentViewDto> AssignAsync(Guid patientId, AssessmentAssignDto dto, Guid therapistId, CancellationToken ct = default)
+    {
+        await EnsurePatientBelongsToTherapist(patientId, therapistId, ct);
+
+        var templateId = await ResolveTemplateIdAsync(dto.TemplateId, ct);
+
+        var assessment = new Assessment
+        {
+            Id = Guid.NewGuid(),
+            PatientId = patientId,
+            SessionId = dto.SessionId,
+            TemplateId = templateId,
+            Title = dto.Title,
+            Status = "Assigned",
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
         };
@@ -99,7 +125,9 @@ public class AssessmentService : IAssessmentService
         Title = a.Title,
         AssessmentDate = a.AssessmentDate,
         TotalScore = a.TotalScore,
+        Severity = a.Severity,
         Status = a.Status,
+        CompletedAt = a.CompletedAt,
         CreatedAt = a.CreatedAt,
         UpdatedAt = a.UpdatedAt,
     };

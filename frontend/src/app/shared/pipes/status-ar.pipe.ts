@@ -20,6 +20,12 @@ const STATUS_MAP: Record<string, string> = {
     Pending: 'قيد الانتظار',
     Reschedule: 'إعادة جدولة',
     Cancel: 'إلغاء',
+    Assigned: 'بانتظار الإكمال',
+    Minimal: 'بسيطة',
+    Mild: 'خفيفة',
+    Moderate: 'متوسطة',
+    ModeratelySevere: 'متوسطة إلى شديدة',
+    Severe: 'شديدة',
 };
 
 @Pipe({ name: 'statusAr', standalone: true })

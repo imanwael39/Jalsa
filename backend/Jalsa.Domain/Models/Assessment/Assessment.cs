@@ -12,6 +12,7 @@ public class Assessment
     public string? Severity { get; set; }
     public string? Notes { get; set; }
     public string Status { get; set; } = "Active";
+    public DateTime? CompletedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

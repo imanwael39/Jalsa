@@ -4,6 +4,7 @@ using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jalsa.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(JalsaDbContext))]
-    partial class JalsaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260708040801_AddAssessmentCompletedAtAndResponseUniqueness")]
+    partial class AddAssessmentCompletedAtAndResponseUniqueness
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1242,18 +1245,6 @@ namespace Jalsa.Infrastructure.Data.Migrations
 
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("PatientRequestNote")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PatientRequestStatus")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PatientRequestType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("PatientRequestedAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<DateOnly>("SessionDate")
                         .HasColumnType("date");

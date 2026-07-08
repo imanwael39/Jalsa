@@ -339,6 +339,10 @@
     background: var(--gray-50);
 }
 
+.item-row.clickable {
+    cursor: pointer;
+}
+
 .item-icon {
     color: var(--primary);
     font-size: var(--text-base);

@@ -32,4 +32,12 @@ public class AssessmentController : BaseController
         var result = await _assessmentService.CreateAsync(patientId, dto, therapistId);
         return CreatedAtAction(nameof(GetByPatientId), new { patientId }, result);
     }
+
+    [HttpPost("assign")]
+    public async Task<IActionResult> Assign(Guid patientId, [FromBody] AssessmentAssignDto dto)
+    {
+        var therapistId = GetCurrentUserId();
+        var result = await _assessmentService.AssignAsync(patientId, dto, therapistId);
+        return CreatedAtAction(nameof(GetByPatientId), new { patientId }, result);
+    }
 }
