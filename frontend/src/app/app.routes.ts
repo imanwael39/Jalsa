@@ -42,8 +42,15 @@ export const routes: Routes = [
                 path: 'appointments',
                 loadChildren: () =>
                     import('./features/appointments/appointments.routes').then(m => m.APPOINTMENTS_ROUTES),
+            },
+            {
                 path: 'assessments',
                 loadChildren: () => import('./features/assessments/assessments.routes').then(m => m.ASSESSMENTS_ROUTES),
+            },
+            {
+                path: 'notifications',
+                loadChildren: () =>
+                    import('./features/notifications/notifications.routes').then(m => m.NOTIFICATIONS_ROUTES),
             },
             {
                 path: 'chatbot',
