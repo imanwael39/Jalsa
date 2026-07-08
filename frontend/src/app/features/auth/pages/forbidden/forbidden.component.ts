@@ -25,42 +25,44 @@ import { AuthService } from '../../../../core/services/auth.service';
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                background: var(--surface-2, #f8f9fa);
+                background: var(--background);
                 direction: rtl;
             }
             .forbidden-card {
-                background: #fff;
-                border: 1px solid var(--border-color, #dee2e6);
-                border-radius: 12px;
+                background: var(--surface);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-lg);
                 padding: 3rem 2rem;
                 text-align: center;
                 max-width: 400px;
                 width: 90%;
+                box-shadow: var(--shadow-md);
             }
             .forbidden-icon {
                 font-size: 3rem;
-                color: var(--danger, #dc3545);
+                color: var(--danger);
                 margin-bottom: 1rem;
             }
             .forbidden-title {
                 font-size: 1.5rem;
                 font-weight: 700;
-                color: var(--text-primary, #212529);
+                color: var(--text-primary);
                 margin-bottom: 0.5rem;
             }
             .forbidden-body {
-                color: var(--text-muted, #6c757d);
+                color: var(--text-muted);
                 margin-bottom: 1.5rem;
             }
             .btn-home {
-                background: var(--primary, #2563eb);
-                color: #fff;
+                background: var(--primary);
+                color: var(--text-inverse);
                 border: none;
-                border-radius: 8px;
+                border-radius: var(--radius-sm);
                 padding: 0.625rem 1.5rem;
                 font-size: 1rem;
                 font-family: inherit;
                 cursor: pointer;
+                transition: opacity var(--transition-fast);
             }
             .btn-home:hover {
                 opacity: 0.9;

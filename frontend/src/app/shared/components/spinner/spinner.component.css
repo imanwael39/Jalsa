@@ -26,11 +26,11 @@
     border-width: 0.25em;
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-    .spinner-overlay {
-        background-color: rgba(0, 0, 0, 0.6);
-    }
+/* Dark mode support — keyed off the app's own theme toggle
+   ([data-theme='dark']), not the OS-level prefers-color-scheme, so it
+   stays in sync when the user switches theme independently of their OS. */
+[data-theme='dark'] .spinner-overlay {
+    background-color: rgba(11, 18, 32, 0.75);
 }
 
 /* Reduced motion support */

@@ -33,7 +33,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
             }
             .landing-icon {
                 font-size: 4rem;
-                color: var(--bs-primary, #198754);
+                color: var(--primary);
                 margin-bottom: 1rem;
             }
             h2 {

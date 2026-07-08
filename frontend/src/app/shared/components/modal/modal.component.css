@@ -3,7 +3,7 @@
 }
 
 .modal {
-    background-color: rgba(0, 0, 0, 0.35);
+    background-color: var(--overlay-backdrop);
     backdrop-filter: blur(4px);
 }
 

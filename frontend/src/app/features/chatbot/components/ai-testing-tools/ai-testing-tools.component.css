@@ -64,14 +64,14 @@
 
 .count-badge {
     background: var(--primary);
-    color: #fff;
+    color: var(--text-inverse);
     border-radius: 999px;
     padding: 0 0.4rem;
     font-size: 0.75rem;
 }
 
 .tools-error {
-    color: var(--danger, #dc2626);
+    color: var(--danger);
     font-size: 0.85rem;
 }
 

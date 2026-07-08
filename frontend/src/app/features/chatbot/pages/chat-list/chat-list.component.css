@@ -72,14 +72,14 @@
     width: 0.6rem;
     height: 0.6rem;
     border-radius: 50%;
-    background: var(--danger, #dc2626);
+    background: var(--danger);
     border: 2px solid var(--surface);
 }
 
 .picker-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
+    background: var(--overlay-backdrop);
     display: flex;
     align-items: center;
     justify-content: center;

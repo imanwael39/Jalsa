@@ -1,0 +1,237 @@
+/* ================================================================
+   JALSA Dark Mode — Bootstrap component overrides
+
+   Bootstrap 5's own CSS (imported in styles.css) hardcodes light-mode
+   colors for form controls, tables, modals, dropdowns, etc. Our theme
+   switch only toggles [data-theme] custom properties, which Bootstrap's
+   compiled CSS never reads — so every native Bootstrap component stayed
+   white/black regardless of theme. This file re-points those components
+   at our design tokens, scoped to [data-theme='dark'] so light mode
+   (Bootstrap's own defaults) is untouched.
+   ================================================================ */
+
+[data-theme='dark'] {
+    color-scheme: dark;
+}
+
+/* ================================================================
+   Forms — inputs, selects, checkboxes, textareas
+   ================================================================ */
+[data-theme='dark'] .form-control,
+[data-theme='dark'] .form-select {
+    background-color: var(--surface);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme='dark'] .form-control:focus,
+[data-theme='dark'] .form-select:focus {
+    background-color: var(--surface);
+    border-color: var(--primary);
+    color: var(--text-primary);
+    box-shadow: 0 0 0 3px var(--focus-ring-primary);
+}
+
+[data-theme='dark'] .form-control::placeholder {
+    color: var(--text-muted);
+    opacity: 1;
+}
+
+[data-theme='dark'] .form-control:disabled,
+[data-theme='dark'] .form-select:disabled {
+    background-color: var(--bg-subtle);
+    color: var(--text-muted);
+}
+
+[data-theme='dark'] .form-check-input {
+    background-color: var(--surface);
+    border-color: var(--border-color);
+}
+
+[data-theme='dark'] .form-check-input:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+[data-theme='dark'] .input-group-text {
+    background-color: var(--bg-subtle);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+/* Native date/time picker indicator — Bootstrap doesn't touch this, but
+   the browser renders a dark glyph by default which disappears on a
+   dark input background unless color-scheme is set (see :root rule above). */
+[data-theme='dark'] input[type='date'],
+[data-theme='dark'] input[type='time'],
+[data-theme='dark'] input[type='datetime-local'] {
+    color-scheme: dark;
+}
+
+/* ================================================================
+   Tables
+   ================================================================ */
+[data-theme='dark'] .table {
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+[data-theme='dark'] .table > :not(caption) > * > * {
+    background-color: var(--surface);
+    border-bottom-color: var(--border-color);
+    box-shadow: none;
+}
+
+[data-theme='dark'] .table-striped > tbody > tr:nth-of-type(odd) > * {
+    background-color: var(--bg-subtle);
+    color: var(--text-primary);
+}
+
+[data-theme='dark'] .table-hover > tbody > tr:hover > * {
+    background-color: var(--surface-hover);
+    color: var(--text-primary);
+}
+
+[data-theme='dark'] .table thead th {
+    background-color: var(--bg-subtle);
+    color: var(--text-secondary);
+    border-color: var(--border-color);
+}
+
+/* ================================================================
+   Modals
+   ================================================================ */
+[data-theme='dark'] .modal-content {
+    background-color: var(--surface);
+    border-color: var(--border-color);
+}
+
+[data-theme='dark'] .modal-header,
+[data-theme='dark'] .modal-footer {
+    border-color: var(--border-color);
+}
+
+[data-theme='dark'] .modal-backdrop.show {
+    opacity: 0.65;
+}
+
+/* Bootstrap's close-icon is a black SVG painted via background-image;
+   invert it so it stays visible on a dark modal/toast/alert. */
+[data-theme='dark'] .btn-close {
+    filter: invert(1) grayscale(100%) brightness(1.6);
+}
+
+/* ================================================================
+   Dropdowns
+   ================================================================ */
+[data-theme='dark'] .dropdown-menu {
+    background-color: var(--surface-elevated);
+    border-color: var(--border-color);
+    box-shadow: var(--shadow-lg);
+}
+
+[data-theme='dark'] .dropdown-item {
+    color: var(--text-primary);
+}
+
+[data-theme='dark'] .dropdown-item:hover,
+[data-theme='dark'] .dropdown-item:focus {
+    background-color: var(--surface-hover);
+    color: var(--text-primary);
+}
+
+[data-theme='dark'] .dropdown-item.active,
+[data-theme='dark'] .dropdown-item:active {
+    background-color: var(--primary-light);
+    color: var(--primary);
+}
+
+[data-theme='dark'] .dropdown-divider {
+    border-color: var(--border-color);
+}
+
+/* ================================================================
+   List group
+   ================================================================ */
+[data-theme='dark'] .list-group-item {
+    background-color: var(--surface);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+[data-theme='dark'] .list-group-item-action:hover {
+    background-color: var(--surface-hover);
+    color: var(--text-primary);
+}
+
+/* ================================================================
+   Nav tabs / pills
+   ================================================================ */
+[data-theme='dark'] .nav-tabs {
+    border-color: var(--border-color);
+}
+
+[data-theme='dark'] .nav-tabs .nav-link {
+    color: var(--text-secondary);
+    border-color: transparent;
+}
+
+[data-theme='dark'] .nav-tabs .nav-link:hover {
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme='dark'] .nav-tabs .nav-link.active {
+    background-color: var(--surface);
+    border-color: var(--border-color) var(--border-color) var(--surface);
+    color: var(--primary);
+}
+
+/* ================================================================
+   Pagination
+   ================================================================ */
+[data-theme='dark'] .page-link {
+    background-color: var(--surface);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme='dark'] .page-link:hover {
+    background-color: var(--surface-hover);
+    border-color: var(--border-color);
+    color: var(--primary);
+}
+
+[data-theme='dark'] .page-item.active .page-link {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: var(--text-inverse);
+}
+
+[data-theme='dark'] .page-item.disabled .page-link {
+    background-color: var(--bg-subtle);
+    border-color: var(--border-color);
+    color: var(--text-muted);
+}
+
+/* ================================================================
+   Misc small components some pages still reach for directly
+   ================================================================ */
+[data-theme='dark'] .card-footer {
+    background-color: var(--bg-subtle);
+    border-color: var(--border-color);
+}
+
+[data-theme='dark'] .breadcrumb-item + .breadcrumb-item::before {
+    color: var(--text-muted);
+}
+
+[data-theme='dark'] hr {
+    border-color: var(--border-color);
+    opacity: 1;
+}
+
+[data-theme='dark'] code {
+    background-color: var(--bg-subtle);
+    color: var(--danger);
+}
