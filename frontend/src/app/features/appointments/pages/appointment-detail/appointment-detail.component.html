@@ -1,0 +1,103 @@
+<div class="appointment-detail">
+    <div class="page-header">
+        <button type="button" class="back-link" (click)="goBack()">
+            <i class="bi bi-arrow-right"></i>
+            العودة إلى المواعيد
+        </button>
+    </div>
+
+    @if (loading() && !session()) {
+        <div class="skeleton-card"></div>
+    }
+
+    @if (error()) {
+        <div class="error-state">
+            <div class="error-state-icon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <h3 class="error-state-title">تعذّر تحميل تفاصيل الموعد</h3>
+            <p class="error-state-message">{{ error() }}</p>
+            <app-button variant="primary" size="sm" (clicked)="loadSession()">إعادة المحاولة</app-button>
+        </div>
+    }
+
+    @if (!error() && session(); as s) {
+        <div class="detail-card">
+            <div class="detail-header">
+                <div class="detail-header-info">
+                    <h1 class="session-date">{{ s.sessionDate }}</h1>
+                    <span class="badge status-badge" [class]="'status-' + s.status">{{ s.status | statusAr }}</span>
+                </div>
+            </div>
+
+            <div class="detail-grid">
+                <div class="detail-field">
+                    <span class="field-label">المعالج</span>
+                    <span class="field-value">{{ s.therapistName }}</span>
+                </div>
+                <div class="detail-field">
+                    <span class="field-label">نوع الجلسة</span>
+                    <span class="field-value">{{ s.sessionType || 'جلسة' }}</span>
+                </div>
+                @if (s.durationMinutes) {
+                    <div class="detail-field">
+                        <span class="field-label">المدة</span>
+                        <span class="field-value">{{ s.durationMinutes }} دقيقة</span>
+                    </div>
+                }
+            </div>
+
+            @if (s.patientRequestStatus === 'Pending') {
+                <div class="request-banner">
+                    <i class="bi bi-hourglass-split"></i>
+                    <div>
+                        <p class="request-banner-title">
+                            طلب {{ s.patientRequestType | statusAr }} قيد الانتظار لدى المعالج
+                        </p>
+                        @if (s.patientRequestNote) {
+                            <p class="request-banner-note">"{{ s.patientRequestNote }}"</p>
+                        }
+                    </div>
+                </div>
+            } @else if (s.canRequestChange) {
+                <div class="detail-actions">
+                    <app-button variant="secondary" (clicked)="openRequestModal('Reschedule')">
+                        <i class="bi bi-calendar2-week"></i>
+                        طلب إعادة جدولة
+                    </app-button>
+                    <app-button variant="danger" (clicked)="openRequestModal('Cancel')">
+                        <i class="bi bi-x-circle"></i>
+                        طلب إلغاء الموعد
+                    </app-button>
+                </div>
+            } @else {
+                <p class="no-actions-note">لا يمكن تعديل أو إلغاء هذا الموعد في الوقت الحالي.</p>
+            }
+        </div>
+    }
+</div>
+
+<app-modal
+    [title]="activeRequestKind() === 'Reschedule' ? 'طلب إعادة جدولة الموعد' : 'طلب إلغاء الموعد'"
+    [showModal]="showModal()"
+    (showModalChange)="showModal.set($event)"
+    (closed)="closeModal()"
+>
+    <form modal-body [formGroup]="requestForm" (ngSubmit)="submitRequest()">
+        <app-textarea
+            label="سبب الطلب"
+            placeholder="اكتب سبب طلبك هنا..."
+            formControlName="note"
+            [rows]="4"
+            [error]="
+                requestForm.controls.note.touched && requestForm.controls.note.invalid
+                    ? 'يرجى كتابة سبب الطلب (5 أحرف على الأقل)'
+                    : ''
+            "
+        ></app-textarea>
+    </form>
+    <div modal-footer class="modal-footer-actions">
+        <app-button variant="ghost" (clicked)="closeModal()">إلغاء</app-button>
+        <app-button variant="primary" [loading]="submitting()" (clicked)="submitRequest()">إرسال الطلب</app-button>
+    </div>
+</app-modal>
