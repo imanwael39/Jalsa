@@ -102,6 +102,67 @@
                             <option value="Other">آخر</option>
                         </select>
                     </div>
+                    <div class="form-field">
+                        <label for="treatmentStartDate" class="form-label">تاريخ بدء العلاج</label>
+                        <input
+                            type="date"
+                            id="treatmentStartDate"
+                            class="form-control"
+                            formControlName="treatmentStartDate"
+                            name="treatmentStartDate"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2 class="section-title">جهة الاتصال في حالات الطوارئ</h2>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <app-input
+                            label="الاسم"
+                            type="text"
+                            placeholder="اسم جهة الاتصال"
+                            formControlName="emergencyContactName"
+                            [error]="
+                                isFieldInvalid('emergencyContactName') ? getFieldError('emergencyContactName') : ''
+                            "
+                            id="emergencyContactName"
+                            name="emergencyContactName"
+                        >
+                        </app-input>
+                    </div>
+                    <div class="form-field">
+                        <app-input
+                            label="صلة القرابة"
+                            type="text"
+                            placeholder="مثال: الأخت، الزوج، الأم"
+                            formControlName="emergencyContactRelationship"
+                            [error]="
+                                isFieldInvalid('emergencyContactRelationship')
+                                    ? getFieldError('emergencyContactRelationship')
+                                    : ''
+                            "
+                            id="emergencyContactRelationship"
+                            name="emergencyContactRelationship"
+                        >
+                        </app-input>
+                    </div>
+                    <div class="form-field">
+                        <app-input
+                            label="رقم الهاتف"
+                            type="tel"
+                            placeholder="رقم هاتف جهة الاتصال"
+                            formControlName="emergencyContactPhone"
+                            [error]="
+                                isFieldInvalid('emergencyContactPhone') ? getFieldError('emergencyContactPhone') : ''
+                            "
+                            id="emergencyContactPhone"
+                            name="emergencyContactPhone"
+                            autocomplete="tel"
+                        >
+                        </app-input>
+                    </div>
                 </div>
             </div>
 

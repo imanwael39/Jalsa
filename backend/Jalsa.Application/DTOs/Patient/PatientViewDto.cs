@@ -14,6 +14,10 @@ public class PatientViewDto
     public string? Address { get; set; }
     public string? ReferralSource { get; set; }
     public string? ChiefComplaint { get; set; }
+    public string? EmergencyContactName { get; set; }
+    public string? EmergencyContactRelationship { get; set; }
+    public string? EmergencyContactPhone { get; set; }
+    public DateOnly? TreatmentStartDate { get; set; }
     public string Status { get; set; } = "Active";
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

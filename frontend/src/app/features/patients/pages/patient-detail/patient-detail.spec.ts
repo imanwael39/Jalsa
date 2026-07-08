@@ -22,6 +22,10 @@ const mockPatient: Patient = {
     address: '123 Main St',
     referralSource: 'Self-referral',
     chiefComplaint: 'Anxiety',
+    emergencyContactName: 'Jane Doe',
+    emergencyContactRelationship: 'Spouse',
+    emergencyContactPhone: '+1234567891',
+    treatmentStartDate: '2024-01-10',
     status: 'Active',
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-02T00:00:00Z',
@@ -111,6 +115,15 @@ describe('PatientDetail', () => {
         fixture.detectChanges();
         expect(patientServiceSpy['getPatient']).toHaveBeenCalledWith('123e4567-e89b-12d3-a456-426614174000');
         expect(stateServiceSpy['selectPatient']).toHaveBeenCalledWith(expect.objectContaining({ id: mockPatient.id }));
+    });
+
+    it('should expose emergency contact and treatment start date on the loaded patient', (): void => {
+        setup();
+        fixture.detectChanges();
+        expect(component.patient()?.emergencyContactName).toBe('Jane Doe');
+        expect(component.patient()?.emergencyContactRelationship).toBe('Spouse');
+        expect(component.patient()?.emergencyContactPhone).toBe('+1234567891');
+        expect(component.patient()?.treatmentStartDate).toBe('2024-01-10');
     });
 
     it('should set error when patient ID is not found', (): void => {

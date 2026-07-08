@@ -75,6 +75,10 @@ public class PatientService : IPatientService
             Address = dto.Address,
             ReferralSource = dto.ReferralSource,
             ChiefComplaint = dto.ChiefComplaint,
+            EmergencyContactName = dto.EmergencyContactName,
+            EmergencyContactRelationship = dto.EmergencyContactRelationship,
+            EmergencyContactPhone = dto.EmergencyContactPhone,
+            TreatmentStartDate = dto.TreatmentStartDate,
             Status = "Active",
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -141,6 +145,10 @@ public class PatientService : IPatientService
         patient.Address = dto.Address;
         patient.ReferralSource = dto.ReferralSource;
         patient.ChiefComplaint = dto.ChiefComplaint;
+        patient.EmergencyContactName = dto.EmergencyContactName;
+        patient.EmergencyContactRelationship = dto.EmergencyContactRelationship;
+        patient.EmergencyContactPhone = dto.EmergencyContactPhone;
+        patient.TreatmentStartDate = dto.TreatmentStartDate;
         patient.UpdatedAt = DateTime.UtcNow;
 
         _unitOfWork.Repository<Patient>().Update(patient);
@@ -214,6 +222,10 @@ public class PatientService : IPatientService
         Address = patient.Address,
         ReferralSource = patient.ReferralSource,
         ChiefComplaint = patient.ChiefComplaint,
+        EmergencyContactName = patient.EmergencyContactName,
+        EmergencyContactRelationship = patient.EmergencyContactRelationship,
+        EmergencyContactPhone = patient.EmergencyContactPhone,
+        TreatmentStartDate = patient.TreatmentStartDate,
         Status = patient.Status,
         CreatedAt = patient.CreatedAt,
         UpdatedAt = patient.UpdatedAt

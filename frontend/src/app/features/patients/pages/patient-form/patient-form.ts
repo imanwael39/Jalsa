@@ -52,6 +52,10 @@ export class PatientForm implements OnInit {
             address: ['', [Validators.maxLength(500)]],
             referralSource: ['', [Validators.maxLength(200)]],
             chiefComplaint: ['', [Validators.maxLength(1000)]],
+            treatmentStartDate: [''],
+            emergencyContactName: ['', [Validators.maxLength(200)]],
+            emergencyContactRelationship: ['', [Validators.maxLength(100)]],
+            emergencyContactPhone: ['', [Validators.maxLength(30)]],
         },
         { validators: this.emailRequiresPasswordValidator }
     );
@@ -82,6 +86,10 @@ export class PatientForm implements OnInit {
                         address: patient.address ?? '',
                         referralSource: patient.referralSource ?? '',
                         chiefComplaint: patient.chiefComplaint ?? '',
+                        treatmentStartDate: patient.treatmentStartDate ?? '',
+                        emergencyContactName: patient.emergencyContactName ?? '',
+                        emergencyContactRelationship: patient.emergencyContactRelationship ?? '',
+                        emergencyContactPhone: patient.emergencyContactPhone ?? '',
                     });
                     this.state.selectPatient(patient);
                     this.loading.set(false);
@@ -114,6 +122,10 @@ export class PatientForm implements OnInit {
             address: formValue.address || null,
             referralSource: formValue.referralSource || null,
             chiefComplaint: formValue.chiefComplaint || null,
+            treatmentStartDate: formValue.treatmentStartDate || null,
+            emergencyContactName: formValue.emergencyContactName || null,
+            emergencyContactRelationship: formValue.emergencyContactRelationship || null,
+            emergencyContactPhone: formValue.emergencyContactPhone || null,
         };
 
         if (this.isEdit()) {
@@ -126,6 +138,10 @@ export class PatientForm implements OnInit {
                 address: formValue.address || null,
                 referralSource: formValue.referralSource || null,
                 chiefComplaint: formValue.chiefComplaint || null,
+                treatmentStartDate: formValue.treatmentStartDate || null,
+                emergencyContactName: formValue.emergencyContactName || null,
+                emergencyContactRelationship: formValue.emergencyContactRelationship || null,
+                emergencyContactPhone: formValue.emergencyContactPhone || null,
             };
             this.patientService
                 .updatePatient(this.patientId()!, updateData)
@@ -217,6 +233,9 @@ export class PatientForm implements OnInit {
             address: 'العنوان',
             referralSource: 'مصدر الإحالة',
             chiefComplaint: 'الشكوى الرئيسية',
+            emergencyContactName: 'اسم جهة الاتصال في حالات الطوارئ',
+            emergencyContactRelationship: 'صلة القرابة',
+            emergencyContactPhone: 'هاتف جهة الاتصال',
         };
         return labels[fieldName] || fieldName;
     }
