@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit, OnDestroy, DestroyRef } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SessionService } from '../../../../core/services/session.service';
@@ -12,10 +13,12 @@ import { ModalComponent } from '../../../../shared/components/modal/modal.compon
 import { Summary } from '../../components/summary/summary';
 import { StatusArPipe } from '../../../../shared/pipes/status-ar.pipe';
 
+type PatientRequestAction = 'approve' | 'reject';
+
 @Component({
     selector: 'app-session-detail',
     standalone: true,
-    imports: [ButtonComponent, SpinnerComponent, ModalComponent, Summary, StatusArPipe],
+    imports: [FormsModule, ButtonComponent, SpinnerComponent, ModalComponent, Summary, StatusArPipe],
     templateUrl: './session-detail.html',
     styleUrl: './session-detail.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,6 +37,10 @@ export class SessionDetail implements OnInit, OnDestroy {
     loading = signal(true);
     error = signal<string | null>(null);
     showDeleteModal = signal(false);
+
+    requestAction = signal<PatientRequestAction | null>(null);
+    requestActionSubmitting = signal(false);
+    newSessionDate = signal('');
 
     ngOnDestroy(): void {
         this.state.clearSelected();
@@ -130,5 +137,48 @@ export class SessionDetail implements OnInit, OnDestroy {
     formatDate(date: string | null): string {
         if (!date) return 'غير متوفر';
         return new Date(date).toLocaleDateString();
+    }
+
+    openRequestActionModal(action: PatientRequestAction): void {
+        this.requestAction.set(action);
+        this.newSessionDate.set('');
+    }
+
+    closeRequestActionModal(): void {
+        this.requestAction.set(null);
+        this.newSessionDate.set('');
+    }
+
+    confirmRequestAction(): void {
+        const s = this.session();
+        const action = this.requestAction();
+        if (!s || !action) return;
+
+        if (action === 'approve' && s.patientRequestType === 'Reschedule' && !this.newSessionDate()) {
+            this.notification.error('يرجى تحديد الموعد الجديد للجلسة');
+            return;
+        }
+
+        this.requestActionSubmitting.set(true);
+        const request$ =
+            action === 'approve'
+                ? this.sessionService.approvePatientRequest(
+                      s.id,
+                      s.patientRequestType === 'Reschedule' ? this.newSessionDate() : undefined
+                  )
+                : this.sessionService.rejectPatientRequest(s.id);
+
+        request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+            next: () => {
+                this.requestActionSubmitting.set(false);
+                this.closeRequestActionModal();
+                this.notification.success(action === 'approve' ? 'تم قبول طلب المريض' : 'تم رفض طلب المريض');
+                this.loadSession(s.id);
+            },
+            error: (err: HttpErrorResponse) => {
+                this.requestActionSubmitting.set(false);
+                this.notification.error(err.error?.message || err.error?.error || 'فشل تنفيذ الإجراء');
+            },
+        });
     }
 }
