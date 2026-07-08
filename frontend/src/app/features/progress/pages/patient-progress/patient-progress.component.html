@@ -1,0 +1,132 @@
+<div class="patient-progress">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">تقدمي العلاجي</h1>
+            <p class="page-subtitle">تابع مسيرتك العلاجية من خلال الرسوم البيانية والإحصائيات</p>
+        </div>
+    </div>
+
+    <!-- Date Filter -->
+    <form class="filter-bar" [formGroup]="filterForm" (ngSubmit)="loadProgress()">
+        <app-input label="من تاريخ" type="date" formControlName="from"></app-input>
+        <app-input label="إلى تاريخ" type="date" formControlName="to"></app-input>
+        <div class="filter-actions">
+            <app-button type="submit" variant="primary" [loading]="loading()">تطبيق</app-button>
+            <app-button type="button" variant="ghost" (clicked)="resetFilter()">إعادة تعيين (آخر 6 أشهر)</app-button>
+        </div>
+    </form>
+
+    <!-- Error State -->
+    @if (error()) {
+        <div class="error-state">
+            <div class="error-state-icon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <h3 class="error-state-title">تعذّر تحميل بيانات التقدم</h3>
+            <p class="error-state-message">{{ error() }}</p>
+            <app-button variant="primary" size="sm" (clicked)="loadProgress()">إعادة المحاولة</app-button>
+        </div>
+    }
+
+    <!-- Content -->
+    @if (!error() && progress(); as p) {
+        <!-- Stats -->
+        <div class="stats-grid">
+            <app-stats-card
+                label="نسبة الحضور"
+                [value]="p.statistics.attendanceRate + '%'"
+                icon="bi-calendar-check-fill"
+                color="primary"
+            ></app-stats-card>
+            <app-stats-card
+                label="معدل إنجاز التمارين"
+                [value]="p.statistics.exerciseCompletionRate + '%'"
+                icon="bi-clipboard2-check-fill"
+                color="success"
+            ></app-stats-card>
+            <app-stats-card
+                label="نسبة التحسن"
+                [value]="p.statistics.improvementPercentage !== null ? p.statistics.improvementPercentage + '%' : '-'"
+                icon="bi-graph-up-arrow"
+                color="info"
+            ></app-stats-card>
+            <app-stats-card
+                label="إجمالي الجلسات"
+                [value]="p.statistics.totalSessions"
+                icon="bi-calendar3"
+                color="warning"
+            ></app-stats-card>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-row">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h6 class="chart-title">درجات التقييم عبر الزمن</h6>
+                </div>
+                <app-line-chart
+                    title=""
+                    [labels]="assessmentScoreLabels()"
+                    [datasets]="assessmentScoreData()"
+                    [loading]="loading()"
+                    height="260px"
+                ></app-line-chart>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h6 class="chart-title">اتجاه المزاج</h6>
+                </div>
+                <app-line-chart
+                    title=""
+                    [labels]="moodLabels()"
+                    [datasets]="moodData()"
+                    [loading]="loading()"
+                    height="260px"
+                ></app-line-chart>
+            </div>
+        </div>
+
+        <div class="charts-row">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h6 class="chart-title">التمارين المكتملة شهرياً</h6>
+                </div>
+                <app-bar-chart
+                    title=""
+                    [labels]="exerciseCompletionLabels()"
+                    [datasets]="exerciseCompletionData()"
+                    [loading]="loading()"
+                    height="260px"
+                ></app-bar-chart>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h6 class="chart-title">تفاصيل الحضور</h6>
+                </div>
+                @if (p.attendanceBreakdown.length > 0) {
+                    <app-bar-chart
+                        title=""
+                        [labels]="attendanceLabels()"
+                        [datasets]="attendanceData()"
+                        [loading]="loading()"
+                        height="260px"
+                    ></app-bar-chart>
+                } @else {
+                    <div class="empty-chart">
+                        <i class="bi bi-calendar-x"></i>
+                        <p>لا توجد جلسات في هذه الفترة</p>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Loading skeleton (first load) -->
+    @if (loading() && !progress() && !error()) {
+        <div class="skeleton-charts">
+            @for (i of [1, 2, 3, 4]; track i) {
+                <div class="skeleton-chart"></div>
+            }
+        </div>
+    }
+</div>
