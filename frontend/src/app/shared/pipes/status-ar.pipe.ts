@@ -15,6 +15,11 @@ const STATUS_MAP: Record<string, string> = {
     Skipped: 'متخطى',
     Male: 'ذكر',
     Female: 'أنثى',
+    Scheduled: 'مجدولة',
+    Cancelled: 'ملغاة',
+    Pending: 'قيد الانتظار',
+    Reschedule: 'إعادة جدولة',
+    Cancel: 'إلغاء',
 };
 
 @Pipe({ name: 'statusAr', standalone: true })
