@@ -48,6 +48,9 @@ export const API = {
     patientDashboard: {
         summary: '/api/patient-dashboard',
     },
+    patientProgress: {
+        summary: '/api/patient-progress',
+    },
     notifications: {
         base: '/api/notifications',
         markRead: (id: string) => `/api/notifications/${id}/read`,

@@ -23,6 +23,7 @@ export class NavigationService {
         { label: 'التمارين', icon: 'bi-clipboard', route: '/exercises', roles: ['Therapist'] },
         { label: 'التقارير', icon: 'bi-file-text', route: '/reports', roles: ['Therapist'] },
         { label: 'المحادثات', icon: 'bi-chat-dots', route: '/chatbot', roles: ['Therapist', 'Patient'] },
+        { label: 'تقدمي', icon: 'bi-graph-up-arrow', route: '/progress', roles: ['Patient'] },
         {
             label: 'تنبيهات الأزمات',
             icon: 'bi-exclamation-triangle-fill',

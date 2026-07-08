@@ -372,12 +372,19 @@
 /* ================================================================
    Progress Section
    ================================================================ */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-4);
+}
+
 .section-title {
     font-family: var(--font-family-heading);
     font-size: var(--text-lg);
     font-weight: 700;
     color: var(--text-primary);
-    margin: 0 0 var(--space-4) 0;
+    margin: 0;
 }
 
 .stats-grid {
