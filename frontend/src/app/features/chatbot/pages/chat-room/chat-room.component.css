@@ -244,6 +244,10 @@
     line-height: 1.6;
     word-break: break-word;
 }
+.message-therapist .message-content,
+.message-therapist .message-content * {
+    color: #fff !important;
+}
 /* Tinted from currentColor so it reads on both a --surface bubble and a
    solid --primary one, whatever the sender/theme. */
 ::ng-deep .message-content .md-code-block {
