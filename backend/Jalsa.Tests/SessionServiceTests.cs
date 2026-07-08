@@ -342,4 +342,110 @@ public class SessionServiceTests
         // Assert
         result.Should().BeNull();
     }
+
+    private Session CreatePendingRequestSession(Guid sessionId, string requestType) => new()
+    {
+        Id = sessionId,
+        PatientId = _patientId,
+        SessionNumber = 3,
+        SessionDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(3)),
+        DurationMinutes = 50,
+        SessionType = "Individual",
+        Status = "Scheduled",
+        PatientRequestType = requestType,
+        PatientRequestNote = "أرغب في تغيير الموعد",
+        PatientRequestStatus = "Pending",
+        PatientRequestedAt = DateTime.UtcNow,
+        CreatedAt = DateTime.UtcNow,
+        UpdatedAt = DateTime.UtcNow
+    };
+
+    [Fact]
+    public async Task ApprovePatientRequestAsync_Reschedule_UpdatesDateAndClearsRequest()
+    {
+        SetupOwnershipCheck();
+        var sessionId = Guid.NewGuid();
+        var session = CreatePendingRequestSession(sessionId, "Reschedule");
+        var newDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(10));
+
+        _sessionRepoMock
+            .Setup(x => x.GetByIdAsync(sessionId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(session);
+
+        var result = await _sut.ApprovePatientRequestAsync(sessionId, new ApprovePatientRequestDto { NewSessionDate = newDate }, _therapistUserId);
+
+        result.SessionDate.Should().Be(newDate);
+        result.PatientRequestStatus.Should().BeNull();
+        result.PatientRequestType.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ApprovePatientRequestAsync_Reschedule_NoNewDate_ThrowsInvalidOperation()
+    {
+        SetupOwnershipCheck();
+        var sessionId = Guid.NewGuid();
+        var session = CreatePendingRequestSession(sessionId, "Reschedule");
+
+        _sessionRepoMock
+            .Setup(x => x.GetByIdAsync(sessionId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(session);
+
+        var act = () => _sut.ApprovePatientRequestAsync(sessionId, new ApprovePatientRequestDto(), _therapistUserId);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task ApprovePatientRequestAsync_Cancel_SetsStatusCancelledAndClearsRequest()
+    {
+        SetupOwnershipCheck();
+        var sessionId = Guid.NewGuid();
+        var session = CreatePendingRequestSession(sessionId, "Cancel");
+
+        _sessionRepoMock
+            .Setup(x => x.GetByIdAsync(sessionId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(session);
+
+        var result = await _sut.ApprovePatientRequestAsync(sessionId, new ApprovePatientRequestDto(), _therapistUserId);
+
+        result.Status.Should().Be("Cancelled");
+        result.PatientRequestStatus.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ApprovePatientRequestAsync_NoPendingRequest_ThrowsInvalidOperation()
+    {
+        SetupOwnershipCheck();
+        var sessionId = Guid.NewGuid();
+        var session = CreatePendingRequestSession(sessionId, "Reschedule");
+        session.PatientRequestStatus = null;
+
+        _sessionRepoMock
+            .Setup(x => x.GetByIdAsync(sessionId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(session);
+
+        var act = () => _sut.ApprovePatientRequestAsync(sessionId, new ApprovePatientRequestDto { NewSessionDate = DateOnly.FromDateTime(DateTime.UtcNow) }, _therapistUserId);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task RejectPatientRequestAsync_ClearsRequestAndLeavesSessionUnchanged()
+    {
+        SetupOwnershipCheck();
+        var sessionId = Guid.NewGuid();
+        var session = CreatePendingRequestSession(sessionId, "Cancel");
+        var originalDate = session.SessionDate;
+
+        _sessionRepoMock
+            .Setup(x => x.GetByIdAsync(sessionId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(session);
+
+        var result = await _sut.RejectPatientRequestAsync(sessionId, _therapistUserId);
+
+        result.Status.Should().Be("Scheduled");
+        result.SessionDate.Should().Be(originalDate);
+        result.PatientRequestStatus.Should().BeNull();
+        result.PatientRequestType.Should().BeNull();
+    }
 }
