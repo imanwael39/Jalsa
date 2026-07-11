@@ -7,9 +7,6 @@ public class SessionUpdateDtoValidator : AbstractValidator<SessionUpdateDto>
 {
     public SessionUpdateDtoValidator()
     {
-        RuleFor(x => x.Id)
-            .NotEmpty().WithMessage("Id is required.");
-
         RuleFor(x => x.DurationMinutes)
             .InclusiveBetween(1, 480).WithMessage("DurationMinutes must be between 1 and 480.")
             .When(x => x.DurationMinutes.HasValue);

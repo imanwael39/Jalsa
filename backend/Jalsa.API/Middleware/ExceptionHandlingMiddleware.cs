@@ -56,6 +56,11 @@ public class ExceptionHandlingMiddleware
             _logger.LogWarning(ex, "Forbidden: {Message}", ex.Message);
             await WriteResponseAsync(context, StatusCodes.Status403Forbidden, ex.Message);
         }
+        catch (ExternalServiceException ex)
+        {
+            _logger.LogWarning(ex, "External service error ({UpstreamStatus}): {Message}", ex.UpstreamStatusCode, ex.Message);
+            await WriteResponseAsync(context, StatusCodes.Status502BadGateway, "خدمة خارجية غير متاحة، يرجى المحاولة لاحقاً.");
+        }
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Invalid operation: {Message}", ex.Message);

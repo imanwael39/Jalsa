@@ -82,6 +82,14 @@ public class SessionService : ISessionService
         // is rolled back by SaveChangesAsync's enclosing transaction.
         await _embeddingCoordinator.RemoveForSessionAsync(session.Id);
 
+        // Explicitly remove the SessionNote before the session to avoid FK violation
+        // (SessionNotes.SessionId → Sessions.Id uses OnDelete(NoAction)).
+        if (session.SessionNote is not null)
+        {
+            _unitOfWork.Repository<SessionNote>().Remove(session.SessionNote);
+            session.SessionNote = null;
+        }
+
         _sessionRepository.Remove(session);
         await _unitOfWork.SaveChangesAsync();
     }

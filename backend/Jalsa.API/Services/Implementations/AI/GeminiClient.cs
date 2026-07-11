@@ -4,7 +4,9 @@ using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Jalsa.API.Configurations;
+using Jalsa.API.Exceptions;
 using Jalsa.API.Services.Interfaces.AI;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
 namespace Jalsa.API.Services.Implementations.AI;
@@ -248,7 +250,8 @@ public class GeminiClient : IGeminiClient
 
                 if (!isTransient || attempt == MaxAttempts)
                 {
-                    throw new InvalidOperationException(
+                    throw new ExternalServiceException(
+                        (int)response.StatusCode,
                         $"{operationName} failed ({(int)response.StatusCode}): {raw}");
                 }
 
@@ -259,7 +262,9 @@ public class GeminiClient : IGeminiClient
             }
         }
 
-        throw new InvalidOperationException($"{operationName} failed after {MaxAttempts} attempts.");
+        throw new ExternalServiceException(
+            StatusCodes.Status502BadGateway,
+            $"{operationName} failed after {MaxAttempts} attempts.");
     }
 
     private static string MapTaskType(string inputType) => inputType switch

@@ -41,7 +41,8 @@ export class BreadcrumbComponent implements OnInit {
         const url = segment ? `${parentUrl}/${segment}` : parentUrl;
 
         const label = snapshot.data['breadcrumb'] as string | undefined;
-        const nextTrail = label ? [...trail, { label, url }] : trail;
+        const nextTrail =
+            label && (trail.length === 0 || trail[trail.length - 1].url !== url) ? [...trail, { label, url }] : trail;
 
         if (snapshot.firstChild) {
             return this.buildBreadcrumbs(snapshot.firstChild, url, nextTrail);
