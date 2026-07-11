@@ -67,6 +67,7 @@ export class InAppNotificationService {
                 accessTokenFactory: () => localStorage.getItem('jalsa_token') ?? '',
             })
             .withAutomaticReconnect()
+            .configureLogging(signalR.LogLevel.Warning)
             .build();
 
         this.hubConnection.on('ReceiveNotification', (notification: InAppNotification) => {

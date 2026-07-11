@@ -141,6 +141,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy, AfterViewChecked {
                 accessTokenFactory: () => localStorage.getItem('jalsa_token') ?? '',
             })
             .withAutomaticReconnect()
+            .configureLogging(signalR.LogLevel.Warning)
             .build();
 
         // Incremental text as the AI response streams in from Gemini. Accumulated locally
