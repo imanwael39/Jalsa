@@ -17,6 +17,7 @@ using Jalsa.Application.Jobs;
 using Jalsa.Application.Services;
 using Jalsa.Application.Validators.Exercise;
 using Jalsa.Infrastructure.Data;
+using Jalsa.Infrastructure.Data.Seeding;
 using Jalsa.Infrastructure.Repositories;
 using Jalsa.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -296,6 +297,7 @@ builder.Services.AddScoped<INotificationPushService, SignalRNotificationPushServ
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<ICrisisAlertService, CrisisAlertService>();
 builder.Services.AddScoped<ExerciseReminderJob>();
+builder.Services.AddDatabaseSeeder();
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<ExerciseCreateDtoValidator>();
@@ -317,6 +319,12 @@ builder.Services.AddHangfire(config => config
 builder.Services.AddHangfireServer();
 
 var app = builder.Build();
+
+// Apply migrations and seed realistic development data (idempotent, Development only).
+if (app.Environment.IsDevelopment())
+{
+    await app.Services.MigrateAndSeedAsync(seed: true);
+}
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
