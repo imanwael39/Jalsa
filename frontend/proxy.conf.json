@@ -5,7 +5,13 @@
         "changeOrigin": true,
         "logLevel": "debug"
     },
-    "/chatHub": {
+    "/therapistAiChatHub": {
+        "target": "http://localhost:5014",
+        "secure": false,
+        "changeOrigin": true,
+        "ws": true
+    },
+    "/patientSupportChatHub": {
         "target": "http://localhost:5014",
         "secure": false,
         "changeOrigin": true,

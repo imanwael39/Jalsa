@@ -36,13 +36,13 @@ export class AiTestingToolsComponent {
 
     generateSummary(): void {
         this.run('summary', 'ملخص المريض', () =>
-            this.http.get<AiGenerationDiagnostics>(API.ai.diagnosticsSummary(this.patientId(), 'ar')),
+            this.http.get<AiGenerationDiagnostics>(API.ai.diagnosticsSummary(this.patientId(), 'ar'))
         );
     }
 
     generateReport(): void {
         this.run('report', 'مسودة التقرير', () =>
-            this.http.get<AiGenerationDiagnostics>(API.ai.diagnosticsReportDraft(this.patientId(), 'ar')),
+            this.http.get<AiGenerationDiagnostics>(API.ai.diagnosticsReportDraft(this.patientId(), 'ar'))
         );
     }
 
@@ -57,7 +57,7 @@ export class AiTestingToolsComponent {
                 patientId: this.patientId(),
                 question,
                 language: /[؀-ۿ]/.test(question) ? 'ar' : 'en',
-            }),
+            })
         );
     }
 

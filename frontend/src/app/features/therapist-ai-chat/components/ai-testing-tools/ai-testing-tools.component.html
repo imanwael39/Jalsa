@@ -25,7 +25,12 @@
                     توليد مسودة تقرير
                 </button>
                 @if (conversationId() && lastQuestion()) {
-                    <button type="button" class="tool-btn" (click)="generateChatAnswer()" [disabled]="loading() !== null">
+                    <button
+                        type="button"
+                        class="tool-btn"
+                        (click)="generateChatAnswer()"
+                        [disabled]="loading() !== null"
+                    >
                         @if (loading() === 'chat') {
                             <app-spinner size="sm"></app-spinner>
                         } @else {
@@ -58,16 +63,27 @@
 
                     <div class="result-metrics">
                         <span class="metric"><i class="bi bi-cpu" aria-hidden="true"></i> {{ result()!.model }}</span>
-                        <span class="metric"><i class="bi bi-stopwatch" aria-hidden="true"></i> {{ result()!.latencyMs }} ms</span>
-                        <span class="metric"><i class="bi bi-database" aria-hidden="true"></i> {{ result()!.embeddingCount }} تضمين</span>
-                        <span class="metric"><i class="bi bi-search" aria-hidden="true"></i> {{ result()!.ragChunkCount }} نتيجة بحث دلالي</span>
+                        <span class="metric"
+                            ><i class="bi bi-stopwatch" aria-hidden="true"></i> {{ result()!.latencyMs }} ms</span
+                        >
+                        <span class="metric"
+                            ><i class="bi bi-database" aria-hidden="true"></i>
+                            {{ result()!.embeddingCount }} تضمين</span
+                        >
+                        <span class="metric"
+                            ><i class="bi bi-search" aria-hidden="true"></i> {{ result()!.ragChunkCount }} نتيجة بحث
+                            دلالي</span
+                        >
                         @if (result()!.totalTokens !== null) {
                             <span class="metric" title="رموز الإدخال↑ / رموز الإخراج↓">
                                 <i class="bi bi-coin" aria-hidden="true"></i>
-                                {{ result()!.totalTokens }} رمز ({{ result()!.inputTokens }}↑ / {{ result()!.outputTokens }}↓)
+                                {{ result()!.totalTokens }} رمز ({{ result()!.inputTokens }}↑ /
+                                {{ result()!.outputTokens }}↓)
                             </span>
                         } @else {
-                            <span class="metric" title="لم يُرجع المزوّد بيانات عدد الرموز لهذا الطلب"><i class="bi bi-coin" aria-hidden="true"></i> عدد الرموز: غير متاح</span>
+                            <span class="metric" title="لم يُرجع المزوّد بيانات عدد الرموز لهذا الطلب"
+                                ><i class="bi bi-coin" aria-hidden="true"></i> عدد الرموز: غير متاح</span
+                            >
                         }
                     </div>
 

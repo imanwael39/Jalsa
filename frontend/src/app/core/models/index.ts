@@ -32,7 +32,16 @@ export type {
     UpdateExerciseStatusRequest,
 } from './exercise.model';
 export type { ReferralReport, ReportVersion } from './report.model';
-export type { ChatConversation, ChatMessage, SendMessageRequest } from './chat.model';
+export type {
+    TherapistChatConversation,
+    TherapistChatMessage,
+    SendTherapistChatMessageRequest,
+} from './therapist-ai-chat.model';
+export type {
+    PatientSupportConversation,
+    PatientSupportChatMessage,
+    SendPatientSupportMessageRequest,
+} from './patient-support-chat.model';
 export type { CrisisAlert } from './crisis-alert.model';
 export type {
     AdminUser,

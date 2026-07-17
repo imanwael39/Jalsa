@@ -4,30 +4,28 @@ import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClientService } from '../../../../core/api/http-client.service';
 import { PatientService } from '../../../../core/services/patient.service';
-import { AuthService } from '../../../../core/services/auth.service';
 import { API } from '../../../../core/api/api-endpoints';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
-import { ChatConversation, Patient } from '../../../../core/models';
+import { TherapistChatConversation, Patient } from '../../../../core/models';
 
-const LAST_SEEN_KEY = 'jalsa_chat_last_seen';
+const LAST_SEEN_KEY = 'jalsa_therapist_chat_last_seen';
 
 @Component({
-    selector: 'app-chat-list',
+    selector: 'app-therapist-chat-list',
     standalone: true,
     imports: [FormsModule, SpinnerComponent, EmptyStateComponent],
-    templateUrl: './chat-list.component.html',
-    styleUrl: './chat-list.component.css',
+    templateUrl: './therapist-chat-list.component.html',
+    styleUrl: './therapist-chat-list.component.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ChatListComponent implements OnInit {
+export class TherapistChatListComponent implements OnInit {
     private router = inject(Router);
     private http = inject(HttpClientService);
     private patientService = inject(PatientService);
-    private authService = inject(AuthService);
     private destroyRef = inject(DestroyRef);
 
-    conversations = signal<ChatConversation[]>([]);
+    conversations = signal<TherapistChatConversation[]>([]);
     loading = signal<boolean>(false);
     error = signal<string | null>(null);
     searchTerm = signal<string>('');
@@ -37,8 +35,6 @@ export class ChatListComponent implements OnInit {
     patientSearchTerm = signal<string>('');
     patientPickerLoading = signal<boolean>(false);
     creatingConversation = signal<boolean>(false);
-
-    isTherapist = computed(() => this.authService.hasRole('Therapist'));
 
     filteredConversations = computed(() => {
         const term = this.searchTerm().trim().toLowerCase();
@@ -61,7 +57,7 @@ export class ChatListComponent implements OnInit {
         this.error.set(null);
 
         this.http
-            .get<ChatConversation[]>(API.chat.conversations)
+            .get<TherapistChatConversation[]>(API.therapistChat.conversations)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: data => {
@@ -81,7 +77,7 @@ export class ChatListComponent implements OnInit {
 
     openConversation(id: string): void {
         this.markSeen(id);
-        this.router.navigate(['/chatbot', id]);
+        this.router.navigate(['/therapist-chat', id]);
     }
 
     openPatientPicker(): void {
@@ -122,7 +118,7 @@ export class ChatListComponent implements OnInit {
 
         this.creatingConversation.set(true);
         this.http
-            .post<ChatConversation>(API.chat.conversations, { patientId: patient.id })
+            .post<TherapistChatConversation>(API.therapistChat.conversations, { patientId: patient.id })
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: conv => {
@@ -157,7 +153,7 @@ export class ChatListComponent implements OnInit {
         return status === 'Open';
     }
 
-    isUnread(conv: ChatConversation): boolean {
+    isUnread(conv: TherapistChatConversation): boolean {
         if (!conv.lastActivityAt) return false;
         const lastSeen = this.getLastSeenMap()[conv.id];
         if (!lastSeen) return true;

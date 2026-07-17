@@ -1,12 +1,10 @@
 <div class="chat-list">
     <div class="page-header">
-        <h2 class="page-title">محادثات المرضى</h2>
-        @if (isTherapist()) {
-            <button type="button" class="new-chat-btn" (click)="openPatientPicker()">
-                <i class="bi bi-plus-lg" aria-hidden="true"></i>
-                محادثة جديدة
-            </button>
-        }
+        <h2 class="page-title">المساعد السريري الذكي</h2>
+        <button type="button" class="new-chat-btn" (click)="openPatientPicker()">
+            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+            محادثة جديدة
+        </button>
     </div>
 
     @if (conversations().length > 0) {
@@ -42,7 +40,11 @@
                 icon="bi-chat-dots"
             ></app-empty-state>
         } @else if (filteredConversations().length === 0) {
-            <app-empty-state title="لا نتائج" message="لا توجد محادثات مطابقة لبحثك." icon="bi-search"></app-empty-state>
+            <app-empty-state
+                title="لا نتائج"
+                message="لا توجد محادثات مطابقة لبحثك."
+                icon="bi-search"
+            ></app-empty-state>
         } @else {
             <div class="conversations-list">
                 @for (conv of filteredConversations(); track conv.id) {

@@ -1,4 +1,4 @@
-export interface ChatConversation {
+export interface TherapistChatConversation {
     id: string;
     patientId: string;
     patientName: string;
@@ -8,15 +8,15 @@ export interface ChatConversation {
     messageCount: number;
 }
 
-export interface ChatMessage {
+export interface TherapistChatMessage {
     id: string;
     conversationId: string;
-    senderType: 'Patient' | 'AI' | 'Therapist';
+    senderType: 'Therapist' | 'AI';
     content: string | null;
     createdAt: string;
 }
 
-export interface SendMessageRequest {
+export interface SendTherapistChatMessageRequest {
     conversationId: string;
     content: string;
 }
