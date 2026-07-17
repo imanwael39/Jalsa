@@ -21,7 +21,7 @@ public class CrisisAlertService : ICrisisAlertService
     {
         var therapistId = await TryResolveTherapistIdAsync(userId);
         var alerts = await _unitOfWork.Repository<CrisisAlert>()
-            .FindAsync(a => a.Patient.TherapistId == therapistId && (!openOnly || a.Status == "Open"));
+            .FindAsync(a => a.Patient.TherapistId == therapistId && (!openOnly || a.Status != "Resolved"));
 
         var ordered = alerts.OrderByDescending(a => a.CreatedAt).ToList();
 
@@ -30,6 +30,23 @@ public class CrisisAlertService : ICrisisAlertService
             dtos.Add(await MapToDtoAsync(alert));
 
         return dtos;
+    }
+
+    public async Task<CrisisAlertViewDto?> AcknowledgeAsync(Guid userId, Guid alertId)
+    {
+        var therapistId = await TryResolveTherapistIdAsync(userId);
+        var repo = _unitOfWork.Repository<CrisisAlert>();
+        var alert = await repo.FindSingleAsync(a => a.Id == alertId && a.Patient.TherapistId == therapistId);
+
+        if (alert is null)
+            return null;
+
+        alert.Status = "Acknowledged";
+        alert.UpdatedAt = DateTime.UtcNow;
+        repo.Update(alert);
+        await _unitOfWork.SaveChangesAsync();
+
+        return await MapToDtoAsync(alert);
     }
 
     public async Task<CrisisAlertViewDto?> ResolveAsync(Guid userId, Guid alertId)
@@ -53,8 +70,8 @@ public class CrisisAlertService : ICrisisAlertService
     {
         var patient = await _unitOfWork.Repository<Patient>().FindSingleAsync(p => p.Id == alert.PatientId);
 
-        ChatMessage? message = alert.ChatMessageId.HasValue
-            ? await _unitOfWork.Repository<ChatMessage>().FindSingleAsync(m => m.Id == alert.ChatMessageId.Value)
+        PatientSupportMessage? message = alert.ChatMessageId.HasValue
+            ? await _unitOfWork.Repository<PatientSupportMessage>().FindSingleAsync(m => m.Id == alert.ChatMessageId.Value)
             : null;
 
         return new CrisisAlertViewDto
@@ -62,7 +79,10 @@ public class CrisisAlertService : ICrisisAlertService
             Id = alert.Id,
             PatientId = alert.PatientId,
             PatientName = patient?.FullName ?? string.Empty,
+            ConversationId = alert.ConversationId,
             Severity = alert.Severity,
+            Reason = alert.Reason,
+            Confidence = alert.Confidence,
             Status = alert.Status,
             TriggeringMessage = message?.Content,
             CreatedAt = alert.CreatedAt,

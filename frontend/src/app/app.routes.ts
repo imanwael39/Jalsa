@@ -53,8 +53,18 @@ export const routes: Routes = [
                     import('./features/notifications/notifications.routes').then(m => m.NOTIFICATIONS_ROUTES),
             },
             {
-                path: 'chatbot',
-                loadChildren: () => import('./features/chatbot/chatbot.routes').then(m => m.CHATBOT_ROUTES),
+                path: 'therapist-chat',
+                loadChildren: () =>
+                    import('./features/therapist-ai-chat/therapist-ai-chat.routes').then(
+                        m => m.THERAPIST_AI_CHAT_ROUTES
+                    ),
+            },
+            {
+                path: 'support-chat',
+                loadChildren: () =>
+                    import('./features/patient-support-chat/patient-support-chat.routes').then(
+                        m => m.PATIENT_SUPPORT_CHAT_ROUTES
+                    ),
             },
             {
                 path: 'crisis-alerts',

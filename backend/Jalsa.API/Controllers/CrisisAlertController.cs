@@ -24,6 +24,18 @@ public class CrisisAlertController : BaseController
         return Ok(result);
     }
 
+    [HttpPatch("{id:guid}/acknowledge")]
+    public async Task<IActionResult> Acknowledge(Guid id)
+    {
+        var userId = GetCurrentUserId();
+        var result = await _crisisAlertService.AcknowledgeAsync(userId, id);
+
+        if (result is null)
+            return NotFound(new { message = "التنبيه غير موجود" });
+
+        return Ok(result);
+    }
+
     [HttpPatch("{id:guid}/resolve")]
     public async Task<IActionResult> Resolve(Guid id)
     {

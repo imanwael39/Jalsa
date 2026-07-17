@@ -61,14 +61,24 @@ public class SystemHealthService : ISystemHealthService
         var todayStart = now.Date;
         var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        dto.AiChatCallsToday = await _context.AiChatLogs.CountAsync(l => l.CreatedAt >= todayStart);
-        dto.AiChatCallsThisMonth = await _context.AiChatLogs.CountAsync(l => l.CreatedAt >= monthStart);
+        var therapistChatCallsToday = await _context.TherapistAiChatLogs.CountAsync(l => l.CreatedAt >= todayStart);
+        var supportChatCallsToday = await _context.PatientSupportAiChatLogs.CountAsync(l => l.CreatedAt >= todayStart);
+        dto.AiChatCallsToday = therapistChatCallsToday + supportChatCallsToday;
+
+        var therapistChatCallsThisMonth = await _context.TherapistAiChatLogs.CountAsync(l => l.CreatedAt >= monthStart);
+        var supportChatCallsThisMonth = await _context.PatientSupportAiChatLogs.CountAsync(l => l.CreatedAt >= monthStart);
+        dto.AiChatCallsThisMonth = therapistChatCallsThisMonth + supportChatCallsThisMonth;
+
         dto.AiReportCallsToday = await _context.AiReportGenerationLogs.CountAsync(l => l.CreatedAt >= todayStart);
         dto.AiReportCallsThisMonth = await _context.AiReportGenerationLogs.CountAsync(l => l.CreatedAt >= monthStart);
 
-        var chatTokens = await _context.AiChatLogs
+        var therapistChatTokens = await _context.TherapistAiChatLogs
             .Where(l => l.CreatedAt >= monthStart)
             .SumAsync(l => (long?)l.TokensUsed) ?? 0;
+        var supportChatTokens = await _context.PatientSupportAiChatLogs
+            .Where(l => l.CreatedAt >= monthStart)
+            .SumAsync(l => (long?)l.TokensUsed) ?? 0;
+        var chatTokens = therapistChatTokens + supportChatTokens;
         var reportTokens = await _context.AiReportGenerationLogs
             .Where(l => l.CreatedAt >= monthStart)
             .SumAsync(l => (long?)l.TokensUsed) ?? 0;

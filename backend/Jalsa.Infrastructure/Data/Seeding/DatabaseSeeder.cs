@@ -84,6 +84,7 @@ public sealed partial class DatabaseSeeder
             await SeedSessionsAsync(ct);
             await SeedExercisesAsync(ct);
             await SeedChatAndCrisisAsync(ct);
+            await SeedTherapistAiChatAsync(ct);
             await SeedNotificationsAsync(ct);
             await SeedReportsAsync(ct);
 

@@ -17,6 +17,7 @@ public class Therapist
     public Identity.User User { get; set; } = null!;
     public ICollection<TherapistClinic> TherapistClinics { get; set; } = new List<TherapistClinic>();
     public ICollection<Patient.Patient> Patients { get; set; } = new List<Patient.Patient>();
+    public ICollection<Chat.TherapistAiConversation> TherapistAiConversations { get; set; } = new List<Chat.TherapistAiConversation>();
     public ICollection<Report.ReferralReport> ReferralReports { get; set; } = new List<Report.ReferralReport>();
     public ICollection<Report.ReportVersion> ReportVersions { get; set; } = new List<Report.ReportVersion>();
     public ICollection<Ai.AiReportGenerationLog> AiReportGenerationLogs { get; set; } = new List<Ai.AiReportGenerationLog>();

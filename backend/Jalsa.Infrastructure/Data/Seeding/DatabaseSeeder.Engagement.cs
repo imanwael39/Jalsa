@@ -77,7 +77,9 @@ public sealed partial class DatabaseSeeder
         _db.ChangeTracker.Clear();
     }
 
-    // ── Chat conversations, messages, AI logs and crisis alerts ──────────────
+    // ── Patient support chat + crisis alerts ──────────────────────────────────
+    // Fully separate from the therapist clinical assistant seeded below: distinct tables,
+    // distinct conversation per patient, no shared rows.
     private async Task SeedChatAndCrisisAsync(CancellationToken ct)
     {
         // Roughly 10 patients experience a crisis moment during a conversation.
@@ -86,7 +88,7 @@ public sealed partial class DatabaseSeeder
         foreach (var patient in _patients)
         {
             var conversationStart = _faker.Date.Between(patient.CreatedAt, _now);
-            var conversation = new ChatConversation
+            var conversation = new PatientSupportConversation
             {
                 Id = Guid.NewGuid(),
                 PatientId = patient.Id,
@@ -94,7 +96,7 @@ public sealed partial class DatabaseSeeder
                 CreatedAt = conversationStart,
                 UpdatedAt = conversationStart,
             };
-            _db.ChatConversations.Add(conversation);
+            _db.PatientSupportConversations.Add(conversation);
 
             var messageCount = _faker.Random.Int(20, 60);
             var cursor = conversationStart;
@@ -135,30 +137,26 @@ public sealed partial class DatabaseSeeder
                     latency = _faker.Random.Int(600, 2500);
                 }
 
-                var message = new ChatMessage
+                var message = new PatientSupportMessage
                 {
                     Id = Guid.NewGuid(),
                     ConversationId = conversation.Id,
                     SenderType = senderType,
                     Content = content,
-                    TokensUsed = tokens,
-                    LatencyMs = latency,
                     CreatedAt = cursor,
                 };
-                _db.ChatMessages.Add(message);
+                _db.PatientSupportMessages.Add(message);
 
                 if (isCrisisTurn)
                 {
                     // Reassuring AI reply immediately after the crisis message.
                     cursor = cursor.AddMinutes(1);
-                    _db.ChatMessages.Add(new ChatMessage
+                    _db.PatientSupportMessages.Add(new PatientSupportMessage
                     {
                         Id = Guid.NewGuid(),
                         ConversationId = conversation.Id,
                         SenderType = "AI",
                         Content = _faker.PickRandom(ArabicSeedData.AiCrisisReplies),
-                        TokensUsed = _faker.Random.Int(80, 200),
-                        LatencyMs = _faker.Random.Int(600, 2000),
                         CreatedAt = cursor,
                     });
 
@@ -167,8 +165,11 @@ public sealed partial class DatabaseSeeder
                         Id = Guid.NewGuid(),
                         PatientId = patient.Id,
                         TherapistId = patient.TherapistId,
+                        ConversationId = conversation.Id,
                         ChatMessageId = message.Id,
                         Severity = _faker.PickRandom(ArabicSeedData.CrisisSeverities),
+                        Reason = "تعبير مباشر عن نية إيذاء النفس اكتُشف بواسطة نموذج الذكاء الاصطناعي.",
+                        Confidence = Math.Round(_faker.Random.Double(0.65, 0.98), 2),
                         Status = _faker.PickRandom(ArabicSeedData.CrisisStatuses),
                         CreatedAt = cursor,
                         UpdatedAt = cursor,
@@ -182,7 +183,7 @@ public sealed partial class DatabaseSeeder
             // A couple of AI telemetry rows per conversation.
             for (var a = 0; a < _faker.Random.Int(1, 3); a++)
             {
-                _db.AiChatLogs.Add(new AiChatLog
+                _db.PatientSupportAiChatLogs.Add(new PatientSupportAiChatLog
                 {
                     Id = Guid.NewGuid(),
                     ConversationId = conversation.Id,
@@ -194,6 +195,75 @@ public sealed partial class DatabaseSeeder
                     CreatedAt = _faker.Date.Between(conversationStart, cursor),
                 });
             }
+        }
+
+        await _db.SaveChangesAsync(ct);
+        _db.ChangeTracker.Clear();
+    }
+
+    // ── Therapist AI Assistant chat (clinical Q&A, separate from patient support) ────────
+    private async Task SeedTherapistAiChatAsync(CancellationToken ct)
+    {
+        foreach (var patient in _patients)
+        {
+            // Not every patient has a therapist-assistant thread yet — matches real usage
+            // where the therapist only opens this when they need it.
+            if (_faker.Random.Double() < 0.3) continue;
+
+            var conversationStart = _faker.Date.Between(patient.CreatedAt, _now);
+            var conversation = new TherapistAiConversation
+            {
+                Id = Guid.NewGuid(),
+                TherapistId = patient.TherapistId,
+                PatientId = patient.Id,
+                Status = _faker.Random.Bool(0.7f) ? "Open" : "Closed",
+                CreatedAt = conversationStart,
+                UpdatedAt = conversationStart,
+            };
+            _db.TherapistAiConversations.Add(conversation);
+
+            var turnCount = _faker.Random.Int(2, 6);
+            var cursor = conversationStart;
+
+            for (var t = 0; t < turnCount; t++)
+            {
+                cursor = cursor.AddMinutes(_faker.Random.Int(1, 60));
+                if (cursor > _now) cursor = _now;
+
+                _db.TherapistAiMessages.Add(new TherapistAiMessage
+                {
+                    Id = Guid.NewGuid(),
+                    ConversationId = conversation.Id,
+                    SenderType = "Therapist",
+                    Content = _faker.PickRandom(ArabicSeedData.TherapistChatQuestions),
+                    CreatedAt = cursor,
+                });
+
+                cursor = cursor.AddMinutes(1);
+                _db.TherapistAiMessages.Add(new TherapistAiMessage
+                {
+                    Id = Guid.NewGuid(),
+                    ConversationId = conversation.Id,
+                    SenderType = "AI",
+                    Content = _faker.PickRandom(ArabicSeedData.TherapistAiClinicalReplies),
+                    CreatedAt = cursor,
+                });
+
+                _db.TherapistAiChatLogs.Add(new TherapistAiChatLog
+                {
+                    Id = Guid.NewGuid(),
+                    ConversationId = conversation.Id,
+                    PatientId = patient.Id,
+                    TokensUsed = _faker.Random.Int(300, 1800),
+                    Cost = Math.Round(_faker.Random.Decimal(0.002m, 0.03m), 6),
+                    ResponseLatencyMs = _faker.Random.Int(800, 3000),
+                    ModelUsed = "gemini-2.5-flash",
+                    CreatedAt = cursor,
+                });
+            }
+
+            conversation.LastActivityAt = cursor;
+            conversation.UpdatedAt = cursor;
         }
 
         await _db.SaveChangesAsync(ct);

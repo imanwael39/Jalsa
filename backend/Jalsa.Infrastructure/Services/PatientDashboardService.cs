@@ -174,7 +174,7 @@ public class PatientDashboardService : IPatientDashboardService
 
     private async Task<List<RecentConversationDto>> GetRecentConversationsAsync(Guid patientId)
     {
-        return await _unitOfWork.Repository<ChatConversation>().Query()
+        return await _unitOfWork.Repository<PatientSupportConversation>().Query()
             .AsNoTracking()
             .Where(c => c.PatientId == patientId)
             .OrderByDescending(c => c.LastActivityAt ?? c.CreatedAt)

@@ -55,19 +55,6 @@ public class PromptService : Services.Interfaces.IPromptService
         return _root["prompts"]?[key]?["embeddingQuery"]?[language]?.GetValue<string>() ?? string.Empty;
     }
 
-    public string[] GetKeywords(string key)
-    {
-        var arr = _root["prompts"]?[key]?["keywords"] as JsonArray;
-        return arr?.Select(n => n?.GetValue<string>() ?? string.Empty)
-                   .Where(s => !string.IsNullOrEmpty(s))
-                   .ToArray() ?? [];
-    }
-
-    public string GetFallbackMessage(string key, string language)
-    {
-        return _root["prompts"]?[key]?["fallbackMessage"]?[language]?.GetValue<string>() ?? string.Empty;
-    }
-
     public string GetFallbackReason(string key, string language)
     {
         return _root["prompts"]?[key]?["fallbackReason"]?[language]?.GetValue<string>() ?? string.Empty;

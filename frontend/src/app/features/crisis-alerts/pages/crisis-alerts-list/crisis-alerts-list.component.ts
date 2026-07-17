@@ -1,4 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, DestroyRef, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClientService } from '../../../../core/api/http-client.service';
 import { API } from '../../../../core/api/api-endpoints';
@@ -9,7 +10,7 @@ import { CrisisAlert } from '../../../../core/models';
 @Component({
     selector: 'app-crisis-alerts-list',
     standalone: true,
-    imports: [SpinnerComponent, EmptyStateComponent],
+    imports: [SpinnerComponent, EmptyStateComponent, RouterLink],
     templateUrl: './crisis-alerts-list.component.html',
     styleUrl: './crisis-alerts-list.component.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -22,6 +23,7 @@ export class CrisisAlertsListComponent implements OnInit {
     loading = signal<boolean>(false);
     error = signal<string | null>(null);
     resolvingId = signal<string | null>(null);
+    acknowledgingId = signal<string | null>(null);
     openOnly = signal<boolean>(true);
 
     ngOnInit(): void {
@@ -52,6 +54,23 @@ export class CrisisAlertsListComponent implements OnInit {
         this.loadAlerts();
     }
 
+    acknowledge(id: string): void {
+        this.acknowledgingId.set(id);
+        this.http
+            .patch<CrisisAlert>(API.crisisAlerts.acknowledge(id), {})
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: updated => {
+                    this.alerts.update(list => list.map(a => (a.id === id ? updated : a)));
+                    this.acknowledgingId.set(null);
+                },
+                error: () => {
+                    this.error.set('فشل تحديث التنبيه. يرجى المحاولة مرة أخرى.');
+                    this.acknowledgingId.set(null);
+                },
+            });
+    }
+
     resolve(id: string): void {
         this.resolvingId.set(id);
         this.http
@@ -77,5 +96,48 @@ export class CrisisAlertsListComponent implements OnInit {
             hour: '2-digit',
             minute: '2-digit',
         });
+    }
+
+    severityClass(severity: string): string {
+        switch (severity) {
+            case 'Critical':
+                return 'severity-critical';
+            case 'High':
+                return 'severity-high';
+            case 'Medium':
+                return 'severity-medium';
+            case 'Low':
+                return 'severity-low';
+            default:
+                return 'severity-none';
+        }
+    }
+
+    severityLabel(severity: string): string {
+        switch (severity) {
+            case 'Critical':
+                return 'حرجة';
+            case 'High':
+                return 'مرتفعة';
+            case 'Medium':
+                return 'متوسطة';
+            case 'Low':
+                return 'منخفضة';
+            default:
+                return severity;
+        }
+    }
+
+    statusLabel(status: string): string {
+        switch (status) {
+            case 'New':
+                return 'جديد';
+            case 'Acknowledged':
+                return 'تمت المراجعة';
+            case 'Resolved':
+                return 'تم الحل';
+            default:
+                return status;
+        }
     }
 }

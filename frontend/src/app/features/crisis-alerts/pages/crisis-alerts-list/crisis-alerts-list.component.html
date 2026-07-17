@@ -27,20 +27,25 @@
         } @else {
             <div class="alerts-list">
                 @for (alert of alerts(); track alert.id) {
-                    <div class="alert-card">
+                    <div class="alert-card" [class]="severityClass(alert.severity)">
                         <div class="alert-icon">
                             <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
                         </div>
                         <div class="alert-info">
                             <div class="alert-header">
-                                <span class="patient-name">{{ alert.patientName }}</span>
-                                <span class="severity-badge">{{ alert.severity }}</span>
+                                <a class="patient-name" [routerLink]="['/patients', alert.patientId]">{{
+                                    alert.patientName
+                                }}</a>
+                                <span class="severity-badge" [class]="severityClass(alert.severity)">
+                                    {{ severityLabel(alert.severity) }}
+                                </span>
                                 <span
                                     class="status-badge"
-                                    [class.status-open]="alert.status === 'Open'"
-                                    [class.status-resolved]="alert.status !== 'Open'"
+                                    [class.status-new]="alert.status === 'New'"
+                                    [class.status-acknowledged]="alert.status === 'Acknowledged'"
+                                    [class.status-resolved]="alert.status === 'Resolved'"
                                 >
-                                    {{ alert.status === 'Open' ? 'مفتوح' : 'تم الحل' }}
+                                    {{ statusLabel(alert.status) }}
                                 </span>
                             </div>
                             @if (alert.triggeringMessage) {
@@ -48,16 +53,28 @@
                             }
                             <span class="alert-date">{{ formatDate(alert.createdAt) }}</span>
                         </div>
-                        @if (alert.status === 'Open') {
-                            <button
-                                class="resolve-btn"
-                                type="button"
-                                [disabled]="resolvingId() === alert.id"
-                                (click)="resolve(alert.id)"
-                            >
-                                {{ resolvingId() === alert.id ? 'جاري الحل...' : 'وضع علامة كمحلول' }}
-                            </button>
-                        }
+                        <div class="alert-actions">
+                            @if (alert.status === 'New') {
+                                <button
+                                    class="acknowledge-btn"
+                                    type="button"
+                                    [disabled]="acknowledgingId() === alert.id"
+                                    (click)="acknowledge(alert.id)"
+                                >
+                                    {{ acknowledgingId() === alert.id ? 'جاري التحديث...' : 'وضع علامة كمُراجَع' }}
+                                </button>
+                            }
+                            @if (alert.status !== 'Resolved') {
+                                <button
+                                    class="resolve-btn"
+                                    type="button"
+                                    [disabled]="resolvingId() === alert.id"
+                                    (click)="resolve(alert.id)"
+                                >
+                                    {{ resolvingId() === alert.id ? 'جاري الحل...' : 'وضع علامة كمحلول' }}
+                                </button>
+                            }
+                        </div>
                     </div>
                 }
             </div>

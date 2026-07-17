@@ -1,0 +1,125 @@
+<div class="testing-tools" [class.is-expanded]="expanded()">
+    <button type="button" class="toggle-btn" (click)="toggle()" [attr.aria-expanded]="expanded()">
+        <i class="bi bi-tools" aria-hidden="true"></i>
+        <span>أدوات اختبار الذكاء الاصطناعي</span>
+        <i class="bi" [class.bi-chevron-up]="expanded()" [class.bi-chevron-down]="!expanded()" aria-hidden="true"></i>
+    </button>
+
+    @if (expanded()) {
+        <div class="tools-body">
+            <div class="tools-actions">
+                <button type="button" class="tool-btn" (click)="generateSummary()" [disabled]="loading() !== null">
+                    @if (loading() === 'summary') {
+                        <app-spinner size="sm"></app-spinner>
+                    } @else {
+                        <i class="bi bi-file-person" aria-hidden="true"></i>
+                    }
+                    توليد ملخص المريض
+                </button>
+                <button type="button" class="tool-btn" (click)="generateReport()" [disabled]="loading() !== null">
+                    @if (loading() === 'report') {
+                        <app-spinner size="sm"></app-spinner>
+                    } @else {
+                        <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
+                    }
+                    توليد مسودة تقرير
+                </button>
+                @if (conversationId() && lastQuestion()) {
+                    <button
+                        type="button"
+                        class="tool-btn"
+                        (click)="generateChatAnswer()"
+                        [disabled]="loading() !== null"
+                    >
+                        @if (loading() === 'chat') {
+                            <app-spinner size="sm"></app-spinner>
+                        } @else {
+                            <i class="bi bi-chat-dots" aria-hidden="true"></i>
+                        }
+                        اختبار رد الدردشة
+                    </button>
+                }
+                <button type="button" class="tool-btn" (click)="loadEmbeddingCount()" [disabled]="loading() !== null">
+                    <i class="bi bi-database" aria-hidden="true"></i>
+                    عدد التضمينات
+                    @if (embeddingCount() !== null) {
+                        <span class="count-badge">{{ embeddingCount() }}</span>
+                    }
+                </button>
+            </div>
+
+            @if (error()) {
+                <div class="tools-error">{{ error() }}</div>
+            }
+
+            @if (hasResult()) {
+                <div class="tools-result">
+                    <div class="result-header">
+                        <span class="result-title">{{ resultLabel() }}</span>
+                        <button type="button" class="copy-btn" (click)="copyOutput()" aria-label="نسخ الناتج">
+                            <i class="bi bi-clipboard" aria-hidden="true"></i>
+                        </button>
+                    </div>
+
+                    <div class="result-metrics">
+                        <span class="metric"><i class="bi bi-cpu" aria-hidden="true"></i> {{ result()!.model }}</span>
+                        <span class="metric"
+                            ><i class="bi bi-stopwatch" aria-hidden="true"></i> {{ result()!.latencyMs }} ms</span
+                        >
+                        <span class="metric"
+                            ><i class="bi bi-database" aria-hidden="true"></i>
+                            {{ result()!.embeddingCount }} تضمين</span
+                        >
+                        <span class="metric"
+                            ><i class="bi bi-search" aria-hidden="true"></i> {{ result()!.ragChunkCount }} نتيجة بحث
+                            دلالي</span
+                        >
+                        @if (result()!.totalTokens !== null) {
+                            <span class="metric" title="رموز الإدخال↑ / رموز الإخراج↓">
+                                <i class="bi bi-coin" aria-hidden="true"></i>
+                                {{ result()!.totalTokens }} رمز ({{ result()!.inputTokens }}↑ /
+                                {{ result()!.outputTokens }}↓)
+                            </span>
+                        } @else {
+                            <span class="metric" title="لم يُرجع المزوّد بيانات عدد الرموز لهذا الطلب"
+                                ><i class="bi bi-coin" aria-hidden="true"></i> عدد الرموز: غير متاح</span
+                            >
+                        }
+                    </div>
+
+                    <details class="result-section">
+                        <summary>الناتج (Output)</summary>
+                        <pre class="result-text">{{ result()!.output }}</pre>
+                    </details>
+
+                    <details class="result-section">
+                        <summary>الأمر النظامي (System Prompt)</summary>
+                        <pre class="result-text">{{ result()!.systemPrompt }}</pre>
+                    </details>
+
+                    <details class="result-section">
+                        <summary>أمر المستخدم (User Prompt)</summary>
+                        <pre class="result-text">{{ result()!.userPrompt }}</pre>
+                    </details>
+
+                    @if (result()!.ragSources.length > 0) {
+                        <details class="result-section" open>
+                            <summary>مصادر البحث الدلالي (RAG Sources)</summary>
+                            <ul class="rag-sources">
+                                @for (source of result()!.ragSources; track source.sessionId + source.textPreview) {
+                                    <li class="rag-source">
+                                        <div class="rag-source-header">
+                                            <span class="rag-score">تشابه: {{ (source.score * 100).toFixed(0) }}%</span>
+                                            <span class="rag-src">{{ source.source }}</span>
+                                        </div>
+                                        <p class="rag-preview">{{ source.textPreview }}</p>
+                                    </li>
+                                }
+                            </ul>
+                        </details>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>

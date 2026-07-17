@@ -1,7 +1,8 @@
 export interface Environment {
     production: boolean;
     apiUrl: string;
-    signalRHubUrl: string;
+    therapistAiChatHubUrl: string;
+    patientSupportChatHubUrl: string;
     notificationHubUrl: string;
     aiServiceUrl: string;
     appName: string;

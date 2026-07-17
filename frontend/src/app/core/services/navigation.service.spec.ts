@@ -29,12 +29,13 @@ describe('NavigationService', () => {
         expect(routes).not.toContain('/sessions');
         expect(routes).not.toContain('/exercises');
         expect(routes).not.toContain('/reports');
-        expect(routes).not.toContain('/chatbot');
+        expect(routes).not.toContain('/therapist-chat');
+        expect(routes).not.toContain('/support-chat');
         expect(routes).not.toContain('/patients');
         expect(routes).not.toContain('/crisis-alerts');
     });
 
-    it('shows the clinical dashboard and clinical items for a Therapist, never the admin panel', () => {
+    it('shows the clinical dashboard and clinical items for a Therapist, never the admin panel or patient support chat', () => {
         mockRoles(['Therapist']);
 
         const routes = service.menuItems().map(item => item.route);
@@ -44,18 +45,20 @@ describe('NavigationService', () => {
         expect(routes).toContain('/exercises');
         expect(routes).toContain('/reports');
         expect(routes).toContain('/patients');
-        expect(routes).toContain('/chatbot');
+        expect(routes).toContain('/therapist-chat');
         expect(routes).toContain('/crisis-alerts');
+        expect(routes).not.toContain('/support-chat');
         expect(routes).not.toContain('/admin/dashboard');
         expect(routes).not.toContain('/admin');
     });
 
-    it('shows only the chatbot for a Patient, no dashboard and no admin/therapist items', () => {
+    it('shows only the support chat for a Patient, no dashboard, no admin/therapist items, and never the therapist chat', () => {
         mockRoles(['Patient']);
 
         const routes = service.menuItems().map(item => item.route);
 
-        expect(routes).toContain('/chatbot');
+        expect(routes).toContain('/support-chat');
+        expect(routes).not.toContain('/therapist-chat');
         expect(routes).not.toContain('/dashboard');
         expect(routes).not.toContain('/admin/dashboard');
         expect(routes).not.toContain('/sessions');

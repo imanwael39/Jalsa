@@ -28,7 +28,7 @@
                 {{ dashboard()?.crisisSupport?.hotlineLabel || 'الخط الساخن للصحة النفسية' }}
                 ({{ dashboard()?.crisisSupport?.hotlineNumber || '08008880700' }})
             </a>
-            <a class="crisis-btn-secondary" routerLink="/chatbot">
+            <a class="crisis-btn-secondary" routerLink="/support-chat">
                 <i class="bi bi-chat-dots-fill"></i>
                 تحدث مع المساعد الذكي
             </a>
@@ -218,7 +218,7 @@
                     <i class="bi bi-robot"></i>
                     <h6>محادثاتي الأخيرة مع المساعد الذكي</h6>
                 </div>
-                <a class="view-all-link" routerLink="/chatbot">عرض الكل</a>
+                <a class="view-all-link" routerLink="/support-chat">عرض الكل</a>
             </div>
             <div class="info-card-body">
                 @if (d.recentConversations.length > 0) {

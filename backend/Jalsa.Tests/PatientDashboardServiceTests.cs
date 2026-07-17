@@ -20,7 +20,7 @@ public class PatientDashboardServiceTests
     private readonly Mock<IExerciseRepository> _exerciseRepoMock;
     private readonly Mock<IAssessmentRepository> _assessmentRepoMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<IGenericRepository<ChatConversation>> _chatConversationRepoMock;
+    private readonly Mock<IGenericRepository<PatientSupportConversation>> _chatConversationRepoMock;
     private readonly Mock<IGenericRepository<Therapist>> _therapistRepoMock;
     private readonly Mock<IGenericRepository<SystemSetting>> _systemSettingRepoMock;
     private readonly Mock<IGenericRepository<AssessmentTemplate>> _assessmentTemplateRepoMock;
@@ -36,7 +36,7 @@ public class PatientDashboardServiceTests
         _exerciseRepoMock = new Mock<IExerciseRepository>();
         _assessmentRepoMock = new Mock<IAssessmentRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
-        _chatConversationRepoMock = new Mock<IGenericRepository<ChatConversation>>();
+        _chatConversationRepoMock = new Mock<IGenericRepository<PatientSupportConversation>>();
         _therapistRepoMock = new Mock<IGenericRepository<Therapist>>();
         _systemSettingRepoMock = new Mock<IGenericRepository<SystemSetting>>();
         _assessmentTemplateRepoMock = new Mock<IGenericRepository<AssessmentTemplate>>();
@@ -45,7 +45,7 @@ public class PatientDashboardServiceTests
         _patientId = Guid.NewGuid();
         _therapistId = Guid.NewGuid();
 
-        _unitOfWorkMock.Setup(x => x.Repository<ChatConversation>()).Returns(_chatConversationRepoMock.Object);
+        _unitOfWorkMock.Setup(x => x.Repository<PatientSupportConversation>()).Returns(_chatConversationRepoMock.Object);
         _unitOfWorkMock.Setup(x => x.Repository<Therapist>()).Returns(_therapistRepoMock.Object);
         _unitOfWorkMock.Setup(x => x.Repository<SystemSetting>()).Returns(_systemSettingRepoMock.Object);
         _unitOfWorkMock.Setup(x => x.Repository<AssessmentTemplate>()).Returns(_assessmentTemplateRepoMock.Object);
@@ -253,11 +253,11 @@ public class PatientDashboardServiceTests
     [Fact]
     public async Task GetDashboardAsync_RecentConversations_DoNotExposeMessageContent()
     {
-        var conversations = new List<ChatConversation>
+        var conversations = new List<PatientSupportConversation>
         {
             new() { Id = Guid.NewGuid(), PatientId = _patientId, Status = "Open", LastActivityAt = DateTime.UtcNow }
         };
-        _chatConversationRepoMock.Setup(x => x.Query()).Returns(new AsyncQueryProvider<ChatConversation>(conversations.AsQueryable()));
+        _chatConversationRepoMock.Setup(x => x.Query()).Returns(new AsyncQueryProvider<PatientSupportConversation>(conversations.AsQueryable()));
 
         var result = await _sut.GetDashboardAsync(_userId);
 
@@ -287,6 +287,6 @@ public class PatientDashboardServiceTests
 
         _chatConversationRepoMock
             .Setup(x => x.Query())
-            .Returns(new AsyncQueryProvider<ChatConversation>(new List<ChatConversation>().AsQueryable()));
+            .Returns(new AsyncQueryProvider<PatientSupportConversation>(new List<PatientSupportConversation>().AsQueryable()));
     }
 }

@@ -33,10 +33,13 @@ public class Patient
     public ICollection<Assessment.Assessment> Assessments { get; set; } = new List<Assessment.Assessment>();
     public ICollection<Exercise.Exercise> Exercises { get; set; } = new List<Exercise.Exercise>();
     public ICollection<Exercise.ExerciseLog> ExerciseLogs { get; set; } = new List<Exercise.ExerciseLog>();
-    public ICollection<Chat.ChatConversation> ChatConversations { get; set; } = new List<Chat.ChatConversation>();
-    public ICollection<Chat.AiChatLog> AiChatLogs { get; set; } = new List<Chat.AiChatLog>();
+    public ICollection<Chat.TherapistAiConversation> TherapistAiConversations { get; set; } = new List<Chat.TherapistAiConversation>();
+    public ICollection<Chat.TherapistAiChatLog> TherapistAiChatLogs { get; set; } = new List<Chat.TherapistAiChatLog>();
+    public ICollection<Ai.TherapistAiMemory> TherapistAiMemories { get; set; } = new List<Ai.TherapistAiMemory>();
+    public ICollection<Chat.PatientSupportConversation> PatientSupportConversations { get; set; } = new List<Chat.PatientSupportConversation>();
+    public ICollection<Chat.PatientSupportAiChatLog> PatientSupportAiChatLogs { get; set; } = new List<Chat.PatientSupportAiChatLog>();
+    public ICollection<Ai.PatientSupportMemory> PatientSupportMemories { get; set; } = new List<Ai.PatientSupportMemory>();
     public ICollection<Crisis.CrisisAlert> CrisisAlerts { get; set; } = new List<Crisis.CrisisAlert>();
     public ICollection<Report.ReferralReport> ReferralReports { get; set; } = new List<Report.ReferralReport>();
-    public ICollection<Ai.AiArtifact> AiArtifacts { get; set; } = new List<Ai.AiArtifact>();
     public ICollection<Ai.AiReportGenerationLog> AiReportGenerationLogs { get; set; } = new List<Ai.AiReportGenerationLog>();
 }

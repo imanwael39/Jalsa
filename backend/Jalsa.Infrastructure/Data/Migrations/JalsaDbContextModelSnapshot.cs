@@ -22,52 +22,6 @@ namespace Jalsa.Infrastructure.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Jalsa.Domain.Models.Ai.AiArtifact", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("NEWSEQUENTIALID()");
-
-                    b.Property<string>("ContentText")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("ConversationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("EmbeddingVector")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("PatientId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("SourceId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("SourceType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("TriggerMessageId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ConversationId");
-
-                    b.HasIndex("PatientId");
-
-                    b.HasIndex("TriggerMessageId")
-                        .IsUnique();
-
-                    b.ToTable("AiArtifacts", (string)null);
-                });
-
             modelBuilder.Entity("Jalsa.Domain.Models.Ai.AiReportGenerationLog", b =>
                 {
                     b.Property<Guid>("Id")
@@ -120,6 +74,84 @@ namespace Jalsa.Infrastructure.Data.Migrations
                     b.HasIndex("ReportId");
 
                     b.ToTable("AiReportGenerationLogs", (string)null);
+                });
+
+            modelBuilder.Entity("Jalsa.Domain.Models.Ai.PatientSupportMemory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<string>("ContentText")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("EmbeddingVector")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TriggerMessageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConversationId");
+
+                    b.HasIndex("PatientId");
+
+                    b.HasIndex("TriggerMessageId")
+                        .IsUnique();
+
+                    b.ToTable("PatientSupportMemories", (string)null);
+                });
+
+            modelBuilder.Entity("Jalsa.Domain.Models.Ai.TherapistAiMemory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<string>("ContentText")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("EmbeddingVector")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TriggerMessageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConversationId");
+
+                    b.HasIndex("PatientId");
+
+                    b.HasIndex("TriggerMessageId")
+                        .IsUnique();
+
+                    b.ToTable("TherapistAiMemories", (string)null);
                 });
 
             modelBuilder.Entity("Jalsa.Domain.Models.Assessment.Assessment", b =>
@@ -326,7 +358,7 @@ namespace Jalsa.Infrastructure.Data.Migrations
                     b.ToTable("AuditLogs", (string)null);
                 });
 
-            modelBuilder.Entity("Jalsa.Domain.Models.Chat.AiChatLog", b =>
+            modelBuilder.Entity("Jalsa.Domain.Models.Chat.PatientSupportAiChatLog", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -363,10 +395,10 @@ namespace Jalsa.Infrastructure.Data.Migrations
 
                     b.HasIndex("PatientId");
 
-                    b.ToTable("AiChatLogs", (string)null);
+                    b.ToTable("PatientSupportAiChatLogs", (string)null);
                 });
 
-            modelBuilder.Entity("Jalsa.Domain.Models.Chat.ChatConversation", b =>
+            modelBuilder.Entity("Jalsa.Domain.Models.Chat.PatientSupportConversation", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -399,10 +431,10 @@ namespace Jalsa.Infrastructure.Data.Migrations
 
                     b.HasIndex("PatientId");
 
-                    b.ToTable("ChatConversations", (string)null);
+                    b.ToTable("PatientSupportConversations", (string)null);
                 });
 
-            modelBuilder.Entity("Jalsa.Domain.Models.Chat.ChatMessage", b =>
+            modelBuilder.Entity("Jalsa.Domain.Models.Chat.PatientSupportMessage", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -420,12 +452,44 @@ namespace Jalsa.Infrastructure.Data.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
-                    b.Property<int?>("LatencyMs")
-                        .HasColumnType("int");
-
                     b.Property<string>("SenderType")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConversationId");
+
+                    b.ToTable("PatientSupportMessages", (string)null);
+                });
+
+            modelBuilder.Entity("Jalsa.Domain.Models.Chat.TherapistAiChatLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal?>("Cost")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("ModelUsed")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("ResponseLatencyMs")
+                        .HasColumnType("int");
 
                     b.Property<int?>("TokensUsed")
                         .HasColumnType("int");
@@ -434,7 +498,79 @@ namespace Jalsa.Infrastructure.Data.Migrations
 
                     b.HasIndex("ConversationId");
 
-                    b.ToTable("ChatMessages", (string)null);
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("TherapistAiChatLogs", (string)null);
+                });
+
+            modelBuilder.Entity("Jalsa.Domain.Models.Chat.TherapistAiConversation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<DateTime?>("LastActivityAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("Open");
+
+                    b.Property<Guid>("TherapistId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId");
+
+                    b.HasIndex("TherapistId", "PatientId");
+
+                    b.ToTable("TherapistAiConversations", (string)null);
+                });
+
+            modelBuilder.Entity("Jalsa.Domain.Models.Chat.TherapistAiMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<string>("Content")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("SenderType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConversationId");
+
+                    b.ToTable("TherapistAiMessages", (string)null);
                 });
 
             modelBuilder.Entity("Jalsa.Domain.Models.Clinic.Clinic", b =>
@@ -546,6 +682,13 @@ namespace Jalsa.Infrastructure.Data.Migrations
                     b.Property<Guid?>("ChatMessageId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<double?>("Confidence")
+                        .HasPrecision(5, 4)
+                        .HasColumnType("float(5)");
+
+                    b.Property<Guid?>("ConversationId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
@@ -553,6 +696,9 @@ namespace Jalsa.Infrastructure.Data.Migrations
 
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Severity")
                         .IsRequired()
@@ -562,7 +708,7 @@ namespace Jalsa.Infrastructure.Data.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("Open");
+                        .HasDefaultValue("New");
 
                     b.Property<Guid?>("TherapistId")
                         .HasColumnType("uniqueidentifier");
@@ -1435,33 +1581,6 @@ namespace Jalsa.Infrastructure.Data.Migrations
                     b.ToTable("SystemSettings", (string)null);
                 });
 
-            modelBuilder.Entity("Jalsa.Domain.Models.Ai.AiArtifact", b =>
-                {
-                    b.HasOne("Jalsa.Domain.Models.Chat.ChatConversation", "Conversation")
-                        .WithMany("AiArtifacts")
-                        .HasForeignKey("ConversationId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("Jalsa.Domain.Models.Patient.Patient", "Patient")
-                        .WithMany("AiArtifacts")
-                        .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("Jalsa.Domain.Models.Chat.ChatMessage", "TriggerMessage")
-                        .WithOne("TriggeredArtifact")
-                        .HasForeignKey("Jalsa.Domain.Models.Ai.AiArtifact", "TriggerMessageId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Conversation");
-
-                    b.Navigation("Patient");
-
-                    b.Navigation("TriggerMessage");
-                });
-
             modelBuilder.Entity("Jalsa.Domain.Models.Ai.AiReportGenerationLog", b =>
                 {
                     b.HasOne("Jalsa.Domain.Models.Clinic.Therapist", "GeneratedByTherapist")
@@ -1486,6 +1605,60 @@ namespace Jalsa.Infrastructure.Data.Migrations
                     b.Navigation("Patient");
 
                     b.Navigation("Report");
+                });
+
+            modelBuilder.Entity("Jalsa.Domain.Models.Ai.PatientSupportMemory", b =>
+                {
+                    b.HasOne("Jalsa.Domain.Models.Chat.PatientSupportConversation", "Conversation")
+                        .WithMany()
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Jalsa.Domain.Models.Patient.Patient", "Patient")
+                        .WithMany("PatientSupportMemories")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Jalsa.Domain.Models.Chat.PatientSupportMessage", "TriggerMessage")
+                        .WithOne("TriggeredMemory")
+                        .HasForeignKey("Jalsa.Domain.Models.Ai.PatientSupportMemory", "TriggerMessageId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+
+                    b.Navigation("Patient");
+
+                    b.Navigation("TriggerMessage");
+                });
+
+            modelBuilder.Entity("Jalsa.Domain.Models.Ai.TherapistAiMemory", b =>
+                {
+                    b.HasOne("Jalsa.Domain.Models.Chat.TherapistAiConversation", "Conversation")
+                        .WithMany()
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Jalsa.Domain.Models.Patient.Patient", "Patient")
+                        .WithMany("TherapistAiMemories")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Jalsa.Domain.Models.Chat.TherapistAiMessage", "TriggerMessage")
+                        .WithOne("TriggeredMemory")
+                        .HasForeignKey("Jalsa.Domain.Models.Ai.TherapistAiMemory", "TriggerMessageId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+
+                    b.Navigation("Patient");
+
+                    b.Navigation("TriggerMessage");
                 });
 
             modelBuilder.Entity("Jalsa.Domain.Models.Assessment.Assessment", b =>
@@ -1554,16 +1727,16 @@ namespace Jalsa.Infrastructure.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Jalsa.Domain.Models.Chat.AiChatLog", b =>
+            modelBuilder.Entity("Jalsa.Domain.Models.Chat.PatientSupportAiChatLog", b =>
                 {
-                    b.HasOne("Jalsa.Domain.Models.Chat.ChatConversation", "Conversation")
-                        .WithMany("AiChatLogs")
+                    b.HasOne("Jalsa.Domain.Models.Chat.PatientSupportConversation", "Conversation")
+                        .WithMany("ChatLogs")
                         .HasForeignKey("ConversationId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Jalsa.Domain.Models.Patient.Patient", "Patient")
-                        .WithMany("AiChatLogs")
+                        .WithMany("PatientSupportAiChatLogs")
                         .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -1573,10 +1746,10 @@ namespace Jalsa.Infrastructure.Data.Migrations
                     b.Navigation("Patient");
                 });
 
-            modelBuilder.Entity("Jalsa.Domain.Models.Chat.ChatConversation", b =>
+            modelBuilder.Entity("Jalsa.Domain.Models.Chat.PatientSupportConversation", b =>
                 {
                     b.HasOne("Jalsa.Domain.Models.Patient.Patient", "Patient")
-                        .WithMany("ChatConversations")
+                        .WithMany("PatientSupportConversations")
                         .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -1584,10 +1757,59 @@ namespace Jalsa.Infrastructure.Data.Migrations
                     b.Navigation("Patient");
                 });
 
-            modelBuilder.Entity("Jalsa.Domain.Models.Chat.ChatMessage", b =>
+            modelBuilder.Entity("Jalsa.Domain.Models.Chat.PatientSupportMessage", b =>
                 {
-                    b.HasOne("Jalsa.Domain.Models.Chat.ChatConversation", "Conversation")
-                        .WithMany("ChatMessages")
+                    b.HasOne("Jalsa.Domain.Models.Chat.PatientSupportConversation", "Conversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+                });
+
+            modelBuilder.Entity("Jalsa.Domain.Models.Chat.TherapistAiChatLog", b =>
+                {
+                    b.HasOne("Jalsa.Domain.Models.Chat.TherapistAiConversation", "Conversation")
+                        .WithMany("ChatLogs")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Jalsa.Domain.Models.Patient.Patient", "Patient")
+                        .WithMany("TherapistAiChatLogs")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+
+                    b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("Jalsa.Domain.Models.Chat.TherapistAiConversation", b =>
+                {
+                    b.HasOne("Jalsa.Domain.Models.Patient.Patient", "Patient")
+                        .WithMany("TherapistAiConversations")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Jalsa.Domain.Models.Clinic.Therapist", "Therapist")
+                        .WithMany("TherapistAiConversations")
+                        .HasForeignKey("TherapistId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Patient");
+
+                    b.Navigation("Therapist");
+                });
+
+            modelBuilder.Entity("Jalsa.Domain.Models.Chat.TherapistAiMessage", b =>
+                {
+                    b.HasOne("Jalsa.Domain.Models.Chat.TherapistAiConversation", "Conversation")
+                        .WithMany("Messages")
                         .HasForeignKey("ConversationId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -1627,7 +1849,7 @@ namespace Jalsa.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Jalsa.Domain.Models.Crisis.CrisisAlert", b =>
                 {
-                    b.HasOne("Jalsa.Domain.Models.Chat.ChatMessage", "ChatMessage")
+                    b.HasOne("Jalsa.Domain.Models.Chat.PatientSupportMessage", "ChatMessage")
                         .WithOne("TriggeredCrisisAlert")
                         .HasForeignKey("Jalsa.Domain.Models.Crisis.CrisisAlert", "ChatMessageId")
                         .OnDelete(DeleteBehavior.SetNull);
@@ -1936,20 +2158,30 @@ namespace Jalsa.Infrastructure.Data.Migrations
                     b.Navigation("Questions");
                 });
 
-            modelBuilder.Entity("Jalsa.Domain.Models.Chat.ChatConversation", b =>
+            modelBuilder.Entity("Jalsa.Domain.Models.Chat.PatientSupportConversation", b =>
                 {
-                    b.Navigation("AiArtifacts");
+                    b.Navigation("ChatLogs");
 
-                    b.Navigation("AiChatLogs");
-
-                    b.Navigation("ChatMessages");
+                    b.Navigation("Messages");
                 });
 
-            modelBuilder.Entity("Jalsa.Domain.Models.Chat.ChatMessage", b =>
+            modelBuilder.Entity("Jalsa.Domain.Models.Chat.PatientSupportMessage", b =>
                 {
-                    b.Navigation("TriggeredArtifact");
-
                     b.Navigation("TriggeredCrisisAlert");
+
+                    b.Navigation("TriggeredMemory");
+                });
+
+            modelBuilder.Entity("Jalsa.Domain.Models.Chat.TherapistAiConversation", b =>
+                {
+                    b.Navigation("ChatLogs");
+
+                    b.Navigation("Messages");
+                });
+
+            modelBuilder.Entity("Jalsa.Domain.Models.Chat.TherapistAiMessage", b =>
+                {
+                    b.Navigation("TriggeredMemory");
                 });
 
             modelBuilder.Entity("Jalsa.Domain.Models.Clinic.Clinic", b =>
@@ -1968,6 +2200,8 @@ namespace Jalsa.Infrastructure.Data.Migrations
                     b.Navigation("ReferralReports");
 
                     b.Navigation("ReportVersions");
+
+                    b.Navigation("TherapistAiConversations");
 
                     b.Navigation("TherapistClinics");
                 });
@@ -2015,15 +2249,9 @@ namespace Jalsa.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Jalsa.Domain.Models.Patient.Patient", b =>
                 {
-                    b.Navigation("AiArtifacts");
-
-                    b.Navigation("AiChatLogs");
-
                     b.Navigation("AiReportGenerationLogs");
 
                     b.Navigation("Assessments");
-
-                    b.Navigation("ChatConversations");
 
                     b.Navigation("CrisisAlerts");
 
@@ -2035,9 +2263,21 @@ namespace Jalsa.Infrastructure.Data.Migrations
 
                     b.Navigation("PatientInvitations");
 
+                    b.Navigation("PatientSupportAiChatLogs");
+
+                    b.Navigation("PatientSupportConversations");
+
+                    b.Navigation("PatientSupportMemories");
+
                     b.Navigation("ReferralReports");
 
                     b.Navigation("Sessions");
+
+                    b.Navigation("TherapistAiChatLogs");
+
+                    b.Navigation("TherapistAiConversations");
+
+                    b.Navigation("TherapistAiMemories");
                 });
 
             modelBuilder.Entity("Jalsa.Domain.Models.Report.ReferralReport", b =>

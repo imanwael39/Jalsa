@@ -92,7 +92,7 @@ builder.Services
             var path = context.HttpContext.Request.Path;
 
             if (!string.IsNullOrEmpty(accessToken) &&
-                (path.StartsWithSegments("/chatHub") || path.StartsWithSegments("/notificationHub")))
+                (path.StartsWithSegments("/therapistAiChatHub") || path.StartsWithSegments("/patientSupportChatHub") || path.StartsWithSegments("/notificationHub")))
             {
                 context.Token = accessToken;
             }
@@ -224,8 +224,9 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IEmbeddingService, EmbeddingService>();
 builder.Services.AddScoped<IVectorStore, VectorStore>();
 builder.Services.AddScoped<IPatientContextBuilder, PatientContextBuilder>();
-builder.Services.AddScoped<IConversationMemoryService, ConversationMemoryService>();
-builder.Services.AddScoped<IChatAiService, ChatAiService>();
+builder.Services.AddScoped<ITherapistAiMemoryService, TherapistAiMemoryService>();
+builder.Services.AddScoped<IPatientSupportMemoryService, PatientSupportMemoryService>();
+builder.Services.AddScoped<IPatientSupportAiService, PatientSupportAiService>();
 builder.Services.AddScoped<ICrisisDetectionService, CrisisDetectionService>();
 builder.Services.AddScoped<ISummarizationService, SummarizationService>();
 builder.Services.AddScoped<IReportGenerationService, ReportGenerationService>();
@@ -294,7 +295,8 @@ builder.Services.AddScoped<IPatientSessionService, PatientSessionService>();
 builder.Services.AddScoped<IPatientAssessmentService, PatientAssessmentService>();
 builder.Services.AddScoped<INotificationService, EmailNotificationService>();
 builder.Services.AddScoped<INotificationPushService, SignalRNotificationPushService>();
-builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<ITherapistAiChatService, TherapistAiChatService>();
+builder.Services.AddScoped<IPatientSupportChatService, PatientSupportChatService>();
 builder.Services.AddScoped<ICrisisAlertService, CrisisAlertService>();
 builder.Services.AddScoped<ExerciseReminderJob>();
 builder.Services.AddDatabaseSeeder();
@@ -367,7 +369,8 @@ app.UseRateLimiter();
 
 app.MapControllers();
 
-app.MapHub<ChatHub>("/chatHub");
+app.MapHub<TherapistAiChatHub>("/therapistAiChatHub");
+app.MapHub<PatientSupportChatHub>("/patientSupportChatHub");
 app.MapHub<NotificationHub>("/notificationHub");
 
 app.UseHangfireDashboard("/hangfire", new DashboardOptions

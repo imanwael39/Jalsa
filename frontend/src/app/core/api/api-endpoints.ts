@@ -81,17 +81,23 @@ export const API = {
         diagnosticsChat: '/api/ai/diagnostics/chat',
         diagnosticsEmbeddingCount: (patientId: string) => `/api/ai/diagnostics/embeddings/${patientId}`,
     },
-    chat: {
-        conversations: '/api/chat/conversations',
-        conversation: (conversationId: string) => `/api/chat/conversations/${conversationId}`,
-        conversationsByPatient: (patientId: string) => `/api/chat/conversations?patientId=${patientId}`,
-        history: (conversationId: string) => `/api/chat/${conversationId}/history`,
-        send: '/api/chat/send',
-        close: (conversationId: string) => `/api/chat/conversations/${conversationId}/close`,
-        regenerate: (conversationId: string) => `/api/chat/${conversationId}/regenerate`,
+    therapistChat: {
+        conversations: '/api/therapist-chat/conversations',
+        conversation: (conversationId: string) => `/api/therapist-chat/conversations/${conversationId}`,
+        conversationsByPatient: (patientId: string) => `/api/therapist-chat/conversations?patientId=${patientId}`,
+        history: (conversationId: string) => `/api/therapist-chat/${conversationId}/history`,
+        send: '/api/therapist-chat/send',
+        close: (conversationId: string) => `/api/therapist-chat/conversations/${conversationId}/close`,
+        regenerate: (conversationId: string) => `/api/therapist-chat/${conversationId}/regenerate`,
+    },
+    supportChat: {
+        conversation: '/api/patient/support-chat/conversation',
+        history: (conversationId: string) => `/api/patient/support-chat/${conversationId}/history`,
+        send: '/api/patient/support-chat/send',
     },
     crisisAlerts: {
         base: '/api/crisis-alerts',
+        acknowledge: (id: string) => `/api/crisis-alerts/${id}/acknowledge`,
         resolve: (id: string) => `/api/crisis-alerts/${id}/resolve`,
     },
     admin: {
