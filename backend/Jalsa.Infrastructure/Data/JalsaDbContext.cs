@@ -453,7 +453,8 @@ public class JalsaDbContext : DbContext
             e.ToTable("CrisisAlerts");
             e.HasKey(ca => ca.Id);
             e.Property(ca => ca.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
-            e.Property(ca => ca.Status).HasDefaultValue("Open");
+            e.Property(ca => ca.Status).HasDefaultValue("New");
+            e.Property(ca => ca.Confidence).HasPrecision(5, 4);
             e.Property(ca => ca.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
             e.Property(ca => ca.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
             e.HasOne(ca => ca.Patient).WithMany(p => p.CrisisAlerts).HasForeignKey(ca => ca.PatientId).OnDelete(DeleteBehavior.NoAction);

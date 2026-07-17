@@ -294,7 +294,7 @@ internal static class ArabicSeedData
     };
 
     public static readonly string[] CrisisSeverities = { "High", "Critical", "Medium" };
-    public static readonly string[] CrisisStatuses = { "Open", "Acknowledged", "Resolved" };
+    public static readonly string[] CrisisStatuses = { "New", "Acknowledged", "Resolved" };
 
     // ── Therapist AI Assistant chat (clinical Q&A, separate from patient support chat) ──
     public static readonly string[] TherapistChatQuestions =

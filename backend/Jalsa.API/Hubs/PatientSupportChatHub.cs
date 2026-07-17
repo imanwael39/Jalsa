@@ -9,37 +9,45 @@ using Jalsa.Domain.Models.Crisis;
 using Jalsa.Domain.Models.Notification;
 using Jalsa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Jalsa.API.Hubs;
 
 /// <summary>
 /// Patient-only real-time support chat. Ownership check is Patient.UserId == CurrentUserId
 /// only — no therapist branch, so a therapist's token can never join a patient's group or
-/// invoke SendMessage here. Crisis detection still fires on every patient message and still
-/// notifies the assigned therapist (that's a safety mechanism, not a chat-content leak: the
-/// therapist gets a notification + CrisisAlert record, never the conversation itself).
+/// invoke SendMessage here. Crisis detection runs on every patient message purely as a
+/// background safety check (creates a CrisisAlert + notifies the assigned therapist) — it
+/// never blocks, delays, or alters the AI's reply to the patient. This hub depends only on
+/// ICrisisDetectionService, never a concrete detector, so the engine can be swapped later
+/// without touching this flow.
 /// </summary>
 [Authorize(Roles = "Patient")]
 public class PatientSupportChatHub : Hub
 {
+    private const int CrisisContextHistoryCount = 5;
+
     private readonly IPatientSupportAiService _chatAi;
     private readonly IPatientSupportMemoryService _memory;
     private readonly ICrisisDetectionService _crisisDetection;
     private readonly INotificationPushService _pushService;
     private readonly JalsaDbContext _context;
+    private readonly ILogger<PatientSupportChatHub> _logger;
 
     public PatientSupportChatHub(
         IPatientSupportAiService chatAi,
         IPatientSupportMemoryService memory,
         ICrisisDetectionService crisisDetection,
         INotificationPushService pushService,
-        JalsaDbContext context)
+        JalsaDbContext context,
+        ILogger<PatientSupportChatHub> logger)
     {
         _chatAi = chatAi;
         _memory = memory;
         _crisisDetection = crisisDetection;
         _pushService = pushService;
         _context = context;
+        _logger = logger;
     }
 
     public async Task SendMessage(Guid conversationId, string message)
@@ -69,7 +77,17 @@ public class PatientSupportChatHub : Hub
         _context.PatientSupportMessages.Add(patientMsg);
 
         var lang = message.Any(c => c >= 0x0600 && c <= 0x06FF) ? "ar" : "en";
-        var crisisResult = await _crisisDetection.AnalyzeAsync(message);
+
+        var recentHistory = await _context.PatientSupportMessages
+            .Where(m => m.ConversationId == conversationId)
+            .OrderByDescending(m => m.CreatedAt)
+            .Take(CrisisContextHistoryCount)
+            .OrderBy(m => m.CreatedAt)
+            .Select(m => $"{m.SenderType}: {m.Content}")
+            .ToListAsync();
+
+        var crisisResult = await _crisisDetection.AnalyzeAsync(message, recentHistory);
+
         Notification? crisisNotification = null;
         Guid? crisisNotificationRecipientId = null;
         if (crisisResult.IsCrisis)
@@ -78,32 +96,43 @@ public class PatientSupportChatHub : Hub
                 .Where(t => t.Patients.Any(p => p.Id == patient.Id))
                 .FirstOrDefaultAsync();
 
-            _context.CrisisAlerts.Add(new CrisisAlert
+            var alert = new CrisisAlert
             {
                 Id = Guid.NewGuid(),
                 PatientId = patient.Id,
                 TherapistId = therapist?.Id,
-                Severity = "High",
+                ConversationId = conversationId,
+                Severity = crisisResult.Severity.ToString(),
+                Reason = crisisResult.Reason,
+                Confidence = crisisResult.Confidence,
                 ChatMessageId = patientMsg.Id,
-                Status = "Open",
+                Status = "New",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
-            });
+            };
+            _context.CrisisAlerts.Add(alert);
+
+            _logger.LogWarning(
+                "Crisis alert {AlertId} created for patient {PatientId} (severity={Severity}, confidence={Confidence})",
+                alert.Id, patient.Id, alert.Severity, alert.Confidence);
 
             if (therapist != null)
             {
-                var snippet = patientMsg.Content[..Math.Min(100, patientMsg.Content.Length)];
                 crisisNotification = new Notification
                 {
                     Id = Guid.NewGuid(),
                     RecipientUserId = therapist.UserId,
                     Type = "CrisisAlert",
-                    Title = lang == "ar" ? "تنبيه أزمة" : "Crisis Alert",
-                    Body = lang == "ar" ? $"المريض: {snippet}..." : $"Patient: {snippet}...",
+                    Title = "🚨 تنبيه أزمة",
+                    Body = $"قد يمر المريض {patient.FullName} بأزمة نفسية. الخطورة: {alert.Severity}.",
                     CreatedAt = DateTime.UtcNow
                 };
                 crisisNotificationRecipientId = therapist.UserId;
                 _context.Notifications.Add(crisisNotification);
+            }
+            else
+            {
+                _logger.LogWarning("Crisis alert {AlertId} has no assigned therapist to notify", alert.Id);
             }
         }
 
@@ -125,29 +154,32 @@ public class PatientSupportChatHub : Hub
                     ReadAt = crisisNotification.ReadAt,
                     CreatedAt = crisisNotification.CreatedAt
                 });
+                _logger.LogInformation(
+                    "Crisis notification delivered in real time to therapist {TherapistUserId}",
+                    crisisNotificationRecipientId.Value);
             }
-            catch
+            catch (Exception ex)
             {
                 // Real-time push is a convenience layer; polling/page load is the source of truth.
+                _logger.LogWarning(ex,
+                    "Crisis notification real-time push failed for therapist {TherapistUserId}; row persisted for polling",
+                    crisisNotificationRecipientId.Value);
             }
         }
 
         await _memory.StoreMessageMemoryAsync(conversationId, patient.Id, patientMsg.Id, message);
 
-        string reply;
-        if (crisisResult.IsCrisis)
-        {
-            reply = crisisResult.SuggestedMessage!;
-        }
-        else
-        {
-            var group = conversationId.ToString();
-            reply = await _chatAi.GenerateResponseStreamingAsync(
-                conversationId,
-                patient.Id,
-                message,
-                delta => Clients.Group(group).SendAsync("ReceiveMessageChunk", delta));
-        }
+        // The AI reply is generated the same way regardless of crisis detection — the
+        // patient must never see that a background safety check ran. The patient-support
+        // system prompt already instructs the model to respond supportively and encourage
+        // contacting the therapist/emergency services when crisis themes appear, so no
+        // separate canned response is needed here.
+        var group = conversationId.ToString();
+        var reply = await _chatAi.GenerateResponseStreamingAsync(
+            conversationId,
+            patient.Id,
+            message,
+            delta => Clients.Group(group).SendAsync("ReceiveMessageChunk", delta));
 
         var aiMsg = new PatientSupportMessage
         {

@@ -61,27 +61,16 @@
     },
     "crisis-detection": {
       "system": {
-        "ar": "أنت مساعد كشف الأزمات. حدد ما إذا كانت رسالة المستخدم تشير إلى خطر إيذاء النفس أو الانتحار.",
-        "en": "You are a crisis detection assistant. Determine if the user message indicates imminent self-harm or suicide risk."
+        "ar": "أنت مصنّف أزمات نفسية دقيق. مهمتك تحديد ما إذا كانت رسالة المريض الحالية تعبّر عن خطر حالي وشخصي على سلامته (أفكار انتحارية، نية إيذاء النفس، يأس شديد قد يؤدي لذلك) — وليس مجرد نقاش عام حول الموضوع. افهم الصياغة غير المباشرة والسياق الثقافي، ولا تعتمد على كلمات مفتاحية بعينها. لا تُصنّف كأزمة: الحديث عن انتحار شخص آخر (\"صديقي انتحر\")، قراءة مقال أو خبر عن الانتحار، سؤال المعالج عن أفكار انتحارية سابقة، أو نقاش أكاديمي/عام للموضوع. صنّف فقط الخطر الشخصي الحالي للمتحدث نفسه. أجب حصريًا بتنسيق JSON بالمخطط التالي، بدون أي نص إضافي: {\"isCrisis\": true|false, \"severity\": \"None|Low|Medium|High|Critical\", \"confidence\": 0.0-1.0, \"reason\": \"شرح موجز لسبب القرار\"}. severity: None = لا يوجد خطر، Low = ضيق عاطفي دون إشارة لإيذاء النفس، Medium = يأس أو إشارات غير مباشرة لإيذاء النفس، High = تعبير واضح عن رغبة في الموت أو إيذاء النفس دون خطة فورية، Critical = نية أو خطة فورية لإنهاء الحياة. أمثلة على أزمة حقيقية (عربي): 'عاوز أموت نفسي'، 'هنتحر'، 'مش عايز أكمل الحياة'، 'حياتي انتهت'، 'نفسي أختفي'، 'مفيش فايدة أعيش'، 'هخلص من نفسي'، 'مش هصحى بكرة'، 'تعبت ومش قادر أكمل'، 'كل حاجة انتهت'. أمثلة إنجليزية: 'I want to kill myself', 'I don't want to live', 'I want to end it', 'I will hurt myself', 'Nobody can save me', 'Goodbye forever'.",
+        "en": "You are a precise mental-health crisis classifier. Determine whether the patient's CURRENT message expresses a present, personal risk to their own safety (suicidal ideation, self-harm intent, or hopelessness severe enough to lead there) — not a general discussion of the topic. Understand indirect phrasing and context; do not rely on fixed keywords. Do NOT classify as a crisis: discussing someone else's suicide ('my friend committed suicide'), reading an article about suicide, being asked by a therapist about past suicidal thoughts, or an academic/general discussion of the topic. Only classify the speaker's own current risk. Reply ONLY with JSON in this schema, no extra text: {\"isCrisis\": true|false, \"severity\": \"None|Low|Medium|High|Critical\", \"confidence\": 0.0-1.0, \"reason\": \"brief reason for the decision\"}. severity: None = no risk, Low = emotional distress with no self-harm signal, Medium = hopelessness or indirect self-harm signals, High = a clear expressed wish to die or self-harm with no immediate plan, Critical = an immediate intent or plan to end their life. Real-crisis examples (Arabic): 'عاوز أموت نفسي', 'هنتحر', 'مش عايز أكمل الحياة', 'حياتي انتهت', 'نفسي أختفي', 'مفيش فايدة أعيش', 'هخلص من نفسي', 'مش هصحى بكرة', 'تعبت ومش قادر أكمل', 'كل حاجة انتهت'. English examples: 'I want to kill myself.', 'I don't want to live.', 'I want to end it.', 'I will hurt myself.', 'Nobody can save me.', 'Goodbye forever.'"
       },
       "user": {
-        "ar": "هل تشير هذه الرسالة إلى أزمة؟ أجب بتنسيق JSON: {{\"isCrisis\": true/false, \"reason\": \"...\", \"suggestedResponse\": \"...\"}}\n\nالرسالة: {message}",
-        "en": "Does this message indicate a crisis? Reply with JSON: {{\"isCrisis\": true/false, \"reason\": \"...\", \"suggestedResponse\": \"...\"}}\n\nMessage: {message}"
+        "ar": "{historyText}رسالة المريض الحالية: {message}\n\nصنّف هذه الرسالة وفق المخطط المطلوب.",
+        "en": "{historyText}Patient's current message: {message}\n\nClassify this message per the required schema."
       },
-      "keywords": [
-        "suicide", "kill myself", "end my life", "want to die", "self-harm",
-        "self harm", "hurt myself", "not worth living", "better off dead",
-        "suicidal", "take my own life",
-        "انتحار", "أقتل نفسي", "إنهاء حياتي", "أريد الموت", "إيذاء النفس",
-        "لا أستحق العيش", "الأفضل أن أموت", "أفكار انتحارية", "وداعا"
-      ],
       "fallbackReason": {
-        "ar": "مطابقة كلمات مفتاحية + تحقق الذكاء الاصطناعي",
-        "en": "Keyword match + AI verification"
-      },
-      "fallbackMessage": {
-        "ar": "أنا قلق بشأن ما تشاركه. يرجى التواصل مع معالجك أو الاتصال بخدمات الطوارئ فورًا إذا كنت في خطر. يمكنك الاتصال بالأمانة العامة للصحة النفسية: 16328",
-        "en": "I'm concerned about what you're sharing. Please contact your therapist or call emergency services immediately if you're in danger."
+        "ar": "تعذّر الحصول على سبب من النموذج",
+        "en": "Model did not return a reason"
       }
     }
   }
