@@ -7,23 +7,28 @@ using Microsoft.Extensions.Options;
 
 namespace Jalsa.API.Services.Implementations.AI;
 
-public class ChatAiService : IChatAiService
+/// <summary>
+/// Patient-facing support chat generation. Deliberately has NO dependency on
+/// IPatientContextBuilder — it is structurally impossible for this class to pull intake
+/// forms, assessments, session notes, or clinical RAG chunks into a patient's own prompt,
+/// because it never receives that service at all. Context is limited to: recent support
+/// messages, the patient's display name, and support-scoped memory (IPatientSupportMemoryService).
+/// </summary>
+public class PatientSupportAiService : IPatientSupportAiService
 {
     private readonly IGeminiClient _client;
     private readonly JalsaDbContext _context;
-    private readonly IPatientContextBuilder _contextBuilder;
-    private readonly IConversationMemoryService _memory;
+    private readonly IPatientSupportMemoryService _memory;
     private readonly string _model;
 
     private readonly ILlmObservabilityService _observability;
     private readonly Services.Interfaces.IPromptService _prompts;
 
-    public ChatAiService(
+    public PatientSupportAiService(
         IOptions<GeminiSettings> settings,
         IGeminiClient client,
         JalsaDbContext context,
-        IPatientContextBuilder contextBuilder,
-        IConversationMemoryService memory,
+        IPatientSupportMemoryService memory,
         ILlmObservabilityService observability,
         Services.Interfaces.IPromptService prompts)
     {
@@ -33,11 +38,10 @@ public class ChatAiService : IChatAiService
         _client = client;
         _model = settings.Value.ChatModelId;
         _context = context;
-        _contextBuilder = contextBuilder;
         _memory = memory;
     }
 
-    private record PromptContext(string SystemPrompt, string UserPrompt, PatientContextBundle Bundle);
+    private record PromptContext(string SystemPrompt, string UserPrompt);
 
     private async Task<PromptContext> BuildPromptAsync(Guid conversationId, Guid patientId, string message)
     {
@@ -46,20 +50,17 @@ public class ChatAiService : IChatAiService
                 ? "ar"
                 : "en";
 
-        var history = await _context.ChatMessages
+        var history = await _context.PatientSupportMessages
             .Where(m => m.ConversationId == conversationId)
             .OrderByDescending(m => m.CreatedAt)
             .Take(10)
             .OrderBy(m => m.CreatedAt)
             .ToListAsync();
 
-        var bundle = await _contextBuilder.BuildAsync(
-            patientId,
-            embeddingQueryKey: "chat-response",
-            language: lang,
-            ragTopK: 3,
-            recentSessionCount: 3,
-            explicitEmbeddingQuery: message);
+        var patientName = await _context.Patients
+            .Where(p => p.Id == patientId)
+            .Select(p => p.FullName)
+            .FirstOrDefaultAsync() ?? string.Empty;
 
         var memoryResults =
             await _memory.RetrieveSimilarMessagesAsync(
@@ -67,11 +68,7 @@ public class ChatAiService : IChatAiService
                 message,
                 topK: 3);
 
-        var ragContext = string.Join("\n\n", bundle.RagChunks.Select(r => r.Text));
         var memoryContext = string.Join("\n\n", memoryResults);
-        var intakeText = ClinicalContextFormatter.BuildIntakeText(bundle.Intake, lang);
-        var assessmentsText = ClinicalContextFormatter.BuildAssessmentsText(bundle.Assessments, lang);
-        var sessionNotesText = ClinicalContextFormatter.BuildSessionNotesText(bundle.RecentSessionNotes, lang);
 
         var historyText =
             string.Join("\n", history.Select(m =>
@@ -87,22 +84,19 @@ public class ChatAiService : IChatAiService
             }));
 
         var userPrompt = _prompts.Get(
-            "chat-response",
+            "patient-support-chat",
             lang,
             new Dictionary<string, string>
             {
                 ["message"] = message,
-                ["intakeText"] = intakeText,
-                ["assessmentsText"] = assessmentsText,
-                ["ragContext"] = ragContext,
-                ["sessionNotesText"] = sessionNotesText,
+                ["patientName"] = patientName,
                 ["memoryContext"] = memoryContext,
                 ["historyText"] = historyText
             });
 
-        var systemPrompt = _prompts.Get("chat-response");
+        var systemPrompt = _prompts.Get("patient-support-chat");
 
-        return new PromptContext(systemPrompt, userPrompt, bundle);
+        return new PromptContext(systemPrompt, userPrompt);
     }
 
     public async Task<string> GenerateResponseAsync(
@@ -120,12 +114,12 @@ public class ChatAiService : IChatAiService
         }
         catch (Exception ex)
         {
-            await LogFailureAsync(ctx, conversationId, patientId, message, startTime, ex);
+            await LogFailureAsync(conversationId, patientId, message, startTime, ex);
             throw;
         }
 
         var endTime = DateTime.UtcNow;
-        await LogAndPersistAsync(ctx, conversationId, patientId, message, startTime, endTime, generation);
+        await LogAndPersistAsync(conversationId, patientId, message, startTime, endTime, generation);
 
         return generation.Text;
     }
@@ -162,7 +156,7 @@ public class ChatAiService : IChatAiService
         }
         catch (Exception ex)
         {
-            await LogFailureAsync(ctx, conversationId, patientId, message, startTime, ex);
+            await LogFailureAsync(conversationId, patientId, message, startTime, ex);
             throw;
         }
 
@@ -175,18 +169,18 @@ public class ChatAiService : IChatAiService
         };
 
         var endTime = DateTime.UtcNow;
-        await LogAndPersistAsync(ctx, conversationId, patientId, message, startTime, endTime, generation);
+        await LogAndPersistAsync(conversationId, patientId, message, startTime, endTime, generation);
 
         return generation.Text;
     }
 
     private async Task LogFailureAsync(
-        PromptContext ctx, Guid conversationId, Guid patientId, string message, DateTime startTime, Exception ex)
+        Guid conversationId, Guid patientId, string message, DateTime startTime, Exception ex)
     {
         await _observability.LogGenerationAsync(
             new LlmGenerationLog
             {
-                Name = "chat-response",
+                Name = "patient-support-chat",
                 Model = _model,
                 Input = message,
                 Output = string.Empty,
@@ -196,21 +190,19 @@ public class ChatAiService : IChatAiService
                 Metadata = new Dictionary<string, object>
                 {
                     ["conversationId"] = conversationId.ToString(),
-                    ["patientId"] = patientId.ToString(),
-                    ["embeddingCount"] = ctx.Bundle.EmbeddingCount,
-                    ["ragChunkCount"] = ctx.Bundle.RagChunks.Count
+                    ["patientId"] = patientId.ToString()
                 }
             });
     }
 
     private async Task LogAndPersistAsync(
-        PromptContext ctx, Guid conversationId, Guid patientId, string message,
+        Guid conversationId, Guid patientId, string message,
         DateTime startTime, DateTime endTime, GeminiChatResult generation)
     {
         await _observability.LogGenerationAsync(
             new LlmGenerationLog
             {
-                Name = "chat-response",
+                Name = "patient-support-chat",
                 Model = _model,
                 Input = message,
                 Output = generation.Text,
@@ -222,14 +214,12 @@ public class ChatAiService : IChatAiService
                 Metadata = new Dictionary<string, object>
                 {
                     ["conversationId"] = conversationId.ToString(),
-                    ["patientId"] = patientId.ToString(),
-                    ["embeddingCount"] = ctx.Bundle.EmbeddingCount,
-                    ["ragChunkCount"] = ctx.Bundle.RagChunks.Count
+                    ["patientId"] = patientId.ToString()
                 }
             });
 
-        _context.AiChatLogs.Add(
-            new Jalsa.Domain.Models.Chat.AiChatLog
+        _context.PatientSupportAiChatLogs.Add(
+            new Jalsa.Domain.Models.Chat.PatientSupportAiChatLog
             {
                 Id = Guid.NewGuid(),
                 ConversationId = conversationId,

@@ -53,8 +53,8 @@ public class CrisisAlertService : ICrisisAlertService
     {
         var patient = await _unitOfWork.Repository<Patient>().FindSingleAsync(p => p.Id == alert.PatientId);
 
-        ChatMessage? message = alert.ChatMessageId.HasValue
-            ? await _unitOfWork.Repository<ChatMessage>().FindSingleAsync(m => m.Id == alert.ChatMessageId.Value)
+        PatientSupportMessage? message = alert.ChatMessageId.HasValue
+            ? await _unitOfWork.Repository<PatientSupportMessage>().FindSingleAsync(m => m.Id == alert.ChatMessageId.Value)
             : null;
 
         return new CrisisAlertViewDto

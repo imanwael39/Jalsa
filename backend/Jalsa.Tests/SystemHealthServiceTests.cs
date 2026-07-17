@@ -59,10 +59,12 @@ public class SystemHealthServiceTests : IDisposable
     public async Task GetSystemHealthAsync_CountsAiChatAndReportCallsWithinTimeWindows()
     {
         var now = DateTime.UtcNow;
-        _context.AiChatLogs.AddRange(
-            new AiChatLog { Id = Guid.NewGuid(), ConversationId = Guid.NewGuid(), PatientId = Guid.NewGuid(), TokensUsed = 100, CreatedAt = now },
-            new AiChatLog { Id = Guid.NewGuid(), ConversationId = Guid.NewGuid(), PatientId = Guid.NewGuid(), TokensUsed = 50, CreatedAt = now.AddDays(-1) },
-            new AiChatLog { Id = Guid.NewGuid(), ConversationId = Guid.NewGuid(), PatientId = Guid.NewGuid(), TokensUsed = 25, CreatedAt = now.AddMonths(-2) }
+        _context.TherapistAiChatLogs.AddRange(
+            new TherapistAiChatLog { Id = Guid.NewGuid(), ConversationId = Guid.NewGuid(), PatientId = Guid.NewGuid(), TokensUsed = 100, CreatedAt = now },
+            new TherapistAiChatLog { Id = Guid.NewGuid(), ConversationId = Guid.NewGuid(), PatientId = Guid.NewGuid(), TokensUsed = 50, CreatedAt = now.AddDays(-1) }
+        );
+        _context.PatientSupportAiChatLogs.Add(
+            new PatientSupportAiChatLog { Id = Guid.NewGuid(), ConversationId = Guid.NewGuid(), PatientId = Guid.NewGuid(), TokensUsed = 25, CreatedAt = now.AddMonths(-2) }
         );
         _context.AiReportGenerationLogs.Add(new AiReportGenerationLog
         {

@@ -1,6 +1,6 @@
-namespace Jalsa.Application.DTOs.Chat;
+namespace Jalsa.Application.DTOs.PatientSupportChat;
 
-public class ChatMessageViewDto
+public class PatientSupportMessageViewDto
 {
     public Guid Id { get; set; }
     public Guid ConversationId { get; set; }

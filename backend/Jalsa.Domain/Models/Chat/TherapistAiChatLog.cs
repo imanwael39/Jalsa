@@ -1,6 +1,6 @@
 namespace Jalsa.Domain.Models.Chat;
 
-public class AiChatLog
+public class TherapistAiChatLog
 {
     public Guid Id { get; set; }
     public Guid ConversationId { get; set; }
@@ -11,6 +11,6 @@ public class AiChatLog
     public string? ModelUsed { get; set; }
     public DateTime CreatedAt { get; set; }
 
-    public ChatConversation Conversation { get; set; } = null!;
+    public TherapistAiConversation Conversation { get; set; } = null!;
     public Patient.Patient Patient { get; set; } = null!;
 }

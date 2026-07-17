@@ -1,11 +1,10 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Jalsa.API.Services.Interfaces.AI;
 using Jalsa.Application.DTOs.Notification;
 using Jalsa.Application.Interfaces.Services;
 using Jalsa.Domain.Models.Chat;
-using Jalsa.Domain.Models.Clinic;
 using Jalsa.Domain.Models.Crisis;
 using Jalsa.Domain.Models.Notification;
 using Jalsa.Infrastructure.Data;
@@ -13,18 +12,25 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Jalsa.API.Hubs;
 
-[Authorize]
-public class ChatHub : Hub
+/// <summary>
+/// Patient-only real-time support chat. Ownership check is Patient.UserId == CurrentUserId
+/// only — no therapist branch, so a therapist's token can never join a patient's group or
+/// invoke SendMessage here. Crisis detection still fires on every patient message and still
+/// notifies the assigned therapist (that's a safety mechanism, not a chat-content leak: the
+/// therapist gets a notification + CrisisAlert record, never the conversation itself).
+/// </summary>
+[Authorize(Roles = "Patient")]
+public class PatientSupportChatHub : Hub
 {
-    private readonly IChatAiService _chatAi;
-    private readonly IConversationMemoryService _memory;
+    private readonly IPatientSupportAiService _chatAi;
+    private readonly IPatientSupportMemoryService _memory;
     private readonly ICrisisDetectionService _crisisDetection;
     private readonly INotificationPushService _pushService;
     private readonly JalsaDbContext _context;
 
-    public ChatHub(
-        IChatAiService chatAi,
-        IConversationMemoryService memory,
+    public PatientSupportChatHub(
+        IPatientSupportAiService chatAi,
+        IPatientSupportMemoryService memory,
         ICrisisDetectionService crisisDetection,
         INotificationPushService pushService,
         JalsaDbContext context)
@@ -36,27 +42,23 @@ public class ChatHub : Hub
         _context = context;
     }
 
-    public async Task SendMessage(Guid conversationId, Guid patientId, string message)
+    public async Task SendMessage(Guid conversationId, string message)
     {
-        var userIdClaim = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier)
-                          ?? Context.User?.FindFirstValue("sub");
+        var userId = await ResolveUserIdAsync();
+        var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserId == userId);
+        if (patient is null)
+            throw new HubException("Unauthorized: no patient profile for this account.");
 
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-            throw new HubException("Unauthorized: invalid user identity.");
-
-        var therapistId = await TryResolveTherapistIdAsync(userId);
-
-        var conversation = await _context.ChatConversations
-            .Include(c => c.Patient)
+        var conversation = await _context.PatientSupportConversations
             .FirstOrDefaultAsync(c => c.Id == conversationId);
 
         if (conversation == null)
             throw new HubException("Conversation not found.");
 
-        if (conversation.Patient.TherapistId != therapistId && conversation.Patient.UserId != userId)
+        if (conversation.PatientId != patient.Id)
             throw new HubException("غير مصرح لك بالوصول إلى هذه المحادثة");
 
-        var patientMsg = new ChatMessage
+        var patientMsg = new PatientSupportMessage
         {
             Id = Guid.NewGuid(),
             ConversationId = conversationId,
@@ -64,7 +66,7 @@ public class ChatHub : Hub
             Content = message,
             CreatedAt = DateTime.UtcNow
         };
-        _context.ChatMessages.Add(patientMsg);
+        _context.PatientSupportMessages.Add(patientMsg);
 
         var lang = message.Any(c => c >= 0x0600 && c <= 0x06FF) ? "ar" : "en";
         var crisisResult = await _crisisDetection.AnalyzeAsync(message);
@@ -73,13 +75,13 @@ public class ChatHub : Hub
         if (crisisResult.IsCrisis)
         {
             var therapist = await _context.Therapists
-                .Where(t => t.Patients.Any(p => p.Id == patientId))
+                .Where(t => t.Patients.Any(p => p.Id == patient.Id))
                 .FirstOrDefaultAsync();
 
             _context.CrisisAlerts.Add(new CrisisAlert
             {
                 Id = Guid.NewGuid(),
-                PatientId = patientId,
+                PatientId = patient.Id,
                 TherapistId = therapist?.Id,
                 Severity = "High",
                 ChatMessageId = patientMsg.Id,
@@ -130,7 +132,7 @@ public class ChatHub : Hub
             }
         }
 
-        await _memory.StoreMessageMemoryAsync(conversationId, patientId, patientMsg.Id, message);
+        await _memory.StoreMessageMemoryAsync(conversationId, patient.Id, patientMsg.Id, message);
 
         string reply;
         if (crisisResult.IsCrisis)
@@ -142,12 +144,12 @@ public class ChatHub : Hub
             var group = conversationId.ToString();
             reply = await _chatAi.GenerateResponseStreamingAsync(
                 conversationId,
-                patientId,
+                patient.Id,
                 message,
                 delta => Clients.Group(group).SendAsync("ReceiveMessageChunk", delta));
         }
 
-        var aiMsg = new ChatMessage
+        var aiMsg = new PatientSupportMessage
         {
             Id = Guid.NewGuid(),
             ConversationId = conversationId,
@@ -155,10 +157,10 @@ public class ChatHub : Hub
             Content = reply,
             CreatedAt = DateTime.UtcNow
         };
-        _context.ChatMessages.Add(aiMsg);
+        _context.PatientSupportMessages.Add(aiMsg);
         await _context.SaveChangesAsync();
 
-        await _memory.StoreMessageMemoryAsync(conversationId, patientId, aiMsg.Id, reply!);
+        await _memory.StoreMessageMemoryAsync(conversationId, patient.Id, aiMsg.Id, reply!);
 
         var senderName = lang == "ar" ? "المساعد" : "AI";
         await Clients.Group(conversationId.ToString()).SendAsync("ReceiveMessage", senderName, reply);
@@ -166,33 +168,35 @@ public class ChatHub : Hub
 
     public async Task JoinConversation(string conversationId)
     {
+        var userId = await ResolveUserIdAsync();
+
+        if (!Guid.TryParse(conversationId, out var convGuid))
+            throw new HubException("Invalid conversation ID.");
+
+        var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserId == userId);
+        if (patient is null)
+            throw new HubException("Unauthorized: no patient profile for this account.");
+
+        var conversation = await _context.PatientSupportConversations
+            .FirstOrDefaultAsync(c => c.Id == convGuid);
+
+        if (conversation == null)
+            throw new HubException("Conversation not found.");
+
+        if (conversation.PatientId != patient.Id)
+            throw new HubException("غير مصرح لك بالوصول إلى هذه المحادثة");
+
+        await Groups.AddToGroupAsync(Context.ConnectionId, conversationId);
+    }
+
+    private Task<Guid> ResolveUserIdAsync()
+    {
         var userIdClaim = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier)
                           ?? Context.User?.FindFirstValue("sub");
 
         if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             throw new HubException("Unauthorized: invalid user identity.");
 
-        if (!Guid.TryParse(conversationId, out var convGuid))
-            throw new HubException("Invalid conversation ID.");
-
-        var therapistId = await TryResolveTherapistIdAsync(userId);
-
-        var conversation = await _context.ChatConversations
-            .Include(c => c.Patient)
-            .FirstOrDefaultAsync(c => c.Id == convGuid);
-
-        if (conversation == null)
-            throw new HubException("Conversation not found.");
-
-        if (conversation.Patient.TherapistId != therapistId && conversation.Patient.UserId != userId)
-            throw new HubException("غير مصرح لك بالوصول إلى هذه المحادثة");
-
-        await Groups.AddToGroupAsync(Context.ConnectionId, conversationId);
-    }
-
-    private async Task<Guid?> TryResolveTherapistIdAsync(Guid userId)
-    {
-        var therapist = await _context.Therapists.FirstOrDefaultAsync(t => t.UserId == userId);
-        return therapist?.Id;
+        return Task.FromResult(userId);
     }
 }

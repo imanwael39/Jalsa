@@ -45,14 +45,18 @@ public class JalsaDbContext : DbContext
     public DbSet<AssessmentResponse> AssessmentResponses => Set<AssessmentResponse>();
     public DbSet<Exercise> Exercises => Set<Exercise>();
     public DbSet<ExerciseLog> ExerciseLogs => Set<ExerciseLog>();
-    public DbSet<ChatConversation> ChatConversations => Set<ChatConversation>();
-    public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
-    public DbSet<AiChatLog> AiChatLogs => Set<AiChatLog>();
+    public DbSet<TherapistAiConversation> TherapistAiConversations => Set<TherapistAiConversation>();
+    public DbSet<TherapistAiMessage> TherapistAiMessages => Set<TherapistAiMessage>();
+    public DbSet<TherapistAiChatLog> TherapistAiChatLogs => Set<TherapistAiChatLog>();
+    public DbSet<TherapistAiMemory> TherapistAiMemories => Set<TherapistAiMemory>();
+    public DbSet<PatientSupportConversation> PatientSupportConversations => Set<PatientSupportConversation>();
+    public DbSet<PatientSupportMessage> PatientSupportMessages => Set<PatientSupportMessage>();
+    public DbSet<PatientSupportAiChatLog> PatientSupportAiChatLogs => Set<PatientSupportAiChatLog>();
+    public DbSet<PatientSupportMemory> PatientSupportMemories => Set<PatientSupportMemory>();
     public DbSet<CrisisAlert> CrisisAlerts => Set<CrisisAlert>();
     public DbSet<ReferralReport> ReferralReports => Set<ReferralReport>();
     public DbSet<ReportVersion> ReportVersions => Set<ReportVersion>();
     public DbSet<SystemSetting> SystemSettings => Set<SystemSetting>();
-    public DbSet<AiArtifact> AiArtifacts => Set<AiArtifact>();
     public DbSet<AiReportGenerationLog> AiReportGenerationLogs => Set<AiReportGenerationLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -353,37 +357,94 @@ public class JalsaDbContext : DbContext
             e.HasOne(el => el.Patient).WithMany(p => p.ExerciseLogs).HasForeignKey(el => el.PatientId).OnDelete(DeleteBehavior.NoAction);
         });
 
-        // ── Chat ─────────────────────────────────────────────────
-        modelBuilder.Entity<ChatConversation>(e =>
+        // ── Therapist AI Assistant chat (clinical, RAG-backed) ────
+        modelBuilder.Entity<TherapistAiConversation>(e =>
         {
-            e.ToTable("ChatConversations");
-            e.HasKey(cc => cc.Id);
-            e.Property(cc => cc.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
-            e.Property(cc => cc.Status).HasDefaultValue("Open");
-            e.Property(cc => cc.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
-            e.Property(cc => cc.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
-            e.HasOne(cc => cc.Patient).WithMany(p => p.ChatConversations).HasForeignKey(cc => cc.PatientId).OnDelete(DeleteBehavior.NoAction);
+            e.ToTable("TherapistAiConversations");
+            e.HasKey(tc => tc.Id);
+            e.Property(tc => tc.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
+            e.Property(tc => tc.Status).HasDefaultValue("Open");
+            e.Property(tc => tc.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            e.Property(tc => tc.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+            e.HasIndex(tc => new { tc.TherapistId, tc.PatientId });
+            e.HasOne(tc => tc.Therapist).WithMany(t => t.TherapistAiConversations).HasForeignKey(tc => tc.TherapistId).OnDelete(DeleteBehavior.NoAction);
+            e.HasOne(tc => tc.Patient).WithMany(p => p.TherapistAiConversations).HasForeignKey(tc => tc.PatientId).OnDelete(DeleteBehavior.NoAction);
         });
 
-        modelBuilder.Entity<ChatMessage>(e =>
+        modelBuilder.Entity<TherapistAiMessage>(e =>
         {
-            e.ToTable("ChatMessages");
-            e.HasKey(cm => cm.Id);
-            e.Property(cm => cm.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
-            e.Property(cm => cm.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
-            e.HasIndex(cm => cm.ConversationId);
-            e.HasOne(cm => cm.Conversation).WithMany(cc => cc.ChatMessages).HasForeignKey(cm => cm.ConversationId).OnDelete(DeleteBehavior.NoAction);
+            e.ToTable("TherapistAiMessages");
+            e.HasKey(tm => tm.Id);
+            e.Property(tm => tm.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
+            e.Property(tm => tm.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            e.HasIndex(tm => tm.ConversationId);
+            e.HasOne(tm => tm.Conversation).WithMany(tc => tc.Messages).HasForeignKey(tm => tm.ConversationId).OnDelete(DeleteBehavior.NoAction);
         });
 
-        modelBuilder.Entity<AiChatLog>(e =>
+        modelBuilder.Entity<TherapistAiChatLog>(e =>
         {
-            e.ToTable("AiChatLogs");
-            e.HasKey(acl => acl.Id);
-            e.Property(acl => acl.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
-            e.Property(acl => acl.Cost).HasPrecision(18, 6);
-            e.Property(acl => acl.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
-            e.HasOne(acl => acl.Conversation).WithMany(cc => cc.AiChatLogs).HasForeignKey(acl => acl.ConversationId).OnDelete(DeleteBehavior.NoAction);
-            e.HasOne(acl => acl.Patient).WithMany(p => p.AiChatLogs).HasForeignKey(acl => acl.PatientId).OnDelete(DeleteBehavior.NoAction);
+            e.ToTable("TherapistAiChatLogs");
+            e.HasKey(tcl => tcl.Id);
+            e.Property(tcl => tcl.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
+            e.Property(tcl => tcl.Cost).HasPrecision(18, 6);
+            e.Property(tcl => tcl.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            e.HasOne(tcl => tcl.Conversation).WithMany(tc => tc.ChatLogs).HasForeignKey(tcl => tcl.ConversationId).OnDelete(DeleteBehavior.NoAction);
+            e.HasOne(tcl => tcl.Patient).WithMany(p => p.TherapistAiChatLogs).HasForeignKey(tcl => tcl.PatientId).OnDelete(DeleteBehavior.NoAction);
+        });
+
+        modelBuilder.Entity<TherapistAiMemory>(e =>
+        {
+            e.ToTable("TherapistAiMemories");
+            e.HasKey(tm => tm.Id);
+            e.Property(tm => tm.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
+            e.Property(tm => tm.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            e.HasOne(tm => tm.Conversation).WithMany().HasForeignKey(tm => tm.ConversationId).OnDelete(DeleteBehavior.NoAction);
+            e.HasOne(tm => tm.Patient).WithMany(p => p.TherapistAiMemories).HasForeignKey(tm => tm.PatientId).OnDelete(DeleteBehavior.NoAction);
+            e.HasOne(tm => tm.TriggerMessage).WithOne(msg => msg.TriggeredMemory).HasForeignKey<TherapistAiMemory>(tm => tm.TriggerMessageId).OnDelete(DeleteBehavior.NoAction);
+        });
+
+        // ── Patient Support chat (empathetic, non-clinical) ───────
+        modelBuilder.Entity<PatientSupportConversation>(e =>
+        {
+            e.ToTable("PatientSupportConversations");
+            e.HasKey(pc => pc.Id);
+            e.Property(pc => pc.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
+            e.Property(pc => pc.Status).HasDefaultValue("Open");
+            e.Property(pc => pc.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            e.Property(pc => pc.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+            e.HasOne(pc => pc.Patient).WithMany(p => p.PatientSupportConversations).HasForeignKey(pc => pc.PatientId).OnDelete(DeleteBehavior.NoAction);
+        });
+
+        modelBuilder.Entity<PatientSupportMessage>(e =>
+        {
+            e.ToTable("PatientSupportMessages");
+            e.HasKey(pm => pm.Id);
+            e.Property(pm => pm.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
+            e.Property(pm => pm.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            e.HasIndex(pm => pm.ConversationId);
+            e.HasOne(pm => pm.Conversation).WithMany(pc => pc.Messages).HasForeignKey(pm => pm.ConversationId).OnDelete(DeleteBehavior.NoAction);
+        });
+
+        modelBuilder.Entity<PatientSupportAiChatLog>(e =>
+        {
+            e.ToTable("PatientSupportAiChatLogs");
+            e.HasKey(pcl => pcl.Id);
+            e.Property(pcl => pcl.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
+            e.Property(pcl => pcl.Cost).HasPrecision(18, 6);
+            e.Property(pcl => pcl.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            e.HasOne(pcl => pcl.Conversation).WithMany(pc => pc.ChatLogs).HasForeignKey(pcl => pcl.ConversationId).OnDelete(DeleteBehavior.NoAction);
+            e.HasOne(pcl => pcl.Patient).WithMany(p => p.PatientSupportAiChatLogs).HasForeignKey(pcl => pcl.PatientId).OnDelete(DeleteBehavior.NoAction);
+        });
+
+        modelBuilder.Entity<PatientSupportMemory>(e =>
+        {
+            e.ToTable("PatientSupportMemories");
+            e.HasKey(pm => pm.Id);
+            e.Property(pm => pm.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
+            e.Property(pm => pm.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            e.HasOne(pm => pm.Conversation).WithMany().HasForeignKey(pm => pm.ConversationId).OnDelete(DeleteBehavior.NoAction);
+            e.HasOne(pm => pm.Patient).WithMany(p => p.PatientSupportMemories).HasForeignKey(pm => pm.PatientId).OnDelete(DeleteBehavior.NoAction);
+            e.HasOne(pm => pm.TriggerMessage).WithOne(msg => msg.TriggeredMemory).HasForeignKey<PatientSupportMemory>(pm => pm.TriggerMessageId).OnDelete(DeleteBehavior.NoAction);
         });
 
         // ── Crisis ───────────────────────────────────────────────
@@ -435,17 +496,6 @@ public class JalsaDbContext : DbContext
         });
 
         // ── AI ───────────────────────────────────────────────────
-        modelBuilder.Entity<AiArtifact>(e =>
-        {
-            e.ToTable("AiArtifacts");
-            e.HasKey(aa => aa.Id);
-            e.Property(aa => aa.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
-            e.Property(aa => aa.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
-            e.HasOne(aa => aa.Conversation).WithMany(cc => cc.AiArtifacts).HasForeignKey(aa => aa.ConversationId).OnDelete(DeleteBehavior.NoAction);
-            e.HasOne(aa => aa.Patient).WithMany(p => p.AiArtifacts).HasForeignKey(aa => aa.PatientId).OnDelete(DeleteBehavior.NoAction);
-            e.HasOne(aa => aa.TriggerMessage).WithOne(cm => cm.TriggeredArtifact).HasForeignKey<AiArtifact>(aa => aa.TriggerMessageId).OnDelete(DeleteBehavior.NoAction);
-        });
-
         modelBuilder.Entity<AiReportGenerationLog>(e =>
         {
             e.ToTable("AiReportGenerationLogs");

@@ -1,33 +1,37 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Jalsa.Application.DTOs.Chat;
+using Jalsa.Application.DTOs.TherapistChat;
 using Jalsa.Application.Interfaces.Services;
 using Jalsa.API.Hubs;
 using Jalsa.API.Services.Interfaces.AI;
 
 namespace Jalsa.API.Controllers;
 
+/// <summary>
+/// Therapist-only clinical assistant chat. Class-level Therapist role restriction is the
+/// first isolation boundary — a patient token can never reach any action here.
+/// </summary>
 [ApiController]
-[Route("api/chat")]
-[Authorize]
-public class ChatController : BaseController
+[Route("api/therapist-chat")]
+[Authorize(Roles = "Therapist")]
+public class TherapistAiChatController : BaseController
 {
-    private readonly IChatService _chatService;
-    private readonly IHubContext<ChatHub> _chatHub;
+    private readonly ITherapistAiChatService _chatService;
+    private readonly IHubContext<TherapistAiChatHub> _chatHub;
     private readonly ITherapistChatAiService _therapistChatAi;
-    private readonly IConversationMemoryService _conversationMemory;
+    private readonly ITherapistAiMemoryService _memory;
 
-    public ChatController(
-        IChatService chatService,
-        IHubContext<ChatHub> chatHub,
+    public TherapistAiChatController(
+        ITherapistAiChatService chatService,
+        IHubContext<TherapistAiChatHub> chatHub,
         ITherapistChatAiService therapistChatAi,
-        IConversationMemoryService conversationMemory)
+        ITherapistAiMemoryService memory)
     {
         _chatService = chatService;
         _chatHub = chatHub;
         _therapistChatAi = therapistChatAi;
-        _conversationMemory = conversationMemory;
+        _memory = memory;
     }
 
     [HttpGet("conversations")]
@@ -50,7 +54,7 @@ public class ChatController : BaseController
     }
 
     [HttpPost("conversations")]
-    public async Task<IActionResult> CreateConversation([FromBody] CreateConversationDto dto)
+    public async Task<IActionResult> CreateConversation([FromBody] CreateTherapistConversationDto dto)
     {
         try
         {
@@ -76,11 +80,10 @@ public class ChatController : BaseController
     }
 
     [HttpPost("send")]
-    public async Task<IActionResult> Send([FromBody] SendMessageDto dto)
+    public async Task<IActionResult> Send([FromBody] SendTherapistMessageDto dto)
     {
         var userId = GetCurrentUserId();
-        var senderType = User.IsInRole("Patient") ? "Patient" : "Therapist";
-        var result = await _chatService.SendMessageAsync(userId, dto.ConversationId, dto.Content, senderType);
+        var result = await _chatService.SendMessageAsync(userId, dto.ConversationId, dto.Content, "Therapist");
 
         if (result is null)
             return NotFound(new { message = "المحادثة غير موجودة" });
@@ -92,38 +95,34 @@ public class ChatController : BaseController
             var history = await _chatService.GetHistoryAsync(userId, dto.ConversationId);
             if (history is not null)
             {
-                await _conversationMemory.StoreMessageMemoryAsync(dto.ConversationId, history.PatientId, result.Id, dto.Content);
+                await _memory.StoreMessageMemoryAsync(dto.ConversationId, history.PatientId, result.Id, dto.Content);
 
-                if (senderType == "Therapist")
+                var lang = dto.Content.Any(c => c >= 0x0600 && c <= 0x06FF) ? "ar" : "en";
+                var group = dto.ConversationId.ToString();
+                var diagnostics = await _therapistChatAi.AnswerQuestionStreamingAsync(
+                    dto.ConversationId,
+                    history.PatientId,
+                    dto.Content,
+                    lang,
+                    delta => _chatHub.Clients.Group(group).SendAsync("ReceiveMessageChunk", delta));
+                var answer = diagnostics.Output;
+                var aiResult = await _chatService.SendMessageAsync(userId, dto.ConversationId, answer, "AI");
+                if (aiResult is not null)
                 {
-                    var lang = dto.Content.Any(c => c >= 0x0600 && c <= 0x06FF) ? "ar" : "en";
-                    var group = dto.ConversationId.ToString();
-                    var diagnostics = await _therapistChatAi.AnswerQuestionStreamingAsync(
-                        dto.ConversationId,
-                        history.PatientId,
-                        dto.Content,
-                        lang,
-                        delta => _chatHub.Clients.Group(group).SendAsync("ReceiveMessageChunk", delta));
-                    var answer = diagnostics.Output;
-                    var aiResult = await _chatService.SendMessageAsync(userId, dto.ConversationId, answer, "AI");
-                    if (aiResult is not null)
-                    {
-                        await _chatHub.Clients.Group(dto.ConversationId.ToString()).SendAsync("ReceiveHumanMessage", aiResult);
-                        await _conversationMemory.StoreMessageMemoryAsync(dto.ConversationId, history.PatientId, aiResult.Id, answer);
-                    }
+                    await _chatHub.Clients.Group(dto.ConversationId.ToString()).SendAsync("ReceiveHumanMessage", aiResult);
+                    await _memory.StoreMessageMemoryAsync(dto.ConversationId, history.PatientId, aiResult.Id, answer);
                 }
             }
         }
         catch
         {
-            // Best-effort: a Gateway/memory failure must never block the sender's own message from sending.
+            // Best-effort: a Gateway/memory failure must never block the therapist's own message from sending.
         }
 
         return Ok(result);
     }
 
     [HttpPost("{conversationId:guid}/regenerate")]
-    [Authorize(Roles = "Therapist")]
     public async Task<IActionResult> Regenerate(Guid conversationId)
     {
         var userId = GetCurrentUserId();
@@ -155,7 +154,7 @@ public class ChatController : BaseController
 
         try
         {
-            await _conversationMemory.StoreMessageMemoryAsync(conversationId, history.PatientId, aiResult.Id, answer);
+            await _memory.StoreMessageMemoryAsync(conversationId, history.PatientId, aiResult.Id, answer);
         }
         catch
         {

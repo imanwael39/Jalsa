@@ -13,7 +13,7 @@ public class TherapistChatAiService : ITherapistChatAiService
     private readonly IGeminiClient _client;
     private readonly JalsaDbContext _context;
     private readonly IPatientContextBuilder _contextBuilder;
-    private readonly IConversationMemoryService _memory;
+    private readonly ITherapistAiMemoryService _memory;
     private readonly string _model;
 
     private readonly ILlmObservabilityService _observability;
@@ -24,7 +24,7 @@ public class TherapistChatAiService : ITherapistChatAiService
         IGeminiClient client,
         JalsaDbContext context,
         IPatientContextBuilder contextBuilder,
-        IConversationMemoryService memory,
+        ITherapistAiMemoryService memory,
         ILlmObservabilityService observability,
         Services.Interfaces.IPromptService prompts)
     {
@@ -52,7 +52,7 @@ public class TherapistChatAiService : ITherapistChatAiService
         if (bundle.Demographics is null)
             return null;
 
-        var history = await _context.ChatMessages
+        var history = await _context.TherapistAiMessages
             .Where(m => m.ConversationId == conversationId)
             .OrderByDescending(m => m.CreatedAt)
             .Take(10)
@@ -63,7 +63,6 @@ public class TherapistChatAiService : ITherapistChatAiService
         {
             var sender = m.SenderType switch
             {
-                "Patient" when language == "ar" => "المريض",
                 "AI" when language == "ar" => "المساعد",
                 "Therapist" when language == "ar" => "المعالج",
                 _ => m.SenderType
@@ -249,8 +248,8 @@ public class TherapistChatAiService : ITherapistChatAiService
                 }
             });
 
-        _context.AiChatLogs.Add(
-            new Jalsa.Domain.Models.Chat.AiChatLog
+        _context.TherapistAiChatLogs.Add(
+            new Jalsa.Domain.Models.Chat.TherapistAiChatLog
             {
                 Id = Guid.NewGuid(),
                 ConversationId = conversationId,

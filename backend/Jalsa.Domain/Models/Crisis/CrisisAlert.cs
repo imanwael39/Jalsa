@@ -12,5 +12,5 @@ public class CrisisAlert
     public DateTime UpdatedAt { get; set; }
 
     public Patient.Patient Patient { get; set; } = null!;
-    public Chat.ChatMessage? ChatMessage { get; set; }
+    public Chat.PatientSupportMessage? ChatMessage { get; set; }
 }

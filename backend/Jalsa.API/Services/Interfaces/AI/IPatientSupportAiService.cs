@@ -1,6 +1,6 @@
 namespace Jalsa.API.Services.Interfaces.AI;
 
-public interface IChatAiService
+public interface IPatientSupportAiService
 {
     Task<string> GenerateResponseAsync(Guid conversationId, Guid patientId, string message);
 

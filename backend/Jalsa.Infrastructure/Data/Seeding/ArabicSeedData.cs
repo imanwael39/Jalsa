@@ -296,6 +296,26 @@ internal static class ArabicSeedData
     public static readonly string[] CrisisSeverities = { "High", "Critical", "Medium" };
     public static readonly string[] CrisisStatuses = { "Open", "Acknowledged", "Resolved" };
 
+    // ── Therapist AI Assistant chat (clinical Q&A, separate from patient support chat) ──
+    public static readonly string[] TherapistChatQuestions =
+    {
+        "لخّص لي آخر ثلاث جلسات لهذا المريض.",
+        "هل هناك تحسن في درجات تقييم PHQ-9 خلال الشهر الماضي؟",
+        "ما هي المواضيع المقترحة للجلسة القادمة؟",
+        "هل ذكر المريض أي أفكار عن إيذاء النفس في ملاحظات الجلسات الأخيرة؟",
+        "كيف كان التزام المريض بالتمارين المنزلية المكلّف بها؟",
+        "ما أبرز التغيرات في الحالة المزاجية للمريض منذ بدء العلاج؟",
+    };
+
+    public static readonly string[] TherapistAiClinicalReplies =
+    {
+        "بالاستناد إلى ملاحظات الجلسات الأخيرة، يُظهر المريض تحسنًا تدريجيًا في إدارة القلق، مع استمرار صعوبات خفيفة في النوم.",
+        "درجات التقييم تُظهر انخفاضًا طفيفًا في شدة الأعراض مقارنة بالتقييم السابق، وهو مؤشر إيجابي.",
+        "يُقترح التركيز في الجلسة القادمة على تمارين إعادة الهيكلة المعرفية ومتابعة الالتزام بالتمارين المنزلية.",
+        "لم يُسجَّل في ملاحظات الجلسات الأخيرة أي إشارة إلى أفكار إيذاء النفس.",
+        "التزام المريض بالتمارين المنزلية كان متوسطًا، مع تحسن ملحوظ في الأسابيع الأخيرة.",
+    };
+
     // ── Notifications ────────────────────────────────────────────────────────
     // (Type, Title, Body template with {0} = patient name)
     public static readonly (string Type, string Title, string Body)[] NotificationTemplates =

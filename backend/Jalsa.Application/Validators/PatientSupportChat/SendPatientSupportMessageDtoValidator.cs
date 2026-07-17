@@ -1,11 +1,11 @@
 using FluentValidation;
-using Jalsa.Application.DTOs.Chat;
+using Jalsa.Application.DTOs.PatientSupportChat;
 
-namespace Jalsa.Application.Validators.Chat;
+namespace Jalsa.Application.Validators.PatientSupportChat;
 
-public class SendMessageDtoValidator : AbstractValidator<SendMessageDto>
+public class SendPatientSupportMessageDtoValidator : AbstractValidator<SendPatientSupportMessageDto>
 {
-    public SendMessageDtoValidator()
+    public SendPatientSupportMessageDtoValidator()
     {
         RuleFor(x => x.ConversationId)
             .NotEmpty().WithMessage("ConversationId is required.");
