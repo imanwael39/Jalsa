@@ -188,14 +188,13 @@
     display: flex;
     align-items: flex-end;
     gap: var(--space-2);
-    max-width: 75%;
+    max-width: 68%;
 }
-.message-ai,
-.message-patient {
+.message-ai {
     align-self: flex-start;
     flex-direction: row;
 }
-.message-therapist {
+.message-patient {
     align-self: flex-end;
     flex-direction: row-reverse;
     margin-inline-start: auto;
@@ -213,12 +212,9 @@
 .ai-icon {
     background: var(--info-light);
     color: var(--info);
+    border: 1px solid var(--border-color);
 }
 .patient-icon {
-    background: var(--secondary-100);
-    color: var(--secondary-600);
-}
-.therapist-icon {
     background: var(--primary-light);
     color: var(--primary);
 }
@@ -227,13 +223,14 @@
     border-radius: var(--radius-md);
     max-width: 100%;
 }
-.message-ai .message-bubble,
-.message-patient .message-bubble {
+/* AI: light neutral surface with a subtle border, own bubble corner tucked in. */
+.message-ai .message-bubble {
     background: var(--surface);
     border: 1px solid var(--border-color);
     border-end-start-radius: var(--radius-sm);
 }
-.message-therapist .message-bubble {
+/* Patient: primary-colored, own bubble corner tucked in on the opposite side. */
+.message-patient .message-bubble {
     background: var(--primary);
     color: var(--text-inverse);
     border-end-end-radius: var(--radius-sm);
@@ -244,9 +241,9 @@
     line-height: 1.6;
     word-break: break-word;
 }
-.message-therapist .message-content,
-.message-therapist .message-content * {
-    color: #fff !important;
+.message-patient .message-content,
+.message-patient .message-content * {
+    color: var(--text-inverse) !important;
 }
 /* Tinted from currentColor so it reads on both a --surface bubble and a
    solid --primary one, whatever the sender/theme. */
