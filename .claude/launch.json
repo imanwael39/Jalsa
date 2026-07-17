@@ -13,7 +13,8 @@
       "name": "ASP.NET Core Backend",
       "runtimeExecutable": "dotnet",
       "runtimeArgs": ["run", "--project", "backend/Jalsa.API/Jalsa.API.csproj"],
-      "port": 5014
+      "port": 5014,
+      "autoPort": false
     }
   ],
     "includeCoAuthoredBy": false
