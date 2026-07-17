@@ -97,6 +97,7 @@ export const API = {
     },
     crisisAlerts: {
         base: '/api/crisis-alerts',
+        acknowledge: (id: string) => `/api/crisis-alerts/${id}/acknowledge`,
         resolve: (id: string) => `/api/crisis-alerts/${id}/resolve`,
     },
     admin: {
